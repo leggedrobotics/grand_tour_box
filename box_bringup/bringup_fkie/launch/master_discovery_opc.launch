@@ -27,7 +27,7 @@
     <!-- in some network environments does multicast not work properly. In this
       case you can specify robots where a master discovery is running. These
       robots are pinged using unicast communication. -->
-    <rosparam param="robot_hosts">[jetson,nuc,pi,lpc]</rosparam>
+    <rosparam param="robot_hosts">[jetson,nuc,pi,lpc,opc_smally]</rosparam>
     <!-- After the ROS master was changed the new state will be sent for
       `CHANGE_NOTIFICATION_COUNT` times (Default: 3 sec). The new state will be
       sent with `ROSMASTER_HZ` and only if `HEARTBEAT_HZ` is zero. -->

@@ -5,7 +5,7 @@
     <param name="mcast_group" value="226.0.0.0" />
     <param name="mcast_port" value="11511" />
     <!-- Bind the master_discovery to an interface address. If this is not specified the ROS_IP or default interface will be used. -->
-    <param name="interface" value="" />
+    <param name="interface" value="192.168.2.59" />
     <!-- The port number for XML-RPC server created by the node. (Default: ROS_MASTER_URI.port+300). -->
     <param name="rpc_port" value="11611" />
     <!-- the test rate of ROS master state in Hz (Default: 1 Hz). -->
@@ -27,7 +27,7 @@
     <!-- in some network environments does multicast not work properly. In this
       case you can specify robots where a master discovery is running. These
       robots are pinged using unicast communication. -->
-    <rosparam param="robot_hosts">[lpc,jetson,nuc,pi,opc,opc_smally]</rosparam>
+    <rosparam param="robot_hosts">[opc,jetson,opc_smally]</rosparam>
     <!-- After the ROS master was changed the new state will be sent for
       `CHANGE_NOTIFICATION_COUNT` times (Default: 3 sec). The new state will be
       sent with `ROSMASTER_HZ` and only if `HEARTBEAT_HZ` is zero. -->

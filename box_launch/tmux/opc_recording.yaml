@@ -10,7 +10,8 @@ windows:
     - export DISPLAY=:0.0
     - export ROS_MASTER_URI=http://192.168.2.154:11311
     - export ROS_IP=192.168.2.154
-
+    # - export ROS_MASTER_URI=http://localhost:11311
+    # - export ROS_IP=$(hostname -I | awk '{print $1}')
   options:
     pane-border-status: top
   panes:
