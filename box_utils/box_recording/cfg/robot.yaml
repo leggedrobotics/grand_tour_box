@@ -84,6 +84,10 @@ lpc:
     - /pdb/power_state
     - /sensors/battery_voltage
     - /soft_emcy_stop
+    - /twist_mux/selected_input
+    - /twist_mux/twist
+    - /rsl_joystick_driver/twist
+    - /rsl_joystick_module/twist
   anymal_imu:
     - /sensors/imu
   state_estimator:
@@ -94,16 +98,8 @@ lpc:
   depth_cameras:
     - /depth_camera_front_upper/depth/camera_info
     - /depth_camera_front_upper/depth/image_rect_raw
-    - /depth_camera_front_upper/infra1/image_rect_raw
-    - /depth_camera_front_lower/depth/camera_info
-    - /depth_camera_front_lower/depth/image_rect_raw
-    - /depth_camera_front_lower/infra1/image_rect_raw
     - /depth_camera_rear_upper/depth/camera_info
     - /depth_camera_rear_upper/depth/image_rect_raw
-    - /depth_camera_rear_upper/infra1/image_rect_raw
-    - /depth_camera_rear_lower/depth/camera_info
-    - /depth_camera_rear_lower/depth/image_rect_raw
-    - /depth_camera_rear_lower/infra1/image_rect_raw
 npc:
   general:
     - /behavior_engine/status
@@ -114,23 +110,12 @@ npc:
     - /memory_monitor_npc/status
     - /network_monitor_npc/status
     - /pinger_npc_to_lpc/ping
-  wide_angle_cameras_front_rear:
-    - /wide_angle_camera_front/image_color/compressed
-    - /wide_angle_camera_rear/image_color/compressed
-    - /wide_angle_camera_front/camera_info
-    - /wide_angle_camera_rear/camera_info
   depth_cameras:
-    - /depth_camera_front/depth/camera_info
-    - /depth_camera_front/depth/image_rect_raw
-    - /depth_camera_front/infra1/image_rect_raw
     - /depth_camera_left/depth/camera_info
     - /depth_camera_left/depth/image_rect_raw
-    - /depth_camera_left/infra1/image_rect_raw
-    - /depth_camera_rear/depth/camera_info
-    - /depth_camera_rear/depth/image_rect_raw
-    - /depth_camera_rear/infra1/image_rect_raw
     - /depth_camera_right/depth/camera_info
     - /depth_camera_right/depth/image_rect_raw
-    - /depth_camera_right/infra1/image_rect_raw
   velodyne:
     - /lidar/packets
+    - /lidar/point_cloud
+    - /lidar/time_sync_status

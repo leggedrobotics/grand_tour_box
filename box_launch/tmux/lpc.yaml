@@ -1,4 +1,5 @@
 session_name: lpc-box
+before_script: "../scripts/cleanup_session_robot.sh"
 
 windows:
 - window_name: grand_tour_box_robot

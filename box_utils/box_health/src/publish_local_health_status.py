@@ -7,7 +7,6 @@ import yaml
 import subprocess
 import re
 
-import rospy
 import rostopic
 from std_msgs.msg import String
 import box_health.msg as box_health_msg
@@ -16,6 +15,17 @@ from std_msgs.msg import ColorRGBA
 from datetime import datetime
 from pathlib import Path
 import os
+import rospy
+import rosnode
+
+
+def is_node_alive(node_name):
+    try:
+        nodes = rosnode.get_node_names()
+        return node_name in nodes
+    except rosnode.ROSNodeIOException:
+        print("failed")
+        return False
 
 
 def load_yaml(path: str) -> dict:
@@ -320,7 +330,6 @@ class BoxStatus:
         lineheight = 14
         text.fg_color = ColorRGBA(1.0, 1.0, 1.0, 1.0)
         text.bg_color = ColorRGBA(0.0, 0.0, 0.0, 0.8)
-
         now = datetime.now()
         dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
 
@@ -365,6 +374,12 @@ class BoxStatus:
 
         if self.cfg.get("recording", False):
             text.text += '\n<span style="color: rgb(0,255,0);">' + "Recording:" + "</span>\n"
+            if self.hostname == "jetson":
+                for pc in ["jetson", "nuc", "lpc", "npc"]:
+                    ready = is_node_alive(f"/gt_box/rosbag_record_node_{pc}")
+                    pretty = pc.capitalize()
+                    text.text += f"{pretty} ready: {ready}\n"
+                    offset += lineheight
             text.text += self.recording_strings
             offset += self.recording_lines * lineheight
             offset += lineheight * 2

@@ -173,7 +173,7 @@ class RosbagRecordNode(object):
         Path(self.bag_base_path).mkdir(parents=True, exist_ok=True)
 
         # Check if we're on lpc. If so, dump rosparams to yaml file.
-        if self.node == "jetson":
+        if self.node == "jetson" or self.node.find("lpc") != -1:
             yaml_file_path = os.path.join(self.bag_base_path, f"{timestamp}_{self.node}.yaml")
             rosparam.dump_params(yaml_file_path, "/")
 

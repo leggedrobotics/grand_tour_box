@@ -17,6 +17,7 @@ from box_recording.srv import (
 )
 from box_recording.srv import StopRecording, StopRecordingResponse, StopRecordingRequest
 from pathlib import Path
+import shutil
 
 
 def load_yaml(path: str) -> dict:
@@ -100,6 +101,15 @@ class RosbagRecordCoordinator(object):
                             topic_cfgs += f"{bag_name}----{topic} "
                         int_request.topics = topic_cfgs[:-1]
                         int_request.timestamp = timestamp
+
+                        default_path = rospkg.RosPack().get_path("box_recording") + "/data"
+                        self.data_path = rospy.get_param("~data_path", default_path)
+                        bag_base_path = os.path.join(self.data_path, timestamp)
+                        Path(bag_base_path).mkdir(parents=True, exist_ok=True)
+                        shutil.copyfile(
+                            request.yaml_file, os.path.join(bag_base_path, request.yaml_file.split("/")[-1])
+                        )
+
                         response.message += f"{node}-{bag_name} [SUC], "
                         start_recording_srv(int_request)
                         rospy.loginfo("[RosbagRecordCoordinator] Starting rosbag recording process on " + node)
