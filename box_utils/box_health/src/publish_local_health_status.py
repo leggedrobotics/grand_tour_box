@@ -192,7 +192,7 @@ class BoxStatus:
                 f"/gt_box/rosbag_record_node_{self.hostname}/recording_info", String, self.recording_info_callback
             )
 
-        if self.namespace.find("pi"):
+        if self.namespace.find("pi") != -1:
             self.pi_reader = PiReader(self.cfg.get("ptp4l", []) + self.cfg.get("phc2sys", []))
             self.read_clock_status = self.read_clock_status_pi
 
