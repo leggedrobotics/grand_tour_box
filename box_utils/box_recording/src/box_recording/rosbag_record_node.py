@@ -21,9 +21,12 @@ from box_recording_helper.store_debug_logs_to_folder import store_debug_logs_to_
 import time
 
 
+RUN_RECORDING = "/data/workspaces/ros2_ws/src/isaac_ros_common/scripts/run_recording.sh"
+
+
 def start_hdr():
     subprocess.Popen(
-        "/data/workspaces/isaac_ros-dev/src/isaac_ros_common/scripts/run_recording.sh hdr_start",
+        f"{RUN_RECORDING} hdr_start",
         shell=True,
         stderr=subprocess.PIPE,
     )
@@ -236,8 +239,7 @@ class RosbagRecordNode(object):
 
             # TODO: Replace with proper system after testing
             if bag_name == "hdr":
-                docker_script_path = "/data/workspaces/isaac_ros-dev/src/isaac_ros_common/scripts/run_recording.sh"
-                bash_command_hdr = docker_script_path + f" start_recording {timestamp} {topics}"
+                bash_command_hdr = f"{RUN_RECORDING} start_recording {timestamp} {topics}"
                 self.recording_hdr = True
                 rospy.loginfo(f"[RosbagRecordNode({self.node} HDR" + bash_command_hdr)
                 subprocess.Popen(bash_command_hdr, shell=True, stderr=subprocess.PIPE)
@@ -287,9 +289,7 @@ class RosbagRecordNode(object):
             response = self.toggle_zed_recording(False, "", response)
 
         if self.recording_hdr:
-
-            docker_script_path = "/data/workspaces/isaac_ros-dev/src/isaac_ros_common/scripts/run_recording.sh"
-            bash_command_hdr = docker_script_path + " stop_recording"
+            bash_command_hdr = f"{RUN_RECORDING} stop_recording"
             self.recording_hdr = False
             subprocess.Popen(bash_command_hdr, shell=True, stderr=subprocess.PIPE)
 

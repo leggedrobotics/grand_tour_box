@@ -40,16 +40,13 @@ cd /workspaces/bridge_ws; source /opt/ros/noetic/setup.bash; source /opt/ros/hum
 - box_drivers_ros2/isaac_ros_common/docker/scripts/workspace-entrypoint.sh
 
 
-
-
-
-
-
-
-
-
-
-
+# 1. Ideally not install the system on 64GB nvme storage instead use SSD
+# 2. install normally docker
+# 3. Change then if with the weird installation the docker to use the SSD on the /data 
+# Following this here: https://nvidia-isaac-ros.github.io/getting_started/hardware_setup/compute/index.html#jetson-platforms
+# It is clear what to do till creating the workspace.
+# Then clone the https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_common/tree/main into the repository
+# Follow the readme here and then install the docker container: https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_common/tree/main/scripts
 
 
 ### Helper commands not needed
