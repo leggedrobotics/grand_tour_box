@@ -8,6 +8,6 @@
   <author email="schmirob@ethz.ch">Robin Schmid</author>
   <buildtool_depend>catkin</buildtool_depend>
   <depend>rqt_rviz_wrapper</depend>
-  <depend>core_throttling</depend>
+  <depend>box_throttling</depend>
 
 </package>
