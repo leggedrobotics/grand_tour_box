@@ -3,7 +3,9 @@
       <node name="rviz_replay" pkg="rviz" type="rviz" args="-d $(find box_rviz)/cfg/replay.rviz" >
         <param name="capability_group" value="Visualization"/>
       </node>  
-      <include file="$(find box_model)/launch/box_model.launch"/>
+        <include file="$(find box_model)/launch/box_model.launch">
+          <arg name="use_sim_time" value="true"/>
+        </include>
       <include file="$(find box_rviz)/launch/publish_string.launch"/>
     </group>
 </launch>

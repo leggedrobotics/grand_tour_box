@@ -110,21 +110,23 @@ class RosbagRecordCoordinator(object):
                 time.sleep(2.0)
                 rospy.loginfo("[RosbagRecordCoordinator] Trying to stop /ap20/streaming.")
                 service_name = "/ap20/enable_streaming"
-                rospy.wait_for_service(service_name, timeout=15.0)
-                try:
-                    change_mode = rospy.ServiceProxy(service_name, SetBool)
-                    internal_response = change_mode(False)
-                    if internal_response.success:
-                        rospy.loginfo(
-                            f"IMU mode changed successfully. Streaming is now {'enabled' if False else 'disabled'}."
-                        )
-                        suc = True
-                    else:
-                        rospy.logwarn(f"Failed to change IMU mode: {internal_response.message}")
+                for i in range(2):
+                    rospy.wait_for_service(service_name, timeout=7.0)
+                    try:
+                        change_mode = rospy.ServiceProxy(service_name, SetBool)
+                        internal_response = change_mode(False)
+                        if internal_response.success:
+                            rospy.loginfo(
+                                f"IMU mode changed successfully. Streaming is now {'enabled' if False else 'disabled'}."
+                            )
+                            suc = True
+                            break
+                        else:
+                            rospy.logwarn(f"Failed to change IMU mode: {internal_response.message}")
+                            suc = False
+                    except rospy.ServiceException as e:
+                        rospy.logerr(f"Service call failed: {e}")
                         suc = False
-                except rospy.ServiceException as e:
-                    rospy.logerr(f"Service call failed: {e}")
-                    suc = False
 
                 if not suc:
                     rospy.logwarn_once(

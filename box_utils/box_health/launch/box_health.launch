@@ -1,9 +1,13 @@
 <launch>
   <arg name="hostname" default="$(env HOSTNAME)"/>
   <arg name="box_namespace" default="gt_box"/>
+  <arg name="use_sim_time" default="false" />
+  <param name="/use_sim_time" value="$(arg use_sim_time)" />
+
   <group ns="$(arg box_namespace)">
     <node pkg="box_health" type="publish_local_health_status.py" name="box_health_$(arg hostname)" output="screen">
       <param name="capability_group" value="Monitoring"/>
     </node>
   </group>
+
 </launch>
