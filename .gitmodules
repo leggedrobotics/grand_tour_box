@@ -1,0 +1,3 @@
+[submodule "box_drivers/usb_cam"]
+	path = box_drivers/usb_cam
+	url = git@github.com:ros-drivers/usb_cam.git

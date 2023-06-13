@@ -69,10 +69,61 @@ The project is organized into the following directories:
 Getting Started
 </h2>
 
+### Setting up Workspace
+```
+mkdir -p ~/catkin_ws/src
+source /opt/ros/noetic/setup.bash
+cd ~/catkin_ws
+catkin init
+catkin config --extend /opt/ros/noetic
+catkin config --cmake-args -DCMAKE_BUILD_TYPE=RelWithDebInfo
+```
+
+### Cloning the Repository and Building the Workspace
+```
+mkdir -p ~/git
+cd ~/git
+# Make sure to initialize the submodule
+git clone --recurse-submodules git@github.com:leggedrobotics/grand_tour_box.git
+cd ~/git/grand_tour_box
+ln -s ~/git/grand_tour_box ~/catkin_ws/src
+cd ~/catkin_ws
+catkin build TBD
+```
+
+### Update submodules from remote if needed
+```
+git submodule update --remote usb_cam
+```
+
 <img align="right" width="60" height="60" src="https://github.com/leggedrobotics/grand_tour_box/blob/main/box_documentation/images/icon.png" alt="GrandTour">
 <h2 id="contributing">
 Contributing
 </h2>
+We use `dev/name`, `fix/bug` to develop the code. 
+The `main` branch is protected and only updated via pull requests. 
+
+We follow black formatting for python code.
+```
+black --line-length 120 .
+```
+
+Pre-commit hooks will be added soon:
+- Formatting checking
+- Filesize commit checking
+
+Actions: 
+- Building the stack and running tests
+
+### Adding submodules:
+Only add submodules to the box_drivers folder.
+
+```
+cd ~git/grand_tour_box/box_drivers
+git submodule add git@github.com:ros-drivers/usb_cam.git
+```
+
+Submodules are defined in: `.gitmodules`
 
 <img align="right" width="60" height="60" src="https://github.com/leggedrobotics/grand_tour_box/blob/main/box_documentation/images/icon.png" alt="GrandTour">
 <h2 id="credits">
