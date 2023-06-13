@@ -2,15 +2,15 @@
 
 <p align="center">
   <a href="#citation">Citation</a> •
-  <a href="#project structure">Project Structure</a> •
-  <a href="#getting started">Getting Started</a> •
+  <a href="#project-structure">Project Structure</a> •
+  <a href="#getting-started">Getting Started</a> •
   <a href="#contributing">Contributing</a> •
   <a href="#credits">Credits</a>
     
   ![Formatting](https://github.com/leggedrobotics/wild_visual_navigation/actions/workflows/formatting.yml/badge.svg)
 </p>
 
-<img align="right" width="40" height="40" src="https://github.com/leggedrobotics/grand_tour_box/blob/main/box_documentation/images/icon.pdf" alt="GrandTour"> 
+<img align="right" width="40" height="40" src="https://github.com/leggedrobotics/grand_tour_box/blob/main/box_documentation/images/icon.png" alt="GrandTour">
 
 ## Citation
 
@@ -24,9 +24,11 @@
     MONTH     = {TBD}, 
     DOI       = {TBD} 
 } 
+```
 
-
-## Project Structure
+<h2 id="project-structure">
+Project Structure
+</h2>
 
 The project is organized into the following directories:
 
@@ -60,7 +62,9 @@ The project is organized into the following directories:
 
 - **box_documentation**: Documentation
 
-## Getting Started
+<h2 id="getting-started">
+Getting Started
+</h2>
 
 ## Contributing
 
