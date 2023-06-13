@@ -1,5 +1,3 @@
-<img align="right" width="60" height="60" src="https://github.com/leggedrobotics/grand_tour_box/blob/main/box_documentation/images/icon.png" alt="GrandTour">
-
 <h1 style="text-align: center;">GrandTour - The Box Software</h1>
 
 <p align="center">
@@ -12,8 +10,10 @@
   ![Formatting](https://github.com/leggedrobotics/wild_visual_navigation/actions/workflows/formatting.yml/badge.svg)
 </p>
 
-
-## Citation
+<img align="right" width="60" height="60" src="https://github.com/leggedrobotics/grand_tour_box/blob/main/box_documentation/images/icon.png" alt="Citation">
+<h2 id="citation">
+Credits
+</h2>
 
 ```
 @INPROCEEDINGS{RSL, 
@@ -27,6 +27,7 @@
 } 
 ```
 
+<img align="right" width="60" height="60" src="https://github.com/leggedrobotics/grand_tour_box/blob/main/box_documentation/images/icon.png" alt="GrandTour">
 <h2 id="project-structure">
 Project Structure
 </h2>
@@ -63,10 +64,17 @@ The project is organized into the following directories:
 
 - **box_documentation**: Documentation
 
+<img align="right" width="60" height="60" src="https://github.com/leggedrobotics/grand_tour_box/blob/main/box_documentation/images/icon.png" alt="GrandTour">
 <h2 id="getting-started">
 Getting Started
 </h2>
 
-## Contributing
+<img align="right" width="60" height="60" src="https://github.com/leggedrobotics/grand_tour_box/blob/main/box_documentation/images/icon.png" alt="GrandTour">
+<h2 id="contributing">
+Contributing
+</h2>
 
-## Credits
+<img align="right" width="60" height="60" src="https://github.com/leggedrobotics/grand_tour_box/blob/main/box_documentation/images/icon.png" alt="GrandTour">
+<h2 id="credits">
+Credits
+</h2>
