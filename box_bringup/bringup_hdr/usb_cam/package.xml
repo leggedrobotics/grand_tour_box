@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>bringup_hdr</name>
+  <version>0.0.0</version>
+  <description>The bringup_hdr package</description>
+  <maintainer email="jonfrey@ethz.ch">Jonas Frey</maintainer>
+  <license>MIT</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <export>
+  </export>
+</package>
