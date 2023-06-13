@@ -1,3 +1,4 @@
+<img align="right" width="60" height="60" src="https://github.com/leggedrobotics/grand_tour_box/blob/main/box_documentation/images/icon.png" alt="GrandTour">
 <h1 style="text-align: center;">GrandTour - The Box Software</h1>
 
 <p align="center">
