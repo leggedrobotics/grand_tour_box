@@ -1,0 +1,10 @@
+<launch>
+  <arg name="robot_namespace" default="grand_tour_box"/>
+  <arg name="config_file" value="$(find box_launch)/config/grand_tour.rviz"/>
+
+  <node pkg="rviz"
+        type="rviz"
+        name="rviz"
+        args="-d $(arg config_file)">
+  </node>
+</launch>

@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>box_launch</name>
+  <version>1.0.0</version>
+  <description>RSL's box launch package.</description>
+  <license>Proprietary</license>
+  <maintainer email="jonfrey@ethz.ch">Vassilios Tsounis</maintainer>
+  <author email="jonfrey@ethz.ch">Vassilios Tsounis</author>
+  <buildtool_depend>catkin</buildtool_depend>
+  <exec_depend>usb_cam</exec_depend>
+</package>

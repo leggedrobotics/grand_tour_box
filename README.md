@@ -89,7 +89,7 @@ git clone --recurse-submodules git@github.com:leggedrobotics/grand_tour_box.git
 cd ~/git/grand_tour_box
 ln -s ~/git/grand_tour_box ~/catkin_ws/src
 cd ~/catkin_ws
-catkin build TBD
+catkin build box_launch
 ```
 
 ### Update submodules from remote if needed
