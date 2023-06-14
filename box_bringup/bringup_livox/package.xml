@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>bringup_hdr</name>
+  <name>bringup_livox</name>
   <version>0.0.0</version>
   <description>The bringup_livox package</description>
   <maintainer email="bkrumme@ethz.ch">Benjamin Krummenacher</maintainer>
