@@ -8,4 +8,5 @@
   <author email="jonfrey@ethz.ch">Vassilios Tsounis</author>
   <buildtool_depend>catkin</buildtool_depend>
   <exec_depend>usb_cam</exec_depend>
+  <exec_depend>livox_ros_driver2</exec_depend>
 </package>
