@@ -7,3 +7,6 @@
 [submodule "box_drivers/livox_ros_driver2"]
 	path = box_drivers/livox_ros_driver2
 	url = git@github.com:leggedrobotics/livox_ros_driver2.git
+[submodule "box_drivers/HesaiLidar_General_ROS"]
+	path = box_drivers/HesaiLidar_General_ROS
+	url = git@github.com:HesaiTechnology/HesaiLidar_General_ROS.git

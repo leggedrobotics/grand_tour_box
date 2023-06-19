@@ -1,6 +1,7 @@
 <launch>
 
 <include file="$(find bringup_hdr)/launch/usb_cam.launch" />
-<include file="$(find bringup_livox)/launch/rviz_MID360.launch" />
+<include file="$(find bringup_livox)/launch/msg_MID360.launch" />
+<include file="$(find bringup_hesai)/launch/hesai_lidar.launch" />
 
 </launch>
