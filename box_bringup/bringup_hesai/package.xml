@@ -6,6 +6,7 @@
   <maintainer email="bkrumme@ethz.ch">Benjamin krummenacher</maintainer>
   <license>Proprietary</license>
   <buildtool_depend>catkin</buildtool_depend>
+  <depend>hesai_lidar</depend>
   <export>
   </export>
 </package>
