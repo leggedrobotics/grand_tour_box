@@ -70,6 +70,22 @@ The project is organized into the following directories:
 Getting Started
 </h2>
 
+### Install dependencies
+```
+# Install alphasense drivers
+# Add the Sevensense PGP key to make this machine trust Sevensense's packages.
+curl -Ls http://deb.7sr.ch/pubkey.gpg | sudo gpg --dearmor -o /usr/share/keyrings/deb-7sr-ch-keyring.gpg
+
+# Add the Sevensense APT repository to the list of known sources.
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/deb-7sr-ch-keyring.gpg] http://deb.7sr.ch/alphasense/stable $(lsb_release -cs) main" \
+          | sudo tee /etc/apt/sources.list.d/sevensense.list
+
+# Install the Alphasense driver.
+sudo apt update
+sudo apt install alphasense-driver-core alphasense-viewer alphasense-firmware ros-noetic-alphasense-driver-ros ros-noetic-alphasense-driver
+
+```
+
 ### Setting up Workspace
 ```
 mkdir -p ~/catkin_ws/src
