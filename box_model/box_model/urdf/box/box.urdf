@@ -140,15 +140,14 @@ limitations under the License.
     <parent link="alphasense_imu"/>
     <child link="cam_side_left"/>
   </joint>
-  <!--
   <link name="body">
     <visual>
       <geometry>
-        <mesh filename="package://box_model/urdf/box/meshes/phasma_body.dae" />
+        <box size="0.25 0.5 0.01"/>
+        <!-- <mesh filename="package://box_model/urdf/box/meshes/phasma_body.dae" /> -->
       </geometry>
     </visual>
   </link>
-  -->
   <joint name="tip_to_body" type="fixed">
     <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
     <parent link="tip"/>

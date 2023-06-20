@@ -29,13 +29,14 @@ limitations under the License.
   <xacro:property name="alphasense_calibration" value="$(find box_model)/urdf/box/calibrations/20220322_calibration.yaml" />
   
   <xacro:alphasense parent="tip" calib_file="${alphasense_calibration}">
-    <origin xyz="-65.253e-3 0.0 179.0e-3" rpy="0 0 0" />
+    <origin xyz="0 0.20 0" rpy="0 0 0" />
   </xacro:alphasense>
   
   <link name="body">
     <visual>
       <geometry>
-        <mesh filename="package://box_model/urdf/box/meshes/phasma_body.dae" />
+        <box size="0.25 0.75 0.01"/>
+        <!-- <mesh filename="package://box_model/urdf/box/meshes/phasma_body.dae" /> -->
       </geometry>
     </visual>
   </link>
@@ -58,7 +59,7 @@ limitations under the License.
   </joint>
 
   <xacro:hesai_device parent="tip" lidar_frame="PandarXT-32">
-    <origin xyz="-60.0e-3 0.0 95.0e-3" rpy="0 0 0"/>
+    <origin xyz="0 -0.20 0" rpy="0 0 0"/>
   </xacro:hesai_device>
   
 </robot>
