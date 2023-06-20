@@ -8,7 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(CATKIN_DEPENDS xacro)
 
 set(xacro_files
-  ${CMAKE_CURRENT_SOURCE_DIR}/urdf/box/phasma.urdf.xacro
+  ${CMAKE_CURRENT_SOURCE_DIR}/urdf/box/box.urdf.xacro
 
 )
 xacro_add_files(${xacro_files} INSTALL DESTINATION urdf)

@@ -19,7 +19,7 @@ limitations under the License.
 -->
 
 
-<robot name="phasma" xmlns:xacro="http://www.ros.org/wiki/xacro">
+<robot name="box" xmlns:xacro="http://www.ros.org/wiki/xacro">
   
   <xacro:include filename="$(find box_model)/urdf/alphasense/alphasense.urdf.xacro" />
   <xacro:include filename="$(find box_model)/urdf/hesai/hesai.urdf.xacro" />
@@ -31,7 +31,7 @@ limitations under the License.
   <xacro:alphasense parent="tip" calib_file="${alphasense_calibration}">
     <origin xyz="-65.253e-3 0.0 179.0e-3" rpy="0 0 0" />
   </xacro:alphasense>
-
+  
   <link name="body">
     <visual>
       <geometry>
@@ -39,6 +39,7 @@ limitations under the License.
       </geometry>
     </visual>
   </link>
+  
 
   <joint name="tip_to_body" type="fixed">
     <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
