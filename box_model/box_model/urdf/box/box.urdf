@@ -23,7 +23,7 @@ limitations under the License.
 <robot name="box">
   <link name="tip"/>
   <joint name="tip_to_alphasense" type="fixed">
-    <origin rpy="0 0 0" xyz="-65.253e-3 0.0 179.0e-3"/>
+    <origin rpy="0 0 0" xyz="0 0.20 0"/>
     <parent link="tip"/>
     <child link="alphasense_mount"/>
   </joint>
@@ -143,7 +143,7 @@ limitations under the License.
   <link name="body">
     <visual>
       <geometry>
-        <box size="0.25 0.5 0.01"/>
+        <box size="0.25 0.75 0.01"/>
         <!-- <mesh filename="package://box_model/urdf/box/meshes/phasma_body.dae" /> -->
       </geometry>
     </visual>
@@ -162,7 +162,7 @@ limitations under the License.
     <child link="base"/>
   </joint>
   <joint name="tip_to_hesai" type="fixed">
-    <origin rpy="0 0 0" xyz="-60.0e-3 0.0 95.0e-3"/>
+    <origin rpy="0 0 0" xyz="0 -0.20 0"/>
     <parent link="tip"/>
     <child link="hesai_base"/>
   </joint>

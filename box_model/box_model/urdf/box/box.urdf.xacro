@@ -23,24 +23,17 @@ limitations under the License.
   
   <xacro:include filename="$(find box_model)/urdf/alphasense/alphasense.urdf.xacro" />
   <xacro:include filename="$(find box_model)/urdf/hesai/hesai.urdf.xacro" />
+  <xacro:include filename="$(find box_model)/urdf/livox/livox.urdf.xacro" />
 
   <link name="tip" />
 
-  <xacro:property name="alphasense_calibration" value="$(find box_model)/urdf/box/calibrations/20220322_calibration.yaml" />
-  
-  <xacro:alphasense parent="tip" calib_file="${alphasense_calibration}">
-    <origin xyz="0 0.20 0" rpy="0 0 0" />
-  </xacro:alphasense>
-  
-  <link name="body">
+    <link name="body">
     <visual>
       <geometry>
         <box size="0.25 0.75 0.01"/>
-        <!-- <mesh filename="package://box_model/urdf/box/meshes/phasma_body.dae" /> -->
       </geometry>
     </visual>
   </link>
-  
 
   <joint name="tip_to_body" type="fixed">
     <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
@@ -48,9 +41,15 @@ limitations under the License.
     <child link="body" />
   </joint>
 
-  <!-- This is the frame in which the ground truth is generated -->
+    <!-- This is the frame in which the ground truth is generated -->
   <link name="base"/>
 
+  <xacro:property name="alphasense_calibration" value="$(find box_model)/urdf/box/calibrations/20220322_calibration.yaml" />
+  
+  <xacro:alphasense parent="tip" calib_file="${alphasense_calibration}">
+   <origin xyz="0 0 0" rpy="0 0 0" />
+  </xacro:alphasense>
+  
   <!-- The base frame is coincident with the alphasense IMU but with the usual robot convention -->
   <joint name="alphasense_imu_to_base" type="fixed">
     <origin xyz="0.0 0.0 0.0" rpy="${-pi} 0.0 0.0" />
@@ -61,5 +60,9 @@ limitations under the License.
   <xacro:hesai_device parent="tip" lidar_frame="PandarXT-32">
     <origin xyz="0 -0.20 0" rpy="0 0 0"/>
   </xacro:hesai_device>
+
+  <xacro:livox_device parent="tip" lidar_frame="mid360">
+    <origin xyz="0 0.20 0" rpy="1.57 0 1.57" />
+  </xacro:livox_device>
   
 </robot>
