@@ -107,7 +107,16 @@ ln -s ~/git/grand_tour_box ~/catkin_ws/src
 cd ~/catkin_ws
 catkin build box_launch
 ```
-### For IMU over Arduino: Setup udev rule
+
+### For IMU over Arduino: 
+#### Generate library
+```
+catkin build versavis_adis16448_receiver
+source ~/catkin_ws/devel/setup.bash
+cd ~/catkin_ws/src/grand_tour_box/box_drivers/smb_imu_interface/firmware
+```
+
+#### Setup udev rule
 Add yourself to `dialout` group
 ```
 sudo adduser <username> dialout
