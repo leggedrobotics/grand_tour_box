@@ -107,6 +107,23 @@ ln -s ~/git/grand_tour_box ~/catkin_ws/src
 cd ~/catkin_ws
 catkin build box_launch
 ```
+### For IMU over Arduino: Setup udev rule
+Add yourself to `dialout` group
+```
+sudo adduser <username> dialout
+```
+
+Copy udev rule file to your system:
+```
+sudo cp firmware/98-versa-vis.rules /etc/udev/rules.d/98-versa-vis.rules
+```
+Afterwards, use the following commands to reload the rules
+```
+sudo udevadm control --reload-rules
+sudo udevadm trigger
+sudo ldconfig
+```
+Note: You might have to reboot your computer for this to take effect. You can check by see whether a `/dev/versavis` is available and pointing to the correct device.
 
 ### Update submodules from remote if needed
 ```

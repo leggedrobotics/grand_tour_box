@@ -10,3 +10,6 @@
 [submodule "box_drivers/HesaiLidar_General_ROS"]
 	path = box_drivers/HesaiLidar_General_ROS
 	url = git@github.com:HesaiTechnology/HesaiLidar_General_ROS.git
+[submodule "box_drivers/smb_imu_interface"]
+	path = box_drivers/smb_imu_interface
+	url = git@github.com:ETHZ-RobotX/smb_imu_interface.git
