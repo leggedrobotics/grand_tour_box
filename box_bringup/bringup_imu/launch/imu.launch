@@ -4,6 +4,8 @@
   <arg name="port" default="/dev/versavis" doc="port of versavis)" />
   <arg name="baud" default="1000000" doc="baudrate to use for serial communication"/>
   
+  <rosparam command="load" file="$(find bringup_imu)/config/imu_settings.yaml" />
+
    <!-- Run VersaVIS link. -->
   <node name="rosserial_python" pkg="rosserial_python" type="serial_node.py"
     args="_port:=$(arg port) _baud:=$(arg baud)" respawn="true" output="screen" />
@@ -11,13 +13,6 @@
   <!-- Recieve IMU message. -->
   <node name="versavis_imu_receiver" pkg="versavis_adis16448_receiver"
       type="versavis_imu_receiver" required="true" output="screen">
-    <!-- ADIS16448AMLZ parameters -->
-    <param name="imu_accelerator_sensitivity"           value="0.000833333" />
-    <param name="imu_gyro_sensitivity"                  value="0.04" />
-    <param name="imu_acceleration_covariance"           value="0.043864908" /> <!-- no idea where it is from -->
-    <param name="imu_gyro_covariance"                   value="6e-9" /> <!-- no idea where it is from -->
-    <param name="imu_sub_topic"           type="string" value="/versavis/imu_micro"/>
-
   </node>
 
 </launch>
