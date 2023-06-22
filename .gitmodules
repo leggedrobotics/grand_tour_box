@@ -1,3 +1,15 @@
 [submodule "box_drivers/usb_cam"]
 	path = box_drivers/usb_cam
 	url = git@github.com:ros-drivers/usb_cam.git
+[submodule "box_drivers/Livox-SDK2"]
+	path = box_drivers/Livox-SDK2
+	url = git@github.com:leggedrobotics/Livox-SDK2.git
+[submodule "box_drivers/livox_ros_driver2"]
+	path = box_drivers/livox_ros_driver2
+	url = git@github.com:leggedrobotics/livox_ros_driver2.git
+[submodule "box_drivers/HesaiLidar_General_ROS"]
+	path = box_drivers/HesaiLidar_General_ROS
+	url = git@github.com:HesaiTechnology/HesaiLidar_General_ROS.git
+[submodule "box_drivers/smb_imu_interface"]
+	path = box_drivers/smb_imu_interface
+	url = git@github.com:ETHZ-RobotX/smb_imu_interface.git

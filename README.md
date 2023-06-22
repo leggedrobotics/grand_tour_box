@@ -70,6 +70,22 @@ The project is organized into the following directories:
 Getting Started
 </h2>
 
+### Install dependencies
+```
+# Install alphasense drivers
+# Add the Sevensense PGP key to make this machine trust Sevensense's packages.
+curl -Ls http://deb.7sr.ch/pubkey.gpg | sudo gpg --dearmor -o /usr/share/keyrings/deb-7sr-ch-keyring.gpg
+
+# Add the Sevensense APT repository to the list of known sources.
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/deb-7sr-ch-keyring.gpg] http://deb.7sr.ch/alphasense/stable $(lsb_release -cs) main" \
+          | sudo tee /etc/apt/sources.list.d/sevensense.list
+
+# Install the Alphasense driver.
+sudo apt update
+sudo apt install alphasense-driver-core alphasense-viewer alphasense-firmware ros-noetic-alphasense-driver-ros ros-noetic-alphasense-driver
+
+```
+
 ### Setting up Workspace
 ```
 mkdir -p ~/catkin_ws/src
@@ -91,6 +107,32 @@ ln -s ~/git/grand_tour_box ~/catkin_ws/src
 cd ~/catkin_ws
 catkin build box_launch
 ```
+
+### For IMU over Arduino: 
+#### Generate library
+```
+catkin build versavis_adis16448_receiver
+source ~/catkin_ws/devel/setup.bash
+cd ~/catkin_ws/src/grand_tour_box/box_drivers/smb_imu_interface/firmware
+```
+
+#### Setup udev rule
+Add yourself to `dialout` group
+```
+sudo adduser <username> dialout
+```
+
+Copy udev rule file to your system:
+```
+sudo cp firmware/98-versa-vis.rules /etc/udev/rules.d/98-versa-vis.rules
+```
+Afterwards, use the following commands to reload the rules
+```
+sudo udevadm control --reload-rules
+sudo udevadm trigger
+sudo ldconfig
+```
+Note: You might have to reboot your computer for this to take effect. You can check by see whether a `/dev/versavis` is available and pointing to the correct device.
 
 ### Update submodules from remote if needed
 ```
