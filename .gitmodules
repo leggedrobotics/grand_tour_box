@@ -16,3 +16,6 @@
 [submodule "box_drivers/leica_totalstation_interface"]
 	path = box_drivers/leica_totalstation_interface
 	url = git@github.com:leggedrobotics/leica_totalstation_interface.git
+[submodule "box_drivers/ethz_piksi_ros"]
+	path = box_drivers/ethz_piksi_ros
+	url = git@github.com:leggedrobotics/ethz_piksi_ros.git
