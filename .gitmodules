@@ -13,3 +13,6 @@
 [submodule "box_drivers/smb_imu_interface"]
 	path = box_drivers/smb_imu_interface
 	url = git@github.com:ETHZ-RobotX/smb_imu_interface.git
+[submodule "box_drivers/leica_totalstation_interface"]
+	path = box_drivers/leica_totalstation_interface
+	url = git@github.com:leggedrobotics/leica_totalstation_interface.git

@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>bringup_totalstation</name>
+  <version>0.0.0</version>
+  <description>The bringup_totalstation package</description>
+  <maintainer email="bkrumme@ethz.ch">Benjamin krummenacher</maintainer>
+  <license>Proprietary</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>leica_interface</depend>
+  <export>
+  </export>
+</package>
