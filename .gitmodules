@@ -13,3 +13,6 @@
 [submodule "box_drivers/smb_imu_interface"]
 	path = box_drivers/smb_imu_interface
 	url = git@github.com:ETHZ-RobotX/smb_imu_interface.git
+[submodule "box_drivers/multimaster_fkie"]
+	path = box_drivers/multimaster_fkie
+	url = git@github.com:fkie/multimaster_fkie.git
