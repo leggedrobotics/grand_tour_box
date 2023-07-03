@@ -70,6 +70,43 @@ The project is organized into the following directories:
 Getting Started
 </h2>
 
+
+### Launch Structure Overview:
+
+---
+1. **tmux configuration** explained
+The software is started based on pre-defined tmux configuration.
+    ```shell
+    tmuxp load $(rospack find box_launch)/tmux/box_replay.yaml
+    ```
+    Each `tmux session` is started using the `box_launch/scripts/initalize_session.sh` scripts.
+We then open a set of terminals within the tmux-session.
+The `tmux/box_replay.yaml` tmux configuration specifies all the box_launch/launch files that will be launched by fkie.launch.
+More explanations in point 2/3 below. 
+The launch files should only point to launch files within `box_launch/launch` folder.
+The `tmux/box_replay.yaml` mainly launches the `roslaunch box_launch fkie.launch`.
+
+---
+
+2. **box_launch fkie.launch** explained
+Starts the fkie node manager, which is responsible to start all launch files.
+The provided launch files should all live within **box_launch/launch files**. 
+
+---
+
+3. **box_launch/launch files** explained
+The launch files within `box_launch/launch` solely add a `capability parameter` which is used by `fkie`.
+Each launch files calls the respective `bringup_XXXXX` package launch file.
+
+---
+
+4. **bringup_XXXXX packages** explained
+The bringup packages contain all the parameters and the define the nodes that are launched.
+
+---
+
+
+
 ### Install dependencies
 ```
 # Install alphasense drivers
@@ -106,6 +143,13 @@ cd ~/git/grand_tour_box
 ln -s ~/git/grand_tour_box ~/catkin_ws/src
 cd ~/catkin_ws
 catkin build box_launch
+```
+
+### For FKIE Mulitmaster
+```
+cd ~/catkin_ws/src/grand_tour_box/box_drivers
+rosdep install -i --as-root pip:false --reinstall --from-paths multimaster_fkie
+catkin build fkie_multimaster
 ```
 
 ### For IMU over Arduino: 
@@ -162,7 +206,7 @@ Actions:
 Only add submodules to the box_drivers folder.
 
 ```
-cd ~git/grand_tour_box/box_drivers
+cd ~/git/grand_tour_box/box_drivers
 git submodule add git@github.com:ros-drivers/usb_cam.git
 ```
 
