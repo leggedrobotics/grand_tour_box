@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>bringup_gps</name>
+  <version>0.0.0</version>
+  <description>The bringup_gps package</description>
+  <maintainer email="bkrumme@ethz.ch">Benjamin Krummenacher</maintainer>
+  <license>MIT</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>piksi_multi_cpp</depend>
+  <export>
+  </export>
+</package>

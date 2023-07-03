@@ -7,9 +7,13 @@
   <maintainer email="jonfrey@ethz.ch">Vassilios Tsounis</maintainer>
   <author email="jonfrey@ethz.ch">Vassilios Tsounis</author>
   <buildtool_depend>catkin</buildtool_depend>
+
   <depend>bringup_alphasense</depend>
-  <depend>bringup_hdr</depend>
   <depend>bringup_hesai</depend>
+  <depend>bringup_hdr</depend>
+  <depend>bringup_imu</depend>
   <depend>bringup_livox</depend>
+  <depend>bringup_totalstation</depend>
+  <depend>bringup_gps</depend>
   <depend>fkie_multimaster</depend>
 </package>

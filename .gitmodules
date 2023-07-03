@@ -10,9 +10,18 @@
 [submodule "box_drivers/HesaiLidar_General_ROS"]
 	path = box_drivers/HesaiLidar_General_ROS
 	url = git@github.com:HesaiTechnology/HesaiLidar_General_ROS.git
+	ignore = dirty
 [submodule "box_drivers/smb_imu_interface"]
 	path = box_drivers/smb_imu_interface
 	url = git@github.com:ETHZ-RobotX/smb_imu_interface.git
+[submodule "box_drivers/leica_totalstation_interface"]
+	path = box_drivers/leica_totalstation_interface
+	url = git@github.com:leggedrobotics/leica_totalstation_interface.git
+	ignore = dirty
+[submodule "box_drivers/ethz_piksi_ros"]
+	path = box_drivers/ethz_piksi_ros
+	url = git@github.com:leggedrobotics/ethz_piksi_ros.git
+	ignore = dirty
 [submodule "box_drivers/multimaster_fkie"]
 	path = box_drivers/multimaster_fkie
 	url = git@github.com:fkie/multimaster_fkie.git
