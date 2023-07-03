@@ -1,4 +1,4 @@
 <launch>
   <param name="capability_group" value="Driver"/>
-  <include file="$(find bringup_hdr)/usb_cam/launch/usb_cam.launch"> </include>
+  <include file="$(find bringup_hdr)/launch/usb_cam.launch"> </include>
 </launch>
