@@ -13,4 +13,6 @@
   <depend>bringup_hdr</depend>
   <depend>bringup_imu</depend>
   <depend>bringup_livox</depend>
+  <depend>bringup_totalstation</depend>
+  <depend>bringup_gps</depend>
 </package>
