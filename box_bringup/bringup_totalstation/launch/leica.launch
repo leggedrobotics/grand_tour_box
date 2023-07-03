@@ -2,5 +2,5 @@
 	<arg name="dev" default="/dev/ttyUSB0"/>
 	<arg name="baud" default="230400"/>
 
-	<node name="leica_interface" pkg="leica_interface" type="leica_node.py" output="screen" respawn="true" args="-b -t -l -p $(arg dev) -r $(arg baud)" />
+	<node name="leica_interface" pkg="leica_interface" type="leica_node.py" output="screen" respawn="true" args="-m -t -l -f -p $(arg dev) -r $(arg baud)" />
 </launch>
