@@ -1,0 +1,4 @@
+<launch>
+  <param name="capability_group" value="Driver"/>
+  <include file="$(find bringup_livox)/launch/msg_MID360.launch"> </include>
+</launch>
