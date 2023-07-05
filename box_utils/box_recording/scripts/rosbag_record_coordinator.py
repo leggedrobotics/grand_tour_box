@@ -30,8 +30,8 @@ def load_yaml(path: str) -> dict:
 class RosbagRecordCoordinator(object):
     def __init__(self):
         servers = {}
-        servers['start'] = rospy.Service('~start_recording_bag', StartRecording, self.start_recording)
-        servers['stop'] = rospy.Service('~stop_recording_bag', StopRecording, self.stop_recording)
+        servers['start'] = rospy.Service('~start_recording', StartRecording, self.start_recording)
+        servers['stop'] = rospy.Service('~stop_recording', StopRecording, self.stop_recording)
         
         rp = rospkg.RosPack()
         self.default_yaml = join( str(rp.get_path('box_recording')), "cfg/default2.yaml")
@@ -59,10 +59,10 @@ class RosbagRecordCoordinator(object):
 
             # Go through nodes (PCs)
             for node, topics in self.cfg.items():
-                service_name = '/rosbag_record_robot_' + node + '/record_bag'
+                service_name = '/rosbag_record_robot_' + node + '/start_recording'
+
                 try:
                     # Evaluate if service is offered
-                    
                     rospy.wait_for_service(service_name, 2.0)
                     start_recording_srv = rospy.ServiceProxy(service_name, StartRecordingInternal)
                     int_request = StartRecordingInternalRequest()
@@ -71,7 +71,7 @@ class RosbagRecordCoordinator(object):
                     start_recording_srv(int_request)
                     rospy.loginfo("[RosbagRecordCoordinator] Starting rosbag recording process on " + node)
                     self.bag_running = True
-                    
+
                 except rospy.ROSException as exception:
                     response.suc = False
                     response.message = response.message + " " + node
@@ -91,7 +91,7 @@ class RosbagRecordCoordinator(object):
             response.suc = True
             response.message = "Failed to stop recording process on:"
             for node, topics in self.cfg.items():
-                service_name = '/rosbag_record_robot_' + node + '/stop_bag'
+                service_name = '/rosbag_record_robot_' + node + '/stop_recording'
                 try:
                     rospy.wait_for_service(service_name, 2.0)
                     stop_recording_srv = rospy.ServiceProxy(service_name, StopRecordingInternal)

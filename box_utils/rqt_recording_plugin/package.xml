@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>rqt_recording_plugin</name>
+  <version>0.0.0</version>
+  <description>The rqt_recording_plugin package</description>
+
+  <maintainer email="parm@ethz.ch">Philip Arm</maintainer>
+  <license>BSD</license>
+  <author email="parm@ethz.ch">Philip Arm</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>any_msgs</depend>
+  <depend>rospy</depend>
+  <depend>rqt_gui</depend>
+  <depend>rqt_gui_py</depend>
+  <depend>std_srvs</depend>
+
+  <!-- The export tag contains other, unspecified, tags -->
+  <export>
+    <rqt_gui plugin="${prefix}/plugin.xml"/>
+  </export>
+</package>

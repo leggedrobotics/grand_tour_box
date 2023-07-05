@@ -6,6 +6,7 @@ import socket
 import rospkg
 import psutil
 import signal
+import os
 from os.path import join
 from box_recording.srv import StartRecordingInternalRequest, StartRecordingInternalResponse, StartRecordingInternal
 from box_recording.srv import StopRecordingInternalRequest, StopRecordingInternalResponse, StopRecordingInternal
