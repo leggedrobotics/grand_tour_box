@@ -183,6 +183,8 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/deb-7
 sudo apt update
 sudo apt install alphasense-driver-core alphasense-viewer alphasense-firmware ros-noetic-alphasense-driver-ros ros-noetic-alphasense-driver
 
+# Set the maximum socket buffer size
+sudo sysctl -w net.core.rmem_max=11145728
 ```
 
 ### Setting up Workspace
