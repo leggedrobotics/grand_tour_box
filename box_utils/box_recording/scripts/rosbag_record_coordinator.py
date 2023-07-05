@@ -11,13 +11,6 @@ from box_recording.srv import StartRecordingInternal, StartRecordingInternalRequ
 from box_recording.srv import StartRecording, StartRecordingResponse, StartRecordingRequest
 from box_recording.srv import StopRecording, StopRecordingResponse, StopRecordingRequest
 
-"""
-TODOs:
-- Create costum message to nicely print the output of rosbag info --freq in the response to rosbag_stop
-- Check before recording if the messages are build
-- Add option to the yaml file to add desired rate which can then results in error message if it is not recorded correct
-"""
-
 
 def load_yaml(path: str) -> dict:
     """Loads yaml file
@@ -41,7 +34,7 @@ class RosbagRecordCoordinator(object):
         servers['stop'] = rospy.Service('~stop_recording_bag', StopRecording, self.stop_recording)
         
         rp = rospkg.RosPack()
-        self.default_yaml = join( str(rp.get_path('box_recording')), "cfg/default.yaml")
+        self.default_yaml = join( str(rp.get_path('box_recording')), "cfg/default2.yaml")
         self.bag_running = False
         rospy.loginfo("[RosbagRecordCoordinator] Setup.")
 
@@ -63,7 +56,8 @@ class RosbagRecordCoordinator(object):
         else:
             response.message = "Failed to start recording process on:"
             self.cfg = load_yaml( request.yaml_file )
-            
+
+            # Go through nodes (PCs)
             for node, topics in self.cfg.items():
                 service_name = '/rosbag_record_robot_' + node + '/record_bag'
                 try:

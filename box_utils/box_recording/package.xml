@@ -2,17 +2,15 @@
 
 <package format="2">
 
-  <name>anymal_rsl_recording</name>
+  <name>box_recording</name>
   <version>0.1.0</version>
-  <description>Recording package for Anymal RSL robots.</description>
+  <description>Recording package for Grand Tour box.</description>
 
   <license>Proprietary</license>
 
+  <author email="schmirob@ethz.ch">Robin Schmid</author>
   <author email="waibelg@ethz.ch">Gabriel Waibel</author>
-  <author email="waibelg@ethz.ch">Gabriel Waibel</author>
-  <maintainer email="waibelg@ethz.ch">Gabriel Waibel</maintainer>
-
-  <url type="website">https://bitbucket.org/leggedrobotics/anymal_rsl</url>
+  <maintainer email="schmirob@ethz.ch">Robin Schmid</maintainer>
 
   <buildtool_depend>catkin</buildtool_depend>
   <depend>message_generation</depend>

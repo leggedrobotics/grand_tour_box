@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2022, Robotic Systems Lab, ETH Zurich
+# Copyright (C) 2023, Robotic Systems Lab, ETH Zurich
 # All rights reserved.
 # http://www.rsl.ethz.ch
 #
@@ -8,7 +8,7 @@
 # See the License for more information.
 #=============================================================================
 cmake_minimum_required(VERSION 3.10)
-project(anymal_rsl_recording)
+project(box_recording)
 
 #==
 # Dependencies

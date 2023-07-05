@@ -1,6 +1,6 @@
 session_name: box
 
-before_script: "../scripts/initalize_session.sh"
+before_script: "../scripts/initialize_session.sh"
 
 windows:
 - window_name: grand_tour_box_robot
