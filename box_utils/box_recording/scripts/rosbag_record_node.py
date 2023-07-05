@@ -14,11 +14,16 @@ from box_recording.srv import StopRecordingInternalRequest, StopRecordingInterna
 class RosbagRecordNode(object):
     def __init__(self):
         self.node = socket.gethostname()
+
+        self.node = "lpc"
+
+        print(self.node)
+
         rospy.init_node(f'rosbag_record_robot_{self.node}')
         
         servers = {}
-        servers['start'] = rospy.Service('~record_bag', StartRecordingInternal, self.record_bag)
-        servers['stop'] = rospy.Service('~stop_bag', StopRecordingInternal, self.stop_bag)
+        servers['start'] = rospy.Service('~start_recording', StartRecordingInternal, self.start_recording)
+        servers['stop'] = rospy.Service('~stop_recording', StopRecordingInternal, self.stop_recording)
         self.bag_running = False
         defaultpath = rospkg.RosPack().get_path('box_recording')+'/data'
         self.datapath = rospy.get_param('~data_path', defaultpath)
@@ -38,7 +43,7 @@ class RosbagRecordNode(object):
             sub_process.send_signal(signal.SIGINT)
         p.wait()
 
-    def record_bag(self, request):
+    def start_recording(self, request):
         rospy.loginfo("[RosbagRecordNode("+self.node+")] Trying to start rosbag recording process.")
         response = StartRecordingInternalResponse()
         timestamp = request.timestamp
@@ -60,7 +65,7 @@ class RosbagRecordNode(object):
 
         return response
 
-    def stop_bag(self, request):
+    def stop_recording(self, request):
         rospy.loginfo("[RosbagRecordNode("+self.node+")] Trying to send SIGINT to recording process.")
         response = StopRecordingInternalResponse()
         response.result = ""
