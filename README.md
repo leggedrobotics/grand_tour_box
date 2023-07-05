@@ -108,6 +108,60 @@ The bringup packages contain all the parameters and the define the nodes that ar
 
 
 ### Install dependencies
+
+##### ROS
+```
+sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
+sudo apt install curl # if you haven't already installed curl
+curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -
+sudo apt update
+sudo apt install ros-noetic-desktop-full python3-catkin-tools
+```
+
+
+##### USB HDR Cam
+```
+sudo apt install libv4l-dev v4l-utils
+# Find camera with:
+# v4l2-ctl --list-devices
+```
+
+##### Hesai Lidar
+```
+sudo apt install libpcap-dev
+```
+
+##### IMU over USB
+```
+sudo apt install python3-pip
+pip3 install pyserial
+```
+
+##### FKIE Multimaster
+sudo apt install python3-rosdep
+sudo rosdep init
+rosdep update
+rosdep install -i --as-root pip:false --reinstall --from-paths ~/catkin_ws/src/grand_tour_box/box_drivers/multimaster_fkie
+
+##### GPS
+```
+source ~/catkin_ws/devel/setup.bash
+cd ~/catkin_ws/src
+./grand_tour_box/box_drivers/ethz_piksi_ros/piksi_multi_cpp/install/prepare-jenkins-slave.sh
+git clone git@github.com:catkin/catkin_simple.git
+#? git clone git@github.com:ethz-asl/geodetic_utils.
+git clone git@github.com:ethz-asl/libsbp_catkin.
+git cline git@github.com:ethz-asl/libserialport_catkin.git
+```
+
+
+##### Totalstaion
+```
+cd ~/catkin_ws/src
+git clone git@github.com:ethz-asl/cuckoo_time_translator.git
+```
+
+##### Alphasense
 ```
 # Install alphasense drivers
 # Add the Sevensense PGP key to make this machine trust Sevensense's packages.
