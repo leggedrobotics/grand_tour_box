@@ -1,0 +1,5 @@
+bool verbose
+---
+bool suc
+string result
+string message

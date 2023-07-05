@@ -1,0 +1,5 @@
+string yaml_file
+---
+string timestamp
+bool suc
+string message
