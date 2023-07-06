@@ -7,20 +7,17 @@ import rospkg
 import psutil
 import signal
 import os
-from os.path import join
-from box_recording.srv import StartRecordingInternalRequest, StartRecordingInternalResponse, StartRecordingInternal
-from box_recording.srv import StopRecordingInternalRequest, StopRecordingInternalResponse, StopRecordingInternal
+from box_recording.srv import StartRecordingInternalResponse, StartRecordingInternal
+from box_recording.srv import StopRecordingInternalResponse, StopRecordingInternal
 
 class RosbagRecordNode(object):
     def __init__(self):
         self.node = socket.gethostname()
 
-        self.node = "lpc"
+        self.namespace = rospy.get_namespace()
 
-        print(self.node)
+        rospy.init_node(f'rosbag_record_node_{self.node}')
 
-        rospy.init_node(f'rosbag_record_robot_{self.node}')
-        
         servers = {}
         servers['start'] = rospy.Service('~start_recording', StartRecordingInternal, self.start_recording)
         servers['stop'] = rospy.Service('~stop_recording', StopRecordingInternal, self.stop_recording)
@@ -32,9 +29,8 @@ class RosbagRecordNode(object):
             self.datapath = defaultpath
             rospy.logwarn("[RosbagRecordNode("+self.node+")] Data path "+self.datapath+" does not exist. Will write to "+defaultpath)
 
-
         rp = rospkg.RosPack()
-        self.rosbag_recorder_bash_script = join(rp.get_path('box_recording')  , 'bin/record_bag.sh')
+        self.rosbag_recorder_bash_script = os.path.join(rp.get_path('box_recording')  , 'bin/record_bag.sh')
         rospy.loginfo("[RosbagRecordNode("+self.node+")] Set up to record to "+self.datapath)
 
     def terminate_process_and_children(self, p):
@@ -89,6 +85,6 @@ class RosbagRecordNode(object):
         return response
 
 if __name__ == '__main__':
-    print("Starting rosbag record node.")
+    rospy.loginfo("Starting ROS bag record node")
     RosbagRecordNode()
     rospy.spin()

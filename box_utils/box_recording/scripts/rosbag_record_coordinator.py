@@ -1,7 +1,6 @@
 #! /usr/bin/env python3
 
 import rospy
-import subprocess
 import rospkg
 import datetime
 from os.path import join
@@ -29,12 +28,14 @@ def load_yaml(path: str) -> dict:
 
 class RosbagRecordCoordinator(object):
     def __init__(self):
+        self.namespace = rospy.get_namespace()
+
         servers = {}
         servers['start'] = rospy.Service('~start_recording', StartRecording, self.start_recording)
         servers['stop'] = rospy.Service('~stop_recording', StopRecording, self.stop_recording)
         
         rp = rospkg.RosPack()
-        self.default_yaml = join( str(rp.get_path('box_recording')), "cfg/default2.yaml")
+        self.default_yaml = join( str(rp.get_path('box_recording')), "cfg/box_default.yaml")
         self.bag_running = False
         rospy.loginfo("[RosbagRecordCoordinator] Setup.")
 
@@ -59,7 +60,7 @@ class RosbagRecordCoordinator(object):
 
             # Go through nodes (PCs)
             for node, topics in self.cfg.items():
-                service_name = '/rosbag_record_robot_' + node + '/start_recording'
+                service_name = self.namespace + 'rosbag_record_node_' + node + '/start_recording'
 
                 try:
                     # Evaluate if service is offered
@@ -91,7 +92,7 @@ class RosbagRecordCoordinator(object):
             response.suc = True
             response.message = "Failed to stop recording process on:"
             for node, topics in self.cfg.items():
-                service_name = '/rosbag_record_robot_' + node + '/stop_recording'
+                service_name = self.namespace + '/rosbag_record_node_' + node + '/stop_recording'
                 try:
                     rospy.wait_for_service(service_name, 2.0)
                     stop_recording_srv = rospy.ServiceProxy(service_name, StopRecordingInternal)
@@ -137,7 +138,6 @@ class RosbagRecordCoordinator(object):
         return response
 
 if __name__ == '__main__':
-    print("Start RosbagRecordCoordinator")
     rospy.init_node('rosbag_record_robot_coordinator')
     RosbagRecordCoordinator()
     rospy.spin()

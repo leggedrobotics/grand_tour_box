@@ -278,3 +278,8 @@ Submodules are defined in: `.gitmodules`
 <h2 id="credits">
 Credits
 </h2>
+
+### Data recording
+- Per PC set the following environment variables:
+```
+export Host
