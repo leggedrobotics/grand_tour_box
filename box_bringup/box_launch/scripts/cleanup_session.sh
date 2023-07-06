@@ -4,3 +4,5 @@ screen -wipe
 
 # Kill node manager process
 killall -KILL node_manager
+
+echo "Cleaned Up Session"
