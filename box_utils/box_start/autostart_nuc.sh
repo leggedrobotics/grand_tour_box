@@ -12,4 +12,4 @@ sleep 3
 until ping -c1 $JETSON_IP >/dev/null 2>&1; do :; done
 echo "Found Jetson"
 
-tmuxp load $(rospack find box_launch)/tmux/box_replay.yaml
+tmuxp load $(rospack find box_launch)/tmux/box_nuc.yaml
