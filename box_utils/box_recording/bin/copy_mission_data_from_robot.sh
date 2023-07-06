@@ -1,5 +1,7 @@
 #! /bin/bash
 
+# TODO: finalize this with pc of robot
+
 if [ "$#" -ne 3 ]; then
   echo "Example usage: `basename $0` user cerberus ~/bags"
   exit 0
@@ -23,18 +25,10 @@ if [ ! -d "${local_path_to_save_logs}" ]; then
   mkdir -p "${local_path_to_save_logs}"
 fi
 
-# LPC: mission rosbags, background rosbags, tmux log and git log
+# NUC: mission rosbags, background rosbags, tmux log and git log
 rsync --progress ${user}@anymal-${robot_name}-lpc:~/git/anymal_rsl/anymal_rsl/anymal_rsl_utils/anymal_rsl_recording/anymal_rsl_recording/data/* ${local_path_to_save_bags}
 rsync --progress ${user}@anymal-${robot_name}-lpc:~/mission_log/* ${local_path_to_save_logs}
-
-# NPC: mission rosbags, background rosbags, tmux log, git log
-rsync --progress ${user}@anymal-${robot_name}-npc:~/git/anymal_rsl/anymal_rsl/anymal_rsl_utils/anymal_rsl_recording/anymal_rsl_recording/data/* ${local_path_to_save_bags}
-rsync --progress ${user}@anymal-${robot_name}-npc:~/mission_log/* ${local_path_to_save_logs}
 
 # Jetson: mission rosbags, background rosbags, tmux log and git log
 rsync --progress ${user}@anymal-${robot_name}-jetson:~/git/anymal_rsl/anymal_rsl/anymal_rsl_utils/anymal_rsl_recording/anymal_rsl_recording/data/* ${local_path_to_save_bags}
 rsync --progress ${user}@anymal-${robot_name}-jetson:~/mission_log/* ${local_path_to_save_logs}
-
-# APC: mission rosbags, background rosbags, tmux log and git log
-rsync --progress ${user}@anymal-${robot_name}-apc:~/git/anymal_rsl/anymal_rsl/anymal_rsl_utils/anymal_rsl_recording/anymal_rsl_recording/data/* ${local_path_to_save_bags}
-rsync --progress ${user}@anymal-${robot_name}-apc:~/mission_log/* ${local_path_to_save_logs}

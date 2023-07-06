@@ -9,7 +9,6 @@
   <license>Proprietary</license>
 
   <author email="schmirob@ethz.ch">Robin Schmid</author>
-  <author email="waibelg@ethz.ch">Gabriel Waibel</author>
   <maintainer email="schmirob@ethz.ch">Robin Schmid</maintainer>
 
   <buildtool_depend>catkin</buildtool_depend>

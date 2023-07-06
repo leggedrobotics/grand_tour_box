@@ -1,5 +1,7 @@
 #! /usr/bin/env python3
 
+# Parts ported from https://bitbucket.org/leggedrobotics/anymal_rsl/pull-requests/295
+
 import rospy
 import rospkg
 import datetime
@@ -30,6 +32,7 @@ class RosbagRecordCoordinator(object):
     def __init__(self):
         self.namespace = rospy.get_namespace()
 
+        # Create services
         servers = {}
         servers['start'] = rospy.Service('~start_recording', StartRecording, self.start_recording)
         servers['stop'] = rospy.Service('~stop_recording', StopRecording, self.stop_recording)
@@ -58,7 +61,7 @@ class RosbagRecordCoordinator(object):
             response.message = "Failed to start recording process on:"
             self.cfg = load_yaml( request.yaml_file )
 
-            # Go through nodes (PCs)
+            # Go through all the nodes (PCs) and start recording
             for node, topics in self.cfg.items():
                 service_name = self.namespace + 'rosbag_record_node_' + node + '/start_recording'
 
@@ -104,11 +107,13 @@ class RosbagRecordCoordinator(object):
                     pretty_ls[node] = int_res.result
                     
                     rospy.loginfo("[RosbagRecordCoordinator] Stop rosbag recording process on " + node)
+
                 except rospy.ROSException as exception:
                     response.suc = False
                     response.message = response.message + " " + node
                     print("Service did not process request: " + str(exception))
                     rospy.logerr("Failed to stop rosbag recording process on " + node)
+
             if response.suc:
                 self.bag_running = False
                 response.message = "Successfully stop all nodes"
