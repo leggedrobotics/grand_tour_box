@@ -1,0 +1,32 @@
+<launch>
+  <!-- Use GUI -->
+  <arg name="use_gui" default="true"/>
+  <arg name="simulation" default="false"/>
+  
+  <!-- Parameters parsed to the fkie -->
+  <arg name="autostart_launch_files" default=""/>
+  <arg name="load_launch_files" default=""/>
+  
+  <!-- Set parameters -->
+  <group if="$(arg simulation)">
+    <param name="use_sim_time" value="true"/>
+  </group>
+
+  <!-- Evaluate the arguments parsed to fkie daemon -->
+  <arg name="_autostart_launch_files"
+       value="$(eval ','.join(autostart_launch_files.split()))"/>
+  <arg name="_load_launch_files"
+       value="$(eval ','.join(load_launch_files.split()))"/>
+
+    <node pkg="fkie_node_manager_daemon"
+            type="node_manager_daemon"
+            name="node_manager_daemon"
+            args="--autostart '$(arg _autostart_launch_files)'
+                --load '$(arg _load_launch_files)'">
+    </node>
+    <node pkg="fkie_node_manager"
+            type="node_manager"
+            name="node_manager"
+            if="$(arg use_gui)"/>
+    <!-- fkie_master_discovery  master_discovery-->
+</launch>
