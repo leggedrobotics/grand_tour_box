@@ -1,2 +1,7 @@
-lpc:
+jetson:
   - /usb_cam/image
+  - /usb_cam/camera_info
+
+nuc:
+  - /usb_cam/image
+  - /usb_cam/camera_info

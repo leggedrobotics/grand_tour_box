@@ -279,3 +279,24 @@ Submodules are defined in: `.gitmodules`
 Credits
 </h2>
 
+### Recording of bags
+The recording of bags is handled in `box_recording`.
+The following launch file manages the recording of bags:
+```
+roslaunch box_launch rosbag_record_coordinator.launch
+```
+For each PC a separate launch file is needed which handles the recording of the topics on the PC:
+```
+roslaunch box_launch rosbag_record_node.launch
+```
+The topics to be recorded are specified in `box_recording/cfg/box_default.yaml`.
+
+To start recording the following service call is needed:
+```
+rosservice call /gt_box/rosbag_record_coordinator/start_recording "yaml_file: ''"
+```
+To stop recording the following service call is needed:
+```
+rosservice call /gt_box/rosbag_record_coordinator/stop_recording "verbose: false"
+```
+The recorded bags are stored in `grand_tour_box/box_utils/box_recording/data`.
