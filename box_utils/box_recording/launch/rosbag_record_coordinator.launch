@@ -1,0 +1,11 @@
+<launch>
+  <arg name="box_namespace" default="gt_box"/>
+
+  <group ns="$(arg box_namespace)">
+    <node pkg="box_recording"
+        name="rosbag_record_coordinator"
+        type="rosbag_record_coordinator.py"
+        output="screen">
+    </node>
+  </group>
+</launch>
