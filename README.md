@@ -131,6 +131,15 @@ sudo apt install libv4l-dev v4l-utils
 sudo apt install libpcap-dev
 ```
 
+##### Livox Lidar
+```
+cd ~/catkin_ws/src/grand_tour_box/box_drivers/Livox-SDK2
+mkdir build
+cd build
+cmake .. && make -j
+sudo make install
+```
+
 ##### IMU over USB
 ```
 sudo apt install python3-pip
@@ -149,9 +158,8 @@ source ~/catkin_ws/devel/setup.bash
 cd ~/catkin_ws/src
 ./grand_tour_box/box_drivers/ethz_piksi_ros/piksi_multi_cpp/install/prepare-jenkins-slave.sh
 git clone git@github.com:catkin/catkin_simple.git
-#? git clone git@github.com:ethz-asl/geodetic_utils.
-git clone git@github.com:ethz-asl/libsbp_catkin.
-git cline git@github.com:ethz-asl/libserialport_catkin.git
+git clone git@github.com:ethz-asl/libsbp_catkin.git
+git clone git@github.com:ethz-asl/libserialport_catkin.git
 ```
 
 
@@ -175,6 +183,8 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/deb-7
 sudo apt update
 sudo apt install alphasense-driver-core alphasense-viewer alphasense-firmware ros-noetic-alphasense-driver-ros ros-noetic-alphasense-driver
 
+# Set the maximum socket buffer size
+sudo sysctl -w net.core.rmem_max=11145728
 ```
 
 ### Setting up Workspace

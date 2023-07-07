@@ -1,7 +1,7 @@
 start_service_name: "start_capture" # Defines name suffix for std_srvs::Empty service which restarts suspended streaming
 stop_service_name: "stop_capture"   # Defines name suffix for std_srvs::Empty service which suspends camera polling timer
 
-video_device: /dev/video2           # Device driver's entrypoint
+video_device: /dev/video4           # Device driver's entrypoint
 io_method: mmap                     # I/O method
                                     # - read - for devices supporting virtual filesystem or block I/O
                                     # - mmap - for devices with direct libusb memory mapping
