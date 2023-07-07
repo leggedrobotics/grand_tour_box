@@ -187,6 +187,20 @@ sudo apt install alphasense-driver-core alphasense-viewer alphasense-firmware ro
 sudo sysctl -w net.core.rmem_max=11145728
 ```
 
+##### ADIS16475 IMU
+
+Install the [firmware](https://github.com/leggedrobotics/ADIS16475_rosserial_firmware) on the microcontroller. (probably already done) 
+
+Install Rosserial [driver](git@github.com:leggedrobotics/adis16475_ros.git):
+```
+sudo apt install ros-noetic-rosserial
+sudo apt install ros-noetic-rosserial-arduino
+
+sudo copy box_drivers/adis16475_ros/udev/70-adis16475.rules /etc/udev/rules.d/
+sudo service udev reload  
+sudo service udev restart
+```
+
 ### Setting up Workspace
 ```
 mkdir -p ~/catkin_ws/src
