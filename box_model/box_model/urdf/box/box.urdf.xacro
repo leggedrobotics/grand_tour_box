@@ -26,15 +26,27 @@ limitations under the License.
   <xacro:include filename="$(find box_model)/urdf/hesai/hesai.urdf.xacro" />
   <xacro:include filename="$(find box_model)/urdf/livox/livox.urdf.xacro" />
 
+
+  <!-- Defining the colors -->
+  <material name="gray_transparent">
+   <color rgba="0.3 0.3 0.4 0.3"/>
+  </material>
+
+  <material name="gray_solid">
+    <color rgba="0.3 0.3 0.4 1.0"/>
+  </material>
+
+  <material name="orange">
+          <color rgba="0.9 0.7 0.1 1.0"/>
+  </material>
+
   <!-- Box -->
   <link name="box">
     <visual>
       <geometry>
         <box size="0.8 0.2 0.2"/>
       </geometry>
-      <material name="gray_transparent">
-       <color rgba="0.3 0.3 0.4 0.3"/>
-      </material>
+      <material name="gray_transparent"/>
     </visual>
   </link>
 
@@ -73,9 +85,7 @@ limitations under the License.
         <geometry>
           <box size="0.05 0.05 0.05"/>
         </geometry>
-        <material name="gray_solid">
-          <color rgba="0.3 0.3 0.4 1.0"/>
-        </material>
+        <material name="gray_solid"/>
       </visual>
   </link>
 
@@ -92,8 +102,7 @@ limitations under the License.
         <geometry>
           <box size="0.05 0.05 0.05"/>
         </geometry>
-        <material name="gray_solid">
-        </material>
+        <material name="gray_solid"/>
       </visual>
     </link>
 
@@ -110,8 +119,7 @@ limitations under the License.
         <geometry>
           <box size="0.05 0.05 0.05"/>
         </geometry>
-        <material name="gray_solid">
-        </material>
+        <material name="gray_solid"/>
       </visual>
   </link>
 
@@ -128,9 +136,7 @@ limitations under the License.
       <geometry>
         <box size="0.05 0.05 0.05"/>
       </geometry>
-      <material name="orange">
-          <color rgba="0.9 0.7 0.1 1.0"/>
-        </material>
+      <material name="orange"/>
     </visual>
   </link>
 
@@ -176,5 +182,29 @@ limitations under the License.
   <xacro:hesai_device parent="hesai_link" lidar_frame="PandarXT-32">
     <origin xyz="0 0 0" rpy="0 0 0"/>
   </xacro:hesai_device>
+
+  <!-- USB Cam -->
+  <joint name="box_back_to_usb_cam_link" type="fixed">
+      <origin xyz="0.8 0.0 0.25" rpy="0.0 0.0 0.0" />
+      <parent link="box_back" />
+      <child link="usb_cam_link" />
+  </joint>
+
+  <link name="usb_cam_link"/>
+
+  <joint name="usb_cam_link_to_usb_cam" type="fixed">
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 ${-pi/4} 0.0" />
+      <parent link="usb_cam_link" />
+      <child link="usb_cam" />
+  </joint>
+
+  <link name="usb_cam">
+      <visual>
+        <geometry>
+          <box size="0.05 0.05 0.05"/>
+        </geometry>
+        <material name="gray_solid"/>
+      </visual>
+  </link>
 
 </robot>
