@@ -20,49 +20,161 @@ limitations under the License.
 
 
 <robot name="box" xmlns:xacro="http://www.ros.org/wiki/xacro">
-  
+
+  <!-- Loading the xacro files of sensors -->
   <xacro:include filename="$(find box_model)/urdf/alphasense/alphasense.urdf.xacro" />
   <xacro:include filename="$(find box_model)/urdf/hesai/hesai.urdf.xacro" />
   <xacro:include filename="$(find box_model)/urdf/livox/livox.urdf.xacro" />
 
-  <link name="tip" />
-
-    <link name="body">
+  <!-- Box -->
+  <link name="box">
     <visual>
       <geometry>
-        <box size="0.25 0.75 0.01"/>
+        <box size="0.8 0.2 0.2"/>
       </geometry>
+      <material name="gray_transparent">
+       <color rgba="0.3 0.3 0.4 0.3"/>
+      </material>
     </visual>
   </link>
 
-  <joint name="tip_to_body" type="fixed">
-    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
-    <parent link="tip" />
-    <child link="body" />
+
+  <!-- Box base -->
+  <joint name="box_to_box_base" type="fixed">
+      <origin xyz="0.0 0.0 -0.1" rpy="0.0 0.0 0.0" />
+      <parent link="box" />
+      <child link="box_base" />
   </joint>
 
-    <!-- This is the frame in which the ground truth is generated -->
+  <link name="box_base">
+  </link>
+
+
+  <!-- Box back -->
+  <joint name="box_to_box_back" type="fixed">
+      <origin xyz="-0.4 0.0 -0.1" rpy="0.0 0.0 0.0" />
+      <parent link="box" />
+      <child link="box_back" />
+  </joint>
+
+  <link name="box_back">
+  </link>
+
+
+  <!-- GPS -->
+  <joint name="box_back_to_gps" type="fixed">
+      <origin xyz="-0.1 0.0 0.1" rpy="0.0 0.0 0.0" />
+      <parent link="box_back" />
+      <child link="gps" />
+  </joint>
+
+  <link name="gps">
+      <visual>
+        <geometry>
+          <box size="0.05 0.05 0.05"/>
+        </geometry>
+        <material name="gray_solid">
+          <color rgba="0.3 0.3 0.4 1.0"/>
+        </material>
+      </visual>
+  </link>
+
+
+  <!-- NUC -->
+  <joint name="box_back_to_nuc" type="fixed">
+      <origin xyz="0.4 0.0 0.2" rpy="0.0 0.0 0.0" />
+      <parent link="box_back" />
+      <child link="nuc" />
+  </joint>
+
+  <link name="nuc">
+      <visual>
+        <geometry>
+          <box size="0.05 0.05 0.05"/>
+        </geometry>
+        <material name="gray_solid">
+        </material>
+      </visual>
+    </link>
+
+
+  <!-- Jetson -->
+  <joint name="box_back_to_jetson" type="fixed">
+    <origin xyz="0.5 0.0 0.2" rpy="0.0 0.0 0.0" />
+    <parent link="box_back" />
+    <child link="jetson" />
+  </joint>
+
+  <link name="jetson">
+      <visual>
+        <geometry>
+          <box size="0.05 0.05 0.05"/>
+        </geometry>
+        <material name="gray_solid">
+        </material>
+      </visual>
+  </link>
+
+
+  <!-- Reflector -->
+  <joint name="box_back_to_reflector" type="fixed">
+    <origin xyz="0.6 0.0 0.2" rpy="0.0 0.0 0.0" />
+    <parent link="box_back" />
+    <child link="reflector" />
+  </joint>
+
+  <link name="reflector">
+    <visual>
+      <geometry>
+        <box size="0.05 0.05 0.05"/>
+      </geometry>
+      <material name="orange">
+          <color rgba="0.9 0.7 0.1 1.0"/>
+        </material>
+    </visual>
+  </link>
+
+
+  <!-- Alphasense -->
+  <xacro:property name="alphasense_calibration" value="$(find box_model)/urdf/box/calibrations/20220322_calibration.yaml" />
+  <xacro:alphasense parent="box_back" calib_file="${alphasense_calibration}">
+   <origin xyz="0.8 0 0.1" rpy="0 0 0" />
+  </xacro:alphasense>
+
+  !-- This is the frame in which the ground truth is generated, conincides with the alphasense IMU -->
   <link name="base"/>
 
-  <xacro:property name="alphasense_calibration" value="$(find box_model)/urdf/box/calibrations/20220322_calibration.yaml" />
-  
-  <xacro:alphasense parent="tip" calib_file="${alphasense_calibration}">
-   <origin xyz="0 0 0" rpy="0 0 0" />
-  </xacro:alphasense>
-  
-  <!-- The base frame is coincident with the alphasense IMU but with the usual robot convention -->
   <joint name="alphasense_imu_to_base" type="fixed">
-    <origin xyz="0.0 0.0 0.0" rpy="${-pi} 0.0 0.0" />
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
     <parent link="alphasense_imu"/>
     <child link="base"/>
   </joint>
 
-  <xacro:hesai_device parent="tip" lidar_frame="PandarXT-32">
-    <origin xyz="0 -0.20 0" rpy="0 0 0"/>
+
+  <!-- Livox -->
+  <joint name="box_back_to_livox_link" type="fixed">
+      <origin xyz="0.8 0.0 0.2" rpy="0.0 0.0 0.0" />
+      <parent link="box_back" />
+      <child link="livox_link" />
+  </joint>
+
+  <link name="livox_link"/>
+
+  <xacro:livox_device parent="livox_link" lidar_frame="mid360">
+    <origin xyz="0 0 0" rpy="${pi/2} ${-pi} 0" />
+  </xacro:livox_device>
+
+  <!-- Hesai -->
+  <joint name="box_back_to_hesai_link" type="fixed">
+      <origin xyz="0.8 0.0 0.0" rpy="0.0 0.0 0.0" />
+      <parent link="box_back" />
+      <child link="hesai_link" />
+  </joint>
+
+  <link name="hesai_link"/>
+
+  <xacro:hesai_device parent="hesai_link" lidar_frame="PandarXT-32">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
   </xacro:hesai_device>
 
-  <xacro:livox_device parent="tip" lidar_frame="mid360">
-    <origin xyz="0 0.20 0" rpy="1.57 0 1.57" />
-  </xacro:livox_device>
-  
 </robot>
