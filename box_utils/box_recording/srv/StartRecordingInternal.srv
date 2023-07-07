@@ -1,0 +1,5 @@
+string topics
+string timestamp
+---
+bool suc
+string message
