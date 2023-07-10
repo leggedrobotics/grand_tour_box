@@ -18,15 +18,47 @@
   <arg name="_load_launch_files"
        value="$(eval ','.join(load_launch_files.split()))"/>
 
-    <node pkg="fkie_node_manager_daemon"
+  <!-- Only pass in command line arguments when they are not empty -->
+  <group if="$(eval bool(load_launch_files) )">
+    <group if="$(eval bool(autostart_launch_files) )">
+      <node pkg="fkie_node_manager_daemon"
             type="node_manager_daemon"
             name="node_manager_daemon"
-            args="--autostart '$(arg _autostart_launch_files)'
-                --load '$(arg _load_launch_files)'">
-    </node>
-    <node pkg="fkie_node_manager"
-            type="node_manager"
-            name="node_manager"
-            if="$(arg use_gui)"/>
-    <!-- fkie_master_discovery  master_discovery-->
+            args="--load '$(arg _load_launch_files)'
+              --autostart '$(arg _autostart_launch_files)'">
+      </node>
+    </group>
+    <group unless="$(eval bool(autostart_launch_files) )">
+      <node pkg="fkie_node_manager_daemon"
+            type="node_manager_daemon"
+            name="node_manager_daemon"
+            args="--load '$(arg _load_launch_files)'">
+      </node>
+    </group>
+  </group>
+  <group unless="$(eval bool(load_launch_files) )">
+    <group if="$(eval bool(autostart_launch_files) )">
+      <node pkg="fkie_node_manager_daemon"
+            type="node_manager_daemon"
+            name="node_manager_daemon"
+            args="--autostart '$(arg _autostart_launch_files)'">
+      </node>
+    </group>
+    <group unless="$(eval bool(autostart_launch_files) )">
+      <node pkg="fkie_node_manager_daemon"
+            type="node_manager_daemon"
+            name="node_manager_daemon">
+      </node>
+    </group>
+  </group>
+
+  <node pkg="fkie_node_manager"
+          type="node_manager"
+          name="node_manager"
+          if="$(arg use_gui)"/>
+
+  <!-- fkie_master_discovery -->
+  <include file="$(find box_launch)/launch/master_discovery.launch" />
+  <!-- fkie_master_sync -->
+  <include file="$(find box_launch)/launch/master_sync.launch" />
 </launch>
