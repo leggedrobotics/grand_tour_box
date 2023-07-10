@@ -1,0 +1,6 @@
+<launch>
+    <node pkg="rosserial_python" type="serial_node.py" name="adis_node" output="screen">
+        <param name="port" value="/dev/ttyADIS"/>
+        <param name="baud" value="57600"/>
+    </node>
+</launch>
