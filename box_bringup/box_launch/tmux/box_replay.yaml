@@ -16,14 +16,10 @@ windows:
       - source ~/catkin_ws/devel/setup.bash
       - roslaunch box_launch fkie.launch
           autostart_launch_files:="
-            $(rospack find box_launch)/launch/usb_cam.launch
-            $(rospack find box_recording)/launch/rosbag_record_coordinator.launch
-            $(rospack find box_recording)/launch/rosbag_record_node.launch
+            $(rospack find box_launch)/launch/hesai_lidar.launch
+            $(rospack find box_launch)/launch/imu.launch
             "
           load_launch_files:="
-            $(rospack find box_launch)/launch/usb_cam.launch
-            $(rospack find box_recording)/launch/rosbag_record_coordinator.launch
-            $(rospack find box_recording)/launch/rosbag_record_node.launch
             "
     - shell_command:
       - source /opt/ros/noetic/setup.bash
