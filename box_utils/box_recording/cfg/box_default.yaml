@@ -1,5 +1,19 @@
 jetson:
+  - /alphasense_driver_node/aux_imu
   - /alphasense_driver_node/cam0
+  - /alphasense_driver_node/cam1
+  - /alphasense_driver_node/cam3
+  - /alphasense_driver_node/cam4
+  - /alphasense_driver_node/cam5
+  - /alphasense_driver_node/imu
+  - /hesai/pandar
+  - /hesai/pandar_packets
+  - /livox/imu
+  - /livox/lidar
+
 
 rsl-nuc:
+  - /adis16475
+  - /usb_cam/camera_info
   - /usb_cam/image
+  - /usb_cam/image/compressedDepth
