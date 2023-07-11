@@ -22,6 +22,7 @@ windows:
             $(rospack find box_launch)/launch/livox.launch
             "
           use_gui:=false
+          is_rosmaster:=true
     - shell_command:
       - source /opt/ros/noetic/setup.bash
       - source ~/catkin_ws/devel/setup.bash
