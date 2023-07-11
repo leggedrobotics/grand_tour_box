@@ -1,7 +1,5 @@
-gt_box_jetson:
-  - /usb_cam/image
-  - /usb_cam/camera_info
+jetson:
+  - /alphasense_driver_node/cam0
 
-gt_box_nuc:
+rsl_nuc:
   - /usb_cam/image
-  - /usb_cam/camera_info
