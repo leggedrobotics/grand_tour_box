@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # run config file
-source config.sh
+source catkin_ws/src/grand_tour_box/box_utils/box_start/config.sh
 
 # source ROS
 source /opt/ros/noetic/setup.bash
