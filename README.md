@@ -316,3 +316,14 @@ To stop recording the following service call is needed:
 rosservice call /gt_box/rosbag_record_coordinator/stop_recording "verbose: false"
 ```
 The recorded bags are stored in `grand_tour_box/box_utils/box_recording/data`.
+
+
+### PTP time sync between jetson and sensors
+```
+# synchronze interal clock of network card to systemtime (let run, dont close)
+sudo phc2sys -m -c mgbe0 -s CLOCK_REALTIME -O 0 -u 10
+sudo phc2sys -m -c mgbe1 -s CLOCK_REALTIME -O 0 -u 10
+
+# start PTP master
+sudo ptp4l -i mgbe0 mgbe1 -m -H
+```
