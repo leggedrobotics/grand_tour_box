@@ -1,5 +1,5 @@
 jetson:
   - /alphasense_driver_node/cam0
 
-rsl_nuc:
+rsl-nuc:
   - /usb_cam/image
