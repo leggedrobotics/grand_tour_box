@@ -3,6 +3,8 @@ killall -KILL screen
 screen -wipe
 
 # Kill node manager process
-killall -KILL node_manager
+killall node_manager
+killall roscore
+killall rosmaster
 
 echo "Cleaned Up Session"
