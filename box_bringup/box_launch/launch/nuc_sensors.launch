@@ -1,0 +1,5 @@
+<launch>
+    <include file="$(find box_launch)/launch/adis16475.launch" />
+    <include file="$(find box_launch)/launch/usb_cam.launch" />
+    <include file="$(find box_recording)/launch/rosbag_record_node.launch" />
+</launch>

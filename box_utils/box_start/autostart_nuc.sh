@@ -7,6 +7,7 @@ source catkin_ws/src/grand_tour_box/box_utils/box_start/config.sh
 source /opt/ros/noetic/setup.bash
 source ~/catkin_ws/devel/setup.bash
 
+export HOSTNAME
 
 # Wait for Jetson to be ready
 until ping -c1 $JETSON_IP >/dev/null 2>&1; do :; done
@@ -16,4 +17,5 @@ echo "Found Jetson"
 until rosnode ping -c1 "rosout" >/dev/null 2>&1; do :; done
 echo "Found rosmaster"
 
-tmuxp load $(rospack find box_launch)/tmux/box_nuc.yaml
+#tmuxp load $(rospack find box_launch)/tmux/box_nuc.yaml
+roslaunch $(rospack find box_launch)/launch/nuc_sensors.launch
