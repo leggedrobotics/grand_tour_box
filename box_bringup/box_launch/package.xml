@@ -16,4 +16,5 @@
   <depend>bringup_totalstation</depend>
   <depend>bringup_gps</depend>
   <depend>fkie_multimaster</depend>
+  <depend>box_recording</depend>
 </package>

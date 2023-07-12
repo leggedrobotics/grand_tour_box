@@ -1,6 +1,6 @@
 session_name: box
 
-before_script: "../scripts/initalize_session.sh"
+before_script: "../scripts/initialize_session.sh"
 
 windows:
 - window_name: grand_tour_box_robot
@@ -16,10 +16,10 @@ windows:
       - source ~/catkin_ws/devel/setup.bash
       - roslaunch box_launch fkie.launch
           autostart_launch_files:="
-            $(rospack find box_launch)/launch/usb_cam.launch
+            $(rospack find box_rviz_plugins)/launch/box_rviz_plugins.launch
             "
           load_launch_files:="
-            $(rospack find box_launch)/launch/usb_cam.launch
+            $(rospack find box_rviz_plugins)/launch/box_rviz_plugins.launch
             "
     - shell_command:
       - source /opt/ros/noetic/setup.bash

@@ -1,12 +1,12 @@
 session_name: box
 
-before_script: "../scripts/initalize_session.sh"
+before_script: "../scripts/initialize_session.sh"
 
 windows:
 - window_name: grand_tour_box_robot
   layout: tiled
   shell_command_before:
-    - export HELLO=3
+    - export HOSTNAME
 
   options:
     pane-border-status: top
@@ -16,10 +16,9 @@ windows:
       - source ~/catkin_ws/devel/setup.bash
       - roslaunch box_launch fkie.launch
           autostart_launch_files:="
+            $(rospack find box_launch)/launch/adis16475.launch
             $(rospack find box_launch)/launch/usb_cam.launch
-            "
-          load_launch_files:="
-            $(rospack find box_launch)/launch/usb_cam.launch
+            $(rospack find box_recording)/launch/rosbag_record_node.launch
             "
           use_gui:=false
     - shell_command:

@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>box_rviz_plugins</name>
+  <version>1.0.0</version>
+  <description>Box rviz plugins</description>
+  <license>Proprietary</license>
+  <maintainer email="schmirob@ethz.ch">Robin Schmid</maintainer>
+  <author email="schmirob@ethz.ch">Robin Schmid</author>
+  <buildtool_depend>catkin</buildtool_depend>
+
+</package>
