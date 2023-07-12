@@ -516,7 +516,7 @@
             "dock_widget__ImageViewWidget": {
               "keys": {
                 "dock_widget_title": {
-                  "repr": "'Image View'",
+                  "repr": "'Alphasense Left'",
                   "type": "repr"
                 },
                 "dockable": {
@@ -541,7 +541,7 @@
                   "type": "repr"
                 },
                 "mouse_pub_topic": {
-                  "repr": "'/alphasense_driver_ros/cam3/debayered/slow_mouse_left'",
+                  "repr": "'/alphasense_driver_node/cam3'",
                   "type": "repr"
                 },
                 "num_gridlines": {
@@ -553,7 +553,7 @@
                   "type": "repr"
                 },
                 "rotate": {
-                  "repr": "0",
+                  "repr": "2",
                   "type": "repr"
                 },
                 "smooth_image": {
@@ -565,7 +565,7 @@
                   "type": "repr"
                 },
                 "topic": {
-                  "repr": "'/alphasense_driver_ros/cam3/debayered/slow/compressed'",
+                  "repr": "'/alphasense_driver_node/cam3'",
                   "type": "repr"
                 },
                 "zoom1": {
@@ -583,7 +583,7 @@
             "dock_widget__ImageViewWidget": {
               "keys": {
                 "dock_widget_title": {
-                  "repr": "'Image View (2)'",
+                  "repr": "'Alphasense Front'",
                   "type": "repr"
                 },
                 "dockable": {
@@ -608,7 +608,7 @@
                   "type": "repr"
                 },
                 "mouse_pub_topic": {
-                  "repr": "'/alphasense_driver_ros/cam4/debayered/slow_mouse_left'",
+                  "repr": "'/alphasense_driver_node/cam0'",
                   "type": "repr"
                 },
                 "num_gridlines": {
@@ -632,7 +632,7 @@
                   "type": "repr"
                 },
                 "topic": {
-                  "repr": "'/alphasense_driver_ros/cam4/debayered/slow/compressed'",
+                  "repr": "'/alphasense_driver_node/cam0'",
                   "type": "repr"
                 },
                 "zoom1": {
@@ -650,7 +650,7 @@
             "dock_widget__ImageViewWidget": {
               "keys": {
                 "dock_widget_title": {
-                  "repr": "'Image View (3)'",
+                  "repr": "'USB Cam'",
                   "type": "repr"
                 },
                 "dockable": {
@@ -675,7 +675,7 @@
                   "type": "repr"
                 },
                 "mouse_pub_topic": {
-                  "repr": "'/alphasense_driver_ros/cam5/debayered/slow_mouse_left'",
+                  "repr": "'/usb_cam/image'",
                   "type": "repr"
                 },
                 "num_gridlines": {
@@ -687,7 +687,7 @@
                   "type": "repr"
                 },
                 "rotate": {
-                  "repr": "0",
+                  "repr": "2",
                   "type": "repr"
                 },
                 "smooth_image": {
@@ -699,7 +699,7 @@
                   "type": "repr"
                 },
                 "topic": {
-                  "repr": "'/alphasense_driver_ros/cam5/debayered/slow/compressed'",
+                  "repr": "'/usb_cam/image'",
                   "type": "repr"
                 },
                 "zoom1": {
@@ -717,7 +717,7 @@
             "dock_widget__ImageViewWidget": {
               "keys": {
                 "dock_widget_title": {
-                  "repr": "'Image View (4)'",
+                  "repr": "'Alphasense Right'",
                   "type": "repr"
                 },
                 "dockable": {
@@ -742,7 +742,7 @@
                   "type": "repr"
                 },
                 "mouse_pub_topic": {
-                  "repr": "'/alphasense_driver_ros/cam6/dropped/debayered/slow_mouse_left'",
+                  "repr": "'/alphasense_driver_node/cam4'",
                   "type": "repr"
                 },
                 "num_gridlines": {
@@ -754,7 +754,7 @@
                   "type": "repr"
                 },
                 "rotate": {
-                  "repr": "0",
+                  "repr": "2",
                   "type": "repr"
                 },
                 "smooth_image": {
@@ -766,7 +766,7 @@
                   "type": "repr"
                 },
                 "topic": {
-                  "repr": "'/alphasense_driver_ros/cam6/dropped/debayered/slow'",
+                  "repr": "'/alphasense_driver_node/cam4'",
                   "type": "repr"
                 },
                 "zoom1": {
