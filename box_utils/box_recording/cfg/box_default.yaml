@@ -1,7 +1,6 @@
 gt_box_jetson:
   - /usb_cam/image
   - /usb_cam/camera_info
-
 gt_box_nuc:
-  - /usb_cam/image
+  - /usb_cam/image 
   - /usb_cam/camera_info
