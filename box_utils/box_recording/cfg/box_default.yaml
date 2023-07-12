@@ -10,8 +10,6 @@ jetson:
   - /hesai/pandar_packets
   - /livox/imu
   - /livox/lidar
-
-
 rsl-nuc:
   - /adis16475
   - /usb_cam/camera_info
