@@ -65,6 +65,7 @@ class RosbagRecordCoordinator(object):
             for node, topics in self.cfg.items():
                 service_name = self.namespace + 'rosbag_record_node_' + node + '/start_recording'
 
+                rospy.loginfo("[RosbagRecordCoordinator] Trying to start rosbag recording process on " + node + " with topics: " + str(topics))
                 try:
                     # Evaluate if service is offered
                     rospy.wait_for_service(service_name, 2.0)
