@@ -15,6 +15,7 @@
   <depend>bringup_livox</depend>
   <depend>bringup_totalstation</depend>
   <depend>bringup_gps</depend>
+  <depend>bringup_adis16475</depend>
   <depend>fkie_multimaster</depend>
   <depend>box_recording</depend>
 </package>
