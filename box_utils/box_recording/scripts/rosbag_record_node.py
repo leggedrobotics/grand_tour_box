@@ -51,7 +51,6 @@ class RosbagRecordNode(object):
         timestamp = request.timestamp
         self.bag_path = self.data_path + "/" + timestamp + "_" + self.node
         topics = request.topics
-        topics.replace("\n", " ")
         bash_command = f"rosrun box_recording record_bag.sh {self.bag_path} {topics}"
         
         if self.bag_running:

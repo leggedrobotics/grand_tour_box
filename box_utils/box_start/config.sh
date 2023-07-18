@@ -4,5 +4,5 @@
 # source config.sh
 
 # Constants
-JETSON_IP="192.168.1.51"
-NUC_IP="192.168.1.56"
+JETSON_IP="192.168.2.51"
+NUC_IP="192.168.2.56"
