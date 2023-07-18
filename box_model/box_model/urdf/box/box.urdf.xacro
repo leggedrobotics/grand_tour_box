@@ -160,20 +160,20 @@ limitations under the License.
   <link name="livox_link"/>
 
   <joint name="box_back_to_livox_link" type="fixed">
-      <origin xyz="0.8 0.0 0.2" rpy="0.0 0.0 0.0" />
+      <origin xyz="0.8 0.0 0.2" rpy="${pi/2} ${-pi} 0.0" />
       <parent link="box_back" />
       <child link="livox_link" />
   </joint>
 
   <xacro:livox_device parent="livox_link" lidar_frame="livox_frame">
-    <origin xyz="0 0 0" rpy="${pi/2} ${-pi} 0" />
+    <origin xyz="0 0 0" rpy="0 0 0" />
   </xacro:livox_device>
 
   <!-- Hesai -->
   <link name="hesai_link"/>
 
   <joint name="box_back_to_hesai_link" type="fixed">
-      <origin xyz="0.8 0.0 0.0" rpy="0.0 0.0 0.0" />
+      <origin xyz="0.8 0.0 0.0" rpy="0.0 0.0 ${pi}" />
       <parent link="box_back" />
       <child link="hesai_link" />
   </joint>

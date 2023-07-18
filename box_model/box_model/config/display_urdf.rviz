@@ -7,6 +7,7 @@ Panels:
         - /Global Options1
         - /Status1
         - /RobotModel1
+        - /TF1
         - /TF1/Frames1
       Splitter Ratio: 0.48801368474960327
     Tree Height: 1079
@@ -133,6 +134,10 @@ Visualization Manager:
           Alpha: 1
           Show Axes: false
           Show Trail: false
+        imu_sensor_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
         jetson:
           Alpha: 1
           Show Axes: false
@@ -143,11 +148,11 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        livox_link:
+        livox_frame:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        mid360:
+        livox_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -177,20 +182,106 @@ Visualization Manager:
       Value: true
       Visual Enabled: true
     - Class: rviz/TF
-      Enabled: false
+      Enabled: true
       Frame Timeout: 15
       Frames:
         All Enabled: false
+        PandarXT-32:
+          Value: true
+        alphasense_imu:
+          Value: true
+        alphasense_mount:
+          Value: true
+        base:
+          Value: true
+        box:
+          Value: true
+        box_back:
+          Value: true
+        box_base:
+          Value: true
+        cam_front_left:
+          Value: true
+        cam_front_right:
+          Value: true
+        cam_side_left:
+          Value: true
+        cam_side_right:
+          Value: true
+        cam_top:
+          Value: true
+        gps:
+          Value: true
+        hesai_base:
+          Value: true
+        hesai_link:
+          Value: true
+        imu_sensor_frame:
+          Value: true
+        jetson:
+          Value: true
+        livox_base:
+          Value: true
+        livox_frame:
+          Value: true
+        livox_link:
+          Value: true
+        nuc:
+          Value: true
+        reflector:
+          Value: true
+        usb_cam:
+          Value: true
+        usb_cam_link:
+          Value: true
       Marker Alpha: 1
-      Marker Scale: 1
+      Marker Scale: 0.20000000298023224
       Name: TF
       Show Arrows: false
       Show Axes: true
       Show Names: false
       Tree:
-        {}
+        box:
+          box_back:
+            alphasense_mount:
+              alphasense_imu:
+                base:
+                  {}
+                cam_front_left:
+                  {}
+                cam_front_right:
+                  {}
+                cam_side_left:
+                  {}
+                cam_side_right:
+                  {}
+                cam_top:
+                  {}
+                imu_sensor_frame:
+                  {}
+            gps:
+              {}
+            hesai_link:
+              hesai_base:
+                PandarXT-32:
+                  {}
+            jetson:
+              {}
+            livox_link:
+              livox_base:
+                livox_frame:
+                  {}
+            nuc:
+              {}
+            reflector:
+              {}
+            usb_cam_link:
+              usb_cam:
+                {}
+          box_base:
+            {}
       Update Interval: 0
-      Value: false
+      Value: true
     - Alpha: 1
       Class: rviz/Axes
       Enabled: false
@@ -291,7 +382,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 2.0867466926574707
+      Distance: 0.9551387429237366
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -307,9 +398,9 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.31479594111442566
+      Pitch: 0.4147958755493164
       Target Frame: <Fixed Frame>
-      Yaw: 4.164892196655273
+      Yaw: 5.229916095733643
     Saved: ~
 Window Geometry:
   Displays:
