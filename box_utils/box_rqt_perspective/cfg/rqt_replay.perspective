@@ -553,7 +553,7 @@
                   "type": "repr"
                 },
                 "rotate": {
-                  "repr": "2",
+                  "repr": "0",
                   "type": "repr"
                 },
                 "smooth_image": {
@@ -608,7 +608,7 @@
                   "type": "repr"
                 },
                 "mouse_pub_topic": {
-                  "repr": "'/alphasense_driver_node/cam0'",
+                  "repr": "'/alphasense_driver_node/cam4'",
                   "type": "repr"
                 },
                 "num_gridlines": {
@@ -632,7 +632,7 @@
                   "type": "repr"
                 },
                 "topic": {
-                  "repr": "'/alphasense_driver_node/cam0'",
+                  "repr": "'/alphasense_driver_node/cam4'",
                   "type": "repr"
                 },
                 "zoom1": {
@@ -742,7 +742,7 @@
                   "type": "repr"
                 },
                 "mouse_pub_topic": {
-                  "repr": "'/alphasense_driver_node/cam4'",
+                  "repr": "'/alphasense_driver_node/cam5'",
                   "type": "repr"
                 },
                 "num_gridlines": {
@@ -754,7 +754,7 @@
                   "type": "repr"
                 },
                 "rotate": {
-                  "repr": "2",
+                  "repr": "0",
                   "type": "repr"
                 },
                 "smooth_image": {
@@ -766,7 +766,7 @@
                   "type": "repr"
                 },
                 "topic": {
-                  "repr": "'/alphasense_driver_node/cam4'",
+                  "repr": "'/alphasense_driver_node/cam5'",
                   "type": "repr"
                 },
                 "zoom1": {
