@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<launch>
+  <arg name="model" default="$(find box_model)/urdf/box/box.urdf.xacro" />
+
+  <param name="robot_description" command="xacro $(arg model)" />
+</launch>

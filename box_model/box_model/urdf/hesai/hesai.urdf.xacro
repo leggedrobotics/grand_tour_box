@@ -1,0 +1,67 @@
+<?xml version="1.0"?>
+
+<!-- Copyright 2022 University of Oxford
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+
+
+<!-- Hesai PandarXT-32 Lidar Sensor -->
+<robot name="hesai" xmlns:xacro="http://www.ros.org/wiki/xacro">
+<xacro:arg name="simulation" default="false" />
+
+<xacro:macro name="hesai_device" params="parent *origin name:=pandar_xt32_lidar simulation:=false lidar_frame:=pandar">
+  <joint name="${parent}_to_hesai" type="fixed">
+    <xacro:insert_block name="origin"/>
+    <parent link="${parent}" />
+    <child link="hesai_base" />
+  </joint>
+  <link name="hesai_base">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <!-- If mesh is not available: -->
+      <!--origin xyz="0 0 38.0e-3" rpy="0 0 0" /-->
+      <geometry>
+        <!-- If mesh is not available: -->
+        <!--cylinder radius="51.500e-3" length="76.0e-3" /-->
+        <mesh filename="package://box_model/urdf/hesai/meshes/PandarXT_Model.dae" />
+      </geometry>
+    </visual>
+    <inertial>
+      <!-- CoM taken from CAD assuming constant density and mass 0.807 (best approximation available to real mass) -->
+      <origin xyz="-0.015e-3 0.0 37.494e-3" rpy="0 0 0" />
+      <!-- mass taken from Hesai datasheet -->
+      <mass value="0.807" /> 
+      <!-- Inertia tensor from CAD assuming constant density and mass 0.807 (best approximation vailable to real mass) -->
+      <inertia ixx="886.81e-6" ixy="5.802e-11" ixz="-0.34e-6" iyy="898.12e-6" iyz="-0.014e-6" izz="1004.287e-6" />
+    </inertial>
+    <collision>
+      <origin xyz="0 0 38.0e-3"/>
+      <geometry>
+        <cylinder radius="51.500e-3" length="76.0e-3" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="${lidar_frame}"/>
+  <joint name="hesai_base_to_pandar" type="fixed">
+    <!-- See page 12 of User Manual -->
+    <!-- note that the X axis points left. See manual page 11 -->
+    <origin xyz="0.0 0.0 46.4e-3" rpy="0.0 0.0 ${pi/2}"/>
+    <parent link="hesai_base"/>
+    <child link="${lidar_frame}" />
+  </joint>
+
+  <!-- TODO implement gazebo plugin loading if simulation is true -->
+</xacro:macro>
+
+</robot>
