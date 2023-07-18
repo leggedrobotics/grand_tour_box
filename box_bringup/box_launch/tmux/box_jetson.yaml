@@ -20,6 +20,7 @@ windows:
             $(rospack find box_launch)/launch/gps_rover.launch
             $(rospack find box_launch)/launch/hesai_lidar.launch
             $(rospack find box_launch)/launch/livox_lidar.launch
+            $(rospack find box_model)/launch/load_model.launch
             $(rospack find box_recording)/launch/rosbag_record_coordinator.launch
             $(rospack find box_recording)/launch/rosbag_record_node.launch
             "
