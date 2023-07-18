@@ -36,11 +36,19 @@
       </geometry>
     </collision>
   </link>
-  <link name="${lidar_frame}"/>
+
+<!--  <link name="${lidar_frame}"/>-->
+<!--  <joint name="livox_base_to_pandar" type="fixed">-->
+<!--    &lt;!&ndash; See page 12 of User Manual &ndash;&gt;-->
+<!--    &lt;!&ndash; note that the X axis points left. See manual page 11 &ndash;&gt;-->
+<!--    <origin xyz="0.0 0.0 46.4e-3" rpy="0.0 0.0 ${pi/2}"/>-->
+<!--    <parent link="livox_base"/>-->
+<!--    <child link="${lidar_frame}" />-->
+<!--  </joint>-->
+
+    <link name="${lidar_frame}"/>
   <joint name="livox_base_to_pandar" type="fixed">
-    <!-- See page 12 of User Manual -->
-    <!-- note that the X axis points left. See manual page 11 -->
-    <origin xyz="0.0 0.0 46.4e-3" rpy="0.0 0.0 ${pi/2}"/>
+    <origin xyz="0.0 0.0 0.0" rpy="${pi/2} 0.0 ${pi}"/>
     <parent link="livox_base"/>
     <child link="${lidar_frame}" />
   </joint>
