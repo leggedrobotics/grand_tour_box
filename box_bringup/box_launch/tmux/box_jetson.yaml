@@ -23,7 +23,7 @@ windows:
             $(rospack find box_recording)/launch/rosbag_record_coordinator.launch
             $(rospack find box_recording)/launch/rosbag_record_node.launch
             "
-          use_gui:=false
+          use_gui:=true
           is_rosmaster:=true
     - shell_command:
       - source /opt/ros/noetic/setup.bash
