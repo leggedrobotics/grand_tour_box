@@ -57,129 +57,18 @@ Visualization Manager:
     - Alpha: 1
       Class: rviz/RobotModel
       Collision Enabled: false
-      Enabled: true
+      Enabled: false
       Links:
         All Links Enabled: true
         Expand Joint Details: false
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        PandarXT-32:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        alphasense_imu:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        alphasense_mount:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        base:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        box:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        box_back:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        box_base:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        cam_front_left:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        cam_front_right:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        cam_side_left:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        cam_side_right:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        cam_top:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        gps:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        hesai_base:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        hesai_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        imu_sensor_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        jetson:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        livox_base:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        livox_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        livox_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        nuc:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        reflector:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        usb_cam:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        usb_cam_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
       Name: RobotModel
       Robot Description: robot_description
       TF Prefix: ""
       Update Interval: 0
-      Value: true
+      Value: false
       Visual Enabled: true
     - Class: rviz/TF
       Enabled: true
@@ -239,7 +128,7 @@ Visualization Manager:
       Name: TF
       Show Arrows: false
       Show Axes: true
-      Show Names: false
+      Show Names: true
       Tree:
         box:
           box_back:
@@ -356,7 +245,7 @@ Visualization Manager:
       Value: false
   Enabled: true
   Global Options:
-    Background Color: 255; 255; 255
+    Background Color: 186; 189; 182
     Default Light: true
     Fixed Frame: box_back
     Frame Rate: 30
@@ -382,7 +271,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 0.9551387429237366
+      Distance: 0.7630187273025513
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -400,7 +289,7 @@ Visualization Manager:
       Near Clip Distance: 0.009999999776482582
       Pitch: 0.4147958755493164
       Target Frame: <Fixed Frame>
-      Yaw: 5.229916095733643
+      Yaw: 5.379919528961182
     Saved: ~
 Window Geometry:
   Displays:
