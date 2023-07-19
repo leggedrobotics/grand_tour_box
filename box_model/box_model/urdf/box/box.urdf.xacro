@@ -1,0 +1,234 @@
+<?xml version="1.0" ?>
+
+<!--
+
+Copyright 2022 University of Oxford, Hilti Corporation
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+-->
+
+
+<robot name="box" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- Loading the xacro files of sensors -->
+  <xacro:include filename="$(find box_model)/urdf/alphasense/alphasense.urdf.xacro" />
+  <xacro:include filename="$(find box_model)/urdf/hesai/hesai.urdf.xacro" />
+  <xacro:include filename="$(find box_model)/urdf/livox/livox.urdf.xacro" />
+
+
+  <!-- Defining the colors -->
+  <material name="gray_transparent">
+   <color rgba="0.3 0.3 0.4 0.3"/>
+  </material>
+
+  <material name="gray_solid">
+    <color rgba="0.3 0.3 0.4 1.0"/>
+  </material>
+
+  <material name="orange">
+          <color rgba="0.9 0.7 0.1 1.0"/>
+  </material>
+
+  <!-- Box -->
+  <link name="box">
+    <visual>
+      <geometry>
+        <box size="0.8 0.2 0.2"/>
+      </geometry>
+      <material name="gray_transparent"/>
+    </visual>
+  </link>
+
+
+  <!-- Box base -->
+  <link name="box_base"/>
+
+  <joint name="box_to_box_base" type="fixed">
+      <origin xyz="0.0 0.0 -0.1" rpy="0.0 0.0 0.0" />
+      <parent link="box" />
+      <child link="box_base" />
+  </joint>
+
+  <!-- Box back -->
+  <link name="box_back"/>
+
+  <joint name="box_to_box_back" type="fixed">
+      <origin xyz="-0.4 0.0 -0.1" rpy="0.0 0.0 0.0" />
+      <parent link="box" />
+      <child link="box_back" />
+  </joint>
+
+  <!-- GPS -->
+  <link name="gps">
+      <visual>
+        <geometry>
+          <box size="0.05 0.05 0.05"/>
+        </geometry>
+        <material name="gray_solid"/>
+      </visual>
+  </link>
+
+  <joint name="box_back_to_gps" type="fixed">
+      <origin xyz="-0.1 0.0 0.1" rpy="0.0 0.0 0.0" />
+      <parent link="box_back" />
+      <child link="gps" />
+  </joint>
+
+  <!-- NUC -->
+  <link name="nuc">
+    <visual>
+      <geometry>
+        <box size="0.05 0.05 0.05"/>
+      </geometry>
+      <material name="gray_solid"/>
+    </visual>
+  </link>
+
+  <joint name="box_back_to_nuc" type="fixed">
+      <origin xyz="0.4 0.0 0.2" rpy="0.0 0.0 0.0" />
+      <parent link="box_back" />
+      <child link="nuc" />
+  </joint>
+
+  <!-- Jetson -->
+  <link name="jetson">
+      <visual>
+        <geometry>
+          <box size="0.05 0.05 0.05"/>
+        </geometry>
+        <material name="gray_solid"/>
+      </visual>
+  </link>
+
+  <joint name="box_back_to_jetson" type="fixed">
+    <origin xyz="0.5 0.0 0.2" rpy="0.0 0.0 0.0" />
+    <parent link="box_back" />
+    <child link="jetson" />
+  </joint>
+
+  <!-- Reflector -->
+  <link name="reflector">
+    <visual>
+      <geometry>
+        <box size="0.05 0.05 0.05"/>
+      </geometry>
+      <material name="orange"/>
+    </visual>
+  </link>
+
+  <joint name="box_back_to_reflector" type="fixed">
+    <origin xyz="0.6 0.0 0.2" rpy="0.0 0.0 0.0" />
+    <parent link="box_back" />
+    <child link="reflector" />
+  </joint>
+
+  <!-- Alphasense -->
+  <xacro:property name="alphasense_calibration" value="$(find box_model)/urdf/box/calibrations/20220322_calibration.yaml" />
+  <xacro:alphasense parent="box_back" calib_file="${alphasense_calibration}">
+   <origin xyz="0.8 0 0.1" rpy="0 0 0" />
+  </xacro:alphasense>
+
+  <!-- This is the frame in which the ground truth is generated, conincides with the alphasense IMU -->
+  <link name="base"/>
+
+  <link name="imu_sensor_frame"/>
+
+  <joint name="alphasense_imu_mapping" type="fixed">
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+    <parent link="alphasense_imu"/>
+    <child link="imu_sensor_frame"/>
+  </joint>
+
+  <joint name="alphasense_imu_to_base" type="fixed">
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+    <parent link="alphasense_imu"/>
+    <child link="base"/>
+  </joint>
+
+  <!-- Livox -->
+  <link name="livox_link"/>
+
+  <joint name="box_back_to_livox_link" type="fixed">
+      <origin xyz="0.8 0.0 0.2" rpy="${pi/2} ${-pi} 0.0" />
+      <parent link="box_back" />
+      <child link="livox_link" />
+  </joint>
+
+  <xacro:livox_device parent="livox_link" lidar_frame="livox_frame">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+  </xacro:livox_device>
+
+  <!-- Hesai -->
+  <link name="hesai_link"/>
+
+  <joint name="box_back_to_hesai_link" type="fixed">
+      <origin xyz="0.8 0.0 0.0" rpy="0.0 0.0 ${pi}" />
+      <parent link="box_back" />
+      <child link="hesai_link" />
+  </joint>
+
+  <xacro:hesai_device parent="hesai_link" lidar_frame="PandarXT-32">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </xacro:hesai_device>
+
+  <!-- USB Cam -->
+  <link name="usb_cam_link"/>
+
+  <joint name="box_back_to_usb_cam_link" type="fixed">
+      <origin xyz="0.8 0.0 0.25" rpy="0.0 0.0 0.0" />
+      <parent link="box_back" />
+      <child link="usb_cam_link" />
+  </joint>
+
+  <link name="usb_cam">
+      <visual>
+        <geometry>
+          <box size="0.05 0.05 0.05"/>
+        </geometry>
+        <material name="gray_solid"/>
+      </visual>
+  </link>
+
+  <joint name="usb_cam_link_to_usb_cam" type="fixed">
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 ${-pi/4} 0.0" />
+      <parent link="usb_cam_link" />
+      <child link="usb_cam" />
+  </joint>
+
+  <!-- Adis IMU -->
+<!--  TODO: not calibrated-->
+  <link name="adis_imu_link">
+      <visual>
+        <geometry>
+          <box size="0.02 0.02 0.01"/>
+        </geometry>
+        <material name="gray_solid"/>
+      </visual>
+  </link>
+
+  <joint name="box_back_to_adis_imu_link" type="fixed">
+    <origin xyz="0.8 0.0 0.3" rpy="0.0 0.0 0.0" />
+    <parent link="box_back" />
+    <child link="adis_imu_link" />
+  </joint>
+
+  <link name="adis16475_link"/>
+
+  <joint name="adis_imu" type="fixed">
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      <parent link="adis_imu_link" />
+      <child link="adis16475_link" />
+  </joint>
+
+</robot>
