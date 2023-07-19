@@ -206,4 +206,29 @@ limitations under the License.
       <child link="usb_cam" />
   </joint>
 
+  <!-- Adis IMU -->
+<!--  TODO: not calibrated-->
+  <link name="adis_imu_link">
+      <visual>
+        <geometry>
+          <box size="0.02 0.02 0.01"/>
+        </geometry>
+        <material name="gray_solid"/>
+      </visual>
+  </link>
+
+  <joint name="box_back_to_adis_imu_link" type="fixed">
+    <origin xyz="0.8 0.0 0.3" rpy="0.0 0.0 0.0" />
+    <parent link="box_back" />
+    <child link="adis_imu_link" />
+  </joint>
+
+  <link name="adis16475_link"/>
+
+  <joint name="adis_imu" type="fixed">
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      <parent link="adis_imu_link" />
+      <child link="adis16475_link" />
+  </joint>
+
 </robot>
