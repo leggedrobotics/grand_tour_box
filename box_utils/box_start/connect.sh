@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# run config file
-source ~/catkin_ws/src/grand_tour_box/box_utils/box_start/config.sh
-
+# Constants
+JETSON_IP="192.168.2.51"
+NUC_IP="192.168.2.56"
 
 # Wait for Jetson to be ready
 echo "Waiting for Jetson"
