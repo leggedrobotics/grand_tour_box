@@ -295,6 +295,16 @@ Submodules are defined in: `.gitmodules`
 Credits
 </h2>
 
+### Autostart
+When powered on the jetson and the nuc both automatically start a tmux session specified by box_jetson.yaml respectively box_nuc.yaml. The tmux session is detached. 
+```
+# Attach to the session
+attach-jetson
+attach-nuc
+# Restart the session without powering off and on again
+restart-tmux
+```
+
 ### Recording of bags
 The recording of bags is handled in `box_recording`.
 The following launch file manages the recording of bags:
