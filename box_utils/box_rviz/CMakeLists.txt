@@ -9,7 +9,7 @@
 # See the License for more information.
 #=============================================================================
 cmake_minimum_required(VERSION 3.10)
-project(box_rqt_perspective)
+project(box_rviz)
 
 #==
 # Dependencies
@@ -41,7 +41,7 @@ catkin_install_python(
 
 
 install(
-  DIRECTORY scripts
+  DIRECTORY src
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 

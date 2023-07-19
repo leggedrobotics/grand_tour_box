@@ -1,0 +1,3 @@
+<launch>
+  <node pkg="box_rqt" type="publish_sensor_freq.py" name="publish_sensor_freq" output="screen"/>
+</launch>

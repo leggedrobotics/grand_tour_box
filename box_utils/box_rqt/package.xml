@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>box_rqt_perspective</name>
+  <name>box_rqt</name>
   <version>1.0.0</version>
-  <description>Box rqt perspecitve</description>
+  <description>Box rqt</description>
   <license>Proprietary</license>
   <maintainer email="schmirob@ethz.ch">Robin Schmid</maintainer>
   <author email="schmirob@ethz.ch">Robin Schmid</author>
