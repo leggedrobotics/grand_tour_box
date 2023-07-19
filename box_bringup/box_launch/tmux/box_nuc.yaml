@@ -14,6 +14,7 @@ windows:
     - shell_command:
       - source /opt/ros/noetic/setup.bash
       - source ~/catkin_ws/devel/setup.bash
+      - source connect.sh
       - roslaunch box_launch fkie.launch
           autostart_launch_files:="
             $(rospack find box_launch)/launch/adis16475.launch
