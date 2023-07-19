@@ -4,8 +4,8 @@
   <version>1.0.0</version>
   <description>RSL's box launch package.</description>
   <license>Proprietary</license>
-  <maintainer email="jonfrey@ethz.ch">Vassilios Tsounis</maintainer>
-  <author email="jonfrey@ethz.ch">Vassilios Tsounis</author>
+  <maintainer email="jonfrey@ethz.ch">Jonas Frey</maintainer>
+  <author email="jonfrey@ethz.ch">Jonas Frey</author>
   <buildtool_depend>catkin</buildtool_depend>
 
   <depend>bringup_alphasense</depend>
@@ -16,6 +16,10 @@
   <depend>bringup_totalstation</depend>
   <depend>bringup_gps</depend>
   <depend>bringup_adis16475</depend>
-  <depend>fkie_multimaster</depend>
+  <exec_depend>fkie_multimaster_msgs</exec_depend>
+  <exec_depend>fkie_master_discovery</exec_depend>
+  <exec_depend>fkie_master_sync</exec_depend>
+  <exec_depend>fkie_node_manager</exec_depend>
+  <exec_depend>fkie_node_manager_daemon</exec_depend>
   <depend>box_recording</depend>
 </package>
