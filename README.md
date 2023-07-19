@@ -296,7 +296,14 @@ Credits
 </h2>
 
 ### Autostart
-When powered on the jetson and the nuc both automatically start a tmux session specified by box_jetson.yaml respectively box_nuc.yaml. The tmux session is detached. To attach to it, run 'attach-jetson' or 'attach-nuc' respectively.
+When powered on the jetson and the nuc both automatically start a tmux session specified by box_jetson.yaml respectively box_nuc.yaml. The tmux session is detached. 
+```
+# Attach to the session
+attach-jetson
+attach-nuc
+# Restart the session without powering off and on again
+restart-tmux
+```
 
 ### Recording of bags
 The recording of bags is handled in `box_recording`.

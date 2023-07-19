@@ -13,4 +13,5 @@ alias ssh-nuc='ssh rsl@192.168.2.56'
 alias ssh-jetson='ssh rsl@192.168.2.51'
 alias attach-nuc='tmux attach-session -t box_nuc'
 alias attach-jetson='tmux attach-session -t box_jetson'
+alias restart-tmux='sudo systemctl restart autostart_tmux'
 
