@@ -18,9 +18,6 @@ windows:
           autostart_launch_files:="
             $(rospack find box_rqt)/launch/box_rqt.launch
             "
-          load_launch_files:="
-            $(rospack find box_rqt)/launch/box_rqt.launch
-            "
     - shell_command:
       - source /opt/ros/noetic/setup.bash
       - source ~/catkin_ws/devel/setup.bash
