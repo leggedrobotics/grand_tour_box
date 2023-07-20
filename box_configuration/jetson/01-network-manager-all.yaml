@@ -1,0 +1,12 @@
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    mgbe0:
+      addresses:
+        - 192.168.2.51/24
+      dhcp4: no
+    mgbe0:
+      addresses:
+        - 192.168.20.1/24
+      dhcp4: no
