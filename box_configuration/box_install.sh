@@ -22,8 +22,6 @@ git clone --recurse-submodules git@github.com:leggedrobotics/grand_tour_box.git
 cd ~/git/grand_tour_box
 ln -s ~/git/grand_tour_box ~/catkin_ws/src
 cd ~/catkin_ws
-catkin build box_launch
-catkin build box_launch
 
 # Install driver dependencies
 sudo apt install libv4l-dev v4l-utils
