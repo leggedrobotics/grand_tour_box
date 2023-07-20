@@ -16,7 +16,7 @@ windows:
       - source ~/catkin_ws/devel/setup.bash
       - roslaunch box_launch fkie.launch
           autostart_launch_files:="
-            $(rospack find box_rqt)/launch/box_rqt.launch
+            $(rospack find box_rviz)/launch/box_rviz.launch
             "
     - shell_command:
       - source /opt/ros/noetic/setup.bash

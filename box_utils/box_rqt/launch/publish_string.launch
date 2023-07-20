@@ -1,9 +1,0 @@
-<launch>
-  <rosparam command="load" file="$(find box_rqt)/cfg/rviz_strings.yaml"/>
-
-  <!-- Specify the package and executable -->
-  <node pkg="box_rqt" type="publish_string.py" name="string_publisher_node" output="screen">
-    <rosparam param="string_list">$(arg strings)</rosparam>
-
-  </node>
-</launch>

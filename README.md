@@ -49,7 +49,7 @@ The project is organized into the following directories:
 
   - **box_recording**: Offers recording tools for the box.
 
-  - **box_rviz_plugins**: Provides nice plugins for RVIZ.
+  - **box_rqt**: Provides nice plugins for RVIZ.
 
   - **box_setup**: Contains scripts to initialize the box workspace and Docker containers.
 
