@@ -1,0 +1,5 @@
+strings:
+  - Camera
+  - Lidar
+  - GPS
+  - IMU

@@ -1,5 +1,6 @@
 <launch>
 <!--    launch launch file-->
-  <include file="$(find box_rqt)/launch/rqt_gui.launch"> </include>
-  <include file="$(find box_rqt)/launch/publish_sensor_freq.launch"> </include>
+  <include file="$(find box_rqt)/launch/rqt_perspective.launch"/>
+  <include file="$(find box_rqt)/launch/publish_sensor_freq.launch"/>
+  <include file="$(find box_rqt)/launch/publish_string.launch"/>
 </launch>
