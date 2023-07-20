@@ -7,7 +7,7 @@ import time
 import yaml
 
 class FrequencyPublisher:
-    def __init__(self, topic_name, input_type):
+    def __init__(self, topic_name):
         self.topic_name = topic_name
         self.window_duration = 1.0  # Time window for calculating instantaneous frequency (in seconds)
 
@@ -15,7 +15,7 @@ class FrequencyPublisher:
         self.window_start_time = time.time()
         self.frequency = 0.0
 
-        rospy.Subscriber(self.topic_name, input_type, self.callback)
+        rospy.Subscriber(self.topic_name, rospy.AnyMsg, self.callback)
         self.publisher = rospy.Publisher(self.topic_name + "/rate", Float32, queue_size=10)
 
     def callback(self, data):
@@ -43,10 +43,7 @@ if __name__ == '__main__':
 
     publishers = []
     for topic in camera_topics:
-        if topic.endswith("/camera_info"):
-            publisher = FrequencyPublisher(topic, input_type=CameraInfo)
-        else:
-            publisher = FrequencyPublisher(topic, input_type=Image)
+        publisher = FrequencyPublisher(topic)
         publishers.append(publisher)
 
     rospy.spin()

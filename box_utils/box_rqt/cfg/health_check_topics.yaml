@@ -2,4 +2,9 @@ health_check_topics:
   - /alphasense_driver_node/cam3
   - /alphasense_driver_node/cam4
   - /alphasense_driver_node/cam5
-  - /usb_cam/camera_info
+  - /usb_cam/image
+  - /hesai/pandar
+  - /livox/lidar
+  - /adis16475
+  - /livox/imu
+  - /alphasense_driver_node/imu
