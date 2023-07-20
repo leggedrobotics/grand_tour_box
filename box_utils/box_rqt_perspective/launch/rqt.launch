@@ -1,9 +1,0 @@
-<launch>
-  <node name = "rqt_perspective" pkg = "rqt_gui" type = "rqt_gui" respawn = "false" output = "screen" args = "--force-discover --clear-config
-   --freeze-layout --lock-perspective --hide-title --perspective-file $(find box_rqt_perspective)/cfg/rqt_replay.perspective"/>
-
-<!--     Launch rviz with rqt perspective-->
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find box_rqt_perspective)/cfg/config.rviz" />
-
-</launch>
-

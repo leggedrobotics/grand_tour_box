@@ -1,0 +1,14 @@
+<launch>
+  <!-- Declare the parameters -->
+  <arg name="msg_param" default="Cameras" />
+  <arg name="topic_param" default="rqt_topic1" />
+
+  <!-- Specify the package and executable -->
+  <node pkg="box_rqt" type="string_publisher.py" name="string_publisher_node" output="screen">
+
+    <!-- Pass the parameters to the Python node -->
+    <param name="topic_name" value="$(arg topic_param)" />
+    <param name="msg_string" value="$(arg msg_param)" />
+
+  </node>
+</launch>

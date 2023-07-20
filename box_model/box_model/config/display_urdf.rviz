@@ -77,6 +77,10 @@ Visualization Manager:
         All Enabled: false
         PandarXT-32:
           Value: true
+        adis16475_link:
+          Value: true
+        adis_imu_link:
+          Value: true
         alphasense_imu:
           Value: true
         alphasense_mount:
@@ -132,6 +136,9 @@ Visualization Manager:
       Tree:
         box:
           box_back:
+            adis_imu_link:
+              adis16475_link:
+                {}
             alphasense_mount:
               alphasense_imu:
                 base:

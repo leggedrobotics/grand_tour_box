@@ -1,9 +1,6 @@
 <launch>
   <arg name="box_namespace" default="gt_box"/>
-
-<!--    TODO: Change this back-->
   <arg name="hostname" default="$(env HOSTNAME)"/>
-<!--  <arg name="hostname" default="lpc"/> -->
 
   <group ns="$(arg box_namespace)">
     <node pkg="box_recording"
