@@ -1,0 +1,5 @@
+health_check_topics:
+  - /alphasense_driver_node/cam3
+  - /alphasense_driver_node/cam4
+  - /alphasense_driver_node/cam5
+  - /usb_cam/camera_info

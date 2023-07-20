@@ -5,6 +5,7 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
+        - /String1
       Splitter Ratio: 0.39407745003700256
     Tree Height: 485
   - Class: rviz/Selection
@@ -256,6 +257,25 @@ Visualization Manager:
       size: 100
       text size: 17
       top: 150
+    - Align Bottom: false
+      Background Alpha: 0
+      Background Color: 0; 0; 0
+      Class: jsk_rviz_plugin/String
+      Enabled: true
+      Foreground Alpha: 0.800000011920929
+      Foreground Color: 25; 255; 240
+      Name: String
+      Overtake Color Properties: true
+      Overtake Position Properties: true
+      Topic: /rqt_topic1
+      Value: true
+      font: KacstPoster
+      height: 128
+      left: 130
+      line width: 2
+      text size: 12
+      top: 0
+      width: 138
   Enabled: true
   Global Options:
     Background Color: 176; 176; 176
@@ -324,5 +344,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 2470
-  X: 81
-  Y: 56
+  X: 72
+  Y: -10
