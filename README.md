@@ -49,7 +49,7 @@ The project is organized into the following directories:
 
   - **box_recording**: Offers recording tools for the box.
 
-  - **box_rqt**: Provides nice plugins for RVIZ.
+  - **box_rviz**: Provides a RVIZ interface for visualizing all sensor data and health monitoring.
 
   - **box_setup**: Contains scripts to initialize the box workspace and Docker containers.
 
@@ -255,6 +255,12 @@ sudo udevadm trigger
 sudo ldconfig
 ```
 Note: You might have to reboot your computer for this to take effect. You can check by see whether a `/dev/versavis` is available and pointing to the correct device.
+
+### Submodules for visualization
+The rviz visualization tool uses the rviz_rqt_wrapper from ANYbotics. Follow the newest release instructions on the [bitbucket](https://bitbucket.org/leggedrobotics/anymal_rsl/wiki/Simulation%20PC%20and%20OPC%20Setup%20-%20Release%20%2222.05%22).
+```
+catkin build anymal_rsl_user_interface
+```
 
 ### Update submodules from remote if needed
 ```
