@@ -19,7 +19,7 @@ windows:
           autostart_launch_files:="
             $(rospack find box_launch)/launch/adis16475.launch
             $(rospack find box_launch)/launch/usb_cam.launch
-            $(rospack find box_rqt)/launch/box_rqt.launch
+            $(rospack find box_rviz)/launch/box_rviz.launch
             $(rospack find box_recording)/launch/rosbag_record_node.launch
             "
           use_gui:=false
