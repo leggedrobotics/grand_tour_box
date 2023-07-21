@@ -7,12 +7,12 @@ windows:
   layout: tiled
   shell_command_before:
     - export HOSTNAME
+    - export DISPLAY=:0.0
 
   options:
     pane-border-status: top
   panes:
     - shell_command:
-      - export DISPLAY=:0.0
       - source /opt/ros/noetic/setup.bash
       - source ~/catkin_ws/devel/setup.bash
       - roslaunch box_launch fkie.launch
@@ -28,7 +28,6 @@ windows:
           use_gui:=true
           is_rosmaster:=true
     - shell_command:
-      - export DISPLAY=:0.0
       - source /opt/ros/noetic/setup.bash
       - source ~/catkin_ws/devel/setup.bash
       - source ~/catkin_ws/src/grand_tour_box/box_utils/box_setup/alias/alias.sh  
