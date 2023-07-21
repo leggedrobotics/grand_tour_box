@@ -60,6 +60,7 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/deb-7
 sudo apt update
 sudo apt install alphasense-driver-core alphasense-viewer alphasense-firmware ros-noetic-alphasense-driver-ros ros-noetic-alphasense-driver
 sudo sysctl -w net.core.rmem_max=11145728
+echo -e "net.core.rmem_max=11145728" | sudo tee /etc/sysctl.d/90-increase-network-buffers.conf
 
 sudo apt install ros-noetic-rosserial
 sudo apt install ros-noetic-rosserial-arduino
