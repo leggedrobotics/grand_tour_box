@@ -73,5 +73,4 @@ source ~/catkin_ws/devel/setup.bash
 cd ~/catkin_ws/src/grand_tour_box/box_drivers/smb_imu_interface/firmware
 
 # Miscellaneous
-sudo apt install netplan.io
-sudo apt install linuxptp
+sudo apt install netplan.io linuxptp tmux tmuxp
