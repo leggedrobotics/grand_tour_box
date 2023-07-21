@@ -1,0 +1,7 @@
+<launch>
+  <node name="rqt_perspective" pkg="rqt_gui" type="rqt_gui" respawn="false" output="screen" args="--force-discover --clear-config --freeze-layout --lock-perspective --hide-title --perspective-file $(find box_rviz)/cfg/rqt_replay.perspective">
+    <rosparam command="load" file="$(find box_rviz)/cfg/rqt_settings.yaml"/>
+  </node>
+  <!-- Launch rviz with rqt perspective -->
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find box_rviz)/cfg/config.rviz" />
+</launch>
