@@ -12,6 +12,7 @@ windows:
     pane-border-status: top
   panes:
     - shell_command:
+      - export DISPLAY=:0.0
       - source /opt/ros/noetic/setup.bash
       - source ~/catkin_ws/devel/setup.bash
       - roslaunch box_launch fkie.launch
@@ -27,7 +28,9 @@ windows:
           use_gui:=true
           is_rosmaster:=true
     - shell_command:
+      - export DISPLAY=:0.0
       - source /opt/ros/noetic/setup.bash
       - source ~/catkin_ws/devel/setup.bash
+      - source ~/catkin_ws/src/grand_tour_box/box_utils/box_setup/alias/alias.sh  
       - df -h $HOME
       focus: true
