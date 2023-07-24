@@ -3,9 +3,9 @@
   <arg name="hostname" default="$(env HOSTNAME)"/>
 
   <group ns="$(arg box_namespace)">
-    <node pkg="box_status"
-        name="box_status_$(arg hostname)"
-        type="box_status_node.py"
+    <node pkg="box_health"
+        name="service_status_$(arg hostname)"
+        type="publish_service_status.py"
         output="screen">
     </node>
   </group>

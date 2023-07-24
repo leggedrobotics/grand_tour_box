@@ -46,10 +46,7 @@ class BoxStatusNode:
         #self.r = rostopic.ROSTopicHz(1)
 
         rp = rospkg.RosPack()
-        self.topics_yaml = join( str(rp.get_path('box_status')), "cfg/box_status_topics.yaml")
-        self.topics = load_yaml(self.topics_yaml)
-
-        self.services_yaml = join( str(rp.get_path('box_status')), "cfg/box_status_services.yaml")
+        self.services_yaml = join( str(rp.get_path('box_health')), "cfg/health_check_services.yaml")
         self.services = load_yaml(self.services_yaml)
         rospy.loginfo("[BoxStatusNode] Setup.")
         
@@ -59,13 +56,6 @@ class BoxStatusNode:
     def check_clock(interface):
         print("Check clock")
 
-    def check_topic(self, topic):
-        print(self.r.get_hz('/alphasense_driver_node/cam0')) 
-        print("Check: ", topic)
-
-    def check_topics(self):
-        for topic in self.topics[self.hostname]:
-            self.check_topic(topic)
 
     def check_service(self, service):
         
@@ -94,10 +84,6 @@ class BoxStatusNode:
     def check_services(self):
         for service in self.services[self.hostname]:
             self.check_service(service)
-    def check_status(self):
-        print("Check status")
-        #self.check_topics()
-        self.check_services()
 
 if __name__ == '__main__':
     rospy.loginfo("[BoxStatusNode] Starting the box status node")
@@ -105,7 +91,7 @@ if __name__ == '__main__':
     r = rospy.Rate(10) # 10Hz
     i = 0
     while not rospy.is_shutdown() and i < 1:
-        box_status.check_status()
+        box_status.check_services()
         r.sleep()
         i = i + 1
     

@@ -1,7 +1,8 @@
 <launch>
+  <arg name="hostname" default="$(env HOSTNAME)"/>
   <arg name="health_check_topics" default=""/>
   <rosparam command="load" file="$(find box_health)/cfg/health_check_topics.yaml"/>
-  <node pkg="box_health" type="publish_sensor_freq.py" name="publish_sensor_freq" output="screen">
+  <node pkg="box_health" type="publish_sensor_freq.py" name="sensor_frequency_$(arg hostname)" output="screen">
       <param name="health_check_topics" value="$(arg health_check_topics)"/>
   </node>
 </launch>
