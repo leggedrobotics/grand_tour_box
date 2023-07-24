@@ -53,12 +53,10 @@
       </node>
     </group>
   </group>
-  <group if="$(arg run_nodemanager)">
     <node pkg="fkie_node_manager"
             type="node_manager"
             name="node_manager"
             if="$(arg use_gui)"/>
-  </group>
   <group if="$(arg is_rosmaster)">
     <!-- fkie_master_discovery -->
     <include file="$(find box_launch)/launch/master_discovery.launch" />

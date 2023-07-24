@@ -18,7 +18,6 @@ windows:
           autostart_launch_files:="
             $(rospack find box_rviz)/launch/box_rviz.launch
             "
-          run_nodemanager:=true
     - shell_command:
       - source /opt/ros/noetic/setup.bash
       - source ~/catkin_ws/devel/setup.bash
