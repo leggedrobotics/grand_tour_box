@@ -22,6 +22,18 @@ def load_yaml(path: str) -> dict:
         res = {}
     return res
 
+def last_line(text: str) -> str:
+    """Returns last line of a text
+    Args:
+        text (str): some string, may or may not 
+        contain one or multiple newlines
+    Returns:
+        (str): Returns the last line
+    """
+    # find last newline, ignoring the one at the very end
+    idx = text.rfind('\n', 0, len(text) - 1)
+    return text[idx+1:]
+
 class BoxStatusNode:
     def __init__(self):
         print("init")
@@ -56,13 +68,27 @@ class BoxStatusNode:
             self.check_topic(topic)
 
     def check_service(self, service):
-        print("check service: ", service)
+        
+        # check if service is active
         p = subprocess.Popen(["systemctl", "is-active",  service], stdout=subprocess.PIPE)
-        (output, err) = p.communicate()
-        output = output.decode('utf-8').strip()
-        print("out: ", output)
-        print("-----")
-        print("err: ", err)
+        (output_active, error_active) = p.communicate()
+        output_active = output_active.decode('utf-8').strip()
+        # print("out: ", output_active)
+        # print("err: ", error_active)
+
+        # check status of service
+        p = subprocess.Popen(["systemctl", "status",  service], stdout=subprocess.PIPE)
+        (output_status, error_status) = p.communicate()
+        # print("out: ", output.decode('utf-8'))
+        # print("last: ", last_line(output.decode('utf-8')))
+        # print("err: ", err)
+
+        if "ptp4l" in service:
+            print("ptp4l")
+        elif "phc2sys" in service:
+            print("phc2sys")
+
+        
 
 
     def check_services(self):
@@ -78,7 +104,7 @@ if __name__ == '__main__':
     box_status = BoxStatusNode()
     r = rospy.Rate(10) # 10Hz
     i = 0
-    while not rospy.is_shutdown() and i < 3:
+    while not rospy.is_shutdown() and i < 1:
         box_status.check_status()
         r.sleep()
         i = i + 1
