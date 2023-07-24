@@ -541,7 +541,7 @@
                   "type": "repr"
                 },
                 "mouse_pub_topic": {
-                  "repr": "'/alphasense_driver_node/cam3'",
+                  "repr": "'/gt_box/alphasense_driver_node/cam3/compressed'",
                   "type": "repr"
                 },
                 "num_gridlines": {
@@ -565,7 +565,7 @@
                   "type": "repr"
                 },
                 "topic": {
-                  "repr": "'/alphasense_driver_node/cam3'",
+                  "repr": "'/gt_box/alphasense_driver_node/cam3/compressed'",
                   "type": "repr"
                 },
                 "zoom1": {
@@ -608,7 +608,7 @@
                   "type": "repr"
                 },
                 "mouse_pub_topic": {
-                  "repr": "'/alphasense_driver_node/cam4'",
+                  "repr": "'/gt_box/alphasense_driver_node/cam4/compressed'",
                   "type": "repr"
                 },
                 "num_gridlines": {
@@ -632,7 +632,7 @@
                   "type": "repr"
                 },
                 "topic": {
-                  "repr": "'/alphasense_driver_node/cam4'",
+                  "repr": "'/gt_box/alphasense_driver_node/cam4/compressed'",
                   "type": "repr"
                 },
                 "zoom1": {
@@ -675,7 +675,7 @@
                   "type": "repr"
                 },
                 "mouse_pub_topic": {
-                  "repr": "'/alphasense_driver_node/cam5'",
+                  "repr": "'/gt_box/alphasense_driver_node/cam5/compressed'",
                   "type": "repr"
                 },
                 "num_gridlines": {
@@ -699,7 +699,7 @@
                   "type": "repr"
                 },
                 "topic": {
-                  "repr": "'/alphasense_driver_node/cam5'",
+                  "repr": "'/gt_box/alphasense_driver_node/cam5/compressed'",
                   "type": "repr"
                 },
                 "zoom1": {
@@ -742,7 +742,7 @@
                   "type": "repr"
                 },
                 "mouse_pub_topic": {
-                  "repr": "'/usb_cam/image'",
+                  "repr": "'/gt_box/usb_cam/image/compressed'",
                   "type": "repr"
                 },
                 "num_gridlines": {
@@ -766,7 +766,7 @@
                   "type": "repr"
                 },
                 "topic": {
-                  "repr": "'/usb_cam/image'",
+                  "repr": "'/gt_box/usb_cam/image/compressed'",
                   "type": "repr"
                 },
                 "zoom1": {
