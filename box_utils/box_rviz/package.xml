@@ -7,5 +7,6 @@
   <maintainer email="schmirob@ethz.ch">Robin Schmid</maintainer>
   <author email="schmirob@ethz.ch">Robin Schmid</author>
   <buildtool_depend>catkin</buildtool_depend>
+  <depend>rqt_rviz_wrapper</depend>
 
 </package>
