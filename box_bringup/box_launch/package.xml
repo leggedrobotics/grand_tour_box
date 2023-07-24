@@ -23,4 +23,6 @@
   <exec_depend>fkie_node_manager_daemon</exec_depend>
   <depend>box_recording</depend>
   <depend>box_rviz</depend>
+  <depend>box_health</depend>
+  <depend>box_model</depend>
 </package>
