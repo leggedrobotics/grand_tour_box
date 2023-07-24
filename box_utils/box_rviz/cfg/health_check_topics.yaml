@@ -1,10 +1,10 @@
 health_check_topics:
-  - /alphasense_driver_node/cam3
-  - /alphasense_driver_node/cam4
-  - /alphasense_driver_node/cam5
-  - /usb_cam/image
-  - /hesai/pandar
-  - /livox/lidar
-  - /adis16475
-  - /livox/imu
-  - /alphasense_driver_node/imu
+  - /gt_box/alphasense_driver_node/cam3
+  - /gt_box/alphasense_driver_node/cam4
+  - /gt_box/alphasense_driver_node/cam5
+  - /gt_box/usb_cam/image
+  - /gt_box/hesai/pandar
+  - /gt_box/livox/lidar
+  - /gt_box/adis16475
+  - /gt_box/livox/imu
+  - /gt_box/alphasense_driver_node/imu

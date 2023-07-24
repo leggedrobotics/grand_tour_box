@@ -1,6 +1,10 @@
 <launch>
+  <arg name="box_namespace" default="gt_box"/>
+  <group ns="$(arg box_namespace)">
+
 	<arg name="dev" default="/dev/ttyUSB0"/>
 	<arg name="baud" default="230400"/>
 
 	<node name="leica_interface" pkg="leica_interface" type="leica_node.py" output="screen" respawn="true" args="-m -t -l -f -p $(arg dev) -r $(arg baud)" />
+  </group>
 </launch>

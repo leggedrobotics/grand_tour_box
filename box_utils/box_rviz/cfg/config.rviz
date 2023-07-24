@@ -101,7 +101,7 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.009999999776482582
       Style: Flat Squares
-      Topic: /hesai/pandar
+      Topic: /gt_box/hesai/pandar
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
@@ -129,7 +129,7 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.009999999776482582
       Style: Flat Squares
-      Topic: /livox/lidar
+      Topic: /gt_box/livox/lidar
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
@@ -141,7 +141,7 @@ Visualization Manager:
       History Length: 1
       Name: Alphasense IMU
       Queue Size: 10
-      Topic: /alphasense_driver_node/imu
+      Topic: /gt_box/alphasense_driver_node/imu
       Unreliable: false
       Value: false
     - Alpha: 1
@@ -151,7 +151,7 @@ Visualization Manager:
       History Length: 1
       Name: Livox IMU
       Queue Size: 10
-      Topic: /livox/imu
+      Topic: /gt_box/livox/imu
       Unreliable: false
       Value: false
     - Alpha: 1
@@ -161,13 +161,13 @@ Visualization Manager:
       History Length: 1
       Name: Adis IMU
       Queue Size: 10
-      Topic: /adis16475
+      Topic: /gt_box/adis16475
       Unreliable: false
       Value: false
     - Class: jsk_rviz_plugin/PieChart
       Enabled: true
       Name: Left
-      Topic: /alphasense_driver_node/cam3/rate
+      Topic: /gt_box/alphasense_driver_node/cam3/rate
       Value: true
       auto color change: true
       background color: 0; 0; 0
@@ -190,7 +190,7 @@ Visualization Manager:
     - Class: jsk_rviz_plugin/PieChart
       Enabled: true
       Name: Front
-      Topic: /alphasense_driver_node/cam4/rate
+      Topic: /gt_box/alphasense_driver_node/cam4/rate
       Value: true
       auto color change: true
       background color: 0; 0; 0
@@ -213,7 +213,7 @@ Visualization Manager:
     - Class: jsk_rviz_plugin/PieChart
       Enabled: true
       Name: Right
-      Topic: /alphasense_driver_node/cam5/rate
+      Topic: /gt_box/alphasense_driver_node/cam5/rate
       Value: true
       auto color change: true
       background color: 0; 0; 0
@@ -236,7 +236,7 @@ Visualization Manager:
     - Class: jsk_rviz_plugin/PieChart
       Enabled: true
       Name: HDR
-      Topic: /usb_cam/image/rate
+      Topic: /gt_box/usb_cam/image/rate
       Value: true
       auto color change: true
       background color: 0; 0; 0
@@ -335,7 +335,7 @@ Visualization Manager:
     - Class: jsk_rviz_plugin/PieChart
       Enabled: true
       Name: Livox
-      Topic: /livox/lidar/rate
+      Topic: /gt_box/livox/lidar/rate
       Value: true
       auto color change: true
       background color: 0; 0; 0
@@ -358,7 +358,7 @@ Visualization Manager:
     - Class: jsk_rviz_plugin/PieChart
       Enabled: true
       Name: Hesai
-      Topic: /hesai/pandar/rate
+      Topic: /gt_box/hesai/pandar/rate
       Value: true
       auto color change: true
       background color: 0; 0; 0
@@ -381,7 +381,7 @@ Visualization Manager:
     - Class: jsk_rviz_plugin/PieChart
       Enabled: true
       Name: Adis
-      Topic: /adis16475/rate
+      Topic: /gt_box/adis16475/rate
       Value: true
       auto color change: true
       background color: 0; 0; 0
@@ -404,7 +404,7 @@ Visualization Manager:
     - Class: jsk_rviz_plugin/PieChart
       Enabled: true
       Name: Livox
-      Topic: /livox/imu/rate
+      Topic: /gt_box/livox/imu/rate
       Value: true
       auto color change: true
       background color: 0; 0; 0
@@ -427,7 +427,7 @@ Visualization Manager:
     - Class: jsk_rviz_plugin/PieChart
       Enabled: true
       Name: Alphasense
-      Topic: /alphasense_driver_node/imu/rate
+      Topic: /gt_box/alphasense_driver_node/imu/rate
       Value: true
       auto color change: true
       background color: 0; 0; 0

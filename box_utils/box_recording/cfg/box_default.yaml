@@ -1,17 +1,17 @@
 jetson:
-  - /alphasense_driver_node/aux_imu
-  - /alphasense_driver_node/cam0
-  - /alphasense_driver_node/cam1
-  - /alphasense_driver_node/cam3
-  - /alphasense_driver_node/cam4
-  - /alphasense_driver_node/cam5
-  - /alphasense_driver_node/imu
-  - /hesai/pandar
-  - /hesai/pandar_packets
-  - /livox/imu
-  - /livox/lidar
+  - /gt_box/alphasense_driver_node/aux_imu
+  - /gt_box/alphasense_driver_node/cam0
+  - /gt_box/alphasense_driver_node/cam1
+  - /gt_box/alphasense_driver_node/cam3
+  - /gt_box/alphasense_driver_node/cam4
+  - /gt_box/alphasense_driver_node/cam5
+  - /gt_box/alphasense_driver_node/imu
+  - /gt_box/hesai/pandar
+  - /gt_box/hesai/pandar_packets
+  - /gt_box/livox/imu
+  - /gt_box/livox/lidar
 nuc:
-  - /adis16475
-  - /usb_cam/camera_info
-  - /usb_cam/image
-  - /usb_cam/image/compressedDepth
+  - /gt_box/adis16475
+  - /gt_box/usb_cam/camera_info
+  - /gt_box/usb_cam/image
+  - /gt_box/usb_cam/image/compressedDepth
