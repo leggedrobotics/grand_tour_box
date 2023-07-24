@@ -24,9 +24,10 @@ windows:
             $(rospack find box_model)/launch/box_model.launch
             $(rospack find box_recording)/launch/rosbag_record_coordinator.launch
             $(rospack find box_recording)/launch/rosbag_record_node.launch
+            $(rospack find box_health)/launch/publish_sensor_freq.launch
             "
           use_gui:=true
-          is_rosmaster:=true
+          is_rosmaster:=false
     - shell_command:
       - source /opt/ros/noetic/setup.bash
       - source ~/catkin_ws/devel/setup.bash

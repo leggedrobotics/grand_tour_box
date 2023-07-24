@@ -1,7 +1,0 @@
-<launch>
-  <arg name="health_check_topics" default=""/>
-  <rosparam command="load" file="$(find box_rviz)/cfg/health_check_topics.yaml"/>
-  <node pkg="box_rviz" type="publish_sensor_freq.py" name="publish_sensor_freq" output="screen">
-      <param name="health_check_topics" value="$(arg health_check_topics)"/>
-  </node>
-</launch>
