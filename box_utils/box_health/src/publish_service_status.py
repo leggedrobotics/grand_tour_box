@@ -4,8 +4,10 @@ import rospy
 import rostopic
 import rospkg
 import socket
-from os.path import join
+from os.path import join, splitext
 import yaml
+from std_msgs.msg import Int64
+import re
 
 import subprocess
 
@@ -43,14 +45,15 @@ class BoxStatusNode:
         rospy.init_node(f'box_status_node_{self.hostname}')
         print(self.hostname)
 
-        #self.r = rostopic.ROSTopicHz(1)
-
         rp = rospkg.RosPack()
         self.services_yaml = join( str(rp.get_path('box_health')), "cfg/health_check_services.yaml")
         self.services = load_yaml(self.services_yaml)
         rospy.loginfo("[BoxStatusNode] Setup.")
-        
 
+        self.publishers = {}
+        for service in self.services[self.hostname]:
+            self.publishers[service] = rospy.Publisher("/health_check/" + splitext(service)[0], Int64, queue_size=10)
+        print(self.publishers)
 
     
     def check_clock(interface):
@@ -70,13 +73,27 @@ class BoxStatusNode:
         p = subprocess.Popen(["systemctl", "status",  service], stdout=subprocess.PIPE)
         (output_status, error_status) = p.communicate()
         # print("out: ", output.decode('utf-8'))
-        # print("last: ", last_line(output.decode('utf-8')))
-        # print("err: ", err)
+        recent_line = last_line(output_status.decode('utf-8'))
 
-        if "ptp4l" in service:
-            print("ptp4l")
-        elif "phc2sys" in service:
-            print("phc2sys")
+        if self.hostname == "jetson":
+            if "ptp4l" in service:
+                if "assuming the grand master role" in recent_line:
+                    self.publishers[service].publish(1)
+                else:
+                    self.publishers[service].publish(0)
+            elif "phc2sys" in service:
+                idx = recent_line.find("offset")
+                numbers_in_line = [int(d) for d in re.findall(r'-?\d+', recent_line[idx:])]
+                offset = numbers_in_line[0]
+                freq = numbers_in_line[2]
+                delay = numbers_in_line[3]
+                self.publishers[service].publish(offset)
+
+        #elif self.hostname == "nuc":
+        #    # todo        
+        #    print("ptp4l")
+        
+
 
         
 
@@ -90,7 +107,7 @@ if __name__ == '__main__':
     box_status = BoxStatusNode()
     r = rospy.Rate(10) # 10Hz
     i = 0
-    while not rospy.is_shutdown() and i < 1:
+    while not rospy.is_shutdown():
         box_status.check_services()
         r.sleep()
         i = i + 1
