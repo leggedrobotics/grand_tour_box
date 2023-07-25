@@ -14,6 +14,7 @@ windows:
     - shell_command:
       - source /opt/ros/noetic/setup.bash
       - source ~/catkin_ws/devel/setup.bash
+      - source ~/catkin_ws/src/grand_tour_box/box_utils/box_start/connect.sh
       - roslaunch box_launch fkie.launch
           autostart_launch_files:="
             $(rospack find box_rviz)/launch/box_rviz.launch
