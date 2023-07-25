@@ -39,8 +39,12 @@ def last_line(text: str) -> str:
 def offset_from_status(line: str) -> int:
     idx = line.find("offset")
     numbers_in_line = [int(d) for d in re.findall(r'-?\d+', line[idx:])]
-    offset = numbers_in_line[0]
-    return offset
+    if numbers_in_line:
+        offset = numbers_in_line[0]
+        return offset
+    else:
+        # TODO change
+        return 123456789
 
 class BoxServiceStatus:
     def __init__(self):
@@ -96,9 +100,13 @@ class BoxServiceStatus:
                         self.publishers[service].publish(1)
                     else:
                         self.publishers[service].publish(0)
-            elif "phc2sys" in service:                
-                offset = offset_from_status(recent_line)
-                self.publishers[service].publish(offset)
+            elif "phc2sys" in service:
+                if "Waiting for ptp4l..." in recent_line:
+                    # TODO: change
+                    self.publishers[service].publish(987654321)
+                else:                
+                    offset = offset_from_status(recent_line)
+                    self.publishers[service].publish(offset)
             else:
                 rospy.logerr("[BoxServiceStatus] This service is unknown on the " + self.hostname + ": " + str(service))
         else:
