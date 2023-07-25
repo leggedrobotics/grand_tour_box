@@ -6,5 +6,5 @@ jetson:
 nuc:
   - ptp4l_enp45s0.service
   - ptp4l_enp46s0.service
-  - phc2sys_enp45s0.service
-  - phc2sys_enp46s0.service
+  - phc2sys_NIC.service
+  - phc2sys_system.service
