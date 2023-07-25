@@ -36,19 +36,25 @@ def last_line(text: str) -> str:
     idx = text.rfind('\n', 0, len(text) - 1)
     return text[idx+1:]
 
-class BoxStatusNode:
+def offset_from_status(line: str) -> int:
+    idx = line.find("offset")
+    numbers_in_line = [int(d) for d in re.findall(r'-?\d+', line[idx:])]
+    offset = numbers_in_line[0]
+    return offset
+
+class BoxServiceStatus:
     def __init__(self):
         print("init")
         self.hostname = socket.gethostname()
         self.namespace = rospy.get_namespace()
 
-        rospy.init_node(f'box_status_node_{self.hostname}')
+        rospy.init_node(f'box_service_status_{self.hostname}')
         print(self.hostname)
 
         rp = rospkg.RosPack()
         self.services_yaml = join( str(rp.get_path('box_health')), "cfg/health_check_services.yaml")
         self.services = load_yaml(self.services_yaml)
-        rospy.loginfo("[BoxStatusNode] Setup.")
+        rospy.loginfo("[BoxServiceStatus] Setup.")
 
         self.publishers = {}
         for service in self.services[self.hostname]:
@@ -62,17 +68,9 @@ class BoxStatusNode:
 
     def check_service(self, service):
         
-        # check if service is active
-        p = subprocess.Popen(["systemctl", "is-active",  service], stdout=subprocess.PIPE)
-        (output_active, error_active) = p.communicate()
-        output_active = output_active.decode('utf-8').strip()
-        # print("out: ", output_active)
-        # print("err: ", error_active)
-
         # check status of service
         p = subprocess.Popen(["systemctl", "status",  service], stdout=subprocess.PIPE)
         (output_status, error_status) = p.communicate()
-        # print("out: ", output.decode('utf-8'))
         recent_line = last_line(output_status.decode('utf-8'))
 
         if self.hostname == "jetson":
@@ -81,34 +79,40 @@ class BoxStatusNode:
                     self.publishers[service].publish(1)
                 else:
                     self.publishers[service].publish(0)
-            elif "phc2sys" in service:
-                idx = recent_line.find("offset")
-                numbers_in_line = [int(d) for d in re.findall(r'-?\d+', recent_line[idx:])]
-                offset = numbers_in_line[0]
-                freq = numbers_in_line[2]
-                delay = numbers_in_line[3]
+            elif "phc2sys" in service:                
+                offset = offset_from_status(recent_line)
                 self.publishers[service].publish(offset)
-
-        #elif self.hostname == "nuc":
-        #    # todo        
-        #    print("ptp4l")
+            else:
+                rospy.logerr("[BoxServiceStatus] This service is unknown on the " + self.hostname + ": " + str(service))
         
-
-
+        elif self.hostname == "nuc":
+            if "ptp4l" in service:
+                # enp45s is the slave clock, gets synchronized to jetson:mgbe0
+                if "enp45s0" in service:
+                    offset = offset_from_status(recent_line)
+                    self.publishers[service].publish(offset)
+                if "enp46s0" in service:
+                    if "assuming the grand master role" in recent_line:
+                        self.publishers[service].publish(1)
+                    else:
+                        self.publishers[service].publish(0)
+            elif "phc2sys" in service:                
+                offset = offset_from_status(recent_line)
+                self.publishers[service].publish(offset)
+            else:
+                rospy.logerr("[BoxServiceStatus] This service is unknown on the " + self.hostname + ": " + str(service))
+        else:
+            rospy.logerr("[BoxServiceStatus] This hostname is unknown: " + self.hostname)
         
-
-
     def check_services(self):
         for service in self.services[self.hostname]:
             self.check_service(service)
 
 if __name__ == '__main__':
-    rospy.loginfo("[BoxStatusNode] Starting the box status node")
-    box_status = BoxStatusNode()
-    r = rospy.Rate(10) # 10Hz
-    i = 0
+    rospy.loginfo("[BoxServiceStatus] Starting the box status node")
+    box_service_status = BoxServiceStatus()
+    r = rospy.Rate(1) # 1Hz, the service status itself is published with 1 HZ
     while not rospy.is_shutdown():
-        box_status.check_services()
+        box_service_status.check_services()
         r.sleep()
-        i = i + 1
     
