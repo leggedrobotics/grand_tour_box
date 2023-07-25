@@ -3,3 +3,5 @@ strings:
   - Lidar
   - GPS
   - IMU
+  - Jetson
+  - NUC
