@@ -6,7 +6,7 @@ import rospkg
 import socket
 from os.path import join, splitext
 import yaml
-from std_msgs.msg import Int64
+from std_msgs.msg import Int64, Float32
 import re
 
 import subprocess
@@ -58,7 +58,7 @@ class BoxServiceStatus:
 
         self.publishers = {}
         for service in self.services[self.hostname]:
-            self.publishers[service] = rospy.Publisher("/health_check/" + splitext(service)[0], Int64, queue_size=10)
+            self.publishers[service] = rospy.Publisher("/health_check/" + splitext(service)[0], Float32, queue_size=10)
         print(self.publishers)
 
     
@@ -76,9 +76,9 @@ class BoxServiceStatus:
         if self.hostname == "jetson":
             if "ptp4l" in service:
                 if "assuming the grand master role" in recent_line:
-                    self.publishers[service].publish(1)
+                    self.publishers[service].publish(1.0)
                 else:
-                    self.publishers[service].publish(0)
+                    self.publishers[service].publish(0.0)
             elif "phc2sys" in service:                
                 offset = offset_from_status(recent_line)
                 self.publishers[service].publish(offset)
