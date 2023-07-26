@@ -85,7 +85,7 @@ class BoxServiceStatus:
                 else:
                     self.publishers[service].publish(0.0)
             elif "phc2sys" in service:                
-                offset = offset_from_status(recent_line)
+                offset = abs(offset_from_status(recent_line))
                 self.publishers[service].publish(offset)
             else:
                 rospy.logerr("[BoxServiceStatus] This service is unknown on the " + self.hostname + ": " + str(service))
@@ -94,7 +94,7 @@ class BoxServiceStatus:
             if "ptp4l" in service:
                 # enp45s is the slave clock, gets synchronized to jetson:mgbe0
                 if "enp45s0" in service:
-                    offset = offset_from_status(recent_line)
+                    offset = abs(offset_from_status(recent_line))
                     self.publishers[service].publish(offset)
                 if "enp46s0" in service:
                     if "assuming the grand master role" in recent_line:
@@ -106,7 +106,7 @@ class BoxServiceStatus:
                     # TODO: change
                     self.publishers[service].publish(987654321)
                 else:                
-                    offset = offset_from_status(recent_line)
+                    offset = abs(offset_from_status(recent_line))
                     self.publishers[service].publish(offset)
             else:
                 rospy.logerr("[BoxServiceStatus] This service is unknown on the " + self.hostname + ": " + str(service))

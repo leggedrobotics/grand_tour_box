@@ -1,12 +1,12 @@
 [Unit]
 Description=Synchronize system clock or PTP hardware clock (PHC)
 Documentation=man:phc2sys
-Requires=ptp4l_mgbe0.service
-After=ptp4l_mgbe0.service
+Requires=ptp4l.service
+After=ptp4l.service
 
 [Service]
 Type=simple
-ExecStart=/usr/sbin/phc2sys -w -s mgbe0 -c mgbe1 
+ExecStart=/usr/sbin/phc2sys -w -s enp45s0 -c CLOCK_REALTIME
 
 [Install]
 WantedBy=multi-user.target

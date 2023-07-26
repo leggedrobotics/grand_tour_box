@@ -1,0 +1,9 @@
+# Let NetworkManager manage all devices on this system
+network:
+  version: 2
+  renderer: NetworkManager
+  ethernets:
+    enp45s0:
+      addresses:
+        - 192.168.2.56/24
+      dhcp4: yes
