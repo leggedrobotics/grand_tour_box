@@ -2,10 +2,13 @@
 Description=Precision Time Protocol (PTP) service
 Documentation=man:ptp4l
 After=network.target
-After=time-sync.target
+After=sync_time_once.service
+Requires=sync_time_once.service
+
 [Service]
 Type=simple
-ExecStart=/usr/sbin/ptp4l -f /etc/linuxptp/ptp4l.conf -i mgbe0 -H
+ExecStart=/usr/sbin/ptp4l -f /etc/linuxptp/ptp4l.conf -i mgbe1 -H
 
 [Install]
 WantedBy=multi-user.target
+

@@ -1,6 +1,7 @@
 [Unit]
 Description=Autostart Terminal and Run tmuxp
 After=network.target
+After=roscore.service
 
 [Service]
 Type=forking
