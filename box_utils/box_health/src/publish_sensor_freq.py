@@ -5,6 +5,7 @@ from sensor_msgs.msg import Image, CameraInfo
 from std_msgs.msg import Float32
 import time
 import yaml
+import socket
 
 class FrequencyPublisher:
     def __init__(self, topic_name):
@@ -38,8 +39,12 @@ class FrequencyPublisher:
 if __name__ == '__main__':
     rospy.init_node('frequency_publisher')
 
+    # jetson or nuc
+    hostname = socket.gethostname() 
+
     # Read camera topics from ROS parameter
-    camera_topics = rospy.get_param("health_check_topics", [])
+    camera_topics = rospy.get_param(hostname, [])
+    print(camera_topics)
 
     publishers = []
     for topic in camera_topics:

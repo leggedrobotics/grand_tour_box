@@ -335,11 +335,13 @@ The recorded bags are stored in `grand_tour_box/box_utils/box_recording/data`.
 
 
 ### PTP time sync between jetson and sensors
-```
-# synchronze interal clock of network card to systemtime (let run, dont close)
-sudo phc2sys -m -c mgbe0 -s CLOCK_REALTIME -O 0 -u 10
-sudo phc2sys -m -c mgbe1 -s CLOCK_REALTIME -O 0 -u 10
 
-# start PTP master
-sudo ptp4l -i mgbe0 mgbe1 -m -H
-```
+The clock of the network interface mgbe0 on the jetson is the grandmaster of the system. Both other clocks on the jetson (the system clock and the clock of network interface mgbe1) get synchronized to it using the services phc2sys_mgbe0.service (mgbe0 to system clock) and phc2sys_mgbe1.service (mgbe0 to mgbe1).
+
+Both interfaces on the jetson run services to publish PTP to the ethernet network. This services are called ptp4l_mgbe0.service and ptp4l_mgbe1.service respectively.
+
+The network interface enp45s0 on the NUC is connected by ethernet via switch to the network interface mgbe0 on the Jetson (the grandmaster). The interface enp45s0 get synchronized to mgbe0 with the service ptp4l_enp45s0.sevice. This service configures the enp45s0 interface to act as a slave, i.e. to not act as a clock master in the ethernet network, such that interface mgbe0 on the jetson will always be the clock grandmaster. However, otther clocks on the same machine can still synchronize themselves to the enp45s0 interface.
+
+The other two clocks on the NUC (the system clock and the clock of the network interface enp46s0) get synchronized to the enp45s0 clock with the services phc2sys_sys.service and phc2sys_NIC.service respectively. 
+
+The service ptp4l_enp46s0.service allows the interface enp46s0 to publish PTP to its ethernet network, although nothing is connected there.

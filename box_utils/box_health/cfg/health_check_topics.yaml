@@ -1,10 +1,11 @@
-health_check_topics:
+jetson:
   - /gt_box/alphasense_driver_node/cam3
   - /gt_box/alphasense_driver_node/cam4
   - /gt_box/alphasense_driver_node/cam5
-  - /gt_box/usb_cam/image
   - /gt_box/hesai/pandar
   - /gt_box/livox/lidar
-  - /gt_box/adis16475
   - /gt_box/livox/imu
   - /gt_box/alphasense_driver_node/imu
+nuc:
+  - /gt_box/adis16475
+  - /gt_box/usb_cam/image
