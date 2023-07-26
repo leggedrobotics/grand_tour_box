@@ -51,6 +51,7 @@ class BoxServiceStatus:
         print("init")
         self.hostname = socket.gethostname()
         self.namespace = rospy.get_namespace()
+        self.ns = rospy.get_namespace()
 
         rospy.init_node(f'box_service_status_{self.hostname}')
         print(self.hostname)
@@ -62,7 +63,7 @@ class BoxServiceStatus:
 
         self.publishers = {}
         for service in self.services[self.hostname]:
-            self.publishers[service] = rospy.Publisher("/health_check/" + splitext(service)[0], Float32, queue_size=10)
+            self.publishers[service] = rospy.Publisher(self.ns +"health_check/" + splitext(service)[0], Float32, queue_size=10)
         print(self.publishers)
 
     

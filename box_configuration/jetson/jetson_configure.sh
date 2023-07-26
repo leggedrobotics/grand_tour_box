@@ -13,7 +13,7 @@ echo 'export ROS_IP=192.168.2.51' >> ~/.bashrc
 # autostart roscore
 sudo cp ~/catkin_ws/src/grand_tour_box/box_configuration/jetson/roscore.service /etc/systemd/system/roscore.service
 sudo systemctl roscore
-sudo systemctl enable autostart_tmux
+sudo systemctl enable roscore
 
 # autostart tmux
 sudo cp ~/catkin_ws/src/grand_tour_box/box_configuration/jetson/autostart_tmux.service /etc/systemd/system/autostart_tmux.service
