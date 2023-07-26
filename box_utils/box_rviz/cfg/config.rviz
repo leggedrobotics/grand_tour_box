@@ -5,9 +5,6 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
-        - /Net2Sys1
-        - /Net2Net1
-        - /NUC2Jetson1
         - /Net2Sys2
       Splitter Ratio: 0.39407745003700256
     Tree Height: 662
@@ -478,7 +475,7 @@ Visualization Manager:
     - Class: jsk_rviz_plugin/PieChart
       Enabled: true
       Name: Net2Net
-      Topic: /gt_box/health_check/phc2sys_mgbe0
+      Topic: /gt_box/health_check/phc2sys_mgbe1
       Value: true
       auto color change: true
       background color: 0; 0; 0
@@ -501,7 +498,7 @@ Visualization Manager:
     - Class: jsk_rviz_plugin/PieChart
       Enabled: true
       Name: NUC2Jetson
-      Topic: /gt_box/health_check/phc2sys_mgbe0
+      Topic: /gt_box/health_check/ptp4l_enp45s0
       Value: true
       auto color change: true
       background color: 0; 0; 0
@@ -518,13 +515,13 @@ Visualization Manager:
       med color change threthold: 8
       min value: 0
       show caption: true
-      size: 90
+      size: 88
       text size: 12
       top: 155
     - Class: jsk_rviz_plugin/PieChart
       Enabled: true
       Name: Net2Sys
-      Topic: /gt_box/health_check/phc2sys_mgbe0
+      Topic: /gt_box/health_check/phc2sys_system
       Value: true
       auto color change: true
       background color: 0; 0; 0
