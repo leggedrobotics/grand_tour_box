@@ -1,0 +1,13 @@
+[Unit]
+Description=Precision Time Protocol (PTP) service
+Documentation=man:ptp4l
+After=network.target
+
+[Service]
+Type=simple
+# sleep 10 sec before starting
+ExecStartPre=/bin/sleep 10
+ExecStart=/usr/sbin/ptp4l -f /etc/linuxptp/ptp4l.conf -i enp45s0 -H -s
+
+[Install]
+WantedBy=multi-user.target

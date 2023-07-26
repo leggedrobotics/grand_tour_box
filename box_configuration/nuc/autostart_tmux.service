@@ -1,0 +1,11 @@
+[Unit]
+Description=Autostart Terminal and Run tmuxp
+After=network.target
+
+[Service]
+Type=forking
+ExecStart=/usr/bin/tmuxp load /home/rsl/catkin_ws/src/grand_tour_box/box_bringup/box_launch/tmux/box_nuc.yaml -d
+User=rsl
+
+[Install]
+WantedBy=default.target
