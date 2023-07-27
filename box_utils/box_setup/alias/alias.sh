@@ -25,3 +25,24 @@ alias reboot-box='reboot-nuc; reboot-jetson'
 alias shutdown-nuc='sshpass -p rsl ssh -t rsl@192.168.2.56 "echo rsl | sudo -S shutdown -h now"'
 alias shutdown-jetson='sshpass -p rsl ssh -t rsl@192.168.2.51 "echo rsl | sudo -S shutdown -h now"'
 alias shutdown-box='shutdown-nuc; shutdown-jetson'
+
+restart-clocks-jetson(){
+    sshpass -p rsl ssh -t rsl@192.168.2.51 "echo rsl | sudo -S systemctl restart ptp4l_mgbe0.service"
+    sshpass -p rsl ssh -t rsl@192.168.2.51 "echo rsl | sudo -S systemctl restart ptp4l_mgbe1.service"
+
+    sshpass -p rsl ssh -t rsl@192.168.2.51 "echo rsl | sudo -S systemctl restart phc2sys_mgbe0.service"
+    sshpass -p rsl ssh -t rsl@192.168.2.51 "echo rsl | sudo -S systemctl restart phc2sys_mgbe1.service"
+}
+
+restart-clocks-nuc(){
+    sshpass -p rsl ssh -t rsl@192.168.2.56 "echo rsl | sudo -S systemctl restart ptp4l_enp45s0.service"
+    sshpass -p rsl ssh -t rsl@192.168.2.56 "echo rsl | sudo -S systemctl restart ptp4l_enp46s0.service"
+
+    sshpass -p rsl ssh -t rsl@192.168.2.56 "echo rsl | sudo -S systemctl restart phc2sys_system.service"
+    sshpass -p rsl ssh -t rsl@192.168.2.56 "echo rsl | sudo -S systemctl restart phc2sys_NIC.service"
+}
+
+restart-clocks-box(){
+    restart-clocks-jetson
+    restart-clocks-nuc
+}
