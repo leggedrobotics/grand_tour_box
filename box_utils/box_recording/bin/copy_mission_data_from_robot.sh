@@ -3,7 +3,7 @@
 # TODO: finalize this with pc of robot
 
 if [ "$#" -ne 3 ]; then
-  echo "Example usage: `basename $0` user cerberus ~/bags"
+  echo "Example usage: `basename $0` rsl jetson ~/bags"
   exit 0
 fi
 
