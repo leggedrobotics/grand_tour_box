@@ -1,9 +1,7 @@
 #! /bin/bash
 
-# TODO: finalize this with pc of robot
-
 if [ "$#" -ne 2 ]; then
-  echo "Example usage: `basename $0` user cerberus"
+  echo "Example usage: `basename $0` rsl jetson"
   exit 0
 fi
 
@@ -14,15 +12,18 @@ then
   user=$1
   robot_name=$2
 
-  # NUC
-  ssh ${user}@anymal-${robot_name}-lpc -t 'rm ~/.ros/anymal_lpc*'
-  ssh ${user}@anymal-${robot_name}-lpc -t 'rm ~/git/anymal_rsl/anymal_rsl/anymal_rsl_utils/anymal_rsl_recording/anymal_rsl_recording/data/*'
-  ssh ${user}@anymal-${robot_name}-lpc -t 'rm ~/mission_log/*'
-  echo "Removed mission data from LPC"
-
   # Jetson
-  ssh ${user}@anymal-${robot_name}-jetson -t 'rm ~/.ros/anymal_jetson*'
-  ssh ${user}@anymal-${robot_name}-jetson -t 'rm ~/git/anymal_rsl/anymal_rsl/anymal_rsl_utils/anymal_rsl_recording/anymal_rsl_recording/data/*'
-  ssh ${user}@anymal-${robot_name}-jetson -t 'rm ~/mission_log/*'
-  echo "Removed mission data from Jetson"
+  if [ "$robot_name" == "jetson" ] || [ "$robot_name" == "Jetson" ]; then
+    #ssh ${user}@192.168.2.51 -t 'rm ~/.ros/anymal_lpc*'
+    ssh ${user}@192.168.2.51 -t 'rm ~/git/grand_tour_box/box_utils/box_recording/data/*'
+    #ssh ${user}@192.168.2.51 -t 'rm ~/mission_log/*'
+    echo "Removed mission data from Jetson"
+    
+  elif [ "$robot_name" == "nuc" ] || [ "$robot_name" == "Nuc" ] || [ "$robot_name" == "NUC" ]; then
+    # NUC
+    #ssh ${user}@192.168.2.56 -t 'rm ~/.ros/anymal_jetson*'
+    ssh ${user}@192.168.2.56 -t 'rm ~/git/grand_tour_box/box_utils/box_recording/data/*'
+    #ssh ${user}@192.168.2.56 -t 'rm ~/mission_log/*'
+    echo "Removed mission data from NUC"
+  fi
 fi

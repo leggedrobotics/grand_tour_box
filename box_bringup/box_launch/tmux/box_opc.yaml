@@ -7,6 +7,9 @@ windows:
   layout: tiled
   shell_command_before:
     - export HOSTNAME
+    - export ROS_MASTER_URI=http://192.168.2.51:11311
+    - export ROS_IP=192.168.2.151
+
 
   options:
     pane-border-status: top
