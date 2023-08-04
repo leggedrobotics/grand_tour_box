@@ -4,9 +4,6 @@ After=network-online.target
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/timedatectl set-ntp false
-ExecStart=/usr/bin/timedatectl set-ntp true
-ExecStart=/usr/bin/timedatectl set-ntp false
-
+ExecStart=/usr/sbin/hwclock -s
 [Install]
 WantedBy=multi-user.target
