@@ -14,3 +14,6 @@ sudo enable phc2sys_NIC
 sudo enable phc2sys_system
 sudo enable ptp4l_enp45s0
 sudo enable ptp4l_enp46s0
+
+cp /home/rsl/catkin_ws/src/grand_tour_box/box_configuration/nuc/99-GMSL-kit.rules /etc/udev/rules.d/
+ udevadm control --reload && udevadm trigger
