@@ -10,6 +10,14 @@ jetson:
   - /gt_box/hesai/pandar_packets
   - /gt_box/livox/imu
   - /gt_box/livox/lidar
+  - /gt_box/rover/piksi/position_receiver_0/ros/vel_ned
+  - /gt_box/rover/piksi/position_receiver_0/ros/vel_ned_cov
+  - /gt_box/rover/piksi/position_receiver_0/ros/pos_enu
+  - /gt_box/rover/piksi/position_receiver_0/ros/pos_enu_cov
+  - /gt_box/rover/piksi/position_receiver_0/ros/navsatfix
+  - /gt_box/rover/piksi/position_receiver_0/ros/receiver_state
+  - /gt_box/rover/piksi/position_receiver_0/sbp/base_pos_ecef
+  - /gt_box/rover/piksi/position_receiver_0/ros/time_ref
 nuc:
   - /gt_box/adis16475
   - /gt_box/usb_cam/camera_info
