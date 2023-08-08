@@ -5,9 +5,6 @@ echo '' >> ~/.bashrc
 echo 'source /opt/ros/noetic/setup.bash' >> ~/.bashrc
 echo 'source catkin_ws/devel/setup.bash' >> ~/.bashrc
 echo 'source catkin_ws/src/grand_tour_box/box_utils/box_setup/alias/alias.sh' >> ~/.bashrc
-echo '' >> ~/.bashrc
-echo 'export ROS_MASTER_URI=http://192.168.2.51:11311' >> ~/.bashrc
-echo 'export ROS_IP=192.168.2.51' >> ~/.bashrc
 
 
 # autostart roscore
