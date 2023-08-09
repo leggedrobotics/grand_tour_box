@@ -12,7 +12,7 @@
     <param name="rosmaster_hz" value="1" />
     <!-- the send rate of the heartbeat packets in hz. Zero disables the heartbeats. (Default: 0.02 Hz)
       Only values between 0.1 and 25.5 are used to detemine the link quality. -->
-    <param name="heartbeat_hz" value="0.1" />
+    <param name="heartbeat_hz" value="0.30" />
     <!-- the count of intervals (1 sec) used for a quality calculation. If
       `HEARTBEAT_HZ` is smaller then 1, `MEASUREMENT_INTERVALS` will be divided
       by `HEARTBEAT_HZ` value.
