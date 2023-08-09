@@ -1,4 +1,5 @@
 <launch>
+    <param name="capability_group" value="Health"/>
     <include file="$(find box_health)/launch/sensor_frequency.launch" />
     <include file="$(find box_health)/launch/service_status.launch" />
 </launch>

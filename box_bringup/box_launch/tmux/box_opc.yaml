@@ -21,6 +21,7 @@ windows:
       - roslaunch box_launch fkie.launch
           autostart_launch_files:="
             $(rospack find box_launch)/launch/box_rviz.launch
+            $(rospack find box_model)/launch/box_model.launch
             "
           use_gui:=true
     - shell_command:

@@ -1,4 +1,5 @@
 <launch>
+  <param name="capability_group" value="Driver"/>
   <arg name="box_namespace" default="gt_box"/>
 
   <group ns="$(arg box_namespace)">
