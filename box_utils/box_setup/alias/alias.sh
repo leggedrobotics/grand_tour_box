@@ -16,7 +16,12 @@ alias ping-nuc='ping 192.168.2.56'
 alias ping-jetson='ping 192.168.2.51'
 alias attach-nuc='tmux attach-session -t box_nuc'
 alias attach-jetson='tmux attach-session -t box_jetson'
-alias restart-tmux='sudo systemctl restart autostart_tmux'
+
+restart-tmux(){
+    echo "this will take 30 seconds..."
+    sudo systemctl restart autostart_tmux
+
+}
 
 alias reboot-nuc='ssh -t rsl@192.168.2.56 "echo rsl | sudo -S reboot"'
 alias reboot-jetson='ssh -t rsl@192.168.2.51 "echo rsl | sudo -S reboot"'
