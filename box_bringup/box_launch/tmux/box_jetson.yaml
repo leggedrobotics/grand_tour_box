@@ -28,8 +28,7 @@ windows:
             $(rospack find box_recording)/launch/rosbag_record_node.launch
             $(rospack find box_health)/launch/box_health.launch
             "
-          use_gui:=false
-          is_rosmaster:=false
+          use_gui:=true
     - shell_command:
       - source /opt/ros/noetic/setup.bash
       - source ~/catkin_ws/devel/setup.bash
