@@ -10,7 +10,7 @@ import socket
 class FrequencyPublisher:
     def __init__(self, topic):
         self.topic = topic
-        self.rt = rostopic.ROSTopicHz(-1)
+        self.rt = rostopic.ROSTopicHz(100)
         self.sub = rospy.Subscriber(self.topic, rospy.AnyMsg, self.rt.callback_hz, callback_args=self.topic) 
         self.publisher = rospy.Publisher(self.topic + "/rate", Float32, queue_size=10)
         rospy.sleep(1)   
