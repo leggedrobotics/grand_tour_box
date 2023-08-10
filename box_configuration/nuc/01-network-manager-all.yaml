@@ -6,4 +6,7 @@ network:
     enp45s0:
       addresses:
         - 192.168.2.56/24
-      dhcp4: yes
+      dhcp4: no
+      gateway4: 192.168.2.51
+      nameservers:
+        addresses: [8.8.8.8]
