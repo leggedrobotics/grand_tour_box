@@ -1,4 +1,5 @@
 <launch>
+  <param name="capability_group" value="Recorder"/>
   <arg name="box_namespace" default="gt_box"/>
   <arg name="hostname" default="$(env HOSTNAME)"/>
 

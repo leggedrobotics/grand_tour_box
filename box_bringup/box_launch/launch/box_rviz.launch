@@ -1,0 +1,4 @@
+<launch>
+  <param name="capability_group" value="Visualization"/>
+  <include file="$(find box_rviz)/launch/box_rviz.launch"> </include>
+</launch>

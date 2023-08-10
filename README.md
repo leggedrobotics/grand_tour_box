@@ -345,3 +345,10 @@ The network interface enp45s0 on the NUC is connected by ethernet via switch to 
 The other two clocks on the NUC (the system clock and the clock of the network interface enp46s0) get synchronized to the enp45s0 clock with the services phc2sys_sys.service and phc2sys_NIC.service respectively. 
 
 The service ptp4l_enp46s0.service allows the interface enp46s0 to publish PTP to its ethernet network, although nothing is connected there.
+
+
+# Share the jetson wifi with the nuc:
+run on the jetson:
+```
+sudo iptables -t nat -A POSTROUTING -o wlan0 -j MASQUERADE
+```
