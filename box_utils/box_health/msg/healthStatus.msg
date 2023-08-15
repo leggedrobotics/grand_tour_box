@@ -15,6 +15,12 @@ float64 gt_box_hesai_pandar
 float64 gt_box_livox_lidar
 float64 gt_box_livox_imu
 float64 gt_box_alphasense_driver_node_imu
+float64 gt_box_rover_piksi_position_receiver_0_ros_pos_enu
 
 float64 gt_box_adis16475
 float64 gt_box_usb_cam_image
+
+uint8 gps_num_sat
+bool gps_rtk_mode_fix
+string gps_fix_mode
+bool gps_utc_time_ready

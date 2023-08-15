@@ -9,6 +9,7 @@ import re
 
 import rospy, rostopic
 from box_health.msg import healthStatus
+from piksi_rtk_msgs.msg import ReceiverState_V2_6_5
 
 def load_yaml(path: str) -> dict:
     with open(path) as file:
@@ -28,6 +29,7 @@ def offset_from_status(line: str) -> int:
         offset = numbers_in_line[0]
         return offset
     else:
+        rospy.logerr("[BoxStatus] Error reading offset from line: " + line)
         return "error reading offset"
     
 class FrequencyFinder:
@@ -41,6 +43,7 @@ class FrequencyFinder:
         if hz_status:
             return hz_status[0]
         else:
+            rospy.logerr("[BoxStatus] Error reading frequency of " + self.topic)
             return 0.0
 
 class BoxStatus:
@@ -53,22 +56,41 @@ class BoxStatus:
         self.services = load_yaml(self.services_yaml)
 
         self.topics_yaml = join( str(rp.get_path('box_health')), "cfg/health_check_topics.yaml")
-        self.topics = load_yaml(self.topics_yaml)[self.hostname]
-        print(self.topics)
+        self.topics_allPCs = load_yaml(self.topics_yaml)
+        self.topics = []
+        if self.hostname in self.topics_allPCs:
+            self.topics = self.topics_allPCs[self.hostname]
 
         self.finders = {}
         for topic in self.topics:
             finder = FrequencyFinder(topic)
             self.finders[topic] = finder
 
-        rospy.init_node(f'health_status_publisher_{self.hostname}')
+        # check GPS status on PC which checks the GPS topic frequency
+        self.check_gps_status = "rover" in "".join(self.topics)
+        if self.check_gps_status:
+            self.GPS_subscriber = rospy.Subscriber("/gt_box/rover/piksi/position_receiver_0/ros/receiver_state", ReceiverState_V2_6_5, self.gps_callback)
+            self.gps_num_sat = 0
+            self.gps_rtk_mode_fix = False
+            self.gps_fix_mode = ""
+            self.gps_utc_time_ready = False
 
+        rospy.init_node(f'health_status_publisher_{self.hostname}')
         self.health_status_publisher = rospy.Publisher(self.namespace + 'health_status', healthStatus, queue_size=10)
         self.rate = rospy.Rate(1)
 
+    def gps_callback(self, data):
+        print(data.num_sat, data.rtk_mode_fix, data.fix_mode, data.utc_time_ready)
+        self.gps_num_sat = data.num_sat
+        self.gps_rtk_mode_fix = data.rtk_mode_fix
+        self.gps_fix_mode = data.fix_mode
+        self.gps_utc_time_ready = data.utc_time_ready
+
+
     def get_clock_offsets(self, health_msg):
-        for service in self.services[self.hostname]:
-            health_msg = self.check_service(health_msg, service)
+        if self.hostname in self.services:
+            for service in self.services[self.hostname]:
+                health_msg = self.check_service(health_msg, service)
         return health_msg
     
     def check_if_grandmaster(self, recent_line):
@@ -77,7 +99,7 @@ class BoxStatus:
         else:
             return "not grand master"
         
-    def check_offset(self, recent_line):
+    def check_clock_offset(self, recent_line):
         if "Waiting for ptp4l..." in recent_line:
             return "waiting for ptp4l"
         else:      
@@ -96,22 +118,22 @@ class BoxStatus:
             elif "ptp4l_mgbe1" in service:
                 health_msg.status_mgbe1_ptp4l = self.check_if_grandmaster(recent_line)
             elif "phc2sys_mgbe0" in service:
-                health_msg.offset_mgbe0_systemclock = self.check_offset(recent_line)
+                health_msg.offset_mgbe0_systemclock = self.check_clock_offset(recent_line)
             elif "phc2sys_mgbe1" in service:                
-                health_msg.offset_mgbe1_systemclock = self.check_offset(recent_line)
+                health_msg.offset_mgbe1_systemclock = self.check_clock_offset(recent_line)
             else:
                 rospy.logerr("[BoxStatus] This service is unknown on the " + self.hostname + ": " + str(service))
         
         elif self.hostname == "nuc":
             # enp45s0 gets time from the jetson mgbe0 port, hence enp45s0 is a client, not a master
             if "ptp4l_enp45s0" in service:
-                health_msg.offset_mgbe0_enp45s0 = self.check_offset(recent_line)
+                health_msg.offset_mgbe0_enp45s0 = self.check_clock_offset(recent_line)
             elif "ptp4l_enp46s0" in service:
                 health_msg.status_enp46s0_ptp4l = self.check_if_grandmaster(recent_line)
             elif "phc2sys_NIC" in service:
-                health_msg.offset_enp45s0_enp46s0 = self.check_offset(recent_line)
+                health_msg.offset_enp45s0_enp46s0 = self.check_clock_offset(recent_line)
             elif "phc2sys_system" in service:
-                health_msg.offset_enp45s0_systemclock =self.check_offset(recent_line)
+                health_msg.offset_enp45s0_systemclock =self.check_clock_offset(recent_line)
             else:
                 rospy.logerr("[BoxStatus] This service is unknown on the " + self.hostname + ": " + str(service))
         else:
@@ -138,21 +160,22 @@ class BoxStatus:
         return health_msg
 
     def get_GPS_status(self, health_msg):
-
-        return health_msg
-
-    def default_healthStatus(self):
-        health_msg = healthStatus()
+        health_msg.gps_num_sat = self.gps_num_sat
+        health_msg.gps_rtk_mode_fix = self.gps_rtk_mode_fix
+        health_msg.gps_fix_mode = self.gps_fix_mode
+        health_msg.gps_utc_time_ready = self.gps_utc_time_ready
         return health_msg
 
     def publish_health_status(self):
 
         while not rospy.is_shutdown():
-            health_msg = self.default_healthStatus()
+            health_msg = healthStatus()
 
             health_msg = self.get_clock_offsets(health_msg)
             health_msg = self.get_topic_frequency(health_msg)
-            health_msg = self.get_GPS_status(health_msg)
+            if self.check_gps_status:
+                health_msg = self.get_GPS_status(health_msg)
+            #health_msg = self.get_PC_status(health_msg) -> cpu, power consumption, empty disk space, etc.
 
             self.health_status_publisher.publish(health_msg)
             self.rate.sleep()
