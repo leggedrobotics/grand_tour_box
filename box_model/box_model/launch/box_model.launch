@@ -1,6 +1,5 @@
 <launch>
   <arg name="rviz" default="false" />
-  <arg name="simulation" default="true" />
   <param name="capability_group" value="Visualization"/>
 
   <arg name="model" default="$(find box_model)/urdf/box/box.urdf.xacro" />

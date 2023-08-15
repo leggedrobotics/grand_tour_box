@@ -10,6 +10,7 @@ alias rinfo='rostopic info'
 alias l-nuc='tmuxp load $(rospack find box_launch)/tmux/box_nuc.yaml'
 alias l-jetson='tmuxp load $(rospack find box_launch)/tmux/box_jetson.yaml'
 alias l-opc='tmuxp load $(rospack find box_launch)/tmux/box_opc.yaml'
+alias l-replay='tmuxp load $(rospack find box_launch)/tmux/box_replay.yaml'
 alias ssh-nuc='ssh -X rsl@192.168.2.56'
 alias ssh-jetson='ssh -X rsl@192.168.2.51'
 alias ping-nuc='ping 192.168.2.56'
@@ -50,4 +51,9 @@ restart-clocks-nuc(){
 restart-clocks-box(){
     restart-clocks-jetson
     restart-clocks-nuc
+}
+
+copy_data(){
+    rosrun box_recording copy_mission_data_from_robot.sh rsl jetson .
+    rosrun box_recording copy_mission_data_from_robot.sh rsl nuc .
 }

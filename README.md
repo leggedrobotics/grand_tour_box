@@ -352,3 +352,14 @@ run on the jetson:
 ```
 sudo iptables -t nat -A POSTROUTING -o wlan0 -j MASQUERADE
 ```
+# Merge bags from Nuc and Jetson
+cd into directory with both the bags (and only the bags, nothing else)
+run: ```rosbag-merge --write_bag --outbag_name $OUTBAG_NAME```
+
+# Replay a recording
+
+Run:
+``` 
+l-replay 
+rosbag play --clock $MERGED_BAG_NAME
+```

@@ -1,7 +1,9 @@
 [Unit]
 Description=Autostart Terminal and Run tmuxp
-After=network.target
+After=network-online.target
 After=phc2sys_system.service
+After=ptp4l.service
+
 [Service]
 Type=forking
 ExecStartPre=/bin/sleep 30

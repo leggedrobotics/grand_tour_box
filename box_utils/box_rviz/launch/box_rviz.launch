@@ -1,5 +1,13 @@
 <launch>
-<!--    launch launch file-->
-  <include file="$(find box_rviz)/launch/rqt_perspective.launch"/>
-  <include file="$(find box_rviz)/launch/publish_string.launch"/>
+  <arg name="replay" default="false"/>
+  <group if="$(arg replay)">
+    <param name="use_sim_time" value="true"/>
+  </group>
+
+  <include file="$(find box_model)/launch/box_model.launch"/>
+
+  <include file="$(find box_rviz)/launch/rqt_perspective.launch">
+    <arg name="replay" value="$(arg replay)"/>
+  </include>
+  <include file="$(find box_rviz)/launch/publish_string.launch" unless="$(arg replay)"/>
 </launch>
