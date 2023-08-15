@@ -1,0 +1,20 @@
+string offset_mgbe0_systemclock
+string offset_mgbe0_mgbe1
+string status_mgbe0_ptp4l
+string status_mgbe1_ptp4l
+
+string offset_enp45s0_systemclock
+string offset_enp45s0_enp46s0
+string offset_mgbe0_enp45s0
+string status_enp46s0_ptp4l
+
+float64 gt_box_alphasense_driver_node_cam3
+float64 gt_box_alphasense_driver_node_cam4
+float64 gt_box_alphasense_driver_node_cam5
+float64 gt_box_hesai_pandar
+float64 gt_box_livox_lidar
+float64 gt_box_livox_imu
+float64 gt_box_alphasense_driver_node_imu
+
+float64 gt_box_adis16475
+float64 gt_box_usb_cam_image

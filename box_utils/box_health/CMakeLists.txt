@@ -15,25 +15,35 @@ project(box_health)
 # Dependencies
 #==
 
-find_package(catkin REQUIRED)
+find_package(catkin REQUIRED COMPONENTS
+  rospy
+  std_msgs
+  message_generation
+)
 
-#==
-# Package Configuration
-#==
 
-catkin_package()
 
-#==
-# Package Configuration
-#==
-
-catkin_package()
+add_message_files(
+  FILES
+  healthStatus.msg
+)
 
 catkin_install_python(
   PROGRAMS
   DESTINATION
     ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
+
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
+
+#==
+# Package Configuration
+#==
+
+catkin_package()
 
 #==
 # Package installation
