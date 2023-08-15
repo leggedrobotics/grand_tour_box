@@ -148,15 +148,16 @@ class BoxStatus:
             return 0.0
     
     def get_topic_frequency(self, health_msg):
-        health_msg.gt_box_alphasense_driver_node_cam3 = self.get_frequency_if_available("/gt_box/alphasense_driver_node/cam3")
-        health_msg.gt_box_alphasense_driver_node_cam4 = self.get_frequency_if_available("/gt_box/alphasense_driver_node/cam4")
-        health_msg.gt_box_alphasense_driver_node_cam5 = self.get_frequency_if_available("/gt_box/alphasense_driver_node/cam5")
-        health_msg.gt_box_hesai_pandar = self.get_frequency_if_available("/gt_box/hesai/pandar")
-        health_msg.gt_box_livox_lidar = self.get_frequency_if_available("/gt_box/livox/lidar")
-        health_msg.gt_box_livox_imu = self.get_frequency_if_available("/gt_box/livox/imu")
-        health_msg.gt_box_alphasense_driver_node_imu = self.get_frequency_if_available("/gt_box/alphasense_driver_node/imu")
-        health_msg.gt_box_adis16475 = self.get_frequency_if_available("/gt_box/adis16475")
-        health_msg.gt_box_usb_cam_image = self.get_frequency_if_available("/gt_box/usb_cam/image")
+        health_msg.gt_box_alphasense_driver_node_cam3_hz = self.get_frequency_if_available("/gt_box/alphasense_driver_node/cam3")
+        health_msg.gt_box_alphasense_driver_node_cam4_hz = self.get_frequency_if_available("/gt_box/alphasense_driver_node/cam4")
+        health_msg.gt_box_alphasense_driver_node_cam5_hz = self.get_frequency_if_available("/gt_box/alphasense_driver_node/cam5")
+        health_msg.gt_box_hesai_pandar_hz = self.get_frequency_if_available("/gt_box/hesai/pandar")
+        health_msg.gt_box_livox_lidar_hz = self.get_frequency_if_available("/gt_box/livox/lidar")
+        health_msg.gt_box_livox_imu_hz = self.get_frequency_if_available("/gt_box/livox/imu")
+        health_msg.gt_box_alphasense_driver_node_imu_hz = self.get_frequency_if_available("/gt_box/alphasense_driver_node/imu")
+        health_msg.gt_box_adis16475_hz = self.get_frequency_if_available("/gt_box/adis16475")
+        health_msg.gt_box_usb_cam_image_hz = self.get_frequency_if_available("/gt_box/usb_cam/image")
+        health_msg.gt_box_rover_piksi_position_receiver_0_ros_pos_enu_hz = self.get_frequency_if_available("/gt_box/rover/piksi/position_receiver_0/ros/pos_enu")
         return health_msg
 
     def get_GPS_status(self, health_msg):
