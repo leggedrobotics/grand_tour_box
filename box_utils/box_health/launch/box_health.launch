@@ -1,6 +1,6 @@
 <launch>
   <param name="capability_group" value="Health"/>
   <arg name="hostname" default="$(env HOSTNAME)"/>
-  <node pkg="box_health" type="publish_health_status.py" name="sensor_frequency_$(arg hostname)" output="screen">
+  <node pkg="box_health" type="publish_health_status.py" name="box_health_$(arg hostname)" output="screen">
   </node>
 </launch>

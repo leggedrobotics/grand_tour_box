@@ -17,8 +17,8 @@ float64 gt_box_livox_imu_hz
 float64 gt_box_alphasense_driver_node_imu_hz
 float64 gt_box_rover_piksi_position_receiver_0_ros_pos_enu_hz
 
-float64 gt_box_adis16475
-float64 gt_box_usb_cam_image
+float64 gt_box_adis16475_hz
+float64 gt_box_usb_cam_image_hz
 
 uint8 gps_num_sat
 bool gps_rtk_mode_fix
