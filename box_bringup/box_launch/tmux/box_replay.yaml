@@ -1,4 +1,4 @@
-session_name: box_opc
+session_name: box_replay
 
 before_script: "../scripts/initialize_session.sh"
 
@@ -8,8 +8,6 @@ windows:
   shell_command_before:
     - export HOSTNAME
     - export DISPLAY=:0.0
-    - export ROS_MASTER_URI=http://192.168.2.151:11311
-    - export ROS_IP=192.168.2.151
 
 
   options:
@@ -18,11 +16,8 @@ windows:
     - shell_command:
       - source /opt/ros/noetic/setup.bash
       - source ~/catkin_ws/devel/setup.bash
-      - roslaunch box_launch fkie.launch
-          autostart_launch_files:="
-            $(rospack find box_launch)/launch/box_rviz.launch
-            "
-          use_gui:=true
+      - roslaunch box_launch box_rviz.launch replay:=true
+
     - shell_command:
       - source /opt/ros/noetic/setup.bash
       - source ~/catkin_ws/devel/setup.bash
