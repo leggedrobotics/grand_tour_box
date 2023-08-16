@@ -76,7 +76,7 @@ class BoxStatus:
             self.gps_utc_time_ready = False
 
         rospy.init_node(f'health_status_publisher_{self.hostname}')
-        self.health_status_publisher = rospy.Publisher(self.namespace + 'health_status', healthStatus, queue_size=10)
+        self.health_status_publisher = rospy.Publisher(self.namespace + 'health_status/' + self.hostname, healthStatus, queue_size=10)
         self.rate = rospy.Rate(1)
 
     def gps_callback(self, data):
