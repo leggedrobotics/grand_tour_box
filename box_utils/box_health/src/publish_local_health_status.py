@@ -103,7 +103,7 @@ class BoxStatus:
         if "Waiting for ptp4l..." in recent_line:
             return "waiting for ptp4l"
         else:      
-            return offset_from_status(recent_line)
+            return str(offset_from_status(recent_line))
     
     def check_service(self, health_msg, service):
 
