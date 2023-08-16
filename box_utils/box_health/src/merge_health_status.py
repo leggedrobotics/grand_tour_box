@@ -1,26 +1,40 @@
 #!/usr/bin/env python3
 
 import socket
-#import rospkg
+import rospkg
 from os.path import join
-#import yaml
+import yaml
 #import subprocess
 #import re
 
 import rospy
 from box_health.msg import healthStatus
+from publish_local_health_status import load_yaml
 
 class BoxStatusMerger:
     def __init__(self):
         self.hostname = socket.gethostname()
         self.namespace = rospy.get_namespace()
 
+        rp = rospkg.RosPack()
+        services_yaml = join( str(rp.get_path('box_health')), "cfg/health_check_services.yaml")
+        services = load_yaml(services_yaml)
+        print(services)
+
+        topics_yaml = join( str(rp.get_path('box_health')), "cfg/health_check_topics.yaml")
+        topics = load_yaml(topics_yaml)
+
         self.external_hostnames = ['jetson', 'nuc']
         self.subscribers = []
+        self.fields = { }
+
         for external_host in self.external_hostnames:
             topic = self.namespace + 'health_status/' + external_host
             sub = rospy.Subscriber(topic, healthStatus, self.callback, callback_args=external_host)
             self.subscribers.append(sub)
+
+            self.fields[external_host] = topics[external_host] + services[external_host]
+
 
         rospy.init_node('health_status_merger')
         self.health_status_publisher = rospy.Publisher(self.namespace + 'health_status/merged' , healthStatus, queue_size=10)
