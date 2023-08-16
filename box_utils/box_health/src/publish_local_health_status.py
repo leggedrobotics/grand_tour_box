@@ -52,14 +52,14 @@ class BoxStatus:
         self.namespace = rospy.get_namespace()
 
         rp = rospkg.RosPack()
-        self.services_yaml = join( str(rp.get_path('box_health')), "cfg/health_check_services.yaml")
-        self.services = load_yaml(self.services_yaml)
+        services_yaml = join( str(rp.get_path('box_health')), "cfg/health_check_services.yaml")
+        self.services = load_yaml(services_yaml)
 
-        self.topics_yaml = join( str(rp.get_path('box_health')), "cfg/health_check_topics.yaml")
-        self.topics_allPCs = load_yaml(self.topics_yaml)
+        topics_yaml = join( str(rp.get_path('box_health')), "cfg/health_check_topics.yaml")
+        topics_allPCs = load_yaml(topics_yaml)
         self.topics = []
-        if self.hostname in self.topics_allPCs:
-            self.topics = self.topics_allPCs[self.hostname]
+        if self.hostname in topics_allPCs:
+            self.topics = topics_allPCs[self.hostname]
 
         self.finders = {}
         for topic in self.topics:
