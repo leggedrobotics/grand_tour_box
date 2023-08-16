@@ -36,7 +36,8 @@ class FrequencyFinder:
     def __init__(self, topic):
         self.topic = topic
         self.rt = rostopic.ROSTopicHz(100)
-        self.sub = rospy.Subscriber(self.topic, rospy.AnyMsg, self.rt.callback_hz, callback_args=self.topic)   
+        self.sub = rospy.Subscriber(self.topic, rospy.AnyMsg, self.rt.callback_hz, callback_args=self.topic)
+        rospy.sleep(1)   
 
     def find_frequency(self):
         hz_status = self.rt.get_hz(self.topic)
@@ -50,6 +51,8 @@ class BoxStatus:
     def __init__(self):
         self.hostname = socket.gethostname()
         self.namespace = rospy.get_namespace()
+
+        rospy.init_node(f'health_status_publisher_{self.hostname}')
 
         rp = rospkg.RosPack()
         services_yaml = join( str(rp.get_path('box_health')), "cfg/health_check_services.yaml")
@@ -75,12 +78,10 @@ class BoxStatus:
             self.gps_fix_mode = ""
             self.gps_utc_time_ready = False
 
-        rospy.init_node(f'health_status_publisher_{self.hostname}')
         self.health_status_publisher = rospy.Publisher(self.namespace + 'health_status/' + self.hostname, healthStatus, queue_size=10)
         self.rate = rospy.Rate(1)
 
     def gps_callback(self, data):
-        print(data.num_sat, data.rtk_mode_fix, data.fix_mode, data.utc_time_ready)
         self.gps_num_sat = data.num_sat
         self.gps_rtk_mode_fix = data.rtk_mode_fix
         self.gps_fix_mode = data.fix_mode
@@ -120,7 +121,7 @@ class BoxStatus:
             elif "phc2sys_mgbe0" in service:
                 health_msg.offset_mgbe0_systemclock = self.check_clock_offset(recent_line)
             elif "phc2sys_mgbe1" in service:                
-                health_msg.offset_mgbe1_systemclock = self.check_clock_offset(recent_line)
+                health_msg.offset_mgbe0_mgbe1 = self.check_clock_offset(recent_line)
             else:
                 rospy.logerr("[BoxStatus] This service is unknown on the " + self.hostname + ": " + str(service))
         
