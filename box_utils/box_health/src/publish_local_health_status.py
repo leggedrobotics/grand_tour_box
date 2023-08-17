@@ -15,6 +15,7 @@ def load_yaml(path: str) -> dict:
     with open(path) as file:
         res = yaml.load(file, Loader=yaml.FullLoader)
     if res is None:
+        rospy.logwarn("[BoxStatus] Yaml file " + path + " was empty.")
         res = {}
     return res
 
@@ -34,17 +35,11 @@ def offset_from_status(line: str) -> int:
     
 def default_healthstatus():
     status = healthStatus()
-
+    # jetson
     status.offset_mgbe0_systemclock = "empty"
     status.offset_mgbe0_mgbe1 = "empty"
     status.status_mgbe0_ptp4l = "empty"
     status.status_mgbe1_ptp4l = "empty"
-
-    status.offset_enp45s0_systemclock = "empty"
-    status.offset_enp45s0_enp46s0 = "empty"
-    status.offset_mgbe0_enp45s0 = "empty"
-    status.status_enp46s0_ptp4l = "empty"
-
     status.gt_box_alphasense_driver_node_cam3_hz = -1
     status.gt_box_alphasense_driver_node_cam4_hz = -1
     status.gt_box_alphasense_driver_node_cam5_hz = -1
@@ -53,15 +48,17 @@ def default_healthstatus():
     status.gt_box_livox_imu_hz = -1
     status.gt_box_alphasense_driver_node_imu_hz = -1
     status.gt_box_rover_piksi_position_receiver_0_ros_pos_enu_hz = -1
-
-    status.gt_box_adis16475_hz  = -1
-    status.gt_box_usb_cam_image_hz  = -1
-
-    # Todo(Beni)
-    #uint8 gps_num_sat 
-    #bool gps_rtk_mode_fix
-    #string gps_fix_mode
-    #bool gps_utc_time_ready
+    status.gps_num_sat = -1
+    status.gps_rtk_mode_fix = -1
+    status.gps_fix_mode  = "empty"
+    status.gps_utc_time_ready = -1
+    # nuc
+    status.offset_enp45s0_systemclock = "empty"
+    status.offset_enp45s0_enp46s0 = "empty"
+    status.offset_mgbe0_enp45s0 = "empty"
+    status.status_enp46s0_ptp4l = "empty"
+    status.gt_box_adis16475_hz = -1
+    status.gt_box_usb_cam_image_hz = -1
 
     return status
     
@@ -70,11 +67,12 @@ class FrequencyFinder:
         self.topic = topic
         self.rt = rostopic.ROSTopicHz(100)
         self.sub = rospy.Subscriber(self.topic, rospy.AnyMsg, self.rt.callback_hz, callback_args=self.topic)
-        rospy.sleep(1)   
+        rospy.sleep(0.2)   
 
     def find_frequency(self):
         hz_status = self.rt.get_hz(self.topic)
         if hz_status:
+            rospy.loginfo("[BoxStatus] Frequency callback of " + self.topic)
             return hz_status[0]
         else:
             rospy.logerr("[BoxStatus] Error reading frequency of " + self.topic)
@@ -88,8 +86,11 @@ class BoxStatus:
         rospy.init_node(f'health_status_publisher_{self.hostname}')
 
         rp = rospkg.RosPack()
-        services_yaml = join( str(rp.get_path('box_health')), "cfg/health_check_services.yaml")
-        self.services = load_yaml(services_yaml)
+        services_yaml = join( str(rp.get_path('box_health')), "cfg/health_check_clockss.yaml")
+        services_allPCs = load_yaml(services_yaml)
+        self.services = []
+        if self.hostname in services_allPCs:
+            self.services = services_allPCs[self.hostname]
 
         topics_yaml = join( str(rp.get_path('box_health')), "cfg/health_check_topics.yaml")
         topics_allPCs = load_yaml(topics_yaml)
@@ -105,22 +106,20 @@ class BoxStatus:
         # check GPS status on PC which checks the GPS topic frequency
         self.check_gps_status = "rover" in "".join(self.topics)
         if self.check_gps_status:
-            self.GPS_subscriber = rospy.Subscriber("/gt_box/rover/piksi/position_receiver_0/ros/receiver_state", ReceiverState_V2_6_5, self.gps_callback)
+            self.GPS_subscriber = rospy.Subscriber("/gt_box/rover/piksi/position_receiver_0/ros/receiver_state", ReceiverState_V2_6_5, self.set_GPS_status)
 
         self.health_status_publisher = rospy.Publisher(self.namespace + 'health_status/' + self.hostname, healthStatus, queue_size=10)
         self.rate = rospy.Rate(1)
 
-    def gps_callback(self, data):
+    def set_GPS_status(self, data):
         self.gps_num_sat = data.num_sat
         self.gps_rtk_mode_fix = data.rtk_mode_fix
         self.gps_fix_mode = data.fix_mode
         self.gps_utc_time_ready = data.utc_time_ready
 
-
     def get_clock_offsets(self, health_msg):
-        if self.hostname in self.services:
-            for service in self.services[self.hostname]:
-                health_msg = self.check_service(health_msg, service)
+        for service in self.services:
+            health_msg = self.check_clocks(health_msg, service)
         return health_msg
     
     def check_if_grandmaster(self, recent_line):
@@ -135,11 +134,12 @@ class BoxStatus:
         else:      
             return str(offset_from_status(recent_line))
     
-    def check_service(self, health_msg, service):
+    def check_clocks(self, health_msg, service):
 
         # check status of service
         p = subprocess.Popen(["systemctl", "status",  service], stdout=subprocess.PIPE)
         (output_status, error_status) = p.communicate()
+        print("error status:", error_status)
         recent_line = last_line(output_status.decode('utf-8'))
 
         if self.hostname == "jetson":
@@ -197,9 +197,7 @@ class BoxStatus:
         health_msg.gps_utc_time_ready = self.gps_utc_time_ready
         return health_msg
 
-
     def publish_health_status(self):
-
         while not rospy.is_shutdown():
             health_msg = default_healthstatus()
 

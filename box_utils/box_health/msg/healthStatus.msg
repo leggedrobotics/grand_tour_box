@@ -21,6 +21,6 @@ float64 gt_box_adis16475_hz
 float64 gt_box_usb_cam_image_hz
 
 uint8 gps_num_sat
-bool gps_rtk_mode_fix
+uint8 gps_rtk_mode_fix
 string gps_fix_mode
-bool gps_utc_time_ready
+uint8 gps_utc_time_ready
