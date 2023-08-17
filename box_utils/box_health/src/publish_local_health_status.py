@@ -86,7 +86,7 @@ class BoxStatus:
         rospy.init_node(f'health_status_publisher_{self.hostname}')
 
         rp = rospkg.RosPack()
-        services_yaml = join( str(rp.get_path('box_health')), "cfg/health_check_clockss.yaml")
+        services_yaml = join( str(rp.get_path('box_health')), "cfg/health_check_services.yaml")
         services_allPCs = load_yaml(services_yaml)
         self.services = []
         if self.hostname in services_allPCs:
@@ -138,8 +138,9 @@ class BoxStatus:
 
         # check status of service
         p = subprocess.Popen(["systemctl", "status",  service], stdout=subprocess.PIPE)
-        (output_status, error_status) = p.communicate()
-        print("error status:", error_status)
+        (output_status, error) = p.communicate()
+        if error:
+            rospy.logerr("[BoxStatus] Error subprocess reading clocks: " + str(error))
         recent_line = last_line(output_status.decode('utf-8'))
 
         if self.hostname == "jetson":
