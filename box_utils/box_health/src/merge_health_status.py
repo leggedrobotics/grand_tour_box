@@ -6,7 +6,7 @@ from os.path import join
 
 import rospy
 from box_health.msg import healthStatus
-from publish_local_health_status import load_yaml
+from publish_local_health_status import load_yaml, default_healthstatus
 
 class BoxStatusMerger:
     def __init__(self):
@@ -37,7 +37,7 @@ class BoxStatusMerger:
         self.health_status_publisher = rospy.Publisher(self.namespace + 'health_status/merged' , healthStatus, queue_size=10)
         self.rate = rospy.Rate(1)
         
-        self.complete_health_msg = healthStatus()
+        self.complete_health_msg = default_healthstatus()
 
 
 
