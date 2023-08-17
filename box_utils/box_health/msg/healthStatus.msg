@@ -20,7 +20,7 @@ float64 gt_box_rover_piksi_position_receiver_0_ros_pos_enu_hz
 float64 gt_box_adis16475_hz
 float64 gt_box_usb_cam_image_hz
 
-uint8 gps_num_sat
-uint8 gps_rtk_mode_fix
+int16 gps_num_sat
+int16 gps_rtk_mode_fix
 string gps_fix_mode
-uint8 gps_utc_time_ready
+int16 gps_utc_time_ready

@@ -107,6 +107,10 @@ class BoxStatus:
         self.check_gps_status = "rover" in "".join(self.topics)
         if self.check_gps_status:
             self.GPS_subscriber = rospy.Subscriber("/gt_box/rover/piksi/position_receiver_0/ros/receiver_state", ReceiverState_V2_6_5, self.set_GPS_status)
+            self.gps_num_sat = -1
+            self.gps_rtk_mode_fix = -1
+            self.gps_fix_mode = "empty"
+            self.gps_utc_time_ready = -1
 
         self.health_status_publisher = rospy.Publisher(self.namespace + 'health_status/' + self.hostname, healthStatus, queue_size=10)
         self.rate = rospy.Rate(1)
