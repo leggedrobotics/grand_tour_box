@@ -32,6 +32,39 @@ def offset_from_status(line: str) -> int:
         rospy.logerr("[BoxStatus] Error reading offset from line: " + line)
         return "error reading offset"
     
+def default_healthstatus():
+    status = healthStatus()
+
+    status.offset_mgbe0_systemclock = "empty"
+    status.offset_mgbe0_mgbe1 = "empty"
+    status.status_mgbe0_ptp4l = "empty"
+    status.status_mgbe1_ptp4l = "empty"
+
+    status.offset_enp45s0_systemclock = "empty"
+    status.offset_enp45s0_enp46s0 = "empty"
+    status.offset_mgbe0_enp45s0 = "empty"
+    status.status_enp46s0_ptp4l = "empty"
+
+    status.gt_box_alphasense_driver_node_cam3_hz = -1
+    status.gt_box_alphasense_driver_node_cam4_hz = -1
+    status.gt_box_alphasense_driver_node_cam5_hz = -1
+    status.gt_box_hesai_pandar_hz = -1
+    status.gt_box_livox_lidar_hz = -1
+    status.gt_box_livox_imu_hz = -1
+    status.gt_box_alphasense_driver_node_imu_hz = -1
+    status.gt_box_rover_piksi_position_receiver_0_ros_pos_enu_hz = -1
+
+    status.gt_box_adis16475_hz  = -1
+    status.gt_box_usb_cam_image_hz  = -1
+
+    # Todo(Beni)
+    #uint8 gps_num_sat 
+    #bool gps_rtk_mode_fix
+    #string gps_fix_mode
+    #bool gps_utc_time_ready
+
+    return status
+    
 class FrequencyFinder:
     def __init__(self, topic):
         self.topic = topic
@@ -73,10 +106,6 @@ class BoxStatus:
         self.check_gps_status = "rover" in "".join(self.topics)
         if self.check_gps_status:
             self.GPS_subscriber = rospy.Subscriber("/gt_box/rover/piksi/position_receiver_0/ros/receiver_state", ReceiverState_V2_6_5, self.gps_callback)
-            self.gps_num_sat = 0
-            self.gps_rtk_mode_fix = False
-            self.gps_fix_mode = ""
-            self.gps_utc_time_ready = False
 
         self.health_status_publisher = rospy.Publisher(self.namespace + 'health_status/' + self.hostname, healthStatus, queue_size=10)
         self.rate = rospy.Rate(1)
@@ -134,7 +163,7 @@ class BoxStatus:
             elif "phc2sys_NIC" in service:
                 health_msg.offset_enp45s0_enp46s0 = self.check_clock_offset(recent_line)
             elif "phc2sys_system" in service:
-                health_msg.offset_enp45s0_systemclock =self.check_clock_offset(recent_line)
+                health_msg.offset_enp45s0_systemclock = self.check_clock_offset(recent_line)
             else:
                 rospy.logerr("[BoxStatus] This service is unknown on the " + self.hostname + ": " + str(service))
         else:
@@ -168,10 +197,11 @@ class BoxStatus:
         health_msg.gps_utc_time_ready = self.gps_utc_time_ready
         return health_msg
 
+
     def publish_health_status(self):
 
         while not rospy.is_shutdown():
-            health_msg = healthStatus()
+            health_msg = default_healthstatus()
 
             health_msg = self.get_clock_offsets(health_msg)
             health_msg = self.get_topic_frequency(health_msg)
