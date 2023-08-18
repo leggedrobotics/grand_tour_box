@@ -47,7 +47,7 @@ class FrequencyFinder:
             rospy.loginfo("[BoxStatus] Frequency callback of " + self.topic)
             return hz_status[0]
         else:
-            rospy.logerr("[BoxStatus] Error reading frequency of " + self.topic)
+            rospy.logdebug("[BoxStatus] Error reading frequency of " + self.topic)
             return 0.0
 
 class BoxStatus:
@@ -72,11 +72,8 @@ class BoxStatus:
         # check GPS status on PC which checks the GPS topic frequency
         self.check_gps_status = "rover" in "".join(self.topics)
         if self.check_gps_status:
+            rospy.loginfo("[BoxStatus] Check GPS stats on host " + self.hostname)
             self.GPS_subscriber = rospy.Subscriber("/gt_box/rover/piksi/position_receiver_0/ros/receiver_state", ReceiverState_V2_6_5, self.set_GPS_status)
-            self.gps_num_sat = -1
-            self.gps_rtk_mode_fix = -1
-            self.gps_fix_mode = "empty"
-            self.gps_utc_time_ready = -1
 
         if self.hostname == "jetson":
             self.health_status_publisher = rospy.Publisher(self.namespace + 'health_status/' + self.hostname, healthStatus_jetson, queue_size=10)
@@ -137,19 +134,7 @@ class BoxStatus:
     
     def get_topic_frequencies(self, health_msg):
         for topic in self.topics:
-            setattr(health_msg, topic.replace('/', '_') + "_hz", self.get_frequency_if_available(topic))
-        '''
-        health_msg.gt_box_alphasense_driver_node_cam3_hz = self.get_frequency_if_available("/gt_box/alphasense_driver_node/cam3")
-        health_msg.gt_box_alphasense_driver_node_cam4_hz = self.get_frequency_if_available("/gt_box/alphasense_driver_node/cam4")
-        health_msg.gt_box_alphasense_driver_node_cam5_hz = self.get_frequency_if_available("/gt_box/alphasense_driver_node/cam5")
-        health_msg.gt_box_hesai_pandar_hz = self.get_frequency_if_available("/gt_box/hesai/pandar")
-        health_msg.gt_box_livox_lidar_hz = self.get_frequency_if_available("/gt_box/livox/lidar")
-        health_msg.gt_box_livox_imu_hz = self.get_frequency_if_available("/gt_box/livox/imu")
-        health_msg.gt_box_alphasense_driver_node_imu_hz = self.get_frequency_if_available("/gt_box/alphasense_driver_node/imu")
-        health_msg.gt_box_adis16475_hz = self.get_frequency_if_available("/gt_box/adis16475")
-        health_msg.gt_box_usb_cam_image_hz = self.get_frequency_if_available("/gt_box/usb_cam/image")
-        health_msg.gt_box_rover_piksi_position_receiver_0_ros_pos_enu_hz = self.get_frequency_if_available("/gt_box/rover/piksi/position_receiver_0/ros/pos_enu")
-        '''
+            setattr(health_msg, topic[1:].replace('/', '_') + "_hz", self.get_frequency_if_available(topic))
         return health_msg
 
     def get_GPS_status(self, health_msg):
