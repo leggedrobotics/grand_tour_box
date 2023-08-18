@@ -44,7 +44,6 @@ class FrequencyFinder:
     def find_frequency(self):
         hz_status = self.rt.get_hz(self.topic)
         if hz_status:
-            rospy.loginfo("[BoxStatus] Frequency callback of " + self.topic)
             return hz_status[0]
         else:
             rospy.logdebug("[BoxStatus] Error reading frequency of " + self.topic)
