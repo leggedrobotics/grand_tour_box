@@ -1,6 +1,3 @@
-[submodule "box_drivers/usb_cam"]
-	path = box_drivers/usb_cam
-	url = git@github.com:ros-drivers/usb_cam.git
 [submodule "box_drivers/Livox-SDK2"]
 	path = box_drivers/Livox-SDK2
 	url = git@github.com:leggedrobotics/Livox-SDK2.git
@@ -28,3 +25,6 @@
 [submodule "box_drivers/adis16475_ros"]
 	path = box_drivers/adis16475_ros
 	url = git@github.com:leggedrobotics/adis16475_ros.git
+[submodule "box_drivers/ros2_v4l2_camera"]
+	path = box_drivers/ros2_v4l2_camera
+	url = git@github.com:tier4/ros2_v4l2_camera.git

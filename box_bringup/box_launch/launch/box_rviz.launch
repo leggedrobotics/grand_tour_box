@@ -1,6 +1,7 @@
 <launch>
   <arg name="replay" default="false"/>
   <param name="capability_group" value="Visualization"/>
+  <arg name="replay" default="false"/>
   <include file="$(find box_rviz)/launch/box_rviz.launch">
     <arg name="replay" value="$(arg replay)"/>
   </include>
