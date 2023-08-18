@@ -451,7 +451,7 @@ Visualization Manager:
     - Class: jsk_rviz_plugin/PieChart
       Enabled: true
       Name: Net2Sys
-      Topic: /gt_box/health_check/phc2sys_mgbe0
+      Topic: /gt_box/notYetSet
       Value: true
       auto color change: true
       background color: 0; 0; 0
@@ -474,7 +474,7 @@ Visualization Manager:
     - Class: jsk_rviz_plugin/PieChart
       Enabled: true
       Name: Net2Net
-      Topic: /gt_box/health_check/phc2sys_mgbe1
+      Topic: /gt_box/notYetSet
       Value: true
       auto color change: true
       background color: 0; 0; 0
@@ -497,7 +497,7 @@ Visualization Manager:
     - Class: jsk_rviz_plugin/PieChart
       Enabled: true
       Name: NUC2Jetson
-      Topic: /gt_box/health_check/ptp4l_enp45s0
+      Topic: /gt_box/notYetSet
       Value: true
       auto color change: true
       background color: 0; 0; 0
@@ -520,7 +520,7 @@ Visualization Manager:
     - Class: jsk_rviz_plugin/PieChart
       Enabled: true
       Name: Net2Sys
-      Topic: /gt_box/health_check/phc2sys_system
+      Topic: /gt_box/notYetSet
       Value: true
       auto color change: true
       background color: 0; 0; 0
