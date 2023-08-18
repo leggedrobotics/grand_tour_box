@@ -13,8 +13,8 @@ class BoxStatusMerger:
 
         rospy.init_node('health_status_merger')
 
-        self.subscriber_jetson = rospy.Subscriber('/' + "health_status/jetson", healthStatus_jetson, self.callback, "jetson")
-        self.subscriber_nuc = rospy.Subscriber('/' + "health_status/nuc", healthStatus_nuc, self.callback, "nuc")
+        self.subscriber_jetson = rospy.Subscriber(self.namespace + "health_status/jetson", healthStatus_jetson, self.callback, "jetson")
+        self.subscriber_nuc = rospy.Subscriber(self.namespace + "health_status/nuc", healthStatus_nuc, self.callback, "nuc")
         # names have to exactly match healthStatus.msg
         # TODO(beni): read directly from file
         self.message_fields = {

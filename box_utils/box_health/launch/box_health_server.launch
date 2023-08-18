@@ -1,5 +1,8 @@
 <launch>
   <param name="capability_group" value="Health"/>
-  <node pkg="box_health" type="merge_health_status.py" name="box_health_merger" output="screen">
-  </node>
+  <arg name="box_namespace" default="gt_box"/>
+  <group ns="$(arg box_namespace)">
+    <node pkg="box_health" type="merge_health_status.py" name="box_health_merger" output="screen">
+    </node>
+  </group>
 </launch>
