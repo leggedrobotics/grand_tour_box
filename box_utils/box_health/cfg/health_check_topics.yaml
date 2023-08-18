@@ -1,3 +1,4 @@
+# topics listed here also have to be in msg/healthStatus_{jetson, nuc}.msg
 jetson:
   - /gt_box/alphasense_driver_node/cam3
   - /gt_box/alphasense_driver_node/cam4
