@@ -23,12 +23,12 @@ def last_line(text: str) -> str:
     idx = text.rfind('\n', 0, len(text) - 1)
     return text[idx+1:]
 
-def offset_from_status(line: str) -> int:
+def offset_from_status(line: str) -> str:
     idx = line.find("offset")
     numbers_in_line = [int(d) for d in re.findall(r'-?\d+', line[idx:])]
     if numbers_in_line:
         offset = numbers_in_line[0]
-        return offset
+        return str(offset)
     else:
         rospy.logerr("[BoxStatus] Error reading offset from line: " + line)
         return "error reading offset"
@@ -99,7 +99,7 @@ class BoxStatus:
         if "Waiting for ptp4l..." in recent_line:
             return "waiting for ptp4l"
         else:      
-            return str(offset_from_status(recent_line))
+            return offset_from_status(recent_line)
         
     def read_clock_status(self, service):
         p = subprocess.Popen(["systemctl", "status",  service], stdout=subprocess.PIPE)
