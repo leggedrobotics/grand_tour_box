@@ -2,7 +2,7 @@
   <arg name="box_namespace" default="gt_box"/>
   <group ns="$(arg box_namespace)">
     <arg name="publish_rate" default="-1.0" />
-    <arg name="video_device" default="/dev/video2" />
+    <arg name="video_device" default="/dev/video0" />
     <arg name="use_v4l2_buffer_timestamps" default="true" />
     <arg name="timestamp_offset" default="0.0" />
     <arg name="output_encoding" default="yuv422" />
