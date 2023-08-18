@@ -56,16 +56,18 @@ class BoxStatusMerger:
         self.complete_health_msg = default_healthstatus()
 
     def return_if_set(self, value):
-        if isinstance(value, int):
+        if isinstance(value, int) or isinstance(value, float) :
             if value != -1:
                 return value
             else:
-                return -1             
-        if isinstance(value, str):
+                return -1       
+        elif isinstance(value, str):
             if value != "empty":
-                return value
+                return str(value)
             else:
-                return "empty" 
+                return "empty"
+        else:
+            rospy.logerr("[BoxStatusMerger] Value " + str(value) + " has unknown type:" + str(type(value)))
 
     def callback(self, partial_health_data):
         for field in self.message_fields:
