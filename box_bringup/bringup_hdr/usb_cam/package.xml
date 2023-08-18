@@ -6,7 +6,7 @@
   <maintainer email="jonfrey@ethz.ch">Jonas Frey</maintainer>
   <license>MIT</license>
   <buildtool_depend>catkin</buildtool_depend>
-  <depend>usb_cam</depend>
+  <depend>v4l2_camera</depend>
   <export>
   </export>
 </package>

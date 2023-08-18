@@ -237,7 +237,7 @@ Visualization Manager:
     - Class: jsk_rviz_plugin/PieChart
       Enabled: true
       Name: HDR
-      Topic: /gt_box/usb_cam/image/rate
+      Topic: /gt_box/image_raw/rate
       Value: true
       auto color change: true
       background color: 0; 0; 0
