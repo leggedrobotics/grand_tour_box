@@ -2,10 +2,12 @@
 
 import socket
 import rospy
+from threading import Lock
 
 from box_health.msg import healthStatus, healthStatus_jetson, healthStatus_nuc
 
-# TODO(beni) add mutex?
+mutex = Lock()
+
 class BoxStatusMerger:
     def __init__(self):
         self.hostname = socket.gethostname()
@@ -51,13 +53,15 @@ class BoxStatusMerger:
 
     def callback(self, partial_health_data, sender):
         rospy.loginfo("[BoxStatusMerger]" + sender)
-        for field in self.message_fields[sender]:
-            setattr(self.complete_health_msg, field, getattr(partial_health_data, field))
+        with mutex:
+            for field in self.message_fields[sender]:
+                setattr(self.complete_health_msg, field, getattr(partial_health_data, field))
     
     def publish_complete_health_status(self):
         while not rospy.is_shutdown():
-            self.health_status_publisher.publish(self.complete_health_msg)
-            self.complete_health_msg = healthStatus()
+            with mutex:
+                self.health_status_publisher.publish(self.complete_health_msg)
+                self.complete_health_msg = healthStatus()
             self.rate.sleep()  
 
 if __name__ == '__main__':
