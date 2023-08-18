@@ -742,7 +742,7 @@
                   "type": "repr"
                 },
                 "mouse_pub_topic": {
-                  "repr": "'/gt_box/usb_cam/image'",
+                  "repr": "'/gt_box/image_raw'",
                   "type": "repr"
                 },
                 "num_gridlines": {
@@ -766,7 +766,7 @@
                   "type": "repr"
                 },
                 "topic": {
-                  "repr": "'/gt_box/usb_cam/image'",
+                  "repr": "'/gt_box/image_raw'",
                   "type": "repr"
                 },
                 "zoom1": {

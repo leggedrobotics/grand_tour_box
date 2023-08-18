@@ -8,4 +8,4 @@ jetson:
   - /gt_box/alphasense_driver_node/imu
 nuc:
   - /gt_box/adis16475
-  - /gt_box/usb_cam/image
+  - /gt_box/image_raw
