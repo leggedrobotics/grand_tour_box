@@ -89,7 +89,7 @@ class BoxStatus:
         self.gps_utc_time_ready = data.utc_time_ready
     
     def check_if_grandmaster(self, recent_line):
-        if "assuming the grand master role" in recent_line:
+        if "assuming the grand master role" or "LISTENING to GRAND_MASTER on RS_GRAND_MASTER" in recent_line:
             return "grand master"
         else:
             return "not grand master"
