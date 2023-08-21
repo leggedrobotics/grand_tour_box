@@ -106,23 +106,29 @@ class BoxStatusMerger:
 
     def publish_text_visualization(self):
         text = OverlayText()
-        text.width = 300
-        text.height = 100
+        text.width = 250
+        text.height = 300
         text.left = 10
-        text.top = 410
+        text.top = 310
         text.text_size = 12
         text.line_width = 2
         text.font = "Arial"
         text.fg_color = ColorRGBA(0.0, 0.0, 0.0, 1.0)
-        text.bg_color = ColorRGBA(0.0, 0.0, 0.0, 0.2)
-        text.text = """
-        Clock status:
+        text.bg_color = ColorRGBA(0.0, 0.0, 0.0, 0.0)
+        text.text = """Clock status:
         Clock mgbe0: %s
         Clock mgbe1: %s
         Clock enp46s0: %s
-        """ % (getattr(self.complete_health_msg, "status_mgbe0_ptp4l"),
+
+        GPS status:
+        RTK mode fix: %i
+        GPS fix mode: %s
+        Num sat: %i """ % (getattr(self.complete_health_msg, "status_mgbe0_ptp4l"),
                getattr(self.complete_health_msg, "status_mgbe1_ptp4l"),
-               getattr(self.complete_health_msg, "status_enp46s0_ptp4l"))
+               getattr(self.complete_health_msg, "status_enp46s0_ptp4l"),
+               getattr(self.complete_health_msg, "gps_rtk_mode_fix"),
+               getattr(self.complete_health_msg, "gps_fix_mode"),
+               getattr(self.complete_health_msg, "gps_num_sat"))
         self.publisher.text_publisher.publish(text)
             
     def publish_complete_health_status(self):
