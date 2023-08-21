@@ -5,7 +5,8 @@ import rospy
 from threading import Lock
 
 from box_health.msg import healthStatus, healthStatus_jetson, healthStatus_nuc
-from std_msgs.msg import Float32
+from std_msgs.msg import Float32, ColorRGBA, String
+from jsk_rviz_plugins.msg import *
 
 mutex = Lock()
 
@@ -13,7 +14,8 @@ class visualizationPublisher:
     def __init__(self):
         self.namespace = rospy.get_namespace()
         
-        topics_to_publish = [
+        # names have to exactly match healthStatus.msg
+        topics_to_publish_float = [
             "gt_box_alphasense_driver_node_cam3_hz",
             "gt_box_alphasense_driver_node_cam4_hz",
             "gt_box_alphasense_driver_node_cam5_hz",
@@ -30,9 +32,20 @@ class visualizationPublisher:
             "offset_enp45s0_systemclock"
         ]
 
-        self.publishers = {}
-        for topic in topics_to_publish:
-            self.publishers[topic] = rospy.Publisher(self.namespace + 'visualization/' + topic , Float32, queue_size=2)
+        topics_top_publish_string = [
+            "status_mgbe0_ptp4l",
+            "status_mgbe1_ptp4l",
+            "status_enp46s0_ptp4l"
+        ]
+
+        self.publishers_float = {}
+        for topic in topics_to_publish_float:
+            self.publishers_float[topic] = rospy.Publisher(self.namespace + 'visualization/' + topic , Float32, queue_size=10)
+
+        #self.publishers_string = {}
+        #for topic in topics_top_publish_string:
+        #    self.publishers_string[topic] = rospy.Publisher(self.namespace + 'visualization/' + topic , String, queue_size=10)
+        self.text_publisher = rospy.Publisher("visualization/clock_status", OverlayText, queue_size=1)
 
 class BoxStatusMerger:
     def __init__(self, publisher):
@@ -83,28 +96,41 @@ class BoxStatusMerger:
             for field in self.message_fields[sender]:
                 setattr(self.complete_health_msg, field, getattr(partial_health_data, field))
 
-    def publish_for_visualization(self, health_msg):
-        for key, value in self.publisher.publishers.items():
-            # frequency
-            if key[:6] == "gt_box":
-                value.publish(getattr(health_msg, key))
-            # clock offset
-            elif key[:6] == "offset":
-                message = getattr(health_msg, key)
-                if message:
-                    value.publish(abs(float(getattr(health_msg, key))))
-            # clock status
-            elif key[:6] == "status":
-                rospy.loginfo('status not yet implemented')
+    def publish_frequency_visualization(self):
+        for key, value in self.publisher.publishers_float.items():
+            msg = getattr(self.complete_health_msg, key)
+            if msg:
+                value.publish(abs(float(msg)))
             else:
-                rospy.logerror("[BoxStatusMerger] Publishing of topic " + key + " not impleneted")
-    
+                value.publish(0.0)
+
+    def publish_text_visualization(self):
+        text = OverlayText()
+        text.width = 300
+        text.height = 100
+        text.left = 10
+        text.top = 410
+        text.text_size = 12
+        text.line_width = 2
+        text.font = "Arial"
+        text.fg_color = ColorRGBA(0.0, 0.0, 0.0, 1.0)
+        text.bg_color = ColorRGBA(0.0, 0.0, 0.0, 0.2)
+        text.text = """
+        Clock status:
+        Clock mgbe0: %s
+        Clock mgbe1: %s
+        Clock enp46s0: %s
+        """ % (getattr(self.complete_health_msg, "status_mgbe0_ptp4l"),
+               getattr(self.complete_health_msg, "status_mgbe1_ptp4l"),
+               getattr(self.complete_health_msg, "status_enp46s0_ptp4l"))
+        self.publisher.text_publisher.publish(text)
+            
     def publish_complete_health_status(self):
         while not rospy.is_shutdown():
             with mutex:
                 self.health_status_publisher.publish(self.complete_health_msg)
-
-                self.publish_for_visualization(self.complete_health_msg)
+                self.publish_frequency_visualization()
+                self.publish_text_visualization()
 
                 self.complete_health_msg = healthStatus()
             self.rate.sleep()  
