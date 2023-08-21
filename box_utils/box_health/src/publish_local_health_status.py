@@ -75,12 +75,12 @@ class BoxStatus:
             self.GPS_subscriber = rospy.Subscriber("/gt_box/rover/piksi/position_receiver_0/ros/receiver_state", ReceiverState_V2_6_5, self.set_GPS_status)
 
         if self.hostname == "jetson":
-            self.health_status_publisher = rospy.Publisher(self.namespace + 'health_status/' + self.hostname, healthStatus_jetson, queue_size=10)
+            self.health_status_publisher = rospy.Publisher(self.namespace + 'health_status/' + self.hostname, healthStatus_jetson, queue_size=2)
         elif self.hostname == "nuc":
-            self.health_status_publisher = rospy.Publisher(self.namespace + 'health_status/' + self.hostname, healthStatus_nuc, queue_size=10)
+            self.health_status_publisher = rospy.Publisher(self.namespace + 'health_status/' + self.hostname, healthStatus_nuc, queue_size=2)
         else:
             rospy.logerr("[BoxStatus] Hostname " + self.hostname + " is unknown.")
-        self.rate = rospy.Rate(1)
+        self.rate = rospy.Rate(1.2)
 
     def set_GPS_status(self, data):
         self.gps_num_sat = data.num_sat

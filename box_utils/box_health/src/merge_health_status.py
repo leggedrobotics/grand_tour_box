@@ -5,11 +5,34 @@ import rospy
 from threading import Lock
 
 from box_health.msg import healthStatus, healthStatus_jetson, healthStatus_nuc
+from std_msgs.msg import Float32
 
 mutex = Lock()
 
-class BoxStatusMerger:
+class visualizationPublisher:
     def __init__(self):
+        self.namespace = rospy.get_namespace()
+        
+        topics_to_publish = [
+            "gt_box_alphasense_driver_node_cam3_hz",
+            "gt_box_alphasense_driver_node_cam4_hz",
+            "gt_box_alphasense_driver_node_cam5_hz",
+            "gt_box_hesai_pandar_hz",
+            "gt_box_livox_lidar_hz",
+            "gt_box_livox_imu_hz",
+            "gt_box_alphasense_driver_node_imu_hz",
+            "gt_box_rover_piksi_position_receiver_0_ros_pos_enu_hz",
+            "gt_box_adis16475_hz",
+            "gt_box_image_raw_hz",
+        ]
+
+        self.publishers = {}
+        for topic in topics_to_publish:
+            self.publishers[topic] = rospy.Publisher(self.namespace + 'visualization/' + topic , Float32, queue_size=2)
+
+class BoxStatusMerger:
+    def __init__(self, publisher):
+        self.publisher = publisher
         self.hostname = socket.gethostname()
         self.namespace = rospy.get_namespace()
 
@@ -52,21 +75,28 @@ class BoxStatusMerger:
         self.complete_health_msg = healthStatus()
 
     def callback(self, partial_health_data, sender):
-        rospy.loginfo("[BoxStatusMerger]" + sender)
         with mutex:
             for field in self.message_fields[sender]:
                 setattr(self.complete_health_msg, field, getattr(partial_health_data, field))
+
+    def publish_for_visualization(self, health_msg):
+        for key, value in self.publisher.publishers.items():
+            value.publish(getattr(health_msg, key))
     
     def publish_complete_health_status(self):
         while not rospy.is_shutdown():
             with mutex:
                 self.health_status_publisher.publish(self.complete_health_msg)
+
+                self.publish_for_visualization(self.complete_health_msg)
+
                 self.complete_health_msg = healthStatus()
             self.rate.sleep()  
 
 if __name__ == '__main__':
     try:
-        box_status = BoxStatusMerger()
+        vizualization = visualizationPublisher()
+        box_status = BoxStatusMerger(vizualization)
         box_status.publish_complete_health_status()
 
     except rospy.ROSInitException:
