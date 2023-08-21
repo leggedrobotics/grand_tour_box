@@ -24,6 +24,10 @@ class visualizationPublisher:
             "gt_box_rover_piksi_position_receiver_0_ros_pos_enu_hz",
             "gt_box_adis16475_hz",
             "gt_box_image_raw_hz",
+            "offset_mgbe0_systemclock",
+            "offset_mgbe0_mgbe1",
+            "offset_mgbe0_enp45s0",
+            "offset_enp45s0_systemclock"
         ]
 
         self.publishers = {}
@@ -81,7 +85,19 @@ class BoxStatusMerger:
 
     def publish_for_visualization(self, health_msg):
         for key, value in self.publisher.publishers.items():
-            value.publish(getattr(health_msg, key))
+            # frequency
+            if key[:6] == "gt_box":
+                value.publish(getattr(health_msg, key))
+            # clock offset
+            elif key[:6] == "offset":
+                message = getattr(health_msg, key)
+                if message:
+                    value.publish(abs(float(getattr(health_msg, key))))
+            # clock status
+            elif key[:6] == "status":
+                rospy.loginfo('status not yet implemented')
+            else:
+                rospy.logerror("[BoxStatusMerger] Publishing of topic " + key + " not impleneted")
     
     def publish_complete_health_status(self):
         while not rospy.is_shutdown():
