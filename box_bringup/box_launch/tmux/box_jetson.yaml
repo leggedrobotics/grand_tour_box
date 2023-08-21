@@ -25,7 +25,7 @@ windows:
             $(rospack find box_launch)/launch/livox_lidar.launch
             $(rospack find box_recording)/launch/rosbag_record_coordinator.launch
             $(rospack find box_recording)/launch/rosbag_record_node.launch
-            $(rospack find box_health)/launch/box_health.launch
+            $(rospack find box_health)/launch/box_health_client.launch
             "
           use_gui:=true
     - shell_command:

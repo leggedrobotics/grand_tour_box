@@ -1,0 +1,19 @@
+string offset_mgbe0_systemclock
+string offset_mgbe0_mgbe1
+string status_mgbe0_ptp4l
+string status_mgbe1_ptp4l
+
+# frequencies names have to be the topic names, where the '/' are replaced with '_' and "_hz" is appended
+float64 gt_box_alphasense_driver_node_cam3_hz
+float64 gt_box_alphasense_driver_node_cam4_hz
+float64 gt_box_alphasense_driver_node_cam5_hz
+float64 gt_box_hesai_pandar_hz
+float64 gt_box_livox_lidar_hz
+float64 gt_box_livox_imu_hz
+float64 gt_box_alphasense_driver_node_imu_hz
+float64 gt_box_rover_piksi_position_receiver_0_ros_pos_enu_hz
+
+uint8 gps_num_sat
+bool gps_rtk_mode_fix
+string gps_fix_mode
+bool gps_utc_time_ready
