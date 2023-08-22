@@ -5,7 +5,7 @@ import rospy
 from threading import Lock
 
 from box_health.msg import healthStatus, healthStatus_jetson, healthStatus_nuc
-from std_msgs.msg import Float32, ColorRGBA, String
+from std_msgs.msg import Float32, ColorRGBA
 from jsk_rviz_plugins.msg import *
 
 mutex = Lock()
