@@ -5,7 +5,7 @@ import rospy
 from threading import Lock
 
 from box_health.msg import healthStatus, healthStatus_jetson, healthStatus_nuc
-from std_msgs.msg import Float32, ColorRGBA, String
+from std_msgs.msg import Float32, ColorRGBA
 from jsk_rviz_plugins.msg import *
 
 mutex = Lock()
@@ -100,7 +100,11 @@ class BoxStatusMerger:
         for key, value in self.publisher.publishers_float.items():
             msg = getattr(self.complete_health_msg, key)
             if msg:
-                value.publish(abs(float(msg)))
+                try:
+                    value.publish(abs(float(msg)))
+                except:
+                    value.publish(0.0)
+                    rospy.logerr("[BoxStatusMerger] The following value for topic " + str(key) +" is not a offset (i.e a float): " + str(msg))                    
             else:
                 value.publish(0.0)
 
