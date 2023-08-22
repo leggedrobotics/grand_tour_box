@@ -7,6 +7,7 @@ import rospkg
 import datetime
 from os.path import join
 import yaml
+from std_msgs.msg import Bool
 from box_recording.srv import StopRecordingInternal, StopRecordingInternalRequest
 from box_recording.srv import StartRecordingInternal, StartRecordingInternalRequest
 from box_recording.srv import StartRecording, StartRecordingResponse, StartRecordingRequest
@@ -40,6 +41,8 @@ class RosbagRecordCoordinator(object):
         rp = rospkg.RosPack()
         self.default_yaml = join( str(rp.get_path('box_recording')), "cfg/box_default.yaml")
         self.bag_running = False
+        self.publish_recording_status = rospy.Publisher(self.namespace + 'health_status/recording', Bool, queue_size=1)
+        self.publish_recording_status.publish(self.bag_running)
         rospy.loginfo("[RosbagRecordCoordinator] Setup.")
 
     def start_recording(self, request: StartRecordingRequest):
@@ -76,6 +79,7 @@ class RosbagRecordCoordinator(object):
                     start_recording_srv(int_request)
                     rospy.loginfo("[RosbagRecordCoordinator] Starting rosbag recording process on " + node)
                     self.bag_running = True
+                    self.publish_recording_status.publish(self.bag_running)
 
                 except rospy.ROSException as exception:
                     response.suc = False
@@ -117,6 +121,7 @@ class RosbagRecordCoordinator(object):
 
             if response.suc:
                 self.bag_running = False
+                self.publish_recording_status.publish(self.bag_running)
                 response.message = "Successfully stop all nodes"
             rospy.loginfo("[RosbagRecordCoordinator] Sent STOP to all nodes.")
         else:
