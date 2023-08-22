@@ -7,7 +7,7 @@ import rospkg
 import datetime
 from os.path import join
 import yaml
-from std_msgs.msg import Bool
+from std_msgs.msg import UInt8
 from box_recording.srv import StopRecordingInternal, StopRecordingInternalRequest
 from box_recording.srv import StartRecordingInternal, StartRecordingInternalRequest
 from box_recording.srv import StartRecording, StartRecordingResponse, StartRecordingRequest
@@ -41,7 +41,7 @@ class RosbagRecordCoordinator(object):
         rp = rospkg.RosPack()
         self.default_yaml = join( str(rp.get_path('box_recording')), "cfg/box_default.yaml")
         self.bag_running = False
-        self.publish_recording_status = rospy.Publisher(self.namespace + 'health_status/recording', Bool, queue_size=1)
+        self.publish_recording_status = rospy.Publisher(self.namespace + 'health_status/recording', UInt8, queue_size=3)
         self.publish_recording_status.publish(self.bag_running)
         rospy.loginfo("[RosbagRecordCoordinator] Setup.")
 
