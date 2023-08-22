@@ -4,7 +4,7 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
-        - /OverlayText1
+        - /Rec1
       Splitter Ratio: 0.4832535982131958
     Tree Height: 662
   - Class: rviz/Selection
@@ -26,7 +26,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: Livox Lidar
+    SyncSource: ""
   - Class: rviz/Views
     Expanded:
       - /Current View1
@@ -622,6 +622,29 @@ Visualization Manager:
       text size: 12
       top: 2
       width: 128
+    - Class: jsk_rviz_plugin/PieChart
+      Enabled: true
+      Name: Rec
+      Topic: /gt_box/health_status/recording
+      Value: true
+      auto color change: true
+      background color: 0; 0; 0
+      backround alpha: 0
+      clockwise rotate direction: false
+      foreground alpha: 0.699999988079071
+      foreground alpha 2: 0.4000000059604645
+      foreground color: 239; 41; 41
+      left: 500
+      max color: 78; 154; 6
+      max color change threthold: 9
+      max value: 10
+      med color: 245; 121; 0
+      med color change threthold: 8
+      min value: 0
+      show caption: true
+      size: 90
+      text size: 12
+      top: 400
   Enabled: true
   Global Options:
     Background Color: 176; 176; 176
@@ -691,4 +714,4 @@ Window Geometry:
     collapsed: true
   Width: 2501
   X: 51
-  Y: 1496
+  Y: 56
