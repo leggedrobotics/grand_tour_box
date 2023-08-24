@@ -7,4 +7,5 @@ killall node_manager
 killall roscore
 killall rosmaster
 
+killall -s SIGKILL rosmaster
 echo "Cleaned Up Session"
