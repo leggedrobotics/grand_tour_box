@@ -9,8 +9,6 @@ killall node_manager
 killall roscore
 killall rosmaster
 
-killall -s SIGKILL rosmaster
-
 pid=$(pgrep rosmaster)
 if [ -z "$pid" ]
 then
