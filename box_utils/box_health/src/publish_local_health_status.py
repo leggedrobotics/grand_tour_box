@@ -73,6 +73,10 @@ class BoxStatus:
         if self.check_gps_status:
             rospy.loginfo("[BoxStatus] Check GPS stats on host " + self.hostname)
             self.GPS_subscriber = rospy.Subscriber("/gt_box/rover/piksi/position_receiver_0/ros/receiver_state", ReceiverState_V2_6_5, self.set_GPS_status)
+            self.gps_num_sat = 0
+            self.gps_rtk_mode_fix = False
+            self.gps_fix_mode = "None"
+            self.gps_utc_time_ready = False
 
         if self.hostname == "jetson":
             self.health_status_publisher = rospy.Publisher(self.namespace + 'health_status/' + self.hostname, healthStatus_jetson, queue_size=2)
