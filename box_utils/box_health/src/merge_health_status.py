@@ -76,7 +76,9 @@ class BoxStatusMerger:
                 "gps_num_sat",
                 "gps_rtk_mode_fix",
                 "gps_fix_mode",
-                "gps_utc_time_ready"
+                "gps_utc_time_ready",
+                "cpu_usage_jetson",
+                "avail_memory_jetson"
             ],
             "nuc" : [
                 "offset_enp45s0_systemclock",
@@ -85,6 +87,8 @@ class BoxStatusMerger:
                 "status_enp46s0_ptp4l",
                 "gt_box_adis16475_hz",
                 "gt_box_image_raw_hz",
+                "cpu_usage_nuc",
+                "avail_memory_nuc"
             ]
         }
         self.health_status_publisher = rospy.Publisher(self.namespace + 'health_status/merged' , healthStatus, queue_size=10)
@@ -127,12 +131,22 @@ class BoxStatusMerger:
         GPS status:
         RTK mode fix: %i
         GPS fix mode: %s
-        Num sat: %i """ % (getattr(self.complete_health_msg, "status_mgbe0_ptp4l"),
+        Num sat: %i 
+        
+        Avail memory Jetson: %s
+        Avail memory Nuc: %s
+        CPU usage Jetson: %f
+        CPU usage Nuc: %f""" % (getattr(self.complete_health_msg, "status_mgbe0_ptp4l"),
                getattr(self.complete_health_msg, "status_mgbe1_ptp4l"),
                getattr(self.complete_health_msg, "status_enp46s0_ptp4l"),
                getattr(self.complete_health_msg, "gps_rtk_mode_fix"),
                getattr(self.complete_health_msg, "gps_fix_mode"),
-               getattr(self.complete_health_msg, "gps_num_sat"))
+               getattr(self.complete_health_msg, "gps_num_sat"),
+               getattr(self.complete_health_msg, "avail_memory_jetson"),
+               getattr(self.complete_health_msg, "avail_memory_nuc"),
+               getattr(self.complete_health_msg, "cpu_usage_jetson"),
+               getattr(self.complete_health_msg, "cpu_usage_nuc"),
+               )
         self.publisher.text_publisher.publish(text)
             
     def publish_complete_health_status(self):

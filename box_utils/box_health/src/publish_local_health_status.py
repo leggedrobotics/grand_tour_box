@@ -33,7 +33,6 @@ def offset_from_status(line: str) -> str:
         rospy.logerr("[BoxStatus] Error reading offset from line: " + line)
         return "error reading offset"
     
-    
 class FrequencyFinder:
     def __init__(self, topic):
         self.topic = topic
@@ -151,6 +150,26 @@ class BoxStatus:
         else:
             rospy.logerr("[BoxStatus] Hostname " + self.hostname + " is unknown.")
 
+    def get_PC_status(self, health_msg):
+        process = subprocess.Popen("grep 'cpu ' /proc/stat | awk '{usage=($2+$4)*100/($2+$4+$5)} END {print usage}'", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, stderr = process.communicate()
+        if stderr:
+            rospy.err(stderr)
+        if stdout:
+            setattr(health_msg, "cpu_usage_" + self.hostname, float(stdout))
+        else:
+            rospy.warn("[BoxStatus] CPU usage could not be determined. ")
+
+        # TODO: is ${HOME} the right directory?
+        process = subprocess.Popen("df -H --output=avail ${HOME} | awk 'NR==2 {print $1}'", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, stderr = process.communicate()
+        if stderr:
+            rospy.err(stderr)
+        if stdout:
+            setattr(health_msg, "avail_memory_" + self.hostname, stdout)
+        else:
+            rospy.warn("[BoxStatus] Available memory could not be determined. ")       
+      
     def publish_health_status(self):
         while not rospy.is_shutdown():
             health_msg = self.healthstatus()
@@ -159,7 +178,7 @@ class BoxStatus:
             health_msg = self.get_topic_frequencies(health_msg)
             if self.check_gps_status:
                 health_msg = self.get_GPS_status(health_msg)
-            #health_msg = self.get_PC_status(health_msg) -> cpu, power consumption, empty disk space, etc.
+            health_msg = self.get_PC_status(health_msg)
 
             self.health_status_publisher.publish(health_msg)
             self.rate.sleep()
