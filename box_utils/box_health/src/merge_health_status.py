@@ -117,7 +117,7 @@ class BoxStatusMerger:
         text.width = 250
         text.height = 300
         text.left = 10
-        text.top = 310
+        text.top = 370
         text.text_size = 12
         text.line_width = 2
         text.font = "Arial"
