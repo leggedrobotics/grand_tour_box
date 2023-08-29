@@ -73,6 +73,7 @@ class BoxStatus:
             rospy.loginfo("[BoxStatus] Check GPS stats on host " + self.hostname)
             self.GPS_subscriber = rospy.Subscriber("/gt_box/rover/piksi/position_receiver_0/ros/receiver_state", ReceiverState_V2_6_5, self.set_GPS_status)
             self.set_GPS_status_default()
+
         if self.hostname == "jetson":
             self.health_status_publisher = rospy.Publisher(self.namespace + 'health_status/' + self.hostname, healthStatus_jetson, queue_size=2)
         elif self.hostname == "nuc":

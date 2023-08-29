@@ -1,5 +1,5 @@
 <launch>
-  <arg name="box_namespace" default="gt_box"/>
+  <arg name="box_namespace" default="gt_box/throttled"/>
   <group ns="$(arg box_namespace)">
 
     <arg name="pcap_file"  default=""/>
@@ -12,9 +12,9 @@
     <!--"frame_id" represents the id of the point cloud data published to ROS-->
     <arg name="frame_id" default="PandarXT-32"/>
     <arg name="pcldata_type" default="0"/>
-    <arg name="publish_type" default="raw"/>
+    <arg name="publish_type" default="points"/>
     <arg name="timestamp_type" default=""/>
-    <arg name="data_type" default=""/>
+    <arg name="data_type" default="rosbag"/>
     <arg name="namespace" default="hesai"/>
     <arg name="lidar_correction_file"  default="$(find bringup_hesai)/config/PandarXT-32.csv"/>
     <arg name="multicast_ip"  default=""/>
