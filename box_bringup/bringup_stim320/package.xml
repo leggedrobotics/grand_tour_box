@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>bringup_STIM320</name>
+  <name>bringup_stim320</name>
   <version>0.0.0</version>
-  <description>The bringup_STIM320 package</description>
+  <description>The bringup_stim320 package</description>
   <maintainer email="bkrumme@ethz.ch">Benjamin Krummenacher</maintainer>
   <license>Proprietary</license>
   <depend>stim320_ros</depend>
