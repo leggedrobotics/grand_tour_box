@@ -28,3 +28,6 @@
 [submodule "box_drivers/ros2_v4l2_camera"]
 	path = box_drivers/ros2_v4l2_camera
 	url = git@github.com:tier4/ros2_v4l2_camera.git
+[submodule "box_drivers/stim320_ros"]
+	path = box_drivers/stim320_ros
+	url = git@github.com:leggedrobotics/stim320_ros.git

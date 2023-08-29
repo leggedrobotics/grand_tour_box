@@ -16,6 +16,7 @@
   <depend>bringup_totalstation</depend>
   <depend>bringup_gps</depend>
   <depend>bringup_adis16475</depend>
+  <depend>bringup_stim320</depend>
   <exec_depend>fkie_multimaster_msgs</exec_depend>
   <exec_depend>fkie_master_discovery</exec_depend>
   <exec_depend>fkie_master_sync</exec_depend>
