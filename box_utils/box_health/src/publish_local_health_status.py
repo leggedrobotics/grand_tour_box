@@ -168,7 +168,8 @@ class BoxStatus:
         if stderr:
             rospy.logerr(stderr)
         if stdout:
-            setattr(health_msg, "avail_memory_" + self.hostname, stdout)
+            avail_memory = stdout.decode('utf-8').strip()
+            setattr(health_msg, "avail_memory_" + self.hostname, avail_memory)
         else:
             rospy.warn("[BoxStatus] Available memory could not be determined. ")
         return health_msg    

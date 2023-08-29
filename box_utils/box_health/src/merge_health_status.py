@@ -135,8 +135,8 @@ class BoxStatusMerger:
         
         Avail memory Jetson: %s
         Avail memory Nuc: %s
-        CPU usage Jetson: %f
-        CPU usage Nuc: %f""" % (getattr(self.complete_health_msg, "status_mgbe0_ptp4l"),
+        CPU usage Jetson: %f%
+        CPU usage Nuc: %f%""" % (getattr(self.complete_health_msg, "status_mgbe0_ptp4l"),
                getattr(self.complete_health_msg, "status_mgbe1_ptp4l"),
                getattr(self.complete_health_msg, "status_enp46s0_ptp4l"),
                getattr(self.complete_health_msg, "gps_rtk_mode_fix"),
