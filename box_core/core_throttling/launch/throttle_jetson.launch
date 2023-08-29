@@ -1,11 +1,14 @@
 <launch>
   <param name="capability_group" value="Visualization"/>
   <arg name="box_namespace" default="gt_box"/>
+
+  <rosparam command="load" file="$(find core_throttling)/frequencies.yaml" />
+
   <group ns="$(arg box_namespace)">
-    <node name="alphasense_cam3_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/alphasense_driver_node/cam3/compressed 5.0 /gt_box/alphasense_driver_node/cam3/throttled/compressed" />
-    <node name="alphasense_cam4_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/alphasense_driver_node/cam4/compressed 5.0 /gt_box/alphasense_driver_node/cam4/throttled/compressed" />
-    <node name="alphasense_cam5_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/alphasense_driver_node/cam5/compressed 5.0 /gt_box/alphasense_driver_node/cam5/throttled/compressed" />
-    <node name="hesai_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/hesai/pandar_packets 5.0 /gt_box/hesai/pandar_packets/throttled" />
-    <node name="livox_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/livox/lidar 5.0 /gt_box/livox/lidar/throttled" /> 
+    <node name="alphasense_cam3_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/alphasense_driver_node/cam3/compressed $(arg alphasense_cam3_frequency) /gt_box/alphasense_driver_node/cam3/throttled/compressed" />
+    <node name="alphasense_cam4_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/alphasense_driver_node/cam4/compressed $(arg alphasense_cam4_frequency) /gt_box/alphasense_driver_node/cam4/throttled/compressed" />
+    <node name="alphasense_cam5_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/alphasense_driver_node/cam5/compressed $(arg alphasense_cam5_frequency) /gt_box/alphasense_driver_node/cam5/throttled/compressed" />
+    <node name="hesai_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/hesai/pandar_packets $(arg hesai_frequency) /gt_box/hesai/pandar_packets/throttled" />
+    <node name="livox_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/livox/lidar $(arg livox_frequency) /gt_box/livox/lidar/throttled" /> 
   </group>
 </launch>
