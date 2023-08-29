@@ -72,11 +72,7 @@ class BoxStatus:
         if self.check_gps_status:
             rospy.loginfo("[BoxStatus] Check GPS stats on host " + self.hostname)
             self.GPS_subscriber = rospy.Subscriber("/gt_box/rover/piksi/position_receiver_0/ros/receiver_state", ReceiverState_V2_6_5, self.set_GPS_status)
-            self.gps_num_sat = 0
-            self.gps_rtk_mode_fix = False
-            self.gps_fix_mode = "uninitialized"
-            self.gps_utc_time_ready = False
-
+            self.set_GPS_status_default()
         if self.hostname == "jetson":
             self.health_status_publisher = rospy.Publisher(self.namespace + 'health_status/' + self.hostname, healthStatus_jetson, queue_size=2)
         elif self.hostname == "nuc":
@@ -84,6 +80,12 @@ class BoxStatus:
         else:
             rospy.logerr("[BoxStatus] Hostname " + self.hostname + " is unknown.")
         self.rate = rospy.Rate(1.2)
+
+    def set_GPS_status_default(self):
+            self.gps_num_sat = 0
+            self.gps_rtk_mode_fix = False
+            self.gps_fix_mode = "unknown"
+            self.gps_utc_time_ready = False
 
     def set_GPS_status(self, data):
         self.gps_num_sat = data.num_sat
@@ -143,6 +145,7 @@ class BoxStatus:
         health_msg.gps_rtk_mode_fix = self.gps_rtk_mode_fix
         health_msg.gps_fix_mode = self.gps_fix_mode
         health_msg.gps_utc_time_ready = self.gps_utc_time_ready
+        self.set_GPS_status_default()
         return health_msg
     
     def healthstatus(self):
@@ -161,6 +164,7 @@ class BoxStatus:
         if stdout:
             setattr(health_msg, "cpu_usage_" + self.hostname, float(stdout))
         else:
+            setattr(health_msg, "cpu_usage_" + self.hostname, -1.0)
             rospy.warn("[BoxStatus] CPU usage could not be determined. ")
 
         process = subprocess.Popen("df -H --output=avail ${HOME} | awk 'NR==2 {print $1}'", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -168,8 +172,10 @@ class BoxStatus:
         if stderr:
             rospy.logerr(stderr)
         if stdout:
-            setattr(health_msg, "avail_memory_" + self.hostname, stdout)
+            avail_memory = stdout.decode('utf-8').strip()
+            setattr(health_msg, "avail_memory_" + self.hostname, avail_memory)
         else:
+            setattr(health_msg, "avail_memory_" + self.hostname, "unknown")
             rospy.warn("[BoxStatus] Available memory could not be determined. ")
         return health_msg    
       
