@@ -4,7 +4,7 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
-        - /Rec1
+        - /String6
       Splitter Ratio: 0.4832535982131958
     Tree Height: 662
   - Class: rviz/Selection
@@ -26,7 +26,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: ""
+    SyncSource: Livox Lidar
   - Class: rviz/Views
     Expanded:
       - /Current View1
@@ -102,7 +102,7 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.009999999776482582
       Style: Flat Squares
-      Topic: /gt_box/hesai/pandar
+      Topic: /gt_box/hesai/pandar/throttled
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
@@ -130,7 +130,7 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.009999999776482582
       Style: Flat Squares
-      Topic: /gt_box/livox/lidar
+      Topic: /gt_box/livox/lidar/throttled
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
@@ -576,7 +576,7 @@ Visualization Manager:
       left: 600
       line width: 2
       text size: 12
-      top: 130
+      top: 135
       width: 138
     - Class: jsk_rviz_plugin/PieChart
       Enabled: true
@@ -624,7 +624,7 @@ Visualization Manager:
       width: 128
     - Class: jsk_rviz_plugin/PieChart
       Enabled: true
-      Name: Rec
+      Name: Recording
       Topic: /gt_box/health_status/recording
       Value: true
       auto color change: true
@@ -634,7 +634,7 @@ Visualization Manager:
       foreground alpha: 0.699999988079071
       foreground alpha 2: 0.4000000059604645
       foreground color: 239; 41; 41
-      left: 500
+      left: 310
       max color: 78; 154; 6
       max color change threthold: 9
       max value: 10
@@ -644,7 +644,26 @@ Visualization Manager:
       show caption: true
       size: 90
       text size: 12
-      top: 400
+      top: 285
+    - Align Bottom: false
+      Background Alpha: 0
+      Background Color: 0; 0; 0
+      Class: jsk_rviz_plugin/String
+      Enabled: true
+      Foreground Alpha: 0.800000011920929
+      Foreground Color: 46; 52; 54
+      Name: String
+      Overtake Color Properties: true
+      Overtake Position Properties: true
+      Topic: /string_topic_6
+      Value: true
+      font: KacstPoster
+      height: 128
+      left: 310
+      line width: 2
+      text size: 12
+      top: 260
+      width: 138
   Enabled: true
   Global Options:
     Background Color: 176; 176; 176
@@ -693,9 +712,9 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.34979745745658875
+      Pitch: 0.6097974181175232
       Target Frame: base
-      Yaw: 0.16860786080360413
+      Yaw: 0.31360891461372375
     Saved: ~
 Window Geometry:
   Displays:
@@ -713,5 +732,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 2501
-  X: 51
-  Y: 56
+  X: 42
+  Y: 27

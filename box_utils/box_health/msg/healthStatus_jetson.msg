@@ -17,3 +17,6 @@ uint8 gps_num_sat
 bool gps_rtk_mode_fix
 string gps_fix_mode
 bool gps_utc_time_ready
+
+float32 cpu_usage_jetson
+string avail_memory_jetson

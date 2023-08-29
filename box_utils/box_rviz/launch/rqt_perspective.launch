@@ -1,9 +1,13 @@
 <launch>
   <arg name="replay" default="false"/>
 
-  <node name="rqt_perspective" pkg="rqt_gui" type="rqt_gui" respawn="false" output="screen" args="--force-discover --clear-config --freeze-layout --lock-perspective --hide-title --perspective-file $(find box_rviz)/cfg/rqt_replay.perspective">
+  <node if="$(arg replay)" name="rqt_perspective" pkg="rqt_gui" type="rqt_gui" respawn="false" output="screen" args="--force-discover --clear-config --freeze-layout --lock-perspective --hide-title --perspective-file $(find box_rviz)/cfg/rqt_replay.perspective">
     <rosparam command="load" file="$(find box_rviz)/cfg/rqt_settings.yaml"/>
   </node>
+  <node unless="$(arg replay)" name="rqt_perspective" pkg="rqt_gui" type="rqt_gui" respawn="false" output="screen" args="--force-discover --clear-config --freeze-layout --lock-perspective --hide-title --perspective-file $(find box_rviz)/cfg/rqt.perspective">
+    <rosparam command="load" file="$(find box_rviz)/cfg/rqt_settings.yaml"/>
+  </node>
+  
   <!-- Launch rviz with rqt perspective -->
   <node if="$(arg replay)" name="rviz" pkg="rviz" type="rviz" args="-d $(find box_rviz)/cfg/config_replay.rviz" />
   <node unless="$(arg replay)" name="rviz" pkg="rviz" type="rviz" args="-d $(find box_rviz)/cfg/config.rviz" />  
