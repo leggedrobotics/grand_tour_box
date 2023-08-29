@@ -26,7 +26,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: ""
+    SyncSource: Livox Lidar
   - Class: rviz/Views
     Expanded:
       - /Current View1
@@ -102,7 +102,7 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.009999999776482582
       Style: Flat Squares
-      Topic: /gt_box/hesai/pandar
+      Topic: /gt_box/hesai/pandar/throttled
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
@@ -130,7 +130,7 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.009999999776482582
       Style: Flat Squares
-      Topic: /gt_box/livox/lidar
+      Topic: /gt_box/livox/lidar/throttled
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
@@ -712,9 +712,9 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.34979745745658875
+      Pitch: 0.6097974181175232
       Target Frame: base
-      Yaw: 0.16860786080360413
+      Yaw: 0.31360891461372375
     Saved: ~
 Window Geometry:
   Displays:
@@ -732,5 +732,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 2501
-  X: 51
-  Y: 1496
+  X: 42
+  Y: 27
