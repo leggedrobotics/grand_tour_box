@@ -1,0 +1,11 @@
+<launch>
+  <param name="capability_group" value="Visualization"/>
+  <arg name="box_namespace" default="gt_box"/>
+
+  <rosparam command="load" file="$(find core_throttling)/cfg/frequencies.yaml" />
+  <arg name="hdr_frequency" default="5.0"/>
+
+  <group ns="$(arg box_namespace)">
+    <node name="hdrcam_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/image_raw/compressed $(arg hdr_frequency) /gt_box/image_raw/throttled/compressed" />
+  </group>
+</launch>

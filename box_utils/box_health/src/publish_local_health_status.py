@@ -72,6 +72,10 @@ class BoxStatus:
         if self.check_gps_status:
             rospy.loginfo("[BoxStatus] Check GPS stats on host " + self.hostname)
             self.GPS_subscriber = rospy.Subscriber("/gt_box/rover/piksi/position_receiver_0/ros/receiver_state", ReceiverState_V2_6_5, self.set_GPS_status)
+            self.gps_num_sat = 0
+            self.gps_rtk_mode_fix = False
+            self.gps_fix_mode = "uninitialized"
+            self.gps_utc_time_ready = False
 
         if self.hostname == "jetson":
             self.health_status_publisher = rospy.Publisher(self.namespace + 'health_status/' + self.hostname, healthStatus_jetson, queue_size=2)
@@ -150,7 +154,7 @@ class BoxStatus:
             rospy.logerr("[BoxStatus] Hostname " + self.hostname + " is unknown.")
 
     def get_PC_status(self, health_msg):
-        process = subprocess.Popen("grep 'cpu ' /proc/stat | awk '{usage=($2+$4)*100/($2+$4+$5)} END {print usage}'", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process = subprocess.Popen("grep 'cpu ' /proc/stat | awk '{usage=($2+$4)*100/($2+$4+$5)} END {print usage}'", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = process.communicate()
         if stderr:
             rospy.logerr(stderr)
@@ -159,15 +163,15 @@ class BoxStatus:
         else:
             rospy.warn("[BoxStatus] CPU usage could not be determined. ")
 
-        # TODO: is ${HOME} the right directory?
-        process = subprocess.Popen("df -H --output=avail ${HOME} | awk 'NR==2 {print $1}'", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process = subprocess.Popen("df -H --output=avail ${HOME} | awk 'NR==2 {print $1}'", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = process.communicate()
         if stderr:
             rospy.logerr(stderr)
         if stdout:
             setattr(health_msg, "avail_memory_" + self.hostname, stdout)
         else:
-            rospy.warn("[BoxStatus] Available memory could not be determined. ")       
+            rospy.warn("[BoxStatus] Available memory could not be determined. ")
+        return health_msg    
       
     def publish_health_status(self):
         while not rospy.is_shutdown():
@@ -178,7 +182,6 @@ class BoxStatus:
             if self.check_gps_status:
                 health_msg = self.get_GPS_status(health_msg)
             health_msg = self.get_PC_status(health_msg)
-
             self.health_status_publisher.publish(health_msg)
             self.rate.sleep()
 
