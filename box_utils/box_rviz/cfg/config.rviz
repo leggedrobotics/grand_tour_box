@@ -358,7 +358,7 @@ Visualization Manager:
     - Class: jsk_rviz_plugin/PieChart
       Enabled: true
       Name: Hesai
-      Topic: /gt_box/visualization/gt_box_hesai_pandar_hz
+      Topic: /gt_box/visualization/gt_box_hesai_pandar_packets_hz
       Value: true
       auto color change: true
       background color: 0; 0; 0
