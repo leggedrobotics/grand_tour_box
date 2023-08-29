@@ -84,7 +84,7 @@ class BoxStatus:
     def set_GPS_status_default(self):
             self.gps_num_sat = 0
             self.gps_rtk_mode_fix = False
-            self.gps_fix_mode = "uninitialized"
+            self.gps_fix_mode = "unknown"
             self.gps_utc_time_ready = False
 
     def set_GPS_status(self, data):
