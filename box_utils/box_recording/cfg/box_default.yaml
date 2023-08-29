@@ -24,3 +24,7 @@ nuc:
   - /gt_box/camera_info
   - /gt_box/image_raw
   - /gt_box/health_status/nuc
+opc:
+  - /gt_box/leica/position
+  - /gt_box/leica/status
+  - /gt_box/leica/timestamp_info
