@@ -1,4 +1,7 @@
 <launch>
   <param name="capability_group" value="Driver"/>
-  <include file="$(find bringup_hdr)/launch/usb_cam.launch"> </include>
+  <arg name="calibration" default="false"/>
+  <include file="$(find bringup_hdr)/launch/usb_cam.launch">
+    <arg name="calibration" value="$(arg replay)"/>
+  </include>
 </launch>

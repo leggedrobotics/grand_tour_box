@@ -1,4 +1,7 @@
 <launch>
   <param name="capability_group" value="Driver"/>
-  <include file="$(find bringup_alphasense)/launch/alphasense.launch"> </include>
+  <arg name="calibration" default="false"/>
+  <include file="$(find bringup_alphasense)/launch/alphasense.launch">
+    <arg name="calibration" value="$(arg replay)"/>
+  </include>
 </launch>
