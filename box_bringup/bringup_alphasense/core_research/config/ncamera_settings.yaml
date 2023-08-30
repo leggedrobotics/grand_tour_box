@@ -70,7 +70,7 @@ ncamera:
     0: *standard_camera_config      # Front left, used for stereo
     1: *camera_1_config             # Front right, used for stereo
     2: *standard_camera_config      # No camera
-    3: *standard_camera_config       # Side left
-    4: *standard_camera_config       # Front middle
+    3: *standard_camera_config      # Side left
+    4: *standard_camera_config      # Front middle
     5: *standard_camera_config      # Side right
-#    6: *standard_camera_config      # Back
+#    6: *standard_camera_config     # Back
