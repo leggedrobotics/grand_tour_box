@@ -1,0 +1,4 @@
+<launch>
+  <param name="capability_group" value="Driver"/>
+  <include file="$(find bringup_hdr)/launch/usb_cam_calibration.launch"> </include>
+</launch>

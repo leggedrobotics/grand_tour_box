@@ -1,8 +1,0 @@
-<launch>
-    <include file="$(find box_launch)/launch/alphasense.launch" />
-    <include file="$(find box_launch)/launch/gps_rover.launch" />
-    <include file="$(find box_launch)/launch/hesai_lidar.launch" />
-    <include file="$(find box_launch)/launch/livox_lidar.launch" />
-    <include file="$(find box_recording)/launch/rosbag_record_coordinator.launch" />
-    <include file="$(find box_recording)/launch/rosbag_record_node.launch"/>
-</launch>
