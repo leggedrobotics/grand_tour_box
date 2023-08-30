@@ -1,6 +1,5 @@
 <launch>
   <arg name="box_namespace" default="gt_box"/>
-
   <group ns="$(arg box_namespace)">
     <arg name="publish_rate" default="1.0" />
     <arg name="video_device" default="/dev/video0" />

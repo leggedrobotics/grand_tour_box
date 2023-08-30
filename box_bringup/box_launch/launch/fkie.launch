@@ -3,7 +3,6 @@
   <arg name="use_gui" default="true"/>
   <arg name="simulation" default="false"/>
   <arg name="hostname" default="$(env HOSTNAME)"/>
-  <arg name="calibration" default="false"/>
   
   <!-- Parameters parsed to the fkie -->
   <arg name="autostart_launch_files" default=""/>

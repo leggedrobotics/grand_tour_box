@@ -1,5 +1,4 @@
 <launch>
   <param name="capability_group" value="Driver"/>
-  <include file="$(find bringup_alphasense)/launch/alphasense.launch">
-  </include>
+  <include file="$(find bringup_alphasense)/launch/alphasense.launch"> </include>
 </launch>

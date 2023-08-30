@@ -1,7 +1,5 @@
 <launch>
   <arg name="box_namespace" default="gt_box"/>
-  <arg name="calibration" default="false"/>
-
   <group ns="$(arg box_namespace)">
 
     <arg name="ncamera_settings" default="$(find bringup_alphasense)/config/ncamera_settings.yaml" />
