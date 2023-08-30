@@ -27,14 +27,14 @@
             type="node_manager_daemon"
             name="node_manager_daemon"
             args="--load '$(arg _load_launch_files)'
-              --autostart '$(arg _autostart_launch_files)' $(arg calibration)">
+              --autostart '$(arg _autostart_launch_files)'">
       </node>
     </group>
     <group unless="$(eval bool(autostart_launch_files) )">
       <node pkg="fkie_node_manager_daemon"
             type="node_manager_daemon"
             name="node_manager_daemon"
-            args="--load '$(arg _load_launch_files)' $(arg calibration)">
+            args="--load '$(arg _load_launch_files)'">
       </node>
     </group>
   </group>
@@ -43,14 +43,13 @@
       <node pkg="fkie_node_manager_daemon"
             type="node_manager_daemon"
             name="node_manager_daemon"
-            args="--autostart '$(arg _autostart_launch_files)' $(arg calibration)">
+            args="--autostart '$(arg _autostart_launch_files)'">
       </node>
     </group>
     <group unless="$(eval bool(autostart_launch_files) )">
       <node pkg="fkie_node_manager_daemon"
             type="node_manager_daemon"
-            name="node_manager_daemon"
-            args="$(arg calibration)">
+            name="node_manager_daemon">
       </node>
     </group>
   </group>
