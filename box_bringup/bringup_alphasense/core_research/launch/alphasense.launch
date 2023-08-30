@@ -4,8 +4,7 @@
 
   <group ns="$(arg box_namespace)">
 
-    <arg unless="$(arg calibration)" name="ncamera_settings" default="$(find bringup_alphasense)/config/ncamera_settings.yaml" />
-    <arg if="$(arg calibration)" name="ncamera_settings" default="$(find bringup_alphasense)/config/ncamera_settings_calibration.yaml" />
+    <arg name="ncamera_settings" default="$(find bringup_alphasense)/config/ncamera_settings.yaml" />
 
     <node pkg="alphasense_driver_ros" type="alphasense_driver_ros" name="alphasense_driver_node" args="_ncamera_settings:=$(arg ncamera_settings) _translate_device_time:=False" />
   
