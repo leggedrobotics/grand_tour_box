@@ -3,8 +3,7 @@ Panels:
     Help Height: 0
     Name: Displays
     Property Tree Widget:
-      Expanded:
-        - /Stim320 IMU1
+      Expanded: ~
       Splitter Ratio: 0.4832535982131958
     Tree Height: 662
   - Class: rviz/Selection
