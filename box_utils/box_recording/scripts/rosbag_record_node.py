@@ -9,6 +9,7 @@ import rospkg
 import psutil
 import signal
 import os
+from std_msgs.msg import Float32
 from box_recording.srv import StartRecordingInternalResponse, StartRecordingInternal
 from box_recording.srv import StopRecordingInternalResponse, StopRecordingInternal
 
@@ -30,6 +31,9 @@ class RosbagRecordNode(object):
         self.bag_running = False
         default_path = rospkg.RosPack().get_path('box_recording') + '/data'
         self.data_path = rospy.get_param('~data_path', default_path)
+
+        self.publish_recording_status = rospy.Publisher(self.namespace + 'health_status/recording_' + self.node, Float32, queue_size=3)
+        self.publish_recording_status.publish(float(self.bag_running))
 
         if not os.path.exists(self.data_path):
             self.data_path = default_path
@@ -60,6 +64,7 @@ class RosbagRecordNode(object):
         else:
             self.process = subprocess.Popen(bash_command, shell=True, stderr=subprocess.PIPE)
             self.bag_running = True
+            self.publish_recording_status.publish(float(self.bag_running))
             response.suc = True
             response.message = "Starting rosbag recording process."
             rospy.loginfo("[RosbagRecordNode(" + self.node + ")] Starting rosbag recording process.")
@@ -80,6 +85,7 @@ class RosbagRecordNode(object):
                 output = subprocess.check_output([f'rosbag info --freq {self.bag_path}*.bag'], shell=True)
                 response.result = str(output)[2:-1]
             self.bag_running = False
+            self.publish_recording_status.publish(float(self.bag_running))
             rospy.loginfo("[RosbagRecordNode(" + self.node + ")] Sent SIGINT to recording process.")
         else:
             response.suc = False
