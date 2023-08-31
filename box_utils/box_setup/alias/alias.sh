@@ -67,4 +67,6 @@ start-recording(){
 start-recording-calibration(){
     rosservice call /gt_box/rosbag_record_coordinator/start_recording "yaml_file: '/home/rsl/git/grand_tour_box/box_utils/box_recording/cfg/box_calibration.yaml'" 
 }
-stop-recording
+stop-recording(){
+    rosservice call /gt_box/rosbag_record_coordinator/stop_recording "verbose: false" 
+}
