@@ -23,7 +23,8 @@ def load_yaml(path: str) -> dict:
     Returns:
         (dict): Returns content of file
     """
-    with open(path) as file:
+    full_path = join( str(rp.get_path('box_recording')), path)
+    with open(full_path) as file:
         res = yaml.load(file, Loader=yaml.FullLoader)
     if res is None:
         res = {}
