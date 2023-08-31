@@ -59,3 +59,12 @@ copy_data(){
     rosrun box_recording copy_mission_data_from_robot.sh rsl jetson .
     rosrun box_recording copy_mission_data_from_robot.sh rsl nuc .
 }
+
+start-recording(){
+   rosservice call /gt_box/rosbag_record_coordinator/start_recording "yaml_file: ''" 
+}
+
+start-recording-calibration(){
+    rosservice call /gt_box/rosbag_record_coordinator/start_recording "yaml_file: '/home/rsl/git/grand_tour_box/box_utils/box_recording/cfg/box_calibration.yaml'" 
+}
+stop-recording
