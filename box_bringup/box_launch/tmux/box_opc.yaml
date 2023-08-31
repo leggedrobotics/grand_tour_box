@@ -23,7 +23,7 @@ windows:
             $(rospack find box_launch)/launch/box_rviz.launch
             $(rospack find box_recording)/launch/rosbag_record_node.launch
             $(rospack find box_health)/launch/box_health_server.launch
-            $(rospack find bringup_hesai)/launch/hesai_lidar_unpack.launch
+            $(rospack find bringup_hesai)/launch/hesai_lidar_unpack_throttled.launch
             "
           use_gui:=true
     - shell_command:
