@@ -1,0 +1,27 @@
+<launch>
+  <arg name="replay" default="true"/>
+
+  <include file="$(find box_rviz)/launch/box_rviz.launch">
+    <arg name="replay" value="$(arg replay)"/>
+  </include>
+  
+  <include file="$(find box_recording)/launch/rosbag_record_coordinator.launch" />
+  <include file="$(find box_recording)/launch/rosbag_record_node.launch" />
+
+  <!-- unpack hesai pointcloud packets -->
+  <include file="$(find bringup_hesai)/launch/hesai_lidar_unpack.launch" />
+
+  <!-- uncompress the images-->
+  <node name="uncompress_hdr" pkg="image_transport" type="republish" 
+    args="compressed in:=/gt_box/image_raw raw out:=/gt_box/image_raw"> </node>
+  <node name="uncompress_alpahsense_cam0" pkg="image_transport" type="republish" 
+    args="compressed in:=/gt_box/alphasense_driver_node/cam0 raw out:=/gt_box/alphasense_driver_node/cam0"> </node>
+  <node name="uncompress_alpahsense_cam1" pkg="image_transport" type="republish" 
+    args="compressed in:=/gt_box/alphasense_driver_node/cam1 raw out:=/gt_box/alphasense_driver_node/cam1"> </node>
+  <node name="uncompress_alpahsense_cam3" pkg="image_transport" type="republish" 
+    args="compressed in:=/gt_box/alphasense_driver_node/cam3 raw out:=/gt_box/alphasense_driver_node/cam3"> </node>
+  <node name="uncompress_alpahsense_cam4" pkg="image_transport" type="republish" 
+    args="compressed in:=/gt_box/alphasense_driver_node/cam4 raw out:=/gt_box/alphasense_driver_node/cam4"> </node>
+  <node name="uncompress_alpahsense_cam5" pkg="image_transport" type="republish" 
+    args="compressed in:=/gt_box/alphasense_driver_node/cam5 raw out:=/gt_box/alphasense_driver_node/cam5"> </node>
+</launch>

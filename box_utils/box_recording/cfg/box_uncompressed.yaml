@@ -1,0 +1,27 @@
+opc:
+  - /gt_box/alphasense_driver_node/aux_imu
+  - /gt_box/alphasense_driver_node/cam0
+  - /gt_box/alphasense_driver_node/cam1
+  - /gt_box/alphasense_driver_node/cam3
+  - /gt_box/alphasense_driver_node/cam4
+  - /gt_box/alphasense_driver_node/cam5
+  - /gt_box/alphasense_driver_node/imu
+  - /gt_box/hesai/pandar
+  - /gt_box/livox/imu
+  - /gt_box/livox/lidar
+  - /gt_box/rover/piksi/position_receiver_0/ros/vel_ned
+  - /gt_box/rover/piksi/position_receiver_0/ros/vel_ned_cov
+  - /gt_box/rover/piksi/position_receiver_0/ros/pos_enu
+  - /gt_box/rover/piksi/position_receiver_0/ros/pos_enu_cov
+  - /gt_box/rover/piksi/position_receiver_0/ros/navsatfix
+  - /gt_box/rover/piksi/position_receiver_0/ros/receiver_state
+  - /gt_box/rover/piksi/position_receiver_0/sbp/base_pos_ecef
+  - /gt_box/rover/piksi/position_receiver_0/ros/time_ref
+  - /gt_box/health_status/jetson
+  - /gt_box/adis16475
+  - /gt_box/camera_info
+  - /gt_box/image_raw/compressed
+  - /gt_box/health_status/nuc
+  - /gt_box/leica/position
+  - /gt_box/leica/status
+  - /gt_box/leica/timestamp_info
