@@ -1,0 +1,7 @@
+jetson:
+  - /gt_box/alphasense_driver_node/cam0
+  - /gt_box/alphasense_driver_node/cam1
+  - /gt_box/alphasense_driver_node/cam4
+  - /gt_box/hesai/pandar
+  - /gt_box/livox/lidar
+  - /gt_box/health_status/jetson
