@@ -636,7 +636,7 @@ Visualization Manager:
       left: 600
       max color: 78; 154; 6
       max color change threthold: 9
-      max value: 10
+      max value: 1
       med color: 245; 121; 0
       med color change threthold: 8
       min value: 0
@@ -688,7 +688,7 @@ Visualization Manager:
       left: 660
       max color: 78; 154; 6
       max color change threthold: 9
-      max value: 10
+      max value: 1
       med color: 245; 121; 0
       med color change threthold: 8
       min value: 0
@@ -711,7 +711,7 @@ Visualization Manager:
       left: 720
       max color: 78; 154; 6
       max color change threthold: 9
-      max value: 10
+      max value: 1
       med color: 245; 121; 0
       med color change threthold: 8
       min value: 0
