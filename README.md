@@ -70,6 +70,38 @@ The project is organized into the following directories:
 Getting Started
 </h2>
 
+### Most important workflows:
+###### Record data normally:
+- power on the box -> one the jetson and the nuc a detached tmux session starts, all the drivers are started and the topics start publishing.
+- on opc, run the command: `l-opc` -> a tmux session is launched, and the visualization is started. Only the throtteled topics are visualized (currently 1 Hz)
+- on opc via commandline, run `start-recording` , which uses the default yaml file which saves the compressed images and the hesai packets (instead of the uncompressed pointcloud)
+- the status of each recording node is visible in the rviz
+- on opc run `stop-recording` top stop the recording.
+- close the tmux session on opc with the command `tk`
+- copy it to the opc with the command `copy_data` which copies all bags in the data folders on the nuc and jetson to the opc
+- delete the data on the jetson and nuc (else it will be copied again)
+- merge the bags
+###### Transform bag with compressed topics into uncompressed topics (not really tested, hacky)
+- run `l-replay`, which opens another tmux session
+- follow the instructions echoed on the terminal: first start recording with `start-recording-uncompressed`, then play bag with --clock flag, then stop recording
+
+###### Record data fro cam-lidar calibration (1hz images):
+- power on the box -> one the jetson and the nuc a detached tmux session starts, all the drivers are started and the topics are published.
+- ssh into jetson (ssh jetson), kill the tmux session `tk`, then run l-jetson-calibration -> the drivers now wtart to publish uncompressed images at 1hz and full pointclouds
+- run `l-opc` on opc (visualization won't work, because throtteled topics are selected)
+- start recording with `start-recording-calibration` -> this records the topics to calibrate (right now the uncompressed front facing alphasense and the pointlcouds of the lidars)
+- stop recording with `stop-recording`
+
+###### Sync clocks opc to jetson
+- ssh into jetson
+- check status `systemctl status chrony.service`
+- restart chrony `systemctl restart chrony.service `
+
+##### Few pointers:
+- many useful aliases are defined in grand_tour_box/box_utils/box_setup/alias/alias.sh
+- clock problems? restart with `restart-clocks-box`, `restart-clocks-jetson` or `restart-clocks-nuc` from opc
+- no images showing? right click on image, disable hide menu and then refresh image
+
 
 ### Launch Structure Overview:
 

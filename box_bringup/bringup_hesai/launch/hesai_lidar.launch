@@ -12,7 +12,7 @@
     <!--"frame_id" represents the id of the point cloud data published to ROS-->
     <arg name="frame_id" default="PandarXT-32"/>
     <arg name="pcldata_type" default="0"/>
-    <arg name="publish_type" default="raw"/>
+    <arg name="publish_type" default="both"/>
     <arg name="timestamp_type" default=""/>
     <arg name="data_type" default=""/>
     <arg name="namespace" default="hesai"/>
