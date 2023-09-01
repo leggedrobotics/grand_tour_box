@@ -11,6 +11,7 @@ jetson:
   - /gt_box/livox/lidar
   - /gt_box/stim320
   - /gt_box/health_status/jetson
+  - /gt_box/adis16475
 
 opc:
   - /gt_box/leica/position
