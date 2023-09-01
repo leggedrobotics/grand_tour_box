@@ -17,3 +17,4 @@ opc:
   - /gt_box/leica/position
   - /gt_box/leica/status
   - /gt_box/leica/timestamp_info
+  - /tf_static
