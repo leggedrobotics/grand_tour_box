@@ -21,5 +21,5 @@ def main(args):
         hosts.append("nuc")
 
     for host in hosts:
-        cmd = f"{rsync} {BOX_ROOT_DIR} {USERNAME}@{host}:{BOX_ROOT_DIR}"
+        cmd = f"{rsync} {BOX_ROOT_DIR} {host}:/home/rsl/git"
         shell_run(cmd)

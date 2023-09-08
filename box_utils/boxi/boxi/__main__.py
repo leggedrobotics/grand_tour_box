@@ -1,7 +1,7 @@
 import argparse
 import importlib
 
-command_register = ["push-code-to-box", "black"]
+command_register = ["push-code-to-box", "black", "start"]
 
 
 def main():
