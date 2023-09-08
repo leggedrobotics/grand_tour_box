@@ -5,8 +5,9 @@ import sys
 
 from std_msgs.msg import String
 
+
 def string_publisher_node():
-    rospy.init_node('string_publisher_node', anonymous=True)
+    rospy.init_node("string_publisher_node", anonymous=True)
 
     # Read the list of strings from the ROS parameter server
     string_list = rospy.get_param("strings", [])
@@ -20,7 +21,8 @@ def string_publisher_node():
         pub.publish(s)
         rospy.sleep(0.1)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     try:
         string_publisher_node()
     except rospy.ROSInterruptException:

@@ -10,10 +10,11 @@ from jsk_rviz_plugins.msg import *
 
 mutex = Lock()
 
+
 class visualizationPublisher:
     def __init__(self):
         self.namespace = rospy.get_namespace()
-        
+
         # names have to exactly match healthStatus.msg
         topics_to_publish_float = [
             "gt_box_alphasense_driver_node_cam3_hz",
@@ -29,23 +30,22 @@ class visualizationPublisher:
             "offset_mgbe0_systemclock",
             "offset_mgbe0_mgbe1",
             "offset_mgbe0_enp45s0",
-            "offset_enp45s0_systemclock"
+            "offset_enp45s0_systemclock",
         ]
 
-        topics_top_publish_string = [
-            "status_mgbe0_ptp4l",
-            "status_mgbe1_ptp4l",
-            "status_enp46s0_ptp4l"
-        ]
+        topics_top_publish_string = ["status_mgbe0_ptp4l", "status_mgbe1_ptp4l", "status_enp46s0_ptp4l"]
 
         self.publishers_float = {}
         for topic in topics_to_publish_float:
-            self.publishers_float[topic] = rospy.Publisher(self.namespace + 'visualization/' + topic , Float32, queue_size=10)
+            self.publishers_float[topic] = rospy.Publisher(
+                self.namespace + "visualization/" + topic, Float32, queue_size=10
+            )
 
-        #self.publishers_string = {}
-        #for topic in topics_top_publish_string:
+        # self.publishers_string = {}
+        # for topic in topics_top_publish_string:
         #    self.publishers_string[topic] = rospy.Publisher(self.namespace + 'visualization/' + topic , String, queue_size=10)
         self.text_publisher = rospy.Publisher("visualization/clock_status", OverlayText, queue_size=1)
+
 
 class BoxStatusMerger:
     def __init__(self, publisher):
@@ -53,14 +53,18 @@ class BoxStatusMerger:
         self.hostname = socket.gethostname()
         self.namespace = rospy.get_namespace()
 
-        rospy.init_node('health_status_merger')
+        rospy.init_node("health_status_merger")
 
-        self.subscriber_jetson = rospy.Subscriber(self.namespace + "health_status/jetson", healthStatus_jetson, self.callback, "jetson")
-        self.subscriber_nuc = rospy.Subscriber(self.namespace + "health_status/nuc", healthStatus_nuc, self.callback, "nuc")
+        self.subscriber_jetson = rospy.Subscriber(
+            self.namespace + "health_status/jetson", healthStatus_jetson, self.callback, "jetson"
+        )
+        self.subscriber_nuc = rospy.Subscriber(
+            self.namespace + "health_status/nuc", healthStatus_nuc, self.callback, "nuc"
+        )
         # names have to exactly match healthStatus.msg
         # TODO(beni): read directly from file
         self.message_fields = {
-            "jetson" : [
+            "jetson": [
                 "offset_mgbe0_systemclock",
                 "offset_mgbe0_mgbe1",
                 "status_mgbe0_ptp4l",
@@ -78,9 +82,9 @@ class BoxStatusMerger:
                 "gps_fix_mode",
                 "gps_utc_time_ready",
                 "cpu_usage_jetson",
-                "avail_memory_jetson"
+                "avail_memory_jetson",
             ],
-            "nuc" : [
+            "nuc": [
                 "offset_enp45s0_systemclock",
                 "offset_enp45s0_enp46s0",
                 "offset_mgbe0_enp45s0",
@@ -88,10 +92,12 @@ class BoxStatusMerger:
                 "gt_box_adis16475_hz",
                 "gt_box_image_raw_hz",
                 "cpu_usage_nuc",
-                "avail_memory_nuc"
-            ]
+                "avail_memory_nuc",
+            ],
         }
-        self.health_status_publisher = rospy.Publisher(self.namespace + 'health_status/merged' , healthStatus, queue_size=10)
+        self.health_status_publisher = rospy.Publisher(
+            self.namespace + "health_status/merged", healthStatus, queue_size=10
+        )
         self.rate = rospy.Rate(1)
         self.complete_health_msg = healthStatus()
 
@@ -108,7 +114,12 @@ class BoxStatusMerger:
                     value.publish(abs(float(msg)))
                 except:
                     value.publish(0.0)
-                    rospy.logerr("[BoxStatusMerger] The following value for topic " + str(key) +" is not a offset (i.e a float): " + str(msg))                    
+                    rospy.logerr(
+                        "[BoxStatusMerger] The following value for topic "
+                        + str(key)
+                        + " is not a offset (i.e a float): "
+                        + str(msg)
+                    )
             else:
                 value.publish(0.0)
 
@@ -136,19 +147,20 @@ class BoxStatusMerger:
         Avail memory Jetson: %s
         Avail memory Nuc: %s
         CPU usage Jetson: %.2f%%
-        CPU usage Nuc: %.2f%%""" % (getattr(self.complete_health_msg, "status_mgbe0_ptp4l"),
-               getattr(self.complete_health_msg, "status_mgbe1_ptp4l"),
-               getattr(self.complete_health_msg, "status_enp46s0_ptp4l"),
-               getattr(self.complete_health_msg, "gps_rtk_mode_fix"),
-               getattr(self.complete_health_msg, "gps_fix_mode"),
-               getattr(self.complete_health_msg, "gps_num_sat"),
-               getattr(self.complete_health_msg, "avail_memory_jetson"),
-               getattr(self.complete_health_msg, "avail_memory_nuc"),
-               getattr(self.complete_health_msg, "cpu_usage_jetson"),
-               getattr(self.complete_health_msg, "cpu_usage_nuc"),
-               )
+        CPU usage Nuc: %.2f%%""" % (
+            getattr(self.complete_health_msg, "status_mgbe0_ptp4l"),
+            getattr(self.complete_health_msg, "status_mgbe1_ptp4l"),
+            getattr(self.complete_health_msg, "status_enp46s0_ptp4l"),
+            getattr(self.complete_health_msg, "gps_rtk_mode_fix"),
+            getattr(self.complete_health_msg, "gps_fix_mode"),
+            getattr(self.complete_health_msg, "gps_num_sat"),
+            getattr(self.complete_health_msg, "avail_memory_jetson"),
+            getattr(self.complete_health_msg, "avail_memory_nuc"),
+            getattr(self.complete_health_msg, "cpu_usage_jetson"),
+            getattr(self.complete_health_msg, "cpu_usage_nuc"),
+        )
         self.publisher.text_publisher.publish(text)
-            
+
     def publish_complete_health_status(self):
         while not rospy.is_shutdown():
             with mutex:
@@ -157,9 +169,10 @@ class BoxStatusMerger:
                 self.publish_text_visualization()
 
                 self.complete_health_msg = healthStatus()
-            self.rate.sleep()  
+            self.rate.sleep()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     try:
         vizualization = visualizationPublisher()
         box_status = BoxStatusMerger(vizualization)
