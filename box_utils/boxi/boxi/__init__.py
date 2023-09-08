@@ -2,7 +2,8 @@ import os
 from pathlib import Path
 
 # Absolute path to the  boxi_root_dir repository.
-BOXI_ROOT_DIR = str(Path(os.path.realpath(__file__)).parent[2])
+BOXI_ROOT_DIR = str(Path(str(os.path.realpath(__file__))).parent.parent)
 
 # Absolute path to the  box repository.
-BOX_ROOT_DIR = str(Path(os.path.realpath(__file__)).parent[4])
+BOX_ROOT_DIR = str(Path(os.path.realpath(__file__)).parent.parent.parent.parent)
+from .os_utils import shell_run

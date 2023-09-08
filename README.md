@@ -102,6 +102,16 @@ Getting Started
 - clock problems? restart with `restart-clocks-box`, `restart-clocks-jetson` or `restart-clocks-nuc` from opc
 - no images showing? right click on image, disable hide menu and then refresh image
 
+### Using boxi
+```shell
+pip3 install --user -e ~/git/grand_tour_box/box_utils/boxi
+```
+Now you can run:
+```shell
+boxi push-code-to-box --jetson
+boxi black
+```
+And many more to be implemented to easily use the box
 
 ### Launch Structure Overview:
 

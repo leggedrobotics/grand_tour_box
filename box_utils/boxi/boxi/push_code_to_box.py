@@ -1,20 +1,19 @@
 from boxi import BOX_ROOT_DIR, shell_run
 import argparse
 
+USERNAME = "rsl"
+
 
 def add_arguments(parser):
     parser.set_defaults(main=main)
-    parser.add_argument("--jetson", type=bool, help="Store data")
-    parser.add_argument(
-        "--nuc",
-        type=str,
-        help="Sync to NUC",
-    )
+    parser.add_argument("--jetson", action="store_true", help="Sync to Jetson")
+    parser.add_argument("--nuc", action="store_true", help="Sync to Nuc")
     return parser
 
 
 def main(args):
-    rsync = "rsync -a -z -h -r -v --exclude '*.git/*' --exclude '__pycache__' --exclude '*.pyc' --exclude '*.bag' --out-format=\"[%t]:%o:%f:Last Modified %M\" "
+    rsync = "rsync -a -z -h -r -v --exclude '*.git/*' --exclude '__pycache__' --exclude '*.pyc' --exclude '*.bag' --out-format=\"[%t]:%o:%f:Last Modified %M\""
+    print(rsync)
     hosts = []
     if args.jetson:
         hosts.append("jetson")

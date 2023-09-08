@@ -6,11 +6,11 @@ import time
 from pytictac import CpuTimer
 
 
-def shell(cmd, cwd=None, env={}, time=True):
+def shell_run(cmd, cwd=None, env={}, time=True):
     """Execute shell command."""
     # Support both list and str format for commands
-    if isinstance(cmd, str):
-        cmd = shlex.split(cmd)
+    # if isinstance(cmd, str):
+    #     cmd = shlex.split(cmd)
 
     # Set up environmental variables
     env_variables = copy.deepcopy(os.environ)
@@ -25,8 +25,8 @@ def shell(cmd, cwd=None, env={}, time=True):
 
         if p.wait() != 0:
             print()
-            raise RuntimeError(f"{e} --- while executing {cmd}")
+            raise RuntimeError(f"Error Return non 0 --- while executing {cmd}")
 
 
 if __name__ == "__main__":
-    shell("ls $HOME")
+    shell_run("ls $HOME")

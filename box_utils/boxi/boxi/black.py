@@ -9,7 +9,6 @@ def add_arguments(parser):
 
 
 def main(args):
-    Path(BOX_ROOT_DIR).parent
 
     for p in ["box_utils", "box_core", "box_bringup"]:
         pa = os.path.join(BOX_ROOT_DIR, p)

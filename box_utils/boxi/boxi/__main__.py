@@ -1,7 +1,18 @@
 import argparse
 import importlib
 
-command_register = ["push-code-to-box"]
+command_register = ["push-code-to-box", "black"]
+
+
+def main():
+    parser = get_parser()
+    parser.set_defaults(main=lambda x: parser.print_help())
+    try:
+        argcomplete.autocomplete(parser)
+    except NameError:
+        pass
+    args = parser.parse_args()
+    args.main(args)
 
 
 def get_parser():
@@ -20,11 +31,4 @@ def get_parser():
 
 
 if __name__ == "__main__":
-    parser = get_parser()
-    parser.set_defaults(main=lambda x: parser.print_help())
-    try:
-        argcomplete.autocomplete(parser)
-    except NameError:
-        pass
-    args = parser.parse_args()
-    args.main(args)
+    main()
