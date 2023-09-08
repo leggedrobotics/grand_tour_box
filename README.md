@@ -106,6 +106,12 @@ Getting Started
 ```shell
 pip3 install --user -e ~/git/grand_tour_box/box_utils/boxi
 ```
+Add to .bashrc
+```
+export PATH=${HOME}/.local/bin${PATH:+:${PATH}}
+```
+
+
 Now you can run:
 ```shell
 boxi push-code-to-box --jetson
