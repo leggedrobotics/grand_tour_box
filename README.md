@@ -111,11 +111,11 @@ Add to .bashrc
 export PATH=${HOME}/.local/bin${PATH:+:${PATH}}
 ```
 
-
 Now you can run:
 ```shell
 boxi push-code-to-box --jetson
 boxi black
+boxi start -c box # Select the correct tmux configuration name defaults to box
 ```
 And many more to be implemented to easily use the box
 

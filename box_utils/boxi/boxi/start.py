@@ -1,16 +1,16 @@
 from boxi import BOX_ROOT_DIR, shell_run
 import argparse
 import os
+from pathlib import Path
 
 
 def add_arguments(parser):
+    yamls = [s.stem for s in Path(BOX_ROOT_DIR).joinpath("box_bringup/box_launch/tmux").rglob("*.yaml")]
     parser.set_defaults(main=main)
+    parser.add_argument("-c", choices=yamls, help="tmux configuration file name", default="box")
     return parser
 
 
 def main(args):
-
-    for p in ["box_utils", "box_core", "box_bringup"]:
-        pa = os.path.join(BOX_ROOT_DIR, p)
-        black = f"black --line-length 120 {pa}"
-        shell_run(black)
+    cfg = os.path.join(BOX_ROOT_DIR, "box_bringup/box_launch/tmux", args.c + ".yaml")
+    shell_run(f"tmuxp load  {cfg}")
