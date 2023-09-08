@@ -1,4 +1,4 @@
 .vscode
 .catkin_tools
-
+*.egg-info
 *.bag
