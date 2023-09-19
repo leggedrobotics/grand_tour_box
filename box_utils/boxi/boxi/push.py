@@ -13,7 +13,6 @@ def add_arguments(parser):
 
 def main(args):
     rsync = "rsync -a -z -h -r -v --exclude '*.git/*' --exclude '__pycache__' --exclude '*.pyc' --exclude '*.bag' --out-format=\"[%t]:%o:%f:Last Modified %M\""
-    print(rsync)
     hosts = []
     if args.jetson:
         hosts.append("jetson")
