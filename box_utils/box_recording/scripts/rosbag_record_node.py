@@ -16,7 +16,6 @@ from box_recording.srv import StopRecordingInternalResponse, StopRecordingIntern
 
 class RosbagRecordNode(object):
     def __init__(self):
-
         # Get the host name of the machine
         self.node = socket.gethostname()
 
@@ -66,31 +65,29 @@ class RosbagRecordNode(object):
         timestamp = request.timestamp
         self.bag_base_path = self.data_path + "/" + timestamp + "_" + self.node
 
+
         topic_cfgs = request.topics.split(" ")
+        print()
         bag_configs = {}
         for topic_cfg in topic_cfgs:
+            print(topic_cfg.split("----"))
             bag_name = topic_cfg.split("----")[0]
             topic_name = topic_cfg.split("----")[1]
             if bag_name not in bag_configs:
                 bag_configs[bag_name] = ""
-            bag_configs[bag_name] += bag_configs[bag_name] + " "
+            bag_configs[bag_name] += topic_name + " "
 
         self.bag_configs = bag_configs
         for bag_name, topics in bag_configs.items():
             bag_path = self.bag_base_path + "_" + bag_name
-            bash_command = f"rosrun box_recording record_bag.sh {bag_path} {topics}"
-
-            if self.bag_running:
-                response.suc = False
-                response.message = "Recording process already runs."
-                rospy.logwarn(f"[RosbagRecordNode({self.node} {bag_name})] Recording process already runs.")
-            else:
-                self.processes.append(subprocess.Popen(bash_command, shell=True, stderr=subprocess.PIPE))
-                self.bag_running = True
-                self.publish_recording_status.publish(float(self.bag_running))
-                response.suc = True
-                response.message = "Starting rosbag recording process."
-                rospy.loginfo(f"[RosbagRecordNode({self.node} {bag_name})] Starting rosbag recording process.")
+            bash_command = f"rosrun box_recording record_bag.sh {bag_path} {topics} __name:=record_{self.node}_{bag_name}"
+        
+            self.processes.append(subprocess.Popen(bash_command, shell=True, stderr=subprocess.PIPE))
+            self.bag_running = True
+            self.publish_recording_status.publish(float(self.bag_running))
+            response.suc = True
+            response.message = "Starting rosbag recording process."
+            rospy.loginfo(f"[RosbagRecordNode({self.node} {bag_name})] Starting rosbag recording process.")
 
         return response
 
@@ -113,8 +110,8 @@ class RosbagRecordNode(object):
         self.processes = []
 
         if request.verbose:
-            output = subprocess.check_output([f"rosbag info --freq {self.bag_path}*.bag"], shell=True)
-            response.result = str(output)[2:-1]
+            # output = subprocess.check_output([f"rosbag info --freq {self.bag_path}*.bag"], shell=True)
+            response.result = "Not implemented yet" #str(output)[2:-1]
 
         self.bag_running = False
         self.publish_recording_status.publish(float(self.bag_running))
