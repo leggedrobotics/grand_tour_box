@@ -9,7 +9,6 @@ from rosbag import Bag
 
 
 def main():
-
     parser = argparse.ArgumentParser(
         description="Merge one or more bag files with the possibilities of filtering topics."
     )
