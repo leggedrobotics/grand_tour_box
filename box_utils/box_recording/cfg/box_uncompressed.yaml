@@ -26,15 +26,15 @@ jetson:
   tf:
     - /tf_static
     - /tf
-  hdr:
-    - /gt_box/camera_info
-    - /gt_box/image_raw
 nuc:
   utils:
     - /gt_box/stim320
     - /gt_box/adis16475
     - /gt_box/livox/imu
     - /gt_box/health_status/nuc
+  hdr:
+    - /gt_box/camera_info
+    - /gt_box/image_raw
 
 opc:
   leica:
