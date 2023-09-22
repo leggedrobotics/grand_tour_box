@@ -1,7 +1,7 @@
 <launch>
   <arg name="box_namespace" default="gt_box"/>
   <group ns="$(arg box_namespace)">
-    <arg name="publish_rate" default="-1" />
+    <arg name="publish_rate" default="30" />
     <arg name="use_image_transport" default="True" /> 
     <arg name="video_device" default="/dev/video2" />
     <arg name="use_v4l2_buffer_timestamps" default="true" />
