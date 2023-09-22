@@ -1,0 +1,6 @@
+<launch>
+  <param name="capability_group" value="Driver"/>
+  <include file="$(find bringup_hdr)/launch/usb_cam_left.launch"> </include>
+  <include file="$(find bringup_hdr)/launch/usb_cam_middle.launch"> </include>
+  <include file="$(find bringup_hdr)/launch/usb_cam_right.launch"> </include>
+</launch>

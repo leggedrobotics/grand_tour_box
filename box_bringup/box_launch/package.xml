@@ -26,4 +26,5 @@
   <depend>box_rviz</depend>
   <depend>box_health</depend>
   <depend>box_model</depend>
+  <depend>core_throttling</depend>
 </package>

@@ -1,9 +1,9 @@
 <launch>
-  <arg name="box_namespace" default="gt_box"/>
+  <arg name="box_namespace" default="gt_box/right"/>
   <group ns="$(arg box_namespace)">
     <arg name="publish_rate" default="-1" />
-    <arg name="use_image_transport" default="True" /> 
-    <arg name="video_device" default="/dev/video2" />
+    <arg name="use_image_transport" default="True" />
+    <arg name="video_device" default="/dev/video4" />
     <arg name="use_v4l2_buffer_timestamps" default="true" />
     <arg name="timestamp_offset" default="0.0" />
     <arg name="output_encoding" default="rgb8" />
