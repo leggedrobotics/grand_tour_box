@@ -19,9 +19,9 @@ float64 gt_box_alphasense_driver_node_imu_hz
 float64 gt_box_rover_piksi_position_receiver_0_ros_pos_enu_hz
 
 float64 gt_box_adis16475_hz
-float64 gt_box_left_image_raw_hz
-float64 gt_box_middle_image_raw_hz
-float64 gt_box_right_image_raw_hz
+float64 gt_box_left_v4l2_camera_image_raw_hz
+float64 gt_box_middle_v4l2_camera_image_raw_hz
+float64 gt_box_right_v4l2_camera_image_raw_hz
 
 uint8 gps_num_sat
 bool gps_rtk_mode_fix
