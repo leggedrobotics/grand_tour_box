@@ -1,6 +1,6 @@
-# Copied from https://bitbucket.org/leggedrobotics/anymal_rsl/src/master/anymal_rsl/anymal_rsl_utils/anymal_rsl_recording/anymal_rsl_recording/scripts/merge_bags.py
-
 #!/usr/bin/env python3
+
+# Copied from https://bitbucket.org/leggedrobotics/anymal_rsl/src/master/anymal_rsl/anymal_rsl_utils/anymal_rsl_recording/anymal_rsl_recording/scripts/merge_bags.py
 
 import argparse
 from fnmatch import fnmatchcase
