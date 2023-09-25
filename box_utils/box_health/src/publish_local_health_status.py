@@ -8,7 +8,7 @@ import subprocess
 import re
 
 import rospy, rostopic
-from box_health.msg import healthStatus_jetson, healthStatus_nuc
+from box_health.msg import healthStatus_jetson, healthStatus_nuc, healthStatus_opc
 from piksi_rtk_msgs.msg import ReceiverState_V2_6_5
 
 
@@ -89,6 +89,10 @@ class BoxStatus:
             self.health_status_publisher = rospy.Publisher(
                 self.namespace + "health_status/" + self.hostname, healthStatus_nuc, queue_size=2
             )
+        elif self.hostname == "opc":
+            self.health_status_publisher = rospy.Publisher(
+                self.namespace + "health_status/" + self.hostname, healthStatus_opc, queue_size=2
+            )
         else:
             rospy.logerr("[BoxStatus] Hostname " + self.hostname + " is unknown.")
         self.rate = rospy.Rate(1.2)
@@ -116,9 +120,35 @@ class BoxStatus:
             return "waiting for ptp4l"
         else:
             return offset_from_status(recent_line)
+        
+    def check_chrony_offset(self, recent_line):
+        offset_idx_start = recent_line.find('[') + 1
+        offset_idx_end = recent_line.find(']')
+        offset = recent_line[offset_idx_start:offset_idx_end].strip()
+        unit_idx = offset.find(next(filter(str.isalpha, offset)))
+        offset_num = int(offset[:unit_idx])
+        unit = offset[unit_idx:]
+        if unit == "ns":
+            pass          
+        elif unit == "us":
+            offset_num *= 1e3
+        elif unit == "ms":
+            offset_num *= 1e6
+        elif unit == "s":
+            offset_num *= 1e9
+        else:
+            rospy.logerr("[BoxStatus] Unknown unit:", unit)
+        return str(int(offset_num))
 
     def read_clock_status(self, service):
         p = subprocess.Popen(["systemctl", "status", service], stdout=subprocess.PIPE)
+        (output_status, error) = p.communicate()
+        if error:
+            rospy.logerr("[BoxStatus] Error subprocess reading clocks: " + str(error))
+        return last_line(output_status.decode("utf-8"))
+    
+    def read_chrony_status(self):
+        p = subprocess.Popen(["chronyc", "sources"], stdout=subprocess.PIPE)
         (output_status, error) = p.communicate()
         if error:
             rospy.logerr("[BoxStatus] Error subprocess reading clocks: " + str(error))
@@ -142,10 +172,14 @@ class BoxStatus:
                 health_msg.offset_enp45s0_systemclock = self.check_clock_offset(
                     self.read_clock_status("phc2sys_system.service")
                 )
+            elif self.hostname == "opc":
+                health_msg.offset_chrony_opc_jetson = self.check_chrony_offset(self.read_chrony_status())
+
             else:
                 rospy.logerr("[BoxStatus] This hostname is unknown: " + self.hostname)
-        except:
-            rospy.logerr("[BoxStatus] Error reating clock offset")
+        except Exception as error:
+            rospy.logerr("[BoxStatus] Error reading clock offset")
+            rospy.logerr("[BoxStatus]", error)
         return health_msg
 
     def get_frequency_if_available(self, topic):
@@ -172,6 +206,8 @@ class BoxStatus:
             return healthStatus_jetson()
         elif self.hostname == "nuc":
             return healthStatus_nuc()
+        elif self.hostname == "opc":
+            return healthStatus_opc()
         else:
             rospy.logerr("[BoxStatus] Hostname " + self.hostname + " is unknown.")
 

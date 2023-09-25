@@ -4,7 +4,7 @@ import socket
 import rospy
 from threading import Lock
 
-from box_health.msg import healthStatus, healthStatus_jetson, healthStatus_nuc
+from box_health.msg import healthStatus, healthStatus_jetson, healthStatus_nuc, healthStatus_opc
 from std_msgs.msg import Float32, ColorRGBA
 from jsk_rviz_plugins.msg import *
 
@@ -29,13 +29,13 @@ class visualizationPublisher:
             "gt_box_left_v4l2_camera_image_raw_hz",
             "gt_box_middle_v4l2_camera_image_raw_hz",
             "gt_box_right_v4l2_camera_image_raw_hz",
+            "gt_box_leica_position_hz",
             "offset_mgbe0_systemclock",
             "offset_mgbe0_mgbe1",
             "offset_mgbe0_enp45s0",
             "offset_enp45s0_systemclock",
+            "offset_chrony_opc_jetson",
         ]
-
-        topics_top_publish_string = ["status_mgbe0_ptp4l", "status_mgbe1_ptp4l", "status_enp46s0_ptp4l"]
 
         self.publishers_float = {}
         for topic in topics_to_publish_float:
@@ -43,9 +43,6 @@ class visualizationPublisher:
                 self.namespace + "visualization/" + topic, Float32, queue_size=10
             )
 
-        # self.publishers_string = {}
-        # for topic in topics_top_publish_string:
-        #    self.publishers_string[topic] = rospy.Publisher(self.namespace + 'visualization/' + topic , String, queue_size=10)
         self.text_publisher = rospy.Publisher("visualization/clock_status", OverlayText, queue_size=1)
 
 
@@ -62,6 +59,9 @@ class BoxStatusMerger:
         )
         self.subscriber_nuc = rospy.Subscriber(
             self.namespace + "health_status/nuc", healthStatus_nuc, self.callback, "nuc"
+        )
+        self.subscriber_nuc = rospy.Subscriber(
+            self.namespace + "health_status/opc", healthStatus_opc, self.callback, "opc"
         )
         # names have to exactly match healthStatus.msg
         # TODO(beni): read directly from file
@@ -95,10 +95,15 @@ class BoxStatusMerger:
                 "offset_mgbe0_enp45s0",
                 "status_enp46s0_ptp4l",
                 "gt_box_adis16475_hz",
-                "gt_box_image_raw_hz",
                 "cpu_usage_nuc",
                 "avail_memory_nuc",
             ],
+            "opc": [
+                "offset_chrony_opc_jetson",
+                "gt_box_leica_position_hz",
+                "cpu_usage_opc",
+                "avail_memory_opc",
+            ]
         }
         self.health_status_publisher = rospy.Publisher(
             self.namespace + "health_status/merged", healthStatus, queue_size=10
