@@ -10,4 +10,6 @@ jetson:
   - /gt_box/rover/piksi/position_receiver_0/ros/pos_enu
 nuc:
   - /gt_box/adis16475
-  - /gt_box/image_raw
+  - /gt_box/left/v4l2_camera/image_raw
+  - /gt_box/middle/v4l2_camera/image_raw
+  - /gt_box/right/v4l2_camera/image_raw

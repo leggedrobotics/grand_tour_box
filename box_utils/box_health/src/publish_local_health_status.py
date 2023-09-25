@@ -125,24 +125,27 @@ class BoxStatus:
         return last_line(output_status.decode("utf-8"))
 
     def check_clocks(self, health_msg):
-        if self.hostname == "jetson":
-            health_msg.status_mgbe0_ptp4l = self.check_if_grandmaster(self.read_clock_status("ptp4l_mgbe0.service"))
-            health_msg.status_mgbe1_ptp4l = self.check_if_grandmaster(self.read_clock_status("ptp4l_mgbe1.service"))
-            health_msg.offset_mgbe0_systemclock = self.check_clock_offset(
-                self.read_clock_status("phc2sys_mgbe0.service")
-            )
-            health_msg.offset_mgbe0_mgbe1 = self.check_clock_offset(self.read_clock_status("phc2sys_mgbe1.service"))
+        try:
+            if self.hostname == "jetson":
+                health_msg.status_mgbe0_ptp4l = self.check_if_grandmaster(self.read_clock_status("ptp4l_mgbe0.service"))
+                health_msg.status_mgbe1_ptp4l = self.check_if_grandmaster(self.read_clock_status("ptp4l_mgbe1.service"))
+                health_msg.offset_mgbe0_systemclock = self.check_clock_offset(
+                    self.read_clock_status("phc2sys_mgbe0.service")
+                )
+                health_msg.offset_mgbe0_mgbe1 = self.check_clock_offset(self.read_clock_status("phc2sys_mgbe1.service"))
 
-        elif self.hostname == "nuc":
-            # enp45s0 gets time from the jetson mgbe0 port, hence enp45s0 is a client, not a master
-            health_msg.offset_mgbe0_enp45s0 = self.check_clock_offset(self.read_clock_status("ptp4l_enp45s0.service"))
-            health_msg.status_enp46s0_ptp4l = self.check_if_grandmaster(self.read_clock_status("ptp4l_enp46s0.service"))
-            health_msg.offset_enp45s0_enp46s0 = self.check_clock_offset(self.read_clock_status("phc2sys_NIC.service"))
-            health_msg.offset_enp45s0_systemclock = self.check_clock_offset(
-                self.read_clock_status("phc2sys_system.service")
-            )
-        else:
-            rospy.logerr("[BoxStatus] This hostname is unknown: " + self.hostname)
+            elif self.hostname == "nuc":
+                # enp45s0 gets time from the jetson mgbe0 port, hence enp45s0 is a client, not a master
+                health_msg.offset_mgbe0_enp45s0 = self.check_clock_offset(self.read_clock_status("ptp4l_enp45s0.service"))
+                health_msg.status_enp46s0_ptp4l = self.check_if_grandmaster(self.read_clock_status("ptp4l_enp46s0.service"))
+                health_msg.offset_enp45s0_enp46s0 = self.check_clock_offset(self.read_clock_status("phc2sys_NIC.service"))
+                health_msg.offset_enp45s0_systemclock = self.check_clock_offset(
+                    self.read_clock_status("phc2sys_system.service")
+                )
+            else:
+                rospy.logerr("[BoxStatus] This hostname is unknown: " + self.hostname)
+        except:
+            rospy.logerr("[BoxStatus] Error reating clock offset")
         return health_msg
 
     def get_frequency_if_available(self, topic):
@@ -179,30 +182,39 @@ class BoxStatus:
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
-        stdout, stderr = process.communicate()
-        if stderr:
-            rospy.logerr(stderr)
-        if stdout:
-            setattr(health_msg, "cpu_usage_" + self.hostname, float(stdout))
-        else:
+        try:
+            stdout, stderr = process.communicate()
+            if stderr:
+                rospy.logerr(stderr)
+            if stdout:
+                setattr(health_msg, "cpu_usage_" + self.hostname, float(stdout.strip()))
+            else:
+                setattr(health_msg, "cpu_usage_" + self.hostname, -1.0)
+                rospy.logerr("[BoxStatus] CPU usage could not be determined. ")
+        except:
             setattr(health_msg, "cpu_usage_" + self.hostname, -1.0)
-            rospy.warn("[BoxStatus] CPU usage could not be determined. ")
+            rospy.logerr("[BoxStatus] CPU usage could not be determined. ")
+            rospy.logerr(stdout)
 
-        process = subprocess.Popen(
-            "df -H --output=avail ${HOME} | awk 'NR==2 {print $1}'",
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        stdout, stderr = process.communicate()
-        if stderr:
-            rospy.logerr(stderr)
-        if stdout:
-            avail_memory = stdout.decode("utf-8").strip()
-            setattr(health_msg, "avail_memory_" + self.hostname, avail_memory)
-        else:
+        try:
+            process = subprocess.Popen(
+                "df -H --output=avail ${HOME} | awk 'NR==2 {print $1}'",
+                shell=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+            stdout, stderr = process.communicate()
+            if stderr:
+                rospy.logerr(stderr)
+            if stdout:
+                avail_memory = stdout.decode("utf-8").strip()
+                setattr(health_msg, "avail_memory_" + self.hostname, avail_memory)
+            else:
+                setattr(health_msg, "avail_memory_" + self.hostname, "unknown")
+                rospy.logerr("[BoxStatus] Available memory could not be determined. ")
+        except:
             setattr(health_msg, "avail_memory_" + self.hostname, "unknown")
-            rospy.warn("[BoxStatus] Available memory could not be determined. ")
+            rospy.logerr("[BoxStatus] Available memory could not be determined. ")
         return health_msg
 
     def publish_health_status(self):
