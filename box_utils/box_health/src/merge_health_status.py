@@ -87,6 +87,9 @@ class BoxStatusMerger:
                 "avail_memory_jetson",
             ],
             "nuc": [
+                "gt_box_left_v4l2_camera_image_raw_hz",
+                "gt_box_middle_v4l2_camera_image_raw_hz",
+                "gt_box_right_v4l2_camera_image_raw_hz",
                 "offset_enp45s0_systemclock",
                 "offset_enp45s0_enp46s0",
                 "offset_mgbe0_enp45s0",
