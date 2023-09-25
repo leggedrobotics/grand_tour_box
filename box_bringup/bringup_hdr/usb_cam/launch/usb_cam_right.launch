@@ -7,7 +7,7 @@
     <arg name="use_v4l2_buffer_timestamps" default="true" />
     <arg name="timestamp_offset" default="0.0" />
     <arg name="output_encoding" default="rgb8" />
-    <arg name="camera_info_url" default="" />
+    <arg name="camera_info_url" default="file:///home/beni/catkin_ws/src/grand_tour_box/box_bringup/bringup_hdr/usb_cam/cfg/camera_intrinsics_right.yaml" />
     <arg name="camera_frame_id" default="camera" />
     <arg name="pixel_format" default="UYVY" />
 
