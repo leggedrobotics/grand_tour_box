@@ -8,6 +8,8 @@ string offset_enp45s0_enp46s0
 string offset_mgbe0_enp45s0
 string status_enp46s0_ptp4l
 
+string offset_chrony_opc_jetson
+
 # frequencies names have to be the topic names, where the '/' are replaced with '_' and "_hz" is appended
 float64 gt_box_alphasense_driver_node_cam3_hz
 float64 gt_box_alphasense_driver_node_cam4_hz
@@ -23,6 +25,8 @@ float64 gt_box_left_v4l2_camera_image_raw_hz
 float64 gt_box_middle_v4l2_camera_image_raw_hz
 float64 gt_box_right_v4l2_camera_image_raw_hz
 
+float64 gt_box_leica_position_hz
+
 uint8 gps_num_sat
 bool gps_rtk_mode_fix
 string gps_fix_mode
@@ -33,3 +37,6 @@ string avail_memory_jetson
 
 float32 cpu_usage_nuc
 string avail_memory_nuc
+
+float32 cpu_usage_opc
+string avail_memory_opc
