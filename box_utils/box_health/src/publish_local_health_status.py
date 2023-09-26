@@ -223,14 +223,14 @@ class BoxStatus:
             if stderr:
                 rospy.logerr(stderr)
             if stdout:
-                setattr(health_msg, "cpu_usage_" + self.hostname, float(stdout.strip()))
+                setattr(health_msg, "cpu_usage_" + self.hostname, float(stdout.decode().replace(',','.')))
             else:
                 setattr(health_msg, "cpu_usage_" + self.hostname, -1.0)
                 rospy.logerr("[BoxStatus] CPU usage could not be determined. ")
         except:
             setattr(health_msg, "cpu_usage_" + self.hostname, -1.0)
             rospy.logerr("[BoxStatus] CPU usage could not be determined. ")
-            rospy.logerr(stdout)
+            rospy.logerr(stdout.decode())
 
         try:
             process = subprocess.Popen(
