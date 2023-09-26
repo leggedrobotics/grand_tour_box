@@ -7,7 +7,7 @@ from pathlib import Path
 def add_arguments(parser):
     yamls = [s.stem for s in Path(BOX_ROOT_DIR).joinpath("box_bringup/box_launch/tmux").rglob("*.yaml")]
     parser.set_defaults(main=main)
-    parser.add_argument("-c", choices=yamls, help="tmux configuration file name", default="box")
+    parser.add_argument("-c", choices=yamls, help="tmux configuration file name", default="box_opc")
     return parser
 
 
