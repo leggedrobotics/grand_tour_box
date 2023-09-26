@@ -13,3 +13,5 @@ nuc:
   - /gt_box/left/v4l2_camera/image_raw
   - /gt_box/middle/v4l2_camera/image_raw
   - /gt_box/right/v4l2_camera/image_raw
+opc:
+  - /gt_box/leica/position
