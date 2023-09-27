@@ -1,5 +1,5 @@
 <launch>
-  <arg name="box_namespace" default="gt_box/right"/>
+  <arg name="box_namespace" default="gt_box"/>
   <group ns="$(arg box_namespace)">
     <arg name="publish_rate" default="30" />
     <arg name="use_image_transport" default="True" />
@@ -11,7 +11,7 @@
     <arg name="camera_frame_id" default="camera" />
     <arg name="pixel_format" default="UYVY" />
 
-    <node pkg="v4l2_camera" type="v4l2_camera_node" name="v4l2_camera" output="screen">
+    <node pkg="v4l2_camera" type="v4l2_camera_node" name="v4l2_camera_right" output="screen">
         <param name="publish_rate" value="$(arg publish_rate)" />
         <param name="use_image_transport" value="$(arg use_image_transport)" />
         <param name="video_device" value="$(arg video_device)" />
