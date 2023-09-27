@@ -173,8 +173,10 @@ class BoxStatus:
                     self.read_clock_status("phc2sys_system.service")
                 )
             elif self.hostname == "opc":
-                health_msg.offset_chrony_opc_jetson = self.check_chrony_offset(self.read_chrony_status())
-
+                try:
+                    health_msg.offset_chrony_opc_jetson = self.check_chrony_offset(self.read_chrony_status())
+                except: 
+                    health_msg.offset_chrony_opc_jetson = -1
             else:
                 rospy.logerr("[BoxStatus] This hostname is unknown: " + self.hostname)
         except Exception as error:
