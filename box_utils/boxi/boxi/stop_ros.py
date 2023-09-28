@@ -16,7 +16,7 @@ def main(args):
         if host == hostname:
             cmd = f"/usr/bin/tmux kill-server"
         else:
-            cmd = f"ssh -t rsl@" + host + " /usr/bin/tmux kill-server"
+            cmd = f"ssh -o ConnectTimeout=4 -t rsl@" + host + " /usr/bin/tmux kill-server"
         try:
             shell_run(cmd)
         except:

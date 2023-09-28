@@ -16,7 +16,7 @@ def main(args):
         if host == hostname:
             cmd = f"tmuxp load $(rospack find box_launch)/tmux/box_" + host + ".yaml"
         else:
-            cmd = f"ssh -t tmuxp load $(rospack find box_launch)/tmux/box_" + host + ".yaml"
+            cmd = f"ssh -o ConnectTimeout=4 -t tmuxp load $(rospack find box_launch)/tmux/box_" + host + ".yaml"
         try:
             shell_run(cmd)
         except:
