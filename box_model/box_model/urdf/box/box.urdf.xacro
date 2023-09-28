@@ -20,239 +20,156 @@ limitations under the License.
 
 
 <robot name="box" xmlns:xacro="http://www.ros.org/wiki/xacro">
-
-  <!-- Loading the xacro files of sensors -->
-  <xacro:include filename="$(find box_model)/urdf/alphasense/alphasense.urdf.xacro" />
-  <xacro:include filename="$(find box_model)/urdf/hesai/hesai.urdf.xacro" />
-  <xacro:include filename="$(find box_model)/urdf/livox/livox.urdf.xacro" />
-
-
-  <!-- Defining the colors -->
-  <material name="gray_transparent">
-   <color rgba="0.3 0.3 0.4 0.3"/>
-  </material>
-
-  <material name="gray_solid">
-    <color rgba="0.3 0.3 0.4 1.0"/>
-  </material>
-
-  <material name="orange">
-          <color rgba="0.9 0.7 0.1 1.0"/>
-  </material>
-
-  <!-- Box -->
-  <link name="box">
-    <visual>
-      <geometry>
-        <box size="0.8 0.2 0.2"/>
-      </geometry>
-      <material name="gray_transparent"/>
-    </visual>
-  </link>
-
+   
+  <!-- Origin -->
+  <link name="origin"/>
 
   <!-- Box base -->
   <link name="box_base"/>
-
-  <joint name="box_to_box_base" type="fixed">
-      <origin xyz="0.0 0.0 -0.1" rpy="0.0 0.0 0.0" />
-      <parent link="box" />
-      <child link="box_base" />
+  <joint name="origin_to_box_base" type="fixed">   
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+    <parent link="origin" />
+    <child link="box_base" />
   </joint>
 
-  <!-- Box back -->
-  <link name="box_back"/>
-
-  <joint name="box_to_box_back" type="fixed">
-      <origin xyz="-0.4 0.0 -0.1" rpy="0.0 0.0 0.0" />
-      <parent link="box" />
-      <child link="box_back" />
-  </joint>
-
-  <!-- GPS -->
-  <link name="gps">
-      <visual>
-        <geometry>
-          <box size="0.05 0.05 0.05"/>
-        </geometry>
-        <material name="gray_solid"/>
-      </visual>
-  </link>
-
-  <joint name="box_back_to_gps" type="fixed">
-      <origin xyz="-0.1 0.0 0.1" rpy="0.0 0.0 0.0" />
-      <parent link="box_back" />
-      <child link="gps" />
-  </joint>
-
-  <!-- NUC -->
-  <link name="nuc">
+  <!-- Model base -->
+  <link name="model_base">
     <visual>
       <geometry>
-        <box size="0.05 0.05 0.05"/>
+        <mesh filename="package://box_model/urdf/box/mesh/box_model1.dae" />
       </geometry>
-      <material name="gray_solid"/>
     </visual>
   </link>
-
-  <joint name="box_back_to_nuc" type="fixed">
-      <origin xyz="0.4 0.0 0.2" rpy="0.0 0.0 0.0" />
-      <parent link="box_back" />
-      <child link="nuc" />
+  <joint name="box_base_to_model_base" type="fixed">
+    <origin xyz="0.0 0.0 0.0" rpy="${pi} 0.0 ${pi/2}" />
+    <parent link="box_base" />
+    <child link="model_base" />    
   </joint>
 
-  <!-- Jetson -->
-  <link name="jetson">
-      <visual>
-        <geometry>
-          <box size="0.05 0.05 0.05"/>
-        </geometry>
-        <material name="gray_solid"/>
-      </visual>
-  </link>
-
-  <joint name="box_back_to_jetson" type="fixed">
-    <origin xyz="0.5 0.0 0.2" rpy="0.0 0.0 0.0" />
-    <parent link="box_back" />
-    <child link="jetson" />
+  <!-- Cameras front (coincide with front hdr cam) -->
+  <link name="cameras_front" />
+  <joint name="box_base_to_cameras_front" type="fixed">   
+    <origin xyz="0.45 0.0 0.09" rpy="0.0 0.0 0.0" />
+    <parent link="box_base" />
+    <child link="cameras_front" />
   </joint>
 
-  <!-- Reflector -->
-  <link name="reflector">
-    <visual>
-      <geometry>
-        <box size="0.05 0.05 0.05"/>
-      </geometry>
-      <material name="orange"/>
-    </visual>
-  </link>
-
-  <joint name="box_back_to_reflector" type="fixed">
-    <origin xyz="0.6 0.0 0.2" rpy="0.0 0.0 0.0" />
-    <parent link="box_back" />
-    <child link="reflector" />
+  <!-- HDR camera front -->
+  <link name="hdr_front" />
+  <joint name="cameras_front_to_hdr_front" type="fixed">   
+    <origin xyz="0.0 0.0 0.0" rpy="${-pi/2} 0.0 ${-pi/2}" />
+    <parent link="cameras_front" />
+    <child link="hdr_front" />
   </joint>
 
-  <!-- Alphasense -->
-  <xacro:property name="alphasense_calibration" value="$(find box_model)/urdf/box/calibrations/20220322_calibration.yaml" />
-  <xacro:alphasense parent="box_back" calib_file="${alphasense_calibration}">
-   <origin xyz="0.8 0 0.1" rpy="0 0 0" />
-  </xacro:alphasense>
-
-  <!-- This is the frame in which the ground truth is generated, conincides with the alphasense IMU -->
-  <link name="base"/>
-
-  <link name="imu_sensor_frame"/>
-
-  <joint name="alphasense_imu_mapping" type="fixed">
-    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
-    <parent link="alphasense_imu"/>
-    <child link="imu_sensor_frame"/>
+  <!-- Alphasense front left -->
+  <link name="alphasense_front_left" />
+  <joint name="hdr_front_to_alphasense_front_left" type="fixed">   
+    <origin xyz="-0.055 -0.04 0.0" rpy="0.0 0.0 0.0" />
+    <parent link="hdr_front" />
+    <child link="alphasense_front_left" />
   </joint>
 
-  <joint name="alphasense_imu_to_base" type="fixed">
-    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
-    <parent link="alphasense_imu"/>
-    <child link="base"/>
+  <!-- Alphasense front middle -->
+  <link name="alphasense_front_middle" />
+  <joint name="alphasense_front_left_to_alphasense_front_middle" type="fixed">   
+    <origin xyz="0.054 0.0 0.0" rpy="0.0 0.0 0.0" />
+    <parent link="alphasense_front_left" />
+    <child link="alphasense_front_middle" />
   </joint>
 
-  <!-- Livox -->
-  <link name="livox_link"/>
-
-  <joint name="box_back_to_livox_link" type="fixed">
-      <origin xyz="0.8 0.0 0.2" rpy="${pi/2} ${-pi} 0.0" />
-      <parent link="box_back" />
-      <child link="livox_link" />
+  <!-- Alphasense front right -->
+  <link name="alphasense_front_right" />
+  <joint name="alphasense_front_middle_to_alphasense_front_right" type="fixed">   
+    <origin xyz="0.054 0.0 0.0" rpy="0.0 0.0 0.0" />
+    <parent link="alphasense_front_middle" />
+    <child link="alphasense_front_right" />
   </joint>
 
-  <xacro:livox_device parent="livox_link" lidar_frame="livox_frame">
-    <origin xyz="0 0 0" rpy="0 0 0" />
-  </xacro:livox_device>
-
-  <!-- Hesai -->
-  <link name="hesai_link"/>
-
-  <joint name="box_back_to_hesai_link" type="fixed">
-      <origin xyz="0.8 0.0 0.0" rpy="0.0 0.0 ${pi}" />
-      <parent link="box_back" />
-      <child link="hesai_link" />
+  <!-- Zed right -->
+  <link name="zed_right" />
+  <joint name="alphasense_front_right_to_zed_right" type="fixed">   
+    <origin xyz="0.005 0.08 0.0" rpy="0.0 0.0 0.0" />
+    <parent link="alphasense_front_right" />
+    <child link="zed_right" />
   </joint>
 
-  <xacro:hesai_device parent="hesai_link" lidar_frame="PandarXT-32">
-    <origin xyz="0 0 0" rpy="0 0 0"/>
-  </xacro:hesai_device>
-
-  <!-- USB Cam -->
-  <link name="usb_cam_link"/>
-
-  <joint name="box_back_to_usb_cam_link" type="fixed">
-      <origin xyz="0.8 0.0 0.25" rpy="0.0 0.0 0.0" />
-      <parent link="box_back" />
-      <child link="usb_cam_link" />
+  <!-- Zed left -->
+  <link name="zed_left" />
+  <joint name="zed_right_to_zed_left" type="fixed">   
+    <origin xyz="-0.12 0.0 0.0" rpy="0.0 0.0 0.0" />
+    <parent link="zed_right" />
+    <child link="zed_left" />
   </joint>
 
-  <link name="usb_cam">
-      <visual>
-        <geometry>
-          <box size="0.05 0.05 0.05"/>
-        </geometry>
-        <material name="gray_solid"/>
-      </visual>
-  </link>
-
-  <joint name="usb_cam_link_to_usb_cam" type="fixed">
-      <origin xyz="0.0 0.0 0.0" rpy="0.0 ${-pi/4} 0.0" />
-      <parent link="usb_cam_link" />
-      <child link="usb_cam" />
+  <!-- Cameras right (coincide with right hdr cam) -->
+  <link name="cameras_right" />
+  <joint name="box_base_to_cameras_right" type="fixed">   
+    <origin xyz="0.37 -0.10 0.09" rpy="0.0 0.0 0.0" />
+    <parent link="box_base" />
+    <child link="cameras_right" />
   </joint>
 
-    <!-- IMU STIM320 -->
-  <link name="stim320_imu_link">
-      <visual>
-        <geometry>
-          <box size="0.02 0.02 0.01"/>
-        </geometry>
-        <material name="gray_solid"/>
-      </visual>
-  </link>
-
-  <joint name="box_back_to_stim320_imu_link" type="fixed">
-    <origin xyz="0.8 0.0 0.3" rpy="0.0 0.0 0.0" />
-    <parent link="box_back" />
-    <child link="stim320_imu_link" />
+  <!-- HDR camera right -->
+  <link name="hdr_right" />
+  <joint name="cameras_right_to_hdr_right" type="fixed">   
+    <origin xyz="0.0 0.0 0.0" rpy="${pi/2} ${pi} 0.0" />
+    <parent link="cameras_right" />
+    <child link="hdr_right" />
   </joint>
 
-  <link name="STIM320"/>
-
-  <joint name="stim320_imu" type="fixed">
-      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
-      <parent link="stim320_imu_link" />
-      <child link="STIM320" />
-  </joint>
-  
-  <!-- Adis IMU -->
-<!--  TODO: not calibrated-->
-  <link name="adis_imu_link">
-      <visual>
-        <geometry>
-          <box size="0.02 0.02 0.01"/>
-        </geometry>
-        <material name="gray_solid"/>
-      </visual>
-  </link>
-
-  <joint name="box_back_to_adis_imu_link" type="fixed">
-    <origin xyz="0.8 0.0 0.3" rpy="0.0 0.0 0.0" />
-    <parent link="box_back" />
-    <child link="adis_imu_link" />
+  <link name="alphasense_right" />
+  <joint name="hdr_right_to_alphasense_right" type="fixed">   
+    <origin xyz="0.0 -0.04 0.0" rpy="0.0 0.0 0.0" />
+    <parent link="hdr_right" />
+    <child link="alphasense_right" />
   </joint>
 
-  <link name="adis16475_link"/>
-
-  <joint name="adis_imu" type="fixed">
-      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
-      <parent link="adis_imu_link" />
-      <child link="adis16475_link" />
+  <!-- Cameras left (coincide with left hdr cam) -->
+  <link name="cameras_left" />
+  <joint name="box_base_to_cameras_left" type="fixed">   
+    <origin xyz="0.37 0.10 0.09" rpy="0.0 0.0 0.0" />
+    <parent link="box_base" />
+    <child link="cameras_left" />
   </joint>
 
+  <!-- HDR camera left -->
+  <link name="hdr_left" />
+  <joint name="cameras_left_to_hdr_left" type="fixed">   
+    <origin xyz="0.0 0.0 0.0" rpy="-${pi/2} 0.0 0.0" />
+    <parent link="cameras_left" />
+    <child link="hdr_left" />
+  </joint>
+
+  <!-- Alphasense left -->
+  <link name="alphasense_left" />
+  <joint name="hdr_left_to_alphasense_left" type="fixed">   
+    <origin xyz="0.0 -0.04 0.0" rpy="0.0 0.0 0.0" />
+    <parent link="hdr_left" />
+    <child link="alphasense_left" />
+  </joint>
+
+  <!-- Lidars (coincide with hesai) -->
+  <link name="lidars" />
+  <joint name="box_base_to_lidars" type="fixed">   
+    <origin xyz="0.37 0.0 0.2" rpy="0.0 0.0 0.0" />
+    <parent link="box_base" />
+    <child link="lidars" />
+  </joint>
+
+  <!-- HDR camera left -->
+  <link name="hesai" />
+  <joint name="lidars_to_hesai" type="fixed">   
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 ${pi/2}" />
+    <parent link="lidars" />
+    <child link="hesai" />
+  </joint>
+
+  <!-- Alphasense left -->
+  <link name="livox" />
+  <joint name="hesai_to_livox" type="fixed">   
+    <origin xyz="0.0 0.0 0.10" rpy="${pi} 0.0 ${-pi/2}" />
+    <parent link="hesai" />
+    <child link="livox" />
+  </joint>
 </robot>
