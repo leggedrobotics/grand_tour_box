@@ -33,12 +33,12 @@ nuc:
     - /gt_box/livox/imu
     - /gt_box/health_status/nuc
   hdr:
-    - /gt_box/left/v4l2_camera/camera_info
-    - /gt_box/left/v4l2_camera/image_raw
-    - /gt_box/middle/v4l2_camera/camera_info
-    - /gt_box/middle/v4l2_camera/image_raw
-    - /gt_box/right/v4l2_camera/camera_info
-    - /gt_box/right/v4l2_camera/image_raw
+    - /gt_box/v4l2_camera_left/camera_info
+    - /gt_box/v4l2_camera_left/image_raw
+    - /gt_box/v4l2_camera_middle/camera_info
+    - /gt_box/v4l2_camera_middle/image_raw
+    - /gt_box/v4l2_camera_right/camera_info
+    - /gt_box/v4l2_camera_right/image_raw
 
 opc:
   leica:

@@ -173,8 +173,10 @@ class BoxStatus:
                     self.read_clock_status("phc2sys_system.service")
                 )
             elif self.hostname == "opc":
-                health_msg.offset_chrony_opc_jetson = self.check_chrony_offset(self.read_chrony_status())
-
+                try:
+                    health_msg.offset_chrony_opc_jetson = self.check_chrony_offset(self.read_chrony_status())
+                except: 
+                    health_msg.offset_chrony_opc_jetson = -1
             else:
                 rospy.logerr("[BoxStatus] This hostname is unknown: " + self.hostname)
         except Exception as error:
@@ -223,14 +225,14 @@ class BoxStatus:
             if stderr:
                 rospy.logerr(stderr)
             if stdout:
-                setattr(health_msg, "cpu_usage_" + self.hostname, float(stdout.strip()))
+                setattr(health_msg, "cpu_usage_" + self.hostname, float(stdout.decode().replace(',','.')))
             else:
                 setattr(health_msg, "cpu_usage_" + self.hostname, -1.0)
                 rospy.logerr("[BoxStatus] CPU usage could not be determined. ")
         except:
             setattr(health_msg, "cpu_usage_" + self.hostname, -1.0)
             rospy.logerr("[BoxStatus] CPU usage could not be determined. ")
-            rospy.logerr(stdout)
+            rospy.logerr(stdout.decode())
 
         try:
             process = subprocess.Popen(

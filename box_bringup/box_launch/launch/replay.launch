@@ -12,8 +12,12 @@
   <include file="$(find bringup_hesai)/launch/hesai_lidar_unpack.launch" />
 
   <!-- uncompress the images-->
-  <node name="uncompress_hdr" pkg="image_transport" type="republish" 
-    args="compressed in:=/gt_box/image_raw raw out:=/gt_box/image_raw"> </node>
+  <node name="uncompress_hdr_left" pkg="image_transport" type="republish" 
+    args="compressed in:=/gt_box/v4l2_camera_left/image_raw/compressed raw out:=/gt_box/v4l2_camera_left/image_raw/compressed"> </node>
+  <node name="uncompress_hdr_middle" pkg="image_transport" type="republish" 
+    args="compressed in:=/gt_box/v4l2_camera_middle/image_raw/compressed raw out:=/gt_box/v4l2_camera_middle/image_raw/compressed"> </node>
+  <node name="uncompress_hdr_right" pkg="image_transport" type="republish" 
+    args="compressed in:=/gt_box/v4l2_camera_right/image_raw/compressed raw out:=/gt_box/v4l2_camera_right/image_raw/compressed"> </node>
   <node name="uncompress_alpahsense_cam0" pkg="image_transport" type="republish" 
     args="compressed in:=/gt_box/alphasense_driver_node/cam0 raw out:=/gt_box/alphasense_driver_node/cam0"> </node>
   <node name="uncompress_alpahsense_cam1" pkg="image_transport" type="republish" 

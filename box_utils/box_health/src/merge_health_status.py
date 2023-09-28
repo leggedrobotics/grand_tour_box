@@ -3,6 +3,7 @@
 import socket
 import rospy
 from threading import Lock
+import numpy as np
 
 from box_health.msg import healthStatus, healthStatus_jetson, healthStatus_nuc, healthStatus_opc
 from std_msgs.msg import Float32, ColorRGBA
@@ -10,6 +11,40 @@ from jsk_rviz_plugins.msg import *
 
 mutex = Lock()
 
+def array_to_color(color_list):
+    lst = str(list(color_list))
+    return "rgb(" + lst[1:-1] + ")"
+
+def color_wrapper(text, perfect, ok, bad, biggerbetter):
+    if text:
+        value = float(text)
+        green = np.array([34,139,34])
+        orange = np.array([255,140,0])
+        red = np.array([139,0,0])
+
+        # TODO add smooth color change
+        if biggerbetter:
+            if value > perfect:
+                color = array_to_color(green)
+            elif value > ok:
+                color = array_to_color(orange)
+            elif value > bad:
+                color = array_to_color(red)
+            else:
+                color = array_to_color(red)
+        else:
+            if value < perfect:
+                color = array_to_color(green)
+            elif value < ok:
+                color = array_to_color(orange)
+            elif value < bad:
+                color = array_to_color(red)
+            else:
+                color = array_to_color(red)
+
+        return '<span style="color: ' + color + ';">' + text + '</span>'
+    else:
+        return text
 
 class visualizationPublisher:
     def __init__(self):
@@ -26,9 +61,9 @@ class visualizationPublisher:
             "gt_box_alphasense_driver_node_imu_hz",
             "gt_box_rover_piksi_position_receiver_0_ros_pos_enu_hz",
             "gt_box_adis16475_hz",
-            "gt_box_left_v4l2_camera_image_raw_hz",
-            "gt_box_middle_v4l2_camera_image_raw_hz",
-            "gt_box_right_v4l2_camera_image_raw_hz",
+            "gt_box_v4l2_camera_left_image_raw_hz",
+            "gt_box_v4l2_camera_middle_image_raw_hz",
+            "gt_box_v4l2_camera_right_image_raw_hz",
             "gt_box_leica_position_hz",
             "offset_mgbe0_systemclock",
             "offset_mgbe0_mgbe1",
@@ -87,9 +122,9 @@ class BoxStatusMerger:
                 "avail_memory_jetson",
             ],
             "nuc": [
-                "gt_box_left_v4l2_camera_image_raw_hz",
-                "gt_box_middle_v4l2_camera_image_raw_hz",
-                "gt_box_right_v4l2_camera_image_raw_hz",
+                "gt_box_v4l2_camera_left_image_raw_hz",
+                "gt_box_v4l2_camera_middle_image_raw_hz",
+                "gt_box_v4l2_camera_right_image_raw_hz",
                 "offset_enp45s0_systemclock",
                 "offset_enp45s0_enp46s0",
                 "offset_mgbe0_enp45s0",
@@ -149,6 +184,8 @@ class BoxStatusMerger:
         Clock mgbe1: %s
         Clock enp46s0: %s
 
+        Jetson mgbe0 to mgbe1: %s
+
         GPS status:
         RTK mode fix: %i
         GPS fix mode: %s
@@ -161,6 +198,7 @@ class BoxStatusMerger:
             getattr(self.complete_health_msg, "status_mgbe0_ptp4l"),
             getattr(self.complete_health_msg, "status_mgbe1_ptp4l"),
             getattr(self.complete_health_msg, "status_enp46s0_ptp4l"),
+            color_wrapper(getattr(self.complete_health_msg, "offset_mgbe0_mgbe1"), 0, 100, 1000, False),
             getattr(self.complete_health_msg, "gps_rtk_mode_fix"),
             getattr(self.complete_health_msg, "gps_fix_mode"),
             getattr(self.complete_health_msg, "gps_num_sat"),
