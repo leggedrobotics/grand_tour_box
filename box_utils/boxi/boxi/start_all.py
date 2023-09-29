@@ -13,8 +13,7 @@ def main(args):
     hostname = socket.gethostname()
 
     for host in hosts:
-        print("start ros in mode", args.m,"on", host)
-
+        print("start ros in mode \"" + str(args.m) + "\" on", host)
         if host == hostname:
             cmd = f"tmuxp load $(rospack find box_launch)/tmux/box_" + host + ".yaml"
         else:
