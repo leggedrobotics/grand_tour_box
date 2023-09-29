@@ -1,4 +1,4 @@
-session_name: box_nuc
+session_name: box_opc
 
 before_script: "../scripts/initialize_session.sh"
 
@@ -8,8 +8,9 @@ windows:
   shell_command_before:
     - export HOSTNAME
     - export DISPLAY=:0.0
-    - export ROS_MASTER_URI=http://192.168.2.56:11311
-    - export ROS_IP=192.168.2.56
+    - export ROS_MASTER_URI=http://192.168.2.151:11311
+    - export ROS_IP=192.168.2.151
+
 
   options:
     pane-border-status: top
@@ -19,13 +20,9 @@ windows:
       - source ~/catkin_ws/devel/setup.bash
       - roslaunch box_launch fkie.launch
           autostart_launch_files:="
-            $(rospack find box_launch)/launch/adis16475.launch
-            $(rospack find box_launch)/launch/usb_cam_calibration.launch
-            $(rospack find box_recording)/launch/rosbag_record_node.launch
-            $(rospack find box_health)/launch/box_health_client.launch
-            $(rospack find core_throttling)/launch/throttle_nuc.launch
+            $(rospack find box_launch)/multi_launch/opc_calib_camera.launch
             "
-          use_gui:=false
+          use_gui:=true
     - shell_command:
       - source /opt/ros/noetic/setup.bash
       - source ~/catkin_ws/devel/setup.bash
