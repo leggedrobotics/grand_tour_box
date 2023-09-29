@@ -1,5 +1,6 @@
 from boxi import BOX_ROOT_DIR, shell_run
 import socket
+import logging as log
 
 def add_arguments(parser):
     modes = ["no", "camera", "lidar", "imu"]
@@ -16,11 +17,13 @@ def main(args):
     if args.sync_clocks:
         cmd = f'boxi initial_clock_sync'
         shell_run(cmd)
+    else:
+        log.warning(f" \n\n --> You didn't sync the clocks! Was this on purpose? \n")
 
     for host in hosts:
         print("start ros in mode \"" + str(args.m) + "\" on", host)
         if host == hostname:
-            cmd = f"tmuxp load $(rospack find box_launch)/tmux/box_" + host + ".yaml"
+            cmd = f"tmuxp load $(rospack find box_launch)/tmux/box_" + host + "_calib_" + args.m + ".yaml -d"
         else:
             cmd = f"ssh -o ConnectTimeout=4 -t tmuxp load $(rospack find box_launch)/tmux/box_" + host + "_calib_" + args.m + ".yaml"
         try:
