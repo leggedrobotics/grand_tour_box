@@ -5,12 +5,17 @@ def add_arguments(parser):
     modes = ["no", "camera", "lidar", "imu"]
     parser.set_defaults(main=main)
     parser.add_argument("-m", choices=modes, help="calibration mode of the box", default="no")
+    parser.add_argument("--sync_clocks", action="store_true", help="Sync clocks before starting ros")
     return parser
 
 
 def main(args):
     hosts = ["opc", "jetson", "nuc"]
     hostname = socket.gethostname()
+
+    if args.sync_clocks:
+        cmd = f'boxi initial_clock_sync'
+        shell_run(cmd)
 
     for host in hosts:
         print("start ros in mode \"" + str(args.m) + "\" on", host)
