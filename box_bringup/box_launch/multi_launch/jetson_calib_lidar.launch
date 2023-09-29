@@ -1,0 +1,4 @@
+<launch>
+  <arg name="calibration" default="lidar"/>
+  <include file="$(rospack find box_launch)/multi_launch/box_jetson.launch"> <arg name="calibration" value="$(arg calibration)"/> </include>
+</launch>
