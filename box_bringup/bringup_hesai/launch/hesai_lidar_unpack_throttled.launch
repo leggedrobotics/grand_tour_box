@@ -1,6 +1,7 @@
 <launch>
   <arg name="box_namespace" default="gt_box/throttled"/>
   <param name="capability_group" value="Visualization"/>
+  <arg name="calibration" default="no"/>
   <group ns="$(arg box_namespace)">
 
     <arg name="pcap_file"  default=""/>

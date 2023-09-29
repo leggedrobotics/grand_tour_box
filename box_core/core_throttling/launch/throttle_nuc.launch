@@ -1,5 +1,6 @@
 <launch>
   <param name="capability_group" value="Visualization"/>
+  <arg name="calibration" default="no"/>
   <arg name="box_namespace" default="gt_box"/>
 
   <rosparam command="load" file="$(find core_throttling)/cfg/frequencies.yaml" />

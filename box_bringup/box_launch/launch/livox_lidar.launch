@@ -1,4 +1,5 @@
 <launch>
   <param name="capability_group" value="Driver"/>
-  <include file="$(find bringup_livox)/launch/msg_MID360.launch"> </include>
+  <arg name="calibration" default="no"/>
+  <include file="$(find bringup_livox)/launch/msg_MID360.launch"> <arg name="calibration" value="$(arg calibration)"/> </include>
 </launch>

@@ -1,5 +1,6 @@
 <launch>
   <param name="capability_group" value="Recorder"/>
+  <arg name="calibration" default="no"/>
   <arg name="box_namespace" default="gt_box"/>
 
   <group ns="$(arg box_namespace)">
