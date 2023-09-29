@@ -1,6 +1,7 @@
 <launch>
   <arg name="box_namespace" default="gt_box"/>
-  <group ns="$(arg box_namespace)">
+  <arg name="calibration" default="no"/>
+  <group if="$(eval arg('calibration') == 'no')" ns="$(arg box_namespace)">
 
 	<arg name="dev" default="/dev/ttyUSB0"/>
 	<arg name="baud" default="230400"/>

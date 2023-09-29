@@ -1,6 +1,7 @@
 <launch>
   <arg name="box_namespace" default="gt_box"/>
-  <group ns="$(arg box_namespace)">
+  <arg name="calibration" default="no"/>
+  <group if="$(eval arg('calibration') == 'no' or arg('calibration') == 'lidar')" ns="$(arg box_namespace)">
 
 	<!--user configure parameters for ros start-->
 	<arg name="lvx_file_path" default="livox_test.lvx"/>
