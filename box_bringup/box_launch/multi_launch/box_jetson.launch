@@ -1,12 +1,12 @@
 <launch>
   <arg name="calibration" default="no"/>
-  <include file="$(rospack find box_launch)/launch/alphasense.launch"> <arg name="calibration" value="$(arg calibration)"/> </include>
-  <include file="$(rospack find box_launch)/launch/gps_rover.launch"> <arg name="calibration" value="$(arg calibration)"/> </include>
-  <include file="$(rospack find box_launch)/launch/hesai_lidar.launch"> <arg name="calibration" value="$(arg calibration)"/> </include>
-  <include file="$(rospack find box_launch)/launch/livox_lidar.launch"> <arg name="calibration" value="$(arg calibration)"/> </include>
-  <include file="$(rospack find box_launch)/launch/stim320.launch"> <arg name="calibration" value="$(arg calibration)"/> </include>
-  <include file="$(rospack find box_recording)/launch/rosbag_record_coordinator.launch"> <arg name="calibration" value="$(arg calibration)"/> </include>
-  <include file="$(rospack find box_recording)/launch/rosbag_record_node.launch"> <arg name="calibration" value="$(arg calibration)"/> </include>
-  <include file="$(rospack find box_health)/launch/box_health_client.launch"> <arg name="calibration" value="$(arg calibration)"/> </include>
-  <include file="$(rospack find core_throttling)/launch/throttle_jetson.launch"> <arg name="calibration" value="$(arg calibration)"/> </include>
+  <include file="$(find box_launch)/launch/alphasense.launch"> <arg name="calibration" value="$(arg calibration)"/> </include>
+  <include file="$(find box_launch)/launch/gps_rover.launch"> <arg name="calibration" value="$(arg calibration)"/> </include>
+  <include file="$(find box_launch)/launch/hesai_lidar.launch"> <arg name="calibration" value="$(arg calibration)"/> </include>
+  <include file="$(find box_launch)/launch/livox_lidar.launch"> <arg name="calibration" value="$(arg calibration)"/> </include>
+  <include file="$(find box_launch)/launch/stim320.launch"> <arg name="calibration" value="$(arg calibration)"/> </include>
+  <include file="$(find box_recording)/launch/rosbag_record_coordinator.launch"> <arg name="calibration" value="$(arg calibration)"/> </include>
+  <include file="$(find box_recording)/launch/rosbag_record_node.launch"> <arg name="calibration" value="$(arg calibration)"/> </include>
+  <include file="$(find box_health)/launch/box_health_client.launch"> <arg name="calibration" value="$(arg calibration)"/> </include>
+  <include file="$(find core_throttling)/launch/throttle_jetson.launch"> <arg name="calibration" value="$(arg calibration)"/> </include>
 </launch>
