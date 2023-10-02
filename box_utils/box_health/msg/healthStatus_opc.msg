@@ -1,4 +1,5 @@
 string offset_chrony_opc_jetson
+string chrony_status
 
 # frequencies names have to be the topic names, where the '/' are replaced with '_' and "_hz" is appended
 float64 gt_box_leica_position_hz
