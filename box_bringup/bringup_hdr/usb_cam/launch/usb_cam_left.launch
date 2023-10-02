@@ -4,7 +4,7 @@
   <group ns="$(arg box_namespace)">
     <arg  if="$(eval arg('calibration') == 'no' )" name="publish_rate" default="30" />
     <arg  if="$(eval arg('calibration') == 'lidar' )" name="publish_rate" default="1" />
-    <arg  if="$(eval arg('calibration') == 'camera' )" name="publish_rate" default="1" />
+    <arg  if="$(eval arg('calibration') == 'camera' )" name="publish_rate" default="4" />
     <arg  if="$(eval arg('calibration') == 'imu' )" name="publish_rate" default="30" />
     <arg name="use_image_transport" default="True" />
     <arg name="video_device" default="/dev/video0" />
