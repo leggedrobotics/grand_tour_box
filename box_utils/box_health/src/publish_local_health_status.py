@@ -196,6 +196,7 @@ class BoxStatus:
                     health_msg.chrony_status = self.get_chrony_status(chrony_line)
                 except: 
                     health_msg.offset_chrony_opc_jetson = -1
+                    health_msg.chrony_status = "error reading status"
             else:
                 rospy.logerr("[BoxStatus] This hostname is unknown: " + self.hostname)
         except Exception as error:
