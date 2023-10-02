@@ -29,7 +29,6 @@ def chrony_line(text: str) -> str:
     jetson_idx = text.find('jetson')
     line_start_idx = text.rfind("\n", 0, jetson_idx)
     line_end_idx = text.find("\n", jetson_idx, len(text))
-    print(text[line_start_idx + 1 : line_end_idx])
     return text[line_start_idx + 1 : line_end_idx]
 
 def offset_from_status(line: str) -> str:
