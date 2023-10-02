@@ -138,6 +138,7 @@ class BoxStatusMerger:
                 "gt_box_leica_position_hz",
                 "cpu_usage_opc",
                 "avail_memory_opc",
+                "chrony_status",
             ]
         }
         self.health_status_publisher = rospy.Publisher(
