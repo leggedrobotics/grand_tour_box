@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import socket
+import os
 import rospy
 from threading import Lock
 import numpy as np
@@ -95,51 +96,24 @@ class BoxStatusMerger:
         self.subscriber_nuc = rospy.Subscriber(
             self.namespace + "health_status/nuc", healthStatus_nuc, self.callback, "nuc"
         )
-        self.subscriber_nuc = rospy.Subscriber(
+        self.subscriber_opc = rospy.Subscriber(
             self.namespace + "health_status/opc", healthStatus_opc, self.callback, "opc"
         )
-        # names have to exactly match healthStatus.msg
-        # TODO(beni): read directly from file
+
         self.message_fields = {
-            "jetson": [
-                "offset_mgbe0_systemclock",
-                "offset_mgbe0_mgbe1",
-                "status_mgbe0_ptp4l",
-                "status_mgbe1_ptp4l",
-                "gt_box_alphasense_driver_node_cam3_hz",
-                "gt_box_alphasense_driver_node_cam4_hz",
-                "gt_box_alphasense_driver_node_cam5_hz",
-                "gt_box_hesai_pandar_packets_hz",
-                "gt_box_livox_lidar_hz",
-                "gt_box_livox_imu_hz",
-                "gt_box_alphasense_driver_node_imu_hz",
-                "gt_box_rover_piksi_position_receiver_0_ros_pos_enu_hz",
-                "gps_num_sat",
-                "gps_rtk_mode_fix",
-                "gps_fix_mode",
-                "gps_utc_time_ready",
-                "cpu_usage_jetson",
-                "avail_memory_jetson",
-            ],
-            "nuc": [
-                "gt_box_v4l2_camera_left_image_raw_hz",
-                "gt_box_v4l2_camera_middle_image_raw_hz",
-                "gt_box_v4l2_camera_right_image_raw_hz",
-                "offset_enp45s0_systemclock",
-                "offset_enp45s0_enp46s0",
-                "offset_mgbe0_enp45s0",
-                "status_enp46s0_ptp4l",
-                "gt_box_adis16475_hz",
-                "cpu_usage_nuc",
-                "avail_memory_nuc",
-            ],
-            "opc": [
-                "offset_chrony_opc_jetson",
-                "gt_box_leica_position_hz",
-                "cpu_usage_opc",
-                "avail_memory_opc",
-            ]
+            "jetson": [],
+            "nuc": [],
+            "opc": [],
         }
+        hosts = ["jetson", "nuc", "opc"]
+        for host in hosts:
+            filename = os.path.dirname(__file__) + "/../msg/healthStatus_" + host + ".msg"
+            for line in open(filename):
+                li=line.strip()
+                if li and not li.startswith("#") and not li.isspace():
+                    health_topic = li.split()[1]
+                    self.message_fields[host].append(health_topic)
+
         self.health_status_publisher = rospy.Publisher(
             self.namespace + "health_status/merged", healthStatus, queue_size=10
         )
