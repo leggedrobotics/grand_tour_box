@@ -164,18 +164,16 @@ class BoxStatusMerger:
         text.width = 1200
         text.height = 1200
         text.left = 10
-        text.top = 10
-        text.text_size = 10
+        text.top = 430
+        text.text_size = 13
         text.line_width = 0
         text.font = "Lato"
         text.fg_color = ColorRGBA(0.0, 0.0, 0.0, 1.0)
         text.bg_color = ColorRGBA(0.0, 0.0, 0.0, 0.0)
-        text.text = """Clock PTP status
-            Jetson mgbe0: %s
+        text.text = """Jetson mgbe0: %s
             Jetson mgbe1: %s
             Nuc enp46s0: %s
 
-            Clock offsets
             ptp mgbe0->enp45s0: %s
             ptp mgbe0->eth0: %s
             p2s mgbe0->mgbe1: %s
@@ -185,12 +183,10 @@ class BoxStatusMerger:
             p2s eth0->pi sys: %s
             chrony jetson->opc: %s
 
-            GPS status
             RTK mode fix: %i
             GPS fix mode: %s
             Num sat: %i
 
-            PC status
             Jetson avail memory: %s
             Jetson CPU usage: %.2f%%
             Nuc avail memory: %s
@@ -198,7 +194,6 @@ class BoxStatusMerger:
             Pi avail memory: %s
             Pi CPU usage: %s%%
             
-            Recording:
             Jetson: %s
             Nuc: %s
             Opc: %s""" % (
