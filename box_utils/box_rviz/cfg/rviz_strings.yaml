@@ -1,8 +1,6 @@
 strings:
-  - Camera
+  - Alphasense
+  - HDR Cam
   - Lidar
   - GPS
   - IMU
-  - Jetson
-  - NUC
-  - Recording

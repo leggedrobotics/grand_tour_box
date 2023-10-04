@@ -9,7 +9,7 @@ import rospkg
 import psutil
 import signal
 import os
-from std_msgs.msg import Float32
+from std_msgs.msg import Bool
 from box_recording.srv import StartRecordingInternalResponse, StartRecordingInternal
 from box_recording.srv import StopRecordingInternalResponse, StopRecordingInternal
 
@@ -34,9 +34,9 @@ class RosbagRecordNode(object):
         self.data_path = rospy.get_param("~data_path", default_path)
 
         self.publish_recording_status = rospy.Publisher(
-            self.namespace + "health_status/recording_" + self.node, Float32, queue_size=3
+            self.namespace + "health_status/recording_" + self.node, Bool, queue_size=3
         )
-        self.publish_recording_status.publish(float(self.bag_running))
+        self.publish_recording_status.publish(self.bag_running)
 
         if not os.path.exists(self.data_path):
             self.data_path = default_path
