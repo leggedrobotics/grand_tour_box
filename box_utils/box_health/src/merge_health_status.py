@@ -46,10 +46,10 @@ def color_wrapper(text, perfect, ok, bad, biggerbetter):
             else:
                 color = array_to_color(red)
 
-        return '<span style="color: ' + color + ';">' + text + '</span>'
+        return '<span style="color: ' + color + ';">' + str(text) + '</span>'
     except:
         color = array_to_color(red)
-        return '<span style="color: ' + color + ';">' + text + '</span>'
+        return '<span style="color: ' + color + ';">' + str(text) + '</span>'
 
 class visualizationPublisher:
     def __init__(self):
@@ -165,15 +165,15 @@ class BoxStatusMerger:
 
     def publish_text_visualization(self):
         text = OverlayText()
-        text.width = 1200
-        text.height = 1200
+        text.width = 300
+        text.height = 550
         text.left = 10
         text.top = 430
         text.text_size = 13
         text.line_width = 0
         text.font = "Lato"
         text.fg_color = ColorRGBA(0.0, 0.0, 0.0, 1.0)
-        text.bg_color = ColorRGBA(0.0, 0.0, 0.0, 0.0)
+        text.bg_color = ColorRGBA(0.0, 0.0, 0.0, 0.1)
         text.text = """Jetson mgbe0: %s
             Jetson mgbe1: %s
             Nuc enp46s0: %s
@@ -187,14 +187,14 @@ class BoxStatusMerger:
             p2s eth0->pi sys: %s
             chrony jetson->opc: %s
 
-            RTK mode fix: %i
+            RTK mode fix: %s
             GPS fix mode: %s
-            Num sat: %i
+            Num sat: %s
 
             Jetson avail memory: %s
-            Jetson CPU usage: %.2f%%
+            Jetson CPU usage: %s%%
             Nuc avail memory: %s
-            Nuc CPU usage: %.2f%%
+            Nuc CPU usage: %s%%
             Pi avail memory: %s
             Pi CPU usage: %s%%
             
@@ -204,7 +204,7 @@ class BoxStatusMerger:
             getattr(self.complete_health_msg, "status_mgbe0_ptp4l"),
             getattr(self.complete_health_msg, "status_mgbe1_ptp4l"),
             getattr(self.complete_health_msg, "status_enp46s0_ptp4l"),
-            getattr(self.complete_health_msg, "offset_mgbe0_enp45s0"),
+            color_wrapper(getattr(self.complete_health_msg, "offset_mgbe0_enp45s0"), 100, 200, 1000, False),
             color_wrapper("0", 100, 200, 1000, False), # ptp mgbe0 -> pi eth0
             color_wrapper(getattr(self.complete_health_msg, "offset_mgbe0_mgbe1"), 100, 200, 1000, False),
             color_wrapper(getattr(self.complete_health_msg, "offset_mgbe0_systemclock"), 100, 200, 1000, False),
@@ -216,11 +216,11 @@ class BoxStatusMerger:
             getattr(self.complete_health_msg, "gps_fix_mode"),
             color_wrapper(getattr(self.complete_health_msg, "gps_num_sat"), 10, 5, 0, True),
             getattr(self.complete_health_msg, "avail_memory_jetson"),
-            color_wrapper(getattr(self.complete_health_msg, "cpu_usage_jetson"), 50, 80, 90, False),
+            color_wrapper("{:.2f}".format(getattr(self.complete_health_msg, "cpu_usage_jetson")), 50, 80, 90, False),
             getattr(self.complete_health_msg, "avail_memory_nuc"),
-            color_wrapper(getattr(self.complete_health_msg, "cpu_usage_nuc"), 50, 80, 90, False),
+            color_wrapper("{:.2f}".format(getattr(self.complete_health_msg, "cpu_usage_nuc")), 50, 80, 90, False),
             "0",
-            color_wrapper("85", 50, 80, 90, False),
+            color_wrapper("{:.2f}".format(22.22222), 50, 80, 90, False),
             "<span style='color: rgb(34,139,34);'>Recording</span>" if self.recording_status["jetson"] else "Not recording",
             "<span style='color: rgb(34,139,34);'>Recording</span>" if self.recording_status["nuc"] else "Not recording",
             "<span style='color: rgb(34,139,34);'>Recording</span>" if self.recording_status["opc"] else "Not recording",
