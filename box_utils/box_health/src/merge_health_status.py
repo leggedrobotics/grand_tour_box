@@ -16,12 +16,11 @@ def array_to_color(color_list):
     return "rgb(" + lst[1:-1] + ")"
 
 def color_wrapper(text, perfect, ok, bad, biggerbetter):
-    if text:
+    green = np.array([34,139,34])
+    orange = np.array([255,140,0])
+    red = np.array([139,0,0])
+    try:
         value = float(text)
-        green = np.array([34,139,34])
-        orange = np.array([255,140,0])
-        red = np.array([139,0,0])
-
         # TODO add smooth color change
         if biggerbetter:
             if value > perfect:
@@ -43,8 +42,9 @@ def color_wrapper(text, perfect, ok, bad, biggerbetter):
                 color = array_to_color(red)
 
         return '<span style="color: ' + color + ';">' + text + '</span>'
-    else:
-        return text
+    except:
+        color = array_to_color(red)
+        return '<span style="color: ' + color + ';">' + text + '</span>'
 
 class visualizationPublisher:
     def __init__(self):
