@@ -1,13 +1,15 @@
 <launch>
   <arg name="replay" default="false"/>
+  <arg name="calibration" default="no"/>
   <group if="$(arg replay)">
     <param name="use_sim_time" value="true"/>
   </group>
 
   <include file="$(find box_model)/launch/box_model.launch"/>
 
-  <include file="$(find box_rviz)/launch/rqt_perspective.launch">
-    <arg name="replay" value="$(arg replay)"/>
-  </include>
+  <node if="$(eval arg('calibration') == 'no' )" name="rviz" pkg="rviz" type="rviz" args="-d $(find box_rviz)/cfg/config.rviz" />  
+  <node if="$(eval arg('calibration') == 'camera' )" name="rviz" pkg="rviz" type="rviz" args="-d $(find box_rviz)/cfg/config_calib_camera.rviz" /> 
+  <node if="$(eval arg('calibration') == 'lidar' )" name="rviz" pkg="rviz" type="rviz" args="-d $(find box_rviz)/cfg/config_calib_lidar.rviz" /> 
+  <node if="$(eval arg('calibration') == 'imu' )" name="rviz" pkg="rviz" type="rviz" args="-d $(find box_rviz)/cfg/config_calib_imu.rviz" /> 
   <include file="$(find box_rviz)/launch/publish_string.launch" unless="$(arg replay)"/>
 </launch>
