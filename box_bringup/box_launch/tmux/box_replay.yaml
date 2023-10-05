@@ -9,7 +9,6 @@ windows:
     - export HOSTNAME
     - export DISPLAY=:0.0
 
-
   options:
     pane-border-status: top
   panes:

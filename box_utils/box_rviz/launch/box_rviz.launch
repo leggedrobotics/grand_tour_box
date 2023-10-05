@@ -3,26 +3,27 @@
   <arg name="calibration" default="no"/>
   <group if="$(arg replay)">
     <param name="use_sim_time" value="true"/>
-  </group>
-  <arg name="box_namespace" default="gt_box"/>
-
-  <group ns="$(arg box_namespace)"> 
-  <param name="capability_group" value="Visualization"/>
-
-    <include file="$(find box_model)/launch/box_model.launch"/>
-
-    <node if="$(eval arg('calibration') == 'no' )" name="rviz" pkg="rviz" type="rviz" args="-d $(find box_rviz)/cfg/config.rviz" >
-      <param name="capability_group" value="Visualization"/>
-    </node>  
-    <node if="$(eval arg('calibration') == 'camera' )" name="rviz" pkg="rviz" type="rviz" args="-d $(find box_rviz)/cfg/config_calib_camera.rviz" >
-      <param name="capability_group" value="Visualization"/>
-    </node>  
-    <node if="$(eval arg('calibration') == 'lidar' )" name="rviz" pkg="rviz" type="rviz" args="-d $(find box_rviz)/cfg/config_calib_lidar.rviz" >
-      <param name="capability_group" value="Visualization"/>
-    </node>  
-    <node if="$(eval arg('calibration') == 'imu' )" name="rviz" pkg="rviz" type="rviz" args="-d $(find box_rviz)/cfg/config_calib_imu.rviz" >
-      <param name="capability_group" value="Visualization"/>
-    </node>  
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find box_rviz)/cfg/config_replay.rviz" />
     <include file="$(find box_rviz)/launch/publish_string.launch" unless="$(arg replay)"/>
+  </group>
+  <group unless="$(arg replay)">
+    <arg name="box_namespace" default="gt_box"/>
+    <group ns="$(arg box_namespace)"> 
+    <param name="capability_group" value="Visualization"/>
+      <include file="$(find box_model)/launch/box_model.launch"/>
+      <node if="$(eval arg('calibration') == 'no' )" name="rviz" pkg="rviz" type="rviz" args="-d $(find box_rviz)/cfg/config.rviz" >
+        <param name="capability_group" value="Visualization"/>
+      </node>  
+      <node if="$(eval arg('calibration') == 'camera' )" name="rviz" pkg="rviz" type="rviz" args="-d $(find box_rviz)/cfg/config_calib_camera.rviz" >
+        <param name="capability_group" value="Visualization"/>
+      </node>  
+      <node if="$(eval arg('calibration') == 'lidar' )" name="rviz" pkg="rviz" type="rviz" args="-d $(find box_rviz)/cfg/config_calib_lidar.rviz" >
+        <param name="capability_group" value="Visualization"/>
+      </node>  
+      <node if="$(eval arg('calibration') == 'imu' )" name="rviz" pkg="rviz" type="rviz" args="-d $(find box_rviz)/cfg/config_calib_imu.rviz" >
+        <param name="capability_group" value="Visualization"/>
+      </node>  
+      <include file="$(find box_rviz)/launch/publish_string.launch" unless="$(arg replay)"/>
+    </group>
   </group>
 </launch>
