@@ -177,6 +177,7 @@ class BoxStatusMerger:
         text.text = """Jetson mgbe0: %s
             Jetson mgbe1: %s
             Nuc enp46s0: %s
+            OPC chrony: %s
 
             ptp mgbe0->enp45s0: %s
             ptp mgbe0->eth0: %s
@@ -204,6 +205,7 @@ class BoxStatusMerger:
             getattr(self.complete_health_msg, "status_mgbe0_ptp4l"),
             getattr(self.complete_health_msg, "status_mgbe1_ptp4l"),
             getattr(self.complete_health_msg, "status_enp46s0_ptp4l"),
+            getattr(self.complete_health_msg, "chrony_status"),
             color_wrapper(getattr(self.complete_health_msg, "offset_mgbe0_enp45s0"), 100, 200, 1000, False),
             color_wrapper("0", 100, 200, 1000, False), # ptp mgbe0 -> pi eth0
             color_wrapper(getattr(self.complete_health_msg, "offset_mgbe0_mgbe1"), 100, 200, 1000, False),
