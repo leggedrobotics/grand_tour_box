@@ -1,5 +1,0 @@
-<launch>
-  <param name="capability_group" value="Driver"/>
-  <arg name="calibration" default="no"/>
-  <include file="$(find bringup_adis16475)/launch/adis16475.launch"> <arg name="calibration" value="$(arg calibration)"/> </include>
-</launch>

@@ -1,12 +1,13 @@
 <launch>
   <arg name="rviz" default="false" />
-  <param name="capability_group" value="Visualization"/>
 
   <arg name="model" default="$(find box_model)/urdf/box/box.urdf.xacro" />
 
   <param name="robot_description" command="xacro $(arg model)" />
 
-   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" >
+      <param name="capability_group" value="Visualization"/>
+    </node> 
 
    <node if="$(arg rviz)" name="box_rviz" pkg="rviz" type="rviz" args="-d $(find box_model)/config/display_urdf.rviz" />
 
