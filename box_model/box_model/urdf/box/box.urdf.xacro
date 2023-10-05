@@ -11,6 +11,21 @@
   <!-- Origin -->
   <link name="leica_world"/> 
 
+  <!-- Totalstation base position --> 
+  <link name="leica_base"/>
+  <joint name="leica_world_to_leica_base" type="fixed">   
+    <origin xyz="0.1 0.1 0.1" rpy="0.0 0.0 0.0" />
+    <parent link="leica_world" />
+    <child link="leica_base" />
+  </joint>
+
+  <link name="leica_base_model"/>
+  <joint name="leica_base_to_leica_base_model" type="fixed">   
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+    <parent link="leica_base" />
+    <child link="leica_base_model" />
+  </joint>
+
   <!-- Measured prism position --> 
   <link name="leica_pos"/>
   <joint name="leica_world_to_leica_pos" type="fixed">   
