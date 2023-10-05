@@ -22,7 +22,7 @@ def color_wrapper(text, perfect, ok, bad, biggerbetter):
     orange = np.array([255,140,0])
     red = np.array([139,0,0])
     try:
-        value = float(text)
+        value = abs(float(text))
         green = np.array([34,139,34])
         orange = np.array([255,140,0])
         red = np.array([139,0,0])
@@ -166,7 +166,7 @@ class BoxStatusMerger:
     def publish_text_visualization(self):
         text = OverlayText()
         text.width = 300
-        text.height = 550
+        text.height = 575
         text.left = 10
         text.top = 430
         text.text_size = 13
