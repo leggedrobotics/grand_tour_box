@@ -14,12 +14,19 @@
   <!-- Totalstation base position --> 
   <link name="leica_base"/>
   <joint name="leica_world_to_leica_base" type="fixed">   
-    <origin xyz="0.1 0.1 0.1" rpy="0.0 0.0 0.0" />
+    <origin xyz="1.0 1.0 1.0" rpy="0.0 0.0 0.0" />
     <parent link="leica_world" />
     <child link="leica_base" />
   </joint>
 
-  <link name="leica_base_model"/>
+  <!-- Totalstation model --> 
+  <link name="leica_base_model">
+    <visual>
+      <geometry>
+        <cylinder length="0.2" radius="0.08"/>
+      </geometry>
+    </visual>
+  </link>
   <joint name="leica_base_to_leica_base_model" type="fixed">   
     <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
     <parent link="leica_base" />
