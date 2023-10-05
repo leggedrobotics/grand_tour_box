@@ -3,9 +3,9 @@ import socket
 import logging as log
 
 def add_arguments(parser):
-    modes = ["no", "camera", "lidar", "imu"]
+    modes = ["", "camera", "lidar", "imu"]
     parser.set_defaults(main=main)
-    parser.add_argument("-m", choices=modes, help="calibration mode of the box", default="no")
+    parser.add_argument("-m", choices=modes, help="calibration mode of the box", default="")
     parser.add_argument("--sync_clocks", action="store_true", help="Sync clocks before starting ros")
     return parser
 
@@ -17,15 +17,13 @@ def main(args):
     if args.sync_clocks:
         cmd = f'boxi initial_clock_sync'
         shell_run(cmd)
-    else:
-        log.warning(f" \n\n --> You didn't sync the clocks! Was this on purpose? \n")
 
     for host in hosts:
         print("start ros in mode \"" + str(args.m) + "\" on", host)
         if host == hostname:
             cmd = f"tmuxp load $(rospack find box_launch)/tmux/box_" + host + "_calib_" + args.m + ".yaml -d"
         else:
-            cmd = f"ssh -o ConnectTimeout=4 -t tmuxp load $(rospack find box_launch)/tmux/box_" + host + "_calib_" + args.m + ".yaml"
+            cmd = f"ssh -o ConnectTimeout=4 rsl@" + host + " -t /home/rsl/.local/bin/boxi start --kill -c box_" + host + "_calib_" + args.m
         try:
             shell_run(cmd)
         except:
