@@ -20,11 +20,7 @@ windows:
       - source ~/catkin_ws/devel/setup.bash
       - roslaunch box_launch fkie.launch
           autostart_launch_files:="
-            $(rospack find box_launch)/launch/box_rviz.launch
-            $(rospack find box_recording)/launch/rosbag_record_node.launch
-            $(rospack find box_health)/launch/box_health_client.launch
-            $(rospack find box_health)/launch/box_health_server.launch
-            $(rospack find bringup_hesai)/launch/hesai_lidar_unpack_throttled.launch
+            $(rospack find box_launch)/multi_launch/box_opc.launch
             "
           use_gui:=true
     - shell_command:

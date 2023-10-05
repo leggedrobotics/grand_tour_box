@@ -1,6 +1,7 @@
 <launch>
   <arg name="box_namespace" default="gt_box"/>
-  <group ns="$(arg box_namespace)">
+  <arg name="calibration" default="no"/>
+  <group if="$(eval arg('calibration') == 'no' or arg('calibration') == 'imu')" ns="$(arg box_namespace)">
     <arg name="serial_port" default="/dev/ttyUSB0"/>
     <arg name="baud_rate" default="921600"/>
     <node name="stim320" pkg="stim320_ros" type="stim320_node" output="screen">

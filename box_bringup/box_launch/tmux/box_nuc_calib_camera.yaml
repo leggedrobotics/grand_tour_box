@@ -1,0 +1,30 @@
+session_name: box_nuc
+
+before_script: "../scripts/initialize_session.sh"
+
+windows:
+- window_name: grand_tour_box_robot
+  layout: tiled
+  shell_command_before:
+    - export HOSTNAME
+    - export DISPLAY=:0.0
+    - export ROS_MASTER_URI=http://192.168.2.56:11311
+    - export ROS_IP=192.168.2.56
+
+  options:
+    pane-border-status: top
+  panes:
+    - shell_command:
+      - source /opt/ros/noetic/setup.bash
+      - source ~/catkin_ws/devel/setup.bash
+      - roslaunch box_launch fkie.launch
+          autostart_launch_files:="
+            $(rospack find box_launch)/multi_launch/nuc_calib_camera.launch
+            "
+          use_gui:=false
+    - shell_command:
+      - source /opt/ros/noetic/setup.bash
+      - source ~/catkin_ws/devel/setup.bash
+      - source ~/catkin_ws/src/grand_tour_box/box_utils/box_setup/alias/alias.sh 
+      - df -h $HOME
+      focus: true

@@ -42,6 +42,7 @@ nuc:
 opc:
   utils:
     - /gt_box/health_status/opc
+    - /gt_box/health_status/merged
   leica:
     - /gt_box/leica/position
     - /gt_box/leica/status

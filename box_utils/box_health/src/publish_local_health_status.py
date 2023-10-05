@@ -25,6 +25,11 @@ def last_line(text: str) -> str:
     idx = text.rfind("\n", 0, len(text) - 1)
     return text[idx + 1 :]
 
+def chrony_line(text: str) -> str:
+    jetson_idx = text.find('jetson')
+    line_start_idx = text.rfind("\n", 0, jetson_idx)
+    line_end_idx = text.find("\n", jetson_idx, len(text))
+    return text[line_start_idx + 1 : line_end_idx]
 
 def offset_from_status(line: str) -> str:
     idx = line.find("offset")
@@ -139,6 +144,18 @@ class BoxStatus:
         else:
             rospy.logerr("[BoxStatus] Unknown unit:", unit)
         return str(int(offset_num))
+    
+    def get_chrony_status(self, recent_line):
+        states = {
+            '*': "current synced",
+            '+': "combined" ,
+            '-': "not combined",
+            '?': "unreachable",
+            'x': "time may be in error",
+            '~': "time too variable",
+        }
+        state_symbol = recent_line[1]
+        return states[state_symbol]
 
     def read_clock_status(self, service):
         p = subprocess.Popen(["systemctl", "status", service], stdout=subprocess.PIPE)
@@ -152,7 +169,7 @@ class BoxStatus:
         (output_status, error) = p.communicate()
         if error:
             rospy.logerr("[BoxStatus] Error subprocess reading clocks: " + str(error))
-        return last_line(output_status.decode("utf-8"))
+        return chrony_line(output_status.decode("utf-8"))
 
     def check_clocks(self, health_msg):
         try:
@@ -174,9 +191,13 @@ class BoxStatus:
                 )
             elif self.hostname == "opc":
                 try:
-                    health_msg.offset_chrony_opc_jetson = self.check_chrony_offset(self.read_chrony_status())
+                    chrony_line = self.read_chrony_status()
+                    health_msg.offset_chrony_opc_jetson = self.check_chrony_offset(chrony_line)
+                    health_msg.chrony_status = self.get_chrony_status(chrony_line)
                 except: 
-                    health_msg.offset_chrony_opc_jetson = -1
+                    health_msg.offset_chrony_opc_jetson = '-1'
+                    health_msg.chrony_status = "error reading status"
+
             else:
                 rospy.logerr("[BoxStatus] This hostname is unknown: " + self.hostname)
         except Exception as error:

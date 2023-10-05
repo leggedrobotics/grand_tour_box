@@ -1,0 +1,43 @@
+<?xml version="1.0" ?>
+
+<robot name="lidars" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- Lidars (coincide with hesai) -->
+  <link name="lidars" />
+  <joint name="box_base_to_lidars" type="fixed">   
+    <origin xyz=" ${calib['box_base_to_lidars']['x']}
+                  ${calib['box_base_to_lidars']['y']}
+                  ${calib['box_base_to_lidars']['z']}" 
+            rpy=" ${calib['box_base_to_lidars']['roll']}
+                  ${calib['box_base_to_lidars']['pitch']}
+                  ${calib['box_base_to_lidars']['yaw']}" />
+    <parent link="box_base" />
+    <child link="lidars" />
+  </joint>
+
+  <!-- Hesai -->
+  <link name="hesai" />
+  <joint name="lidars_to_hesai" type="fixed">   
+    <origin xyz=" ${calib['lidars_to_hesai']['x']}
+                  ${calib['lidars_to_hesai']['y']}
+                  ${calib['lidars_to_hesai']['z']}" 
+            rpy=" ${calib['lidars_to_hesai']['roll']}
+                  ${calib['lidars_to_hesai']['pitch']}
+                  ${calib['lidars_to_hesai']['yaw']}" />
+    <parent link="lidars" />
+    <child link="hesai" />
+  </joint>
+
+  <!-- Livox -->
+  <link name="livox" />
+  <joint name="hesai_to_livox" type="fixed">   
+    <origin xyz=" ${calib['hesai_to_livox']['x']}
+                  ${calib['hesai_to_livox']['y']}
+                  ${calib['hesai_to_livox']['z']}" 
+            rpy=" ${calib['hesai_to_livox']['roll']}
+                  ${calib['hesai_to_livox']['pitch']}
+                  ${calib['hesai_to_livox']['yaw']}" />
+    <parent link="hesai" />
+    <child link="livox" />
+  </joint>
+</robot>

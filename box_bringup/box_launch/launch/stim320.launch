@@ -1,4 +1,0 @@
-<launch>
-  <param name="capability_group" value="Driver"/>
-  <include file="$(find bringup_stim320)/launch/stim320.launch"> </include>
-</launch>

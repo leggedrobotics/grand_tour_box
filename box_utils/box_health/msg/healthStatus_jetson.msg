@@ -8,6 +8,7 @@ float64 gt_box_alphasense_driver_node_cam3_hz
 float64 gt_box_alphasense_driver_node_cam4_hz
 float64 gt_box_alphasense_driver_node_cam5_hz
 float64 gt_box_hesai_pandar_packets_hz
+float64 gt_box_hesai_pandar_hz
 float64 gt_box_livox_lidar_hz
 float64 gt_box_livox_imu_hz
 float64 gt_box_alphasense_driver_node_imu_hz

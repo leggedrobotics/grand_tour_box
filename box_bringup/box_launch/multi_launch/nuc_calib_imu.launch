@@ -1,0 +1,4 @@
+<launch>
+  <arg name="calibration" default="imu"/>
+  <include file="$(find box_launch)/multi_launch/box_nuc.launch"> <arg name="calibration" value="$(arg calibration)"/> </include>
+</launch>

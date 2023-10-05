@@ -1,50 +1,55 @@
 #!/usr/bin/env python3
 
 import socket
+import os
 import rospy
 from threading import Lock
 import numpy as np
 
 from box_health.msg import healthStatus, healthStatus_jetson, healthStatus_nuc, healthStatus_opc
-from std_msgs.msg import Float32, ColorRGBA
+from std_msgs.msg import Float32, Bool, ColorRGBA
 from jsk_rviz_plugins.msg import *
 
 mutex = Lock()
+recording_mutex = Lock()
 
 def array_to_color(color_list):
     lst = str(list(color_list))
     return "rgb(" + lst[1:-1] + ")"
 
 def color_wrapper(text, perfect, ok, bad, biggerbetter):
-    if text:
-        value = float(text)
+    green = np.array([34,139,34])
+    orange = np.array([255,140,0])
+    red = np.array([139,0,0])
+    try:
+        value = abs(float(text))
         green = np.array([34,139,34])
         orange = np.array([255,140,0])
         red = np.array([139,0,0])
 
-        # TODO add smooth color change
         if biggerbetter:
             if value > perfect:
                 color = array_to_color(green)
             elif value > ok:
-                color = array_to_color(orange)
+                color = array_to_color((((value - ok) / (perfect - ok)) * (green - orange)) + orange)
             elif value > bad:
-                color = array_to_color(red)
+                color = array_to_color((((value - bad) / (ok - bad)) * (green - orange)) + orange)
             else:
                 color = array_to_color(red)
         else:
             if value < perfect:
                 color = array_to_color(green)
             elif value < ok:
-                color = array_to_color(orange)
+                color = array_to_color((((value - perfect) / (ok - perfect)) * (orange - green)) + green)
             elif value < bad:
-                color = array_to_color(red)
+                color = array_to_color((((value - ok) / (bad - ok)) * (red - orange)) + orange)
             else:
                 color = array_to_color(red)
 
-        return '<span style="color: ' + color + ';">' + text + '</span>'
-    else:
-        return text
+        return '<span style="color: ' + color + ';">' + str(text) + '</span>'
+    except:
+        color = array_to_color(red)
+        return '<span style="color: ' + color + ';">' + str(text) + '</span>'
 
 class visualizationPublisher:
     def __init__(self):
@@ -84,10 +89,14 @@ class visualizationPublisher:
 class BoxStatusMerger:
     def __init__(self, publisher):
         self.publisher = publisher
-        self.hostname = socket.gethostname()
         self.namespace = rospy.get_namespace()
 
         rospy.init_node("health_status_merger")
+        self.recording_status = {
+            "jetson": False,
+            "nuc": False,
+            "opc": False,
+        }
 
         self.subscriber_jetson = rospy.Subscriber(
             self.namespace + "health_status/jetson", healthStatus_jetson, self.callback, "jetson"
@@ -95,51 +104,33 @@ class BoxStatusMerger:
         self.subscriber_nuc = rospy.Subscriber(
             self.namespace + "health_status/nuc", healthStatus_nuc, self.callback, "nuc"
         )
-        self.subscriber_nuc = rospy.Subscriber(
+        self.subscriber_opc = rospy.Subscriber(
             self.namespace + "health_status/opc", healthStatus_opc, self.callback, "opc"
         )
-        # names have to exactly match healthStatus.msg
-        # TODO(beni): read directly from file
+        self.recording_jetson = rospy.Subscriber(
+            self.namespace + "health_status/recording_jetson", Bool, self.recording_callback, "jetson"
+        )
+        self.recording_nuc = rospy.Subscriber(
+            self.namespace + "health_status/recording_nuc", Bool, self.recording_callback, "nuc"
+        )
+        self.recording_opc = rospy.Subscriber(
+            self.namespace + "health_status/recording_opc", Bool, self.recording_callback, "opc"
+        )
+
         self.message_fields = {
-            "jetson": [
-                "offset_mgbe0_systemclock",
-                "offset_mgbe0_mgbe1",
-                "status_mgbe0_ptp4l",
-                "status_mgbe1_ptp4l",
-                "gt_box_alphasense_driver_node_cam3_hz",
-                "gt_box_alphasense_driver_node_cam4_hz",
-                "gt_box_alphasense_driver_node_cam5_hz",
-                "gt_box_hesai_pandar_packets_hz",
-                "gt_box_livox_lidar_hz",
-                "gt_box_livox_imu_hz",
-                "gt_box_alphasense_driver_node_imu_hz",
-                "gt_box_rover_piksi_position_receiver_0_ros_pos_enu_hz",
-                "gps_num_sat",
-                "gps_rtk_mode_fix",
-                "gps_fix_mode",
-                "gps_utc_time_ready",
-                "cpu_usage_jetson",
-                "avail_memory_jetson",
-            ],
-            "nuc": [
-                "gt_box_v4l2_camera_left_image_raw_hz",
-                "gt_box_v4l2_camera_middle_image_raw_hz",
-                "gt_box_v4l2_camera_right_image_raw_hz",
-                "offset_enp45s0_systemclock",
-                "offset_enp45s0_enp46s0",
-                "offset_mgbe0_enp45s0",
-                "status_enp46s0_ptp4l",
-                "gt_box_adis16475_hz",
-                "cpu_usage_nuc",
-                "avail_memory_nuc",
-            ],
-            "opc": [
-                "offset_chrony_opc_jetson",
-                "gt_box_leica_position_hz",
-                "cpu_usage_opc",
-                "avail_memory_opc",
-            ]
+            "jetson": [],
+            "nuc": [],
+            "opc": [],
         }
+        hosts = ["jetson", "nuc", "opc"]
+        for host in hosts:
+            filename = os.path.dirname(__file__) + "/../msg/healthStatus_" + host + ".msg"
+            for line in open(filename):
+                li=line.strip()
+                if li and not li.startswith("#") and not li.isspace():
+                    health_topic = li.split()[1]
+                    self.message_fields[host].append(health_topic)
+
         self.health_status_publisher = rospy.Publisher(
             self.namespace + "health_status/merged", healthStatus, queue_size=10
         )
@@ -150,6 +141,10 @@ class BoxStatusMerger:
         with mutex:
             for field in self.message_fields[sender]:
                 setattr(self.complete_health_msg, field, getattr(partial_health_data, field))
+
+    def recording_callback(self, recording_status, sender):
+        with recording_mutex:
+            self.recording_status[sender] = recording_status
 
     def publish_frequency_visualization(self):
         for key, value in self.publisher.publishers_float.items():
@@ -170,42 +165,67 @@ class BoxStatusMerger:
 
     def publish_text_visualization(self):
         text = OverlayText()
-        text.width = 250
-        text.height = 300
+        text.width = 300
+        text.height = 575
         text.left = 10
-        text.top = 370
-        text.text_size = 12
-        text.line_width = 2
-        text.font = "Arial"
+        text.top = 430
+        text.text_size = 13
+        text.line_width = 0
+        text.font = "Lato"
         text.fg_color = ColorRGBA(0.0, 0.0, 0.0, 1.0)
-        text.bg_color = ColorRGBA(0.0, 0.0, 0.0, 0.0)
-        text.text = """Clock status:
-        Clock mgbe0: %s
-        Clock mgbe1: %s
-        Clock enp46s0: %s
+        text.bg_color = ColorRGBA(0.0, 0.0, 0.0, 0.1)
+        text.text = """Jetson mgbe0: %s
+            Jetson mgbe1: %s
+            Nuc enp46s0: %s
+            OPC chrony: %s
 
-        Jetson mgbe0 to mgbe1: %s
+            ptp mgbe0->enp45s0: %sns
+            ptp mgbe0->eth0: %sns
+            p2s mgbe0->mgbe1: %sns
+            p2s mgbe0->jetson sys: %sns
+            p2s enp45s0->enp46s0: %sns
+            p2s enp45s0->nuc sys: %sns
+            p2s eth0->pi sys: %sns
+            chrony jetson->opc: %sns
 
-        GPS status:
-        RTK mode fix: %i
-        GPS fix mode: %s
-        Num sat: %i 
-        
-        Avail memory Jetson: %s
-        Avail memory Nuc: %s
-        CPU usage Jetson: %.2f%%
-        CPU usage Nuc: %.2f%%""" % (
+            RTK mode fix: %s
+            GPS fix mode: %s
+            Num sat: %s
+
+            Jetson avail memory: %s
+            Jetson CPU usage: %s%%
+            Nuc avail memory: %s
+            Nuc CPU usage: %s%%
+            Pi avail memory: %s
+            Pi CPU usage: %s%%
+            
+            Jetson: %s
+            Nuc: %s
+            Opc: %s""" % (
             getattr(self.complete_health_msg, "status_mgbe0_ptp4l"),
             getattr(self.complete_health_msg, "status_mgbe1_ptp4l"),
             getattr(self.complete_health_msg, "status_enp46s0_ptp4l"),
-            color_wrapper(getattr(self.complete_health_msg, "offset_mgbe0_mgbe1"), 0, 100, 1000, False),
-            getattr(self.complete_health_msg, "gps_rtk_mode_fix"),
+            getattr(self.complete_health_msg, "chrony_status"),
+            color_wrapper(getattr(self.complete_health_msg, "offset_mgbe0_enp45s0"), 100, 200, 1000, False),
+            color_wrapper("0", 100, 200, 1000, False), # ptp mgbe0 -> pi eth0
+            color_wrapper(getattr(self.complete_health_msg, "offset_mgbe0_mgbe1"), 100, 200, 1000, False),
+            color_wrapper(getattr(self.complete_health_msg, "offset_mgbe0_systemclock"), 100, 200, 1000, False),
+            color_wrapper(getattr(self.complete_health_msg, "offset_enp45s0_enp46s0"), 100, 200, 1000, False),
+            color_wrapper(getattr(self.complete_health_msg, "offset_enp45s0_systemclock"), 100, 100, 1000, False),
+            color_wrapper("0", 100, 200, 1000, False), # p2s eth0 -> pi sys:
+            color_wrapper(getattr(self.complete_health_msg, "offset_chrony_opc_jetson"), 1000, 3000, 10000, False),
+            color_wrapper(getattr(self.complete_health_msg, "gps_rtk_mode_fix"), 1, 0, 0, True),
             getattr(self.complete_health_msg, "gps_fix_mode"),
-            getattr(self.complete_health_msg, "gps_num_sat"),
+            color_wrapper(getattr(self.complete_health_msg, "gps_num_sat"), 10, 5, 0, True),
             getattr(self.complete_health_msg, "avail_memory_jetson"),
+            color_wrapper("{:.2f}".format(getattr(self.complete_health_msg, "cpu_usage_jetson")), 50, 80, 90, False),
             getattr(self.complete_health_msg, "avail_memory_nuc"),
-            getattr(self.complete_health_msg, "cpu_usage_jetson"),
-            getattr(self.complete_health_msg, "cpu_usage_nuc"),
+            color_wrapper("{:.2f}".format(getattr(self.complete_health_msg, "cpu_usage_nuc")), 50, 80, 90, False),
+            "0",
+            color_wrapper("{:.2f}".format(22.22222), 50, 80, 90, False),
+            "<span style='color: rgb(34,139,34);'>Recording</span>" if self.recording_status["jetson"] else "Not recording",
+            "<span style='color: rgb(34,139,34);'>Recording</span>" if self.recording_status["nuc"] else "Not recording",
+            "<span style='color: rgb(34,139,34);'>Recording</span>" if self.recording_status["opc"] else "Not recording",
         )
         self.publisher.text_publisher.publish(text)
 

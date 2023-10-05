@@ -1,4 +1,0 @@
-<launch>
-  <param name="capability_group" value="Driver"/>
-  <include file="$(find bringup_hesai)/launch/hesai_lidar.launch"> </include>
-</launch>

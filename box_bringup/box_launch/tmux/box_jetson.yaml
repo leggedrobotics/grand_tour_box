@@ -19,15 +19,7 @@ windows:
       - source ~/catkin_ws/devel/setup.bash
       - roslaunch box_launch fkie.launch
           autostart_launch_files:="
-            $(rospack find box_launch)/launch/alphasense.launch
-            $(rospack find box_launch)/launch/gps_rover.launch
-            $(rospack find box_launch)/launch/hesai_lidar.launch
-            $(rospack find box_launch)/launch/livox_lidar.launch
-            $(rospack find box_launch)/launch/stim320.launch
-            $(rospack find box_recording)/launch/rosbag_record_coordinator.launch
-            $(rospack find box_recording)/launch/rosbag_record_node.launch
-            $(rospack find box_health)/launch/box_health_client.launch
-            $(rospack find core_throttling)/launch/throttle_jetson.launch
+            $(rospack find box_launch)/multi_launch/box_jetson.launch
             "
           use_gui:=false
     - shell_command:

@@ -1,8 +1,12 @@
 from boxi import BOX_ROOT_DIR, shell_run
 import socket
+import logging as log
 
 def add_arguments(parser):
+    modes = ["no", "camera", "lidar", "imu"]
     parser.set_defaults(main=main)
+    parser.add_argument("-m", choices=modes, help="calibration mode of the box", default="no")
+    parser.add_argument("--sync_clocks", action="store_true", help="Sync clocks before starting ros")
     return parser
 
 
@@ -10,13 +14,18 @@ def main(args):
     hosts = ["opc", "jetson", "nuc"]
     hostname = socket.gethostname()
 
-    for host in hosts:
-        print("start ros on", host)
+    if args.sync_clocks:
+        cmd = f'boxi initial_clock_sync'
+        shell_run(cmd)
+    else:
+        log.warning(f" \n\n --> You didn't sync the clocks! Was this on purpose? \n")
 
+    for host in hosts:
+        print("start ros in mode \"" + str(args.m) + "\" on", host)
         if host == hostname:
-            cmd = f"tmuxp load $(rospack find box_launch)/tmux/box_" + host + ".yaml"
+            cmd = f"tmuxp load $(rospack find box_launch)/tmux/box_" + host + "_calib_" + args.m + ".yaml -d"
         else:
-            cmd = f"ssh -o ConnectTimeout=4 -t tmuxp load $(rospack find box_launch)/tmux/box_" + host + ".yaml"
+            cmd = f"ssh -o ConnectTimeout=4 -t tmuxp load $(rospack find box_launch)/tmux/box_" + host + "_calib_" + args.m + ".yaml"
         try:
             shell_run(cmd)
         except:

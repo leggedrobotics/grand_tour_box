@@ -3,7 +3,7 @@
 
   <!-- Specify the package and executable -->
   <node pkg="box_rviz" type="publish_string.py" name="string_publisher_node" output="screen">
+    <param name="capability_group" value="Visualization"/>
     <rosparam param="string_list">$(arg strings)</rosparam>
-
   </node>
 </launch>

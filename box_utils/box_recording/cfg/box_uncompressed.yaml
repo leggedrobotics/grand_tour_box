@@ -41,6 +41,9 @@ nuc:
     - /gt_box/v4l2_camera_right/image_raw
 
 opc:
+  utils:
+    - /gt_box/health_status/opc
+    - /gt_box/health_status/merged
   leica:
     - /gt_box/leica/position
     - /gt_box/leica/status

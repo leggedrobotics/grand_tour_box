@@ -1,6 +1,7 @@
 <launch>
   <arg name="box_namespace" default="gt_box"/>
-  <group ns="$(arg box_namespace)">
+  <arg name="calibration" default="no"/>
+  <group if="$(eval arg('calibration') == 'no' or arg('calibration') == 'lidar')" ns="$(arg box_namespace)">
 
 	<!--user configure parameters for ros start-->
 	<arg name="lvx_file_path" default="livox_test.lvx"/>
@@ -13,7 +14,7 @@
 	<arg name="rviz_enable" default="false"/>
 	<arg name="rosbag_enable" default="false"/>
 	<arg name="cmdline_arg" default="$(arg bd_list)"/>
-	<arg name="msg_frame_id" default="livox_frame"/>
+	<arg name="msg_frame_id" default="livox"/>
 	<arg name="lidar_bag" default="true"/>
 	<arg name="imu_bag" default="true"/>
 	<!--user configure parameters for ros end--> 
