@@ -84,7 +84,7 @@ class RosbagRecordNode(object):
         
             self.processes.append(subprocess.Popen(bash_command, shell=True, stderr=subprocess.PIPE))
             self.bag_running = True
-            self.publish_recording_status.publish(float(self.bag_running))
+            self.publish_recording_status.publish(self.bag_running)
             response.suc = True
             response.message = "Starting rosbag recording process."
             rospy.loginfo(f"[RosbagRecordNode({self.node} {bag_name})] Starting rosbag recording process.")
@@ -114,7 +114,7 @@ class RosbagRecordNode(object):
             response.result = "Not implemented yet" #str(output)[2:-1]
 
         self.bag_running = False
-        self.publish_recording_status.publish(float(self.bag_running))
+        self.publish_recording_status.publish(self.bag_running)
 
         return response
 
