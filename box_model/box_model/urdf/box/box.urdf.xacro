@@ -9,13 +9,29 @@
 <xacro:property name="calib" value="${xacro.load_yaml(default_calib)}"/>
    
   <!-- Origin -->
-  <link name="origin"/>
+  <link name="leica_world"/> 
+
+  <!-- Measured prism position --> 
+  <link name="leica_pos"/>
+  <joint name="leica_world_to_leica_pos" type="fixed">   
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+    <parent link="leica_world" />
+    <child link="leica_pos" />
+  </joint>
+
+  <!-- Prism -->
+  <link name="prism"/>
+  <joint name="leica_pos_to_prism" type="fixed">   
+    <origin xyz="0.15 0.0 -0.3" rpy="0.0 0.0 0.0" />
+    <parent link="leica_pos" />
+    <child link="prism" />
+  </joint>
 
   <!-- Box base -->
   <link name="box_base"/>
-  <joint name="origin_to_box_base" type="fixed">   
+  <joint name="prism_to_box_base" type="fixed">   
     <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
-    <parent link="origin" />
+    <parent link="prism" />
     <child link="box_base" />
   </joint>
 
