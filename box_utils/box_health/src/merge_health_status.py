@@ -179,14 +179,14 @@ class BoxStatusMerger:
             Nuc enp46s0: %s
             OPC chrony: %s
 
-            ptp mgbe0->enp45s0: %s
-            ptp mgbe0->eth0: %s
-            p2s mgbe0->mgbe1: %s
-            p2s mgbe0->jetson sys: %s
-            p2s enp45s0->enp46s0: %s
-            p2s enp45s0->nuc sys: %s
-            p2s eth0->pi sys: %s
-            chrony jetson->opc: %s
+            ptp mgbe0->enp45s0: %sns
+            ptp mgbe0->eth0: %sns
+            p2s mgbe0->mgbe1: %sns
+            p2s mgbe0->jetson sys: %sns
+            p2s enp45s0->enp46s0: %sns
+            p2s enp45s0->nuc sys: %sns
+            p2s eth0->pi sys: %sns
+            chrony jetson->opc: %sns
 
             RTK mode fix: %s
             GPS fix mode: %s
