@@ -3,30 +3,28 @@ import socket
 import logging as log
 
 def add_arguments(parser):
-    modes = ["no", "camera", "lidar", "imu"]
+    modes = ["", "camera", "lidar", "imu"]
     parser.set_defaults(main=main)
-    parser.add_argument("-m", choices=modes, help="calibration mode of the box", default="no")
-    parser.add_argument("--sync_clocks", action="store_true", help="Sync clocks before starting ros")
+    parser.add_argument("-m", choices=modes, help="calibration mode of the box", default="")
     return parser
-
 
 def main(args):
     hosts = ["opc", "jetson", "nuc"]
     hostname = socket.gethostname()
 
-    if args.sync_clocks:
-        cmd = f'boxi initial_clock_sync'
-        shell_run(cmd)
-    else:
-        log.warning(f" \n\n --> You didn't sync the clocks! Was this on purpose? \n")
+    mode = ""
+    if args.m == "no":
+        mode = ""
+    elif args.m:
+        mode = "_calib_" + args.m
 
     for host in hosts:
-        print("start ros in mode \"" + str(args.m) + "\" on", host)
+        print("Start ros in calibration mode \"" + str(args.m) + "\" on", host)
         if host == hostname:
-            cmd = f"tmuxp load $(rospack find box_launch)/tmux/box_" + host + "_calib_" + args.m + ".yaml -d"
+            cmd = f"boxi start -c box_" + host + mode
         else:
-            cmd = f"ssh -o ConnectTimeout=4 -t tmuxp load $(rospack find box_launch)/tmux/box_" + host + "_calib_" + args.m + ".yaml"
+            cmd = f"ssh -o ConnectTimeout=4 rsl@" + host + " -t /home/rsl/.local/bin/boxi start -c box_" + host + mode
         try:
             shell_run(cmd)
         except:
-            print("ros couldn't be started on", host)
+            print("ROS couldn't be started on", host)
