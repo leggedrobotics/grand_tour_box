@@ -16,7 +16,7 @@ windows:
   panes:
     - shell_command:
       - source /opt/ros/noetic/setup.bash
-      - source ~/catkin_ws/devel/setup.bash
+      - source devel/setup.bash
       - roslaunch box_launch fkie.launch
           autostart_launch_files:="
             $(rospack find box_launch)/multi_launch/box_pi.launch
