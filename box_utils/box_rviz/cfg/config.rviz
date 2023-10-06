@@ -36,8 +36,10 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
-        - /Overlay1/Other1/OverlayText1
+        - /Overlay1
+        - /Overlay1/Other1
         - /Lidar1/Livox Lidar1
+        - /Totalstation1
       Splitter Ratio: 0.6425379514694214
     Tree Height: 873
 Preferences:
@@ -652,6 +654,25 @@ Visualization Manager:
               text size: 12
               top: 265
               width: 138
+            - Align Bottom: false
+              Background Alpha: 0
+              Background Color: 0; 0; 0
+              Class: jsk_rviz_plugin/String
+              Enabled: true
+              Foreground Alpha: 0.800000011920929
+              Foreground Color: 46; 52; 54
+              Name: String Totalstation
+              Overtake Color Properties: true
+              Overtake Position Properties: true
+              Topic: /string_topic_5
+              Value: true
+              font: KacstPoster
+              height: 128
+              left: 120
+              line width: 2
+              text size: 12
+              top: 265
+              width: 138
           Enabled: true
           Name: Strings
       Enabled: true
@@ -864,6 +885,29 @@ Visualization Manager:
           Value: true
       Enabled: true
       Name: Lidar
+    - Class: jsk_rviz_plugin/PieChart
+      Enabled: true
+      Name: Totalstation
+      Topic: /gt_box/visualization/gt_box_rover_piksi_position_receiver_0_ros_pos_enu_hz
+      Value: true
+      auto color change: true
+      background color: 0; 0; 0
+      backround alpha: 0
+      clockwise rotate direction: false
+      foreground alpha: 0.699999988079071
+      foreground alpha 2: 0.4000000059604645
+      foreground color: 239; 41; 41
+      left: 410
+      max color: 78; 154; 6
+      max color change threthold: 9
+      max value: 20
+      med color: 245; 121; 0
+      med color change threthold: 8
+      min value: 0
+      show caption: true
+      size: 90
+      text size: 12
+      top: 285
   Enabled: true
   Global Options:
     Background Color: 176; 176; 176
@@ -896,7 +940,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 3.1647839546203613
+      Distance: 6.034052848815918
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
