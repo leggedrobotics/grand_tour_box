@@ -61,6 +61,7 @@ class visualizationPublisher:
             "gt_box_alphasense_driver_node_cam4_hz",
             "gt_box_alphasense_driver_node_cam5_hz",
             "gt_box_hesai_pandar_packets_hz",
+            "gt_box_hesai_pandar_hz",
             "gt_box_livox_lidar_hz",
             "gt_box_livox_imu_hz",
             "gt_box_alphasense_driver_node_imu_hz",
