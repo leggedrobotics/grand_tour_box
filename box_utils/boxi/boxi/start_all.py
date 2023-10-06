@@ -1,7 +1,6 @@
 from boxi import BOX_ROOT_DIR, shell_run
 import socket
 import logging as log
-from time import sleep
 
 def add_arguments(parser):
     modes = ["", "camera", "lidar", "imu"]
