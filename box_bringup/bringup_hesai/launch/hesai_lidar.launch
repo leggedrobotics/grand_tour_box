@@ -11,7 +11,7 @@
     <!--“lidar_type” represents the model of the lidar-->
     <arg name="lidar_type" default="PandarXT-32"/>
     <!--"frame_id" represents the id of the point cloud data published to ROS-->
-    <arg name="frame_id" default="PandarXT-32"/>
+    <arg name="frame_id" default="hesai"/>
     <arg name="pcldata_type" default="0"/>
     <arg if="$(eval arg('calibration') == 'no' )" name="publish_type" default="raw"/>
     <arg if="$(eval arg('calibration') == 'lidar' )" name="publish_type" default="points"/>
