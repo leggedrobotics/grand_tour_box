@@ -20,7 +20,6 @@ def load_yaml(path: str) -> dict:
         res = {}
     return res
 
-
 def last_line(text: str) -> str:
     idx = text.rfind("\n", 0, len(text) - 1)
     return text[idx + 1 :]
@@ -41,7 +40,6 @@ def offset_from_status(line: str) -> str:
         rospy.logerr("[BoxStatus] Error reading offset from line: " + line)
         return "error reading offset"
 
-
 class FrequencyFinder:
     def __init__(self, topic):
         self.topic = topic
@@ -56,7 +54,6 @@ class FrequencyFinder:
         else:
             rospy.logdebug("[BoxStatus] Error reading frequency of " + self.topic)
             return 0.0
-
 
 class BoxStatus:
     def __init__(self):
