@@ -6,7 +6,7 @@ import rospy
 from threading import Lock
 import numpy as np
 
-from box_health.msg import healthStatus, healthStatus_jetson, healthStatus_nuc, healthStatus_opc
+from box_health.msg import healthStatus, healthStatus_jetson, healthStatus_nuc, healthStatus_opc, healthStatus_rpi
 from std_msgs.msg import Float32, Bool, ColorRGBA
 from jsk_rviz_plugins.msg import *
 
@@ -68,7 +68,7 @@ class visualizationPublisher:
             "gt_box_rover_piksi_position_receiver_0_ros_pos_enu_hz",
             "gt_box_adis16475_imu_hz",
             "gt_box_stim320_imu_hz",
-            "gt_box_camera_trigger_timestamps_hz"
+            "gt_box_camera_trigger_timestamps_hz",
             "gt_box_v4l2_camera_left_image_raw_hz",
             "gt_box_v4l2_camera_middle_image_raw_hz",
             "gt_box_v4l2_camera_right_image_raw_hz",
@@ -110,6 +110,9 @@ class BoxStatusMerger:
         self.subscriber_opc = rospy.Subscriber(
             self.namespace + "health_status/opc", healthStatus_opc, self.callback, "opc"
         )
+        self.subscriber_opc = rospy.Subscriber(
+            self.namespace + "health_status/rpi", healthStatus_rpi, self.callback, "rpi"
+        )
         self.recording_jetson = rospy.Subscriber(
             self.namespace + "health_status/recording_jetson", Bool, self.recording_callback, "jetson"
         )
@@ -124,9 +127,10 @@ class BoxStatusMerger:
             "jetson": [],
             "nuc": [],
             "opc": [],
+            "rpi": [],
         }
-        hosts = ["jetson", "nuc", "opc"]
-        for host in hosts:
+
+        for host in self.message_fields:
             filename = os.path.dirname(__file__) + "/../msg/healthStatus_" + host + ".msg"
             for line in open(filename):
                 li=line.strip()
