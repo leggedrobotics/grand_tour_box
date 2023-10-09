@@ -22,7 +22,6 @@ float64 gt_box_livox_imu_hz
 float64 gt_box_alphasense_driver_node_imu_hz
 float64 gt_box_rover_piksi_position_receiver_0_ros_pos_enu_hz
 
-float64 gt_box_adis16475_hz
 float64 gt_box_v4l2_camera_left_image_raw_hz
 float64 gt_box_v4l2_camera_middle_image_raw_hz
 float64 gt_box_v4l2_camera_right_image_raw_hz
@@ -42,3 +41,15 @@ string avail_memory_nuc
 
 float32 cpu_usage_opc
 string avail_memory_opc
+
+string offset_eth0_systemclock
+string offset_mgbe0_eth0
+string status_eth0_ptp4l
+
+# rpi
+float64 gt_box_adis16475_imu_hz
+float64 gt_box_stim320_imu_hz
+float64 gt_box_camera_trigger_timestamps_hz
+
+float32 cpu_usage_rpi
+string avail_memory_rpi
