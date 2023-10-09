@@ -4,7 +4,6 @@ string offset_mgbe0_enp45s0
 string status_enp46s0_ptp4l
 
 # frequencies names have to be the topic names, where the '/' are replaced with '_' and "_hz" is appended
-float64 gt_box_adis16475_hz
 float64 gt_box_v4l2_camera_left_image_raw_hz
 float64 gt_box_v4l2_camera_middle_image_raw_hz
 float64 gt_box_v4l2_camera_right_image_raw_hz
