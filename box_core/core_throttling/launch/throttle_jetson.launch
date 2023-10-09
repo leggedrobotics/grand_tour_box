@@ -4,16 +4,16 @@
   <arg name="box_namespace" default="gt_box"/>
 
   <rosparam command="load" file="$(find core_throttling)/cfg/frequencies.yaml" />
-  <arg name="alphasense_cam3_frequency" default="5.0"/>
-  <arg name="alphasense_cam4_frequency" default="5.0"/>
-  <arg name="alphasense_cam5_frequency" default="5.0"/>
+  <arg name="alphasense_cam_frequency" default="5.0"/>
   <arg name="hesai_frequency" default="5.0"/>
   <arg name="livox_frequency" default="5.0"/>
 
   <group ns="$(arg box_namespace)">
-    <node name="alphasense_cam3_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/alphasense_driver_node/cam3/compressed $(arg alphasense_cam3_frequency) /gt_box/throttled/alphasense_driver_node/cam3/compressed" />
-    <node name="alphasense_cam4_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/alphasense_driver_node/cam4/compressed $(arg alphasense_cam4_frequency) /gt_box/throttled/alphasense_driver_node/cam4/compressed" />
-    <node name="alphasense_cam5_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/alphasense_driver_node/cam5/compressed $(arg alphasense_cam5_frequency) /gt_box/throttled/alphasense_driver_node/cam5/compressed" />
+    <node name="alphasense_cam0_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/alphasense_driver_node/cam0/compressed $(arg alphasense_cam_frequency) /gt_box/throttled/alphasense_driver_node/cam0/compressed" />
+    <node name="alphasense_cam1_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/alphasense_driver_node/cam1/compressed $(arg alphasense_cam_frequency) /gt_box/throttled/alphasense_driver_node/cam1/compressed" />
+    <node name="alphasense_cam3_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/alphasense_driver_node/cam3/compressed $(arg alphasense_cam_frequency) /gt_box/throttled/alphasense_driver_node/cam3/compressed" />
+    <node name="alphasense_cam4_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/alphasense_driver_node/cam4/compressed $(arg alphasense_cam_frequency) /gt_box/throttled/alphasense_driver_node/cam4/compressed" />
+    <node name="alphasense_cam5_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/alphasense_driver_node/cam5/compressed $(arg alphasense_cam_frequency) /gt_box/throttled/alphasense_driver_node/cam5/compressed" />
     <node name="hesai_packet_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/hesai/pandar_packets $(arg hesai_frequency) /gt_box/throttled/hesai/pandar_packets" />
     <node name="hesai_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/hesai/pandar $(arg hesai_frequency) /gt_box/throttled/hesai/pandar" />
     <node name="livox_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/livox/lidar $(arg livox_frequency) /gt_box/throttled/livox/lidar" /> 
