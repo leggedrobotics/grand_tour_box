@@ -51,7 +51,7 @@ camera_config: &camera_1_config
 
 ncamera:
   # Measurement rates.
-  camera_frequency_hz: 1           # 1 - 75
+  camera_frequency_hz: 4           # 1 - 75
   imu_frequency_hz: 200             # 100/200/400
   gyro_range_deg_per_sec: 2000      # 125/250/500/1000/2000
 
