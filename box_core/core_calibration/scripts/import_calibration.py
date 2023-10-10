@@ -40,10 +40,7 @@ def transformation_to_xyz_rpy(transformation):
     }
     return transformation
 
-
-if __name__ == "__main__":
-
-    topic_to_frame = {
+topic_to_frame = {
         "/alphasense_driver_ros/cam0": "alphasense_front_left",
         "/alphasense_driver_ros/cam1": "alphasense_front_right",
         "/alphasense_driver_ros/cam3": "alphasense_front_middle",
@@ -51,34 +48,58 @@ if __name__ == "__main__":
         "/alphasense_driver_ros/cam5": "alphasense_right",
     }
 
-    kalibr_results_file = "/home/beni/data/calib/alphasense/c014/cam_cam/2023-05-24-11-14-20-camchain.yaml"
-    diffcal_results_file = "/home/beni/catkin_ws/src/diffcal_gui_ros/outputs/1695973822261590242/output_config.file"
+def frame_from_cam(kalibr_calibration, cam):
+    return topic_to_frame[kalibr_calibration[cam]["rostopic"]]
+
+if __name__ == "__main__":
+    kalibr_camera_results_files = [
+        "/home/beni/data/calib/alphasense/c014/cam_cam/2023-05-24-11-14-20-camchain.yaml"
+    ]
+    kalibr_imu_results_files = [
+        
+    ]
+    diffcal_results_file = "/home/beni/catkin_ws/src/diffcal_gui_ros/outputs/1695128729535201549/output_config.yaml"
     default_calibration = "/home/beni/catkin_ws/src/grand_tour_box/box_model/box_model/urdf/box/calibrations/default_calibration.yaml"
     output_file = "/home/beni/catkin_ws/src/grand_tour_box/box_model/box_model/urdf/box/calibrations/calibration.yaml"
 
-with open(default_calibration, 'r') as file:
+with open(output_file, 'r') as file:
     calibration = yaml.safe_load(file)
 
-with open(kalibr_results_file, 'r') as file:
-    kalibr_calibration = yaml.safe_load(file)
+# Kalibr cam_cam calibration
+for kalibr_file in kalibr_camera_results_files:
+    with open(kalibr_file, 'r') as file:
+        kalibr_calibration = yaml.safe_load(file)
+
+    previous_cam = None
+    for cam in kalibr_calibration:
+        if previous_cam: # first cam doesn't have a transformation to a previous cam
+            xyz_rpy = transformation_to_xyz_rpy(kalibr_calibration[cam]["T_cn_cnm1"])
+            name = frame_from_cam(kalibr_calibration, cam) + "_to_" + frame_from_cam(kalibr_calibration, previous_cam)
+            if name in calibration:
+                calibration[name] = xyz_rpy
+            else:
+                print("[Error] Frame not found:", name)
+        previous_cam = cam
+
+    with open(kalibr_file, 'r') as file:
+        kalibr_calibration = yaml.safe_load(file)
+
+# Kalibr cam_imu calibration
+# TODO
+
+# Diffcal cam_lidar calibration
+# TODO
+#with open(diffcal_results_file, 'r') as file:
+#    diffcal_calibration = yaml.safe_load(file)
+#
+#print(diffcal_calibration)
+
 
 # print the calibration to file
 with open(output_file, 'w') as file:
     yaml.dump(calibration, file)
 
 
-previous_cam = None
-for cam in kalibr_calibration:
-    if previous_cam:
-        xyz_rpy = transformation_to_xyz_rpy(kalibr_calibration[cam]["T_cn_cnm1"])
-        name = topic_to_frame[kalibr_calibration[cam]["rostopic"]] + "_to_" + topic_to_frame[kalibr_calibration[previous_cam]["rostopic"]]
-        if name in calibration:
-            calibration[name] = xyz_rpy
-        else:
-            print("problem with name: ", name)
-
-    previous_cam = cam
-    #print(kalibr_calibration[c])
 
 
 
