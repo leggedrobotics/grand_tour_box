@@ -57,9 +57,11 @@ class visualizationPublisher:
 
         # names have to exactly match healthStatus.msg
         topics_to_publish_float = [
+            "gt_box_alphasense_driver_node_cam0_hz",
+            "gt_box_alphasense_driver_node_cam1_hz",
+            "gt_box_alphasense_driver_node_cam2_hz",
             "gt_box_alphasense_driver_node_cam3_hz",
             "gt_box_alphasense_driver_node_cam4_hz",
-            "gt_box_alphasense_driver_node_cam5_hz",
             "gt_box_hesai_pandar_packets_hz",
             "gt_box_hesai_pandar_hz",
             "gt_box_livox_lidar_hz",

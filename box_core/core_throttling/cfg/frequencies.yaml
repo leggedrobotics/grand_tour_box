@@ -1,6 +1,4 @@
-alphasense_cam3_frequency: 5.0
-alphasense_cam4_frequency: 5.0
-alphasense_cam5_frequency: 5.0
+alphasense_cam_frequency: 5.0
 hesai_frequency: 5.0
 livox_frequency: 5.0
 hdr_frequency: 5.0
