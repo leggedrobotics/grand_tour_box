@@ -8,7 +8,7 @@ import subprocess
 import re
 
 import rospy, rostopic
-from box_health.msg import healthStatus_jetson, healthStatus_nuc, healthStatus_opc
+from box_health.msg import healthStatus_jetson, healthStatus_nuc, healthStatus_opc, healthStatus_rpi
 from piksi_rtk_msgs.msg import ReceiverState_V2_6_5
 
 
@@ -94,6 +94,10 @@ class BoxStatus:
         elif self.hostname == "opc":
             self.health_status_publisher = rospy.Publisher(
                 self.namespace + "health_status/" + self.hostname, healthStatus_opc, queue_size=2
+            )
+        elif self.hostname == "rpi":
+            self.health_status_publisher = rospy.Publisher(
+                self.namespace + "health_status/" + self.hostname, healthStatus_rpi, queue_size=2
             )
         else:
             rospy.logerr("[BoxStatus] Hostname " + self.hostname + " is unknown.")
@@ -194,7 +198,12 @@ class BoxStatus:
                 except: 
                     health_msg.offset_chrony_opc_jetson = '-1'
                     health_msg.chrony_status = "error reading status"
-
+            elif self.hostname == "rpi":
+                health_msg.offset_mgbe0_eth0 = self.check_clock_offset(self.read_clock_status("ptp4l.service"))
+                health_msg.status_eth0_ptp4l = self.check_if_grandmaster(self.read_clock_status("ptp4l.service"))
+                health_msg.offset_eth0_systemclock = self.check_clock_offset(
+                    self.read_clock_status("phc2sys.service")
+                )
             else:
                 rospy.logerr("[BoxStatus] This hostname is unknown: " + self.hostname)
         except Exception as error:
@@ -228,6 +237,8 @@ class BoxStatus:
             return healthStatus_nuc()
         elif self.hostname == "opc":
             return healthStatus_opc()
+        elif self.hostname == "rpi":
+            return healthStatus_rpi()
         else:
             rospy.logerr("[BoxStatus] Hostname " + self.hostname + " is unknown.")
 
