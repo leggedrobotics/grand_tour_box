@@ -75,11 +75,6 @@ class visualizationPublisher:
             "gt_box_v4l2_camera_middle_image_raw_hz",
             "gt_box_v4l2_camera_right_image_raw_hz",
             "gt_box_leica_position_hz",
-            "offset_mgbe0_systemclock",
-            "offset_mgbe0_mgbe1",
-            "offset_mgbe0_enp45s0",
-            "offset_enp45s0_systemclock",
-            "offset_chrony_opc_jetson",
         ]
 
         self.publishers_float = {}
@@ -196,6 +191,7 @@ class BoxStatusMerger:
             p2s enp45s0->nuc sys: %sns
             p2s eth0->pi sys: %sns
             chrony jetson->opc: %sns
+            alphasense_frames_no_ptp: %s
 
             RTK mode fix: %s
             GPS fix mode: %s
@@ -223,6 +219,7 @@ class BoxStatusMerger:
             color_wrapper(getattr(self.complete_health_msg, "offset_enp45s0_systemclock"), 100, 100, 1000, False),
             color_wrapper("0", 100, 200, 1000, False), # p2s eth0 -> pi sys:
             color_wrapper(getattr(self.complete_health_msg, "offset_chrony_opc_jetson"), 1000, 3000, 10000, False),
+            color_wrapper(getattr(self.complete_health_msg, "alphasense_frames_no_ptp"), 1, 2, 3, False),
             color_wrapper(getattr(self.complete_health_msg, "gps_rtk_mode_fix"), 1, 0, 0, True),
             getattr(self.complete_health_msg, "gps_fix_mode"),
             color_wrapper(getattr(self.complete_health_msg, "gps_num_sat"), 10, 5, 0, True),
