@@ -75,11 +75,6 @@ class visualizationPublisher:
             "gt_box_v4l2_camera_middle_image_raw_hz",
             "gt_box_v4l2_camera_right_image_raw_hz",
             "gt_box_leica_position_hz",
-            "offset_mgbe0_systemclock",
-            "offset_mgbe0_mgbe1",
-            "offset_mgbe0_enp45s0",
-            "offset_enp45s0_systemclock",
-            "offset_chrony_opc_jetson",
         ]
 
         self.publishers_float = {}
