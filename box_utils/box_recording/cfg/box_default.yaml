@@ -2,9 +2,9 @@ jetson:
   alphasense:
     - /gt_box/alphasense_driver_node/cam0/compressed
     - /gt_box/alphasense_driver_node/cam1/compressed
+    - /gt_box/alphasense_driver_node/cam2/compressed
     - /gt_box/alphasense_driver_node/cam3/compressed
     - /gt_box/alphasense_driver_node/cam4/compressed
-    - /gt_box/alphasense_driver_node/cam5/compressed
   hesai:
     - /gt_box/hesai/pandar_packets
   livox:

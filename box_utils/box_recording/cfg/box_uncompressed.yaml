@@ -2,9 +2,9 @@ jetson:
   alphasense:
     - /gt_box/alphasense_driver_node/cam0
     - /gt_box/alphasense_driver_node/cam1
+    - /gt_box/alphasense_driver_node/cam2
     - /gt_box/alphasense_driver_node/cam3
     - /gt_box/alphasense_driver_node/cam4
-    - /gt_box/alphasense_driver_node/cam5
   hesai:
     - /gt_box/hesai/pandar
   livox:
