@@ -3,9 +3,9 @@
   <arg name="calibration" default="no"/>
   <group if="$(eval arg('calibration') == 'no' or arg('calibration') == 'imu')" ns="$(arg box_namespace)">
 
-    <node pkg="rosserial_python" type="serial_node.py" name="adis_node" output="screen">
-        <param name="port" value="/dev/ttyACM0"/>
-        <param name="baud" value="57600"/>
+    <node pkg="adis16475_node" type="imu_publisher" name="adis16475_node" output="screen">
+        <param name="decimation_factor" value="4"/>
+        <param name="fir_filter" value="4"/>
     </node>
 
   </group>

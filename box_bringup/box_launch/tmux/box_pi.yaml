@@ -17,9 +17,9 @@ windows:
     - shell_command:
       - source /opt/ros/noetic/setup.bash
       - source devel/setup.bash
-      - roslaunch box_launch fkie.launch
+      - roslaunch bringup_pi fkie.launch
           autostart_launch_files:="
-            $(rospack find box_launch)/multi_launch/box_pi.launch
+            $(rospack find bringup_pi)/launch/box_pi.launch
             "
           use_gui:=false
     - shell_command:

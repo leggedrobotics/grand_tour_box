@@ -5,7 +5,7 @@
   <description>The bringup_adis16475 package</description>
   <maintainer email="code@lennart-werner.de">Lennart Werner</maintainer>
   <license>Proprietary</license>
-  <depend>rosserial_python</depend>
+  <depend>adis16475_node</depend>
   <export>
   </export>
 </package>
