@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>bringup_adis16448_versavis</name>
+  <version>0.0.0</version>
+  <description>The bringup_adis16448_versavis package</description>
+  <maintainer email="code@lennart-werner.de">Lennart Werner</maintainer>
+  <license>Proprietary</license>
+  <depend>rosserial_python</depend>
+  <export>
+  </export>
+</package>
