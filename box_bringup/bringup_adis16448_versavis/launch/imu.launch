@@ -7,7 +7,7 @@
     <arg name="port" default="/dev/versavis" doc="port of versavis)" />
     <arg name="baud" default="1000000" doc="baudrate to use for serial communication"/>
     
-    <rosparam command="load" file="$(find bringup_imu)/config/imu_settings.yaml" />
+    <rosparam command="load" file="$(find bringup_adis16448_versavis)/config/imu_settings.yaml" />
 
     <!-- Run VersaVIS link. -->
     <node name="rosserial_python" pkg="rosserial_python" type="serial_node.py"
