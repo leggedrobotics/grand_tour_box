@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>bringup_pi</name>
+  <name>launch_pi</name>
   <version>1.0.0</version>
-  <description>RSL's bringup pi package.</description>
+  <description>RSL's launch_pi package.</description>
   <license>Proprietary</license>
   <maintainer email="bkrumme@ethz.ch">Benjamin Krummenacher</maintainer>
   <author email="bkrumme@ethz.ch">Benjamin Krummenacher</author>
