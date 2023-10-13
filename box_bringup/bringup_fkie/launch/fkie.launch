@@ -57,7 +57,7 @@
             name="node_manager"
             if="$(arg use_gui)"/>
     <!-- fkie_master_discovery -->
-    <include file="$(find box_launch)/launch/master_discovery.launch" />
+    <include file="$(find bringup_fkie)/launch/master_discovery.launch" />
     <!-- fkie_master_sync -->
-    <include file="$(find box_launch)/launch/master_sync.launch" />
+    <include file="$(find bringup_fkie)/launch/master_sync.launch" />
 </launch>
