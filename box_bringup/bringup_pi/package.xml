@@ -8,10 +8,6 @@
   <author email="bkrumme@ethz.ch">Benjamin Krummenacher</author>
   <buildtool_depend>catkin</buildtool_depend>
 
-  <exec_depend>fkie_multimaster_msgs</exec_depend>
-  <exec_depend>fkie_master_discovery</exec_depend>
-  <exec_depend>fkie_master_sync</exec_depend>
-  <exec_depend>fkie_node_manager</exec_depend>
-  <exec_depend>fkie_node_manager_daemon</exec_depend>
+  <exec_depend>bringup_fkie</exec_depend>
   <depend>box_health</depend>
 </package>
