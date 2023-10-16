@@ -1,4 +1,4 @@
-session_name: box_nuc
+session_name: box_pi
 
 before_script: "../scripts/initialize_session.sh"
 
