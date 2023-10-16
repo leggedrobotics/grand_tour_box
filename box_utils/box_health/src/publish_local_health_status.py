@@ -8,9 +8,8 @@ import subprocess
 import re
 
 import rospy, rostopic
+from std_msgs.msg import String
 from box_health.msg import healthStatus_jetson, healthStatus_nuc, healthStatus_opc, healthStatus_rpi
-from piksi_rtk_msgs.msg import ReceiverState_V2_6_5
-
 
 def load_yaml(path: str) -> dict:
     with open(path) as file:
@@ -77,11 +76,21 @@ class BoxStatus:
         # check GPS status on PC which checks the GPS topic frequency
         self.check_gps_status = "rover" in "".join(self.topics)
         if self.check_gps_status:
+            from piksi_rtk_msgs.msg import ReceiverState_V2_6_5
             rospy.loginfo("[BoxStatus] Check GPS stats on host " + self.hostname)
             self.GPS_subscriber = rospy.Subscriber(
                 "/gt_box/rover/piksi/position_receiver_0/ros/receiver_state", ReceiverState_V2_6_5, self.set_GPS_status
             )
             self.set_GPS_status_default()
+
+        self.check_alphasense_ptp = "alphasense" in "".join(self.topics)
+        if self.check_alphasense_ptp:
+            rospy.loginfo("[BoxStatus] Check Alphasense PTP status on host " + self.hostname)
+            self.alphasense_subscriber = rospy.Subscriber(
+                "/gt_box/alphasense_driver_node/debug_info", String, self.set_alphasense_ptp_status
+            )
+            self.set_alphasense_ptp_status_default()
+
 
         if self.hostname == "jetson":
             self.health_status_publisher = rospy.Publisher(
@@ -114,6 +123,24 @@ class BoxStatus:
         self.gps_rtk_mode_fix = data.rtk_mode_fix
         self.gps_fix_mode = data.fix_mode
         self.gps_utc_time_ready = data.utc_time_ready
+
+    def set_alphasense_ptp_status_default(self):
+        self.alphasense_frames_no_ptp = -1
+
+    def set_alphasense_ptp_status(self, data):
+        string = data.data
+        idx = string.find("uptime")
+        string = string[idx+8:]
+        idx_minus = string.find("\n")
+        uptime = int(string[:idx_minus])
+
+        idx = string.find("last_ptp_sync_uptime")
+        string = string[idx+22:]
+        idx_minus = string.find("\n")
+        last_ptp_sync_uptime = int(string[:idx_minus])
+
+        frames_not_synced = uptime - last_ptp_sync_uptime
+        self.alphasense_frames_no_ptp = frames_not_synced
 
     def check_if_grandmaster(self, recent_line):
         if "assuming the grand master role" or "LISTENING to GRAND_MASTER on RS_GRAND_MASTER" in recent_line:
@@ -229,6 +256,10 @@ class BoxStatus:
         health_msg.gps_utc_time_ready = self.gps_utc_time_ready
         self.set_GPS_status_default()
         return health_msg
+    
+    def get_alphasense_ptp_status(self, health_msg):
+        health_msg.alphasense_frames_no_ptp = self.alphasense_frames_no_ptp
+        return health_msg
 
     def healthstatus(self):
         if self.hostname == "jetson":
@@ -292,6 +323,8 @@ class BoxStatus:
             health_msg = self.get_topic_frequencies(health_msg)
             if self.check_gps_status:
                 health_msg = self.get_GPS_status(health_msg)
+            if self.check_alphasense_ptp:
+                health_msg = self.get_alphasense_ptp_status(health_msg)
             health_msg = self.get_PC_status(health_msg)
             self.health_status_publisher.publish(health_msg)
             self.rate.sleep()

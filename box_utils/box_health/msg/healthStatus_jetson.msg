@@ -2,6 +2,7 @@ string offset_mgbe0_systemclock
 string offset_mgbe0_mgbe1
 string status_mgbe0_ptp4l
 string status_mgbe1_ptp4l
+int64 alphasense_frames_no_ptp
 
 # frequencies names have to be the topic names, where the '/' are replaced with '_' and "_hz" is appended
 float64 gt_box_alphasense_driver_node_cam0_hz

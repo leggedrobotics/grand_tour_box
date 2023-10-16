@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>bringup_adis16448_versavis</name>
+  <version>0.0.0</version>
+  <description>The bringup_adis16448_versavis package</description>
+  <maintainer email="bkrumme@ethz.ch">Benjamin krummenacher</maintainer>
+  <license>Proprietary</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>versavis_adis16448_receiver</depend>
+  <export>
+  </export>
+</package>
