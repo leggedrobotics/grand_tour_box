@@ -131,3 +131,19 @@ hesai_to_livox:
   roll: 3.14159265359
   pitch: 0.0
   yaw: -1.57079632679
+
+alphasense_front_left_to_imu_stim320:
+  x: 0.2
+  y: 0.0
+  z: 0.0
+  roll: 0.0
+  pitch: 0.0
+  yaw: 0.0
+
+alphasense_front_left_to_imu_adis16475:
+  x: 0.0
+  y: 0.2
+  z: 0.0
+  roll: 0.0
+  pitch: 0.0
+  yaw: 0.0

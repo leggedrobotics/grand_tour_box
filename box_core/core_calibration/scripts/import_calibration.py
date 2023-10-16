@@ -81,11 +81,19 @@ for kalibr_file in kalibr_camera_results_files:
                 print("[Error] Frame not found:", name)
         previous_cam = cam
 
+# Kalibr cam_imu calibration
+for kalibr_file in kalibr_imu_results_files:
     with open(kalibr_file, 'r') as file:
         kalibr_calibration = yaml.safe_load(file)
 
-# Kalibr cam_imu calibration
-# TODO
+        # is cam0 (always) camera front left?
+        xyz_rpy = transformation_to_xyz_rpy(kalibr_calibration["cam0"]["T_cam_imu"])
+        name = "alphasense_front_left_to_imu_adis16475"
+        name = frame_from_cam(kalibr_calibration, cam) + "_to_" + frame_from_cam(kalibr_calibration, previous_cam)
+        if name in calibration:
+            calibration[name] = xyz_rpy
+        else:
+            print("[Error] Frame not found:", name)
 
 # Diffcal cam_lidar calibration
 # TODO

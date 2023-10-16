@@ -73,5 +73,6 @@
 
   <xacro:include filename="$(find box_model)/urdf/cameras/cameras.urdf.xacro" />
   <xacro:include filename="$(find box_model)/urdf/lidars/lidars.urdf.xacro" />
+  <xacro:include filename="$(find box_model)/urdf/imus/imus.urdf.xacro" />
 
 </robot>
