@@ -8,7 +8,7 @@
   <author email="jonfrey@ethz.ch">Jonas Frey</author>
   <buildtool_depend>catkin</buildtool_depend>
 
-  <depend>scripts</depend>
+  <depend>launch_scripts</depend>
   <depend>bringup_hesai</depend>
   <exec_depend>bringup_fkie</exec_depend>
   <depend>box_recording</depend>

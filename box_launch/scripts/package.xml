@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>scripts</name>
+  <name>launch_scripts</name>
   <version>1.0.0</version>
   <description>RSL's scripts package.</description>
   <license>Proprietary</license>

@@ -8,6 +8,7 @@
   <author email="jonfrey@ethz.ch">Jonas Frey</author>
   <buildtool_depend>catkin</buildtool_depend>
 
+  <depend>launch_scripts</depend>
   <depend>bringup_hdr</depend>
   <depend>bringup_imu</depend>
   <depend>bringup_livox</depend>
