@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>launch_jetson</name>
+  <name>launch_opc</name>
   <version>1.0.0</version>
   <description>RSL's launch_jetson package.</description>
   <license>Proprietary</license>

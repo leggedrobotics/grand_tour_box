@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>launch_replay</name>
+  <version>1.0.0</version>
+  <description>RSL's launch_jetson package.</description>
+  <license>Proprietary</license>
+  <maintainer email="jonfrey@ethz.ch">Jonas Frey</maintainer>
+  <author email="jonfrey@ethz.ch">Jonas Frey</author>
+  <buildtool_depend>catkin</buildtool_depend>
+
+
+  <depend>bringup_hesai</depend>
+  <exec_depend>bringup_fkie</exec_depend>
+  <depend>box_recording</depend>
+  <depend>box_rviz</depend>
+  <depend>box_health</depend>
+  <depend>box_model</depend>
+  <depend>core_throttling</depend>
+</package>
