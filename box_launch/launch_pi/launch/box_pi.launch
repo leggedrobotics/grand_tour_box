@@ -1,0 +1,6 @@
+<launch>
+  <arg name="calibration" default="no"/>
+  <!-- include file="$(find camera_trigger)/launch/camera_trigger.launch"></include -->
+  <include file="$(find box_health)/launch/box_health_client.launch"> <arg name="calibration" value="$(arg calibration)"/> </include>
+  <include file="$(find bringup_adis16475)/launch/adis16475.launch"> </include>
+</launch>

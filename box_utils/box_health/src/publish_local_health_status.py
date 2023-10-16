@@ -10,8 +10,6 @@ import re
 import rospy, rostopic
 from std_msgs.msg import String
 from box_health.msg import healthStatus_jetson, healthStatus_nuc, healthStatus_opc, healthStatus_rpi
-from piksi_rtk_msgs.msg import ReceiverState_V2_6_5
-
 
 def load_yaml(path: str) -> dict:
     with open(path) as file:
@@ -78,6 +76,7 @@ class BoxStatus:
         # check GPS status on PC which checks the GPS topic frequency
         self.check_gps_status = "rover" in "".join(self.topics)
         if self.check_gps_status:
+            from piksi_rtk_msgs.msg import ReceiverState_V2_6_5
             rospy.loginfo("[BoxStatus] Check GPS stats on host " + self.hostname)
             self.GPS_subscriber = rospy.Subscriber(
                 "/gt_box/rover/piksi/position_receiver_0/ros/receiver_state", ReceiverState_V2_6_5, self.set_GPS_status
