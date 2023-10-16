@@ -19,7 +19,7 @@ windows:
       - source devel/setup.bash
       - roslaunch bringup_fkie fkie.launch
           autostart_launch_files:="
-            $(rospack find bringup_pi)/launch/box_pi.launch
+            $(rospack find launch_pi)/launch/box_pi.launch
             "
           use_gui:=false
     - shell_command:

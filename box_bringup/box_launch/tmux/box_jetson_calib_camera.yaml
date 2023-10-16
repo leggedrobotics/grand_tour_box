@@ -19,7 +19,7 @@ windows:
       - source ~/catkin_ws/devel/setup.bash
       - roslaunch bringup_fkie fkie.launch
           autostart_launch_files:="
-            $(rospack find box_launch)/multi_launch/jetson_calib_camera.launch
+            $(rospack find launch_jetson)/launch/jetson_calib_camera.launch
             "
           use_gui:=false
     - shell_command:

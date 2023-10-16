@@ -20,7 +20,7 @@ windows:
       - source ~/catkin_ws/devel/setup.bash
       - roslaunch bringup_fkie fkie.launch
           autostart_launch_files:="
-            $(rospack find box_launch)/multi_launch/opc_calib_imu.launch
+            $(rospack find launch_opc)/launch/opc_calib_imu.launch
             "
           use_gui:=true
     - shell_command:
