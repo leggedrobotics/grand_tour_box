@@ -8,6 +8,7 @@
   <author email="bkrumme@ethz.ch">Benjamin Krummenacher</author>
   <buildtool_depend>catkin</buildtool_depend>
 
+  <depend>scripts</depend>
   <exec_depend>bringup_fkie</exec_depend>
   <depend>box_health</depend>
   <depend>bringup_adis16475</depend>
