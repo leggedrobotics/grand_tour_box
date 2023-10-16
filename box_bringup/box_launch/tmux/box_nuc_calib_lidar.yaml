@@ -17,7 +17,7 @@ windows:
     - shell_command:
       - source /opt/ros/noetic/setup.bash
       - source ~/catkin_ws/devel/setup.bash
-      - roslaunch box_launch fkie.launch
+      - roslaunch bringup_fkie fkie.launch
           autostart_launch_files:="
             $(rospack find launch_nuc)/launch/nuc_calib_lidar.launch
             "
