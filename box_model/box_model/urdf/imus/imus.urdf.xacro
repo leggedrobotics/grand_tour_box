@@ -28,4 +28,16 @@
     <child link="imu_adis16475" />
   </joint>
 
+  <!-- IMU alphasesnse -->
+  <link name="imu_alphasense" />
+  <joint name="alphasense_front_left_to_imu_alphasense" type="fixed">   
+    <origin xyz=" ${calib['alphasense_front_left_to_imu_alphasense']['x']}
+                  ${calib['alphasense_front_left_to_imu_alphasense']['y']}
+                  ${calib['alphasense_front_left_to_imu_alphasense']['z']}" 
+            rpy=" ${calib['alphasense_front_left_to_imu_alphasense']['roll']}
+                  ${calib['alphasense_front_left_to_imu_alphasense']['pitch']}
+                  ${calib['alphasense_front_left_to_imu_alphasense']['yaw']}" />
+    <parent link="alphasense_front_left" />
+    <child link="imu_alphasense" />
+  </joint>
 </robot>
