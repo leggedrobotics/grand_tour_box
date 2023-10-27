@@ -147,3 +147,11 @@ alphasense_front_left_to_imu_adis16475:
   roll: 1.57079632679
   pitch: 0.0
   yaw: 0.0
+
+alphasense_front_left_to_imu_alphasense:
+  x: 0.054
+  y: 0.0
+  z: -0.06
+  roll: 1.57079632679
+  pitch: -1.57079632679
+  yaw: 0.0
