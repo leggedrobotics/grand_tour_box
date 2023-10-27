@@ -33,10 +33,10 @@
     <child link="leica_base_model" />
   </joint>
 
-  <!-- Measured prism position --> 
+  <!-- Measured prism position, changes when totalstation is tracking --> 
   <link name="leica_pos"/>
-  <joint name="leica_world_to_leica_pos" type="fixed">   
-    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+  <joint name="leica_world_to_leica_pos" type="fixed">
+    <origin xyz="0.15 0.0 -0.3" rpy="0.0 0.0 0.0" />
     <parent link="leica_world" />
     <child link="leica_pos" />
   </joint>
@@ -44,7 +44,7 @@
   <!-- Prism -->
   <link name="prism"/>
   <joint name="leica_pos_to_prism" type="fixed">   
-    <origin xyz="0.15 0.0 -0.3" rpy="0.0 0.0 0.0" />
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
     <parent link="leica_pos" />
     <child link="prism" />
   </joint>
@@ -52,7 +52,7 @@
   <!-- Box base -->
   <link name="box_base"/>
   <joint name="prism_to_box_base" type="fixed">   
-    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+    <origin xyz="-0.075 0.0 -0.15" rpy="0.0 0.0 0.0" />
     <parent link="prism" />
     <child link="box_base" />
   </joint>
