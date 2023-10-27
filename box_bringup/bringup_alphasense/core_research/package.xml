@@ -6,6 +6,7 @@
   <maintainer email="jonfrey@ethz.ch">Jonas Frey</maintainer>
   <license>MIT</license>
   <buildtool_depend>catkin</buildtool_depend>
+  <depend>alphasense_driver_ros</depend>
   <export>
   </export>
 </package>

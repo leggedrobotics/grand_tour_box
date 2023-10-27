@@ -212,12 +212,12 @@ class BoxStatusMerger:
             getattr(self.complete_health_msg, "status_enp46s0_ptp4l"),
             getattr(self.complete_health_msg, "chrony_status"),
             color_wrapper(getattr(self.complete_health_msg, "offset_mgbe0_enp45s0"), 100, 200, 1000, False),
-            color_wrapper("0", 100, 200, 1000, False), # ptp mgbe0 -> pi eth0
+            color_wrapper(getattr(self.complete_health_msg, "offset_mgbe0_eth0"), 100, 200, 1000, False), # ptp mgbe0 -> pi eth0
             color_wrapper(getattr(self.complete_health_msg, "offset_mgbe0_mgbe1"), 100, 200, 1000, False),
             color_wrapper(getattr(self.complete_health_msg, "offset_mgbe0_systemclock"), 100, 200, 1000, False),
             color_wrapper(getattr(self.complete_health_msg, "offset_enp45s0_enp46s0"), 100, 200, 1000, False),
             color_wrapper(getattr(self.complete_health_msg, "offset_enp45s0_systemclock"), 100, 100, 1000, False),
-            color_wrapper("0", 100, 200, 1000, False), # p2s eth0 -> pi sys:
+            color_wrapper(getattr(self.complete_health_msg, "offset_eth0_systemclock"), 100, 200, 1000, False), # p2s eth0 -> pi sys:
             color_wrapper(getattr(self.complete_health_msg, "offset_chrony_opc_jetson"), 1000, 3000, 10000, False),
             color_wrapper(getattr(self.complete_health_msg, "alphasense_frames_no_ptp"), 1, 2, 3, False),
             color_wrapper(getattr(self.complete_health_msg, "gps_rtk_mode_fix"), 1, 0, 0, True),
@@ -227,8 +227,8 @@ class BoxStatusMerger:
             color_wrapper("{:.2f}".format(getattr(self.complete_health_msg, "cpu_usage_jetson")), 50, 80, 90, False),
             getattr(self.complete_health_msg, "avail_memory_nuc"),
             color_wrapper("{:.2f}".format(getattr(self.complete_health_msg, "cpu_usage_nuc")), 50, 80, 90, False),
-            "0",
-            color_wrapper("{:.2f}".format(22.22222), 50, 80, 90, False),
+            getattr(self.complete_health_msg, "avail_memory_rpi"),
+            color_wrapper("{:.2f}".format(getattr(self.complete_health_msg, "cpu_usage_rpi")), 50, 80, 90, False),
             "<span style='color: rgb(34,139,34);'>Recording</span>" if self.recording_status["jetson"] else "Not recording",
             "<span style='color: rgb(34,139,34);'>Recording</span>" if self.recording_status["nuc"] else "Not recording",
             "<span style='color: rgb(34,139,34);'>Recording</span>" if self.recording_status["opc"] else "Not recording",
