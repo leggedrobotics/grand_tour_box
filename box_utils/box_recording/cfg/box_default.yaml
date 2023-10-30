@@ -6,7 +6,7 @@ jetson:
     - /gt_box/alphasense_driver_node/cam3/compressed
     - /gt_box/alphasense_driver_node/cam4/compressed
   hesai:
-    - /gt_box/hesai/pandar_packets
+    - /gt_box/hesai/pandar
   livox:
     - /gt_box/livox/imu
     - /gt_box/livox/lidar
@@ -26,8 +26,7 @@ jetson:
   zed2i:
     - /gt_box/zed2i/joint_states
     - /gt_box/zed2i/zed_node/confidence/confidence_map
-    - /gt_box/zed2i/zed_node/depth/depth_registered/compressed
-    - /gt_box/zed2i/zed_node/disparity/disparity_image
+    - /gt_box/zed2i/zed_node/depth/depth_registered
     - /gt_box/zed2i/zed_node/imu/data
     - /gt_box/zed2i/zed_node/imu/data_raw
     - /gt_box/zed2i/zed_node/odom

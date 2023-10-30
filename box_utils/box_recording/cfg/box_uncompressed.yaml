@@ -27,7 +27,6 @@ jetson:
     - /gt_box/zed2i/joint_states
     - /gt_box/zed2i/zed_node/confidence/confidence_map
     - /gt_box/zed2i/zed_node/depth/depth_registered
-    - /gt_box/zed2i/zed_node/disparity/disparity_image
     - /gt_box/zed2i/zed_node/imu/data
     - /gt_box/zed2i/zed_node/imu/data_raw
     - /gt_box/zed2i/zed_node/odom
