@@ -25,17 +25,17 @@ jetson:
     - /gt_box/rover/piksi/position_receiver_0/ros/time_ref
   zed2i:
     - /gt_box/zed2i/joint_states
-    - /zed2i/zed_node/confidence/confidence_map
-    - /zed2i/zed_node/depth/depth_registered
-    - /zed2i/zed_node/disparity/disparity_image
-    - /zed2i/zed_node/imu/data
-    - /zed2i/zed_node/imu/data_raw
-    - /zed2i/zed_node/odom
-    - /zed2i/zed_node/odom/status
-    - /zed2i/zed_node/point_cloud/cloud_registered
-    - /zed2i/zed_node/rgb_raw/image_raw_color
-    - /zed2i/zed_node/left_raw/image_raw_color
-    - /zed2i/zed_node/right_raw/image_raw_color
+    - /gt_box/zed2i/zed_node/confidence/confidence_map
+    - /gt_box/zed2i/zed_node/depth/depth_registered
+    - /gt_box/zed2i/zed_node/disparity/disparity_image
+    - /gt_box/zed2i/zed_node/imu/data
+    - /gt_box/zed2i/zed_node/imu/data_raw
+    - /gt_box/zed2i/zed_node/odom
+    - /gt_box/zed2i/zed_node/odom/status
+    - /gt_box/zed2i/zed_node/point_cloud/cloud_registered
+    - /gt_box/zed2i/zed_node/rgb_raw/image_raw_color
+    - /gt_box/zed2i/zed_node/left_raw/image_raw_color
+    - /gt_box/zed2i/zed_node/right_raw/image_raw_color
   tf:
     - /tf_static
     - /tf
