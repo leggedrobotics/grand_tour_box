@@ -13,7 +13,7 @@
     <!--"frame_id" represents the id of the point cloud data published to ROS-->
     <arg name="frame_id" default="hesai"/>
     <arg name="pcldata_type" default="0"/>
-    <arg if="$(eval arg('calibration') == 'no' )" name="publish_type" default="raw"/>
+    <arg if="$(eval arg('calibration') == 'no' )" name="publish_type" default="points"/>
     <arg if="$(eval arg('calibration') == 'lidar' )" name="publish_type" default="points"/>
     <arg name="timestamp_type" default=""/>
     <arg name="data_type" default=""/>

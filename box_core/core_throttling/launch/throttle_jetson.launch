@@ -7,6 +7,7 @@
   <arg name="alphasense_cam_frequency" default="5.0"/>
   <arg name="hesai_frequency" default="5.0"/>
   <arg name="livox_frequency" default="5.0"/>
+  <arg name="zed2i_frequency" default="5.0"/>
 
   <group ns="$(arg box_namespace)">
     <node name="alphasense_cam0_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/alphasense_driver_node/cam0/compressed $(arg alphasense_cam_frequency) /gt_box/throttled/alphasense_driver_node/cam0/compressed" />
@@ -17,5 +18,8 @@
     <node name="hesai_packet_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/hesai/pandar_packets $(arg hesai_frequency) /gt_box/throttled/hesai/pandar_packets" />
     <node name="hesai_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/hesai/pandar $(arg hesai_frequency) /gt_box/throttled/hesai/pandar" />
     <node name="livox_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/livox/lidar $(arg livox_frequency) /gt_box/throttled/livox/lidar" /> 
+    <node name="zed2i_left_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/zed2i/zed_node/left_raw/image_raw_color/compressed $(arg zed2i_frequency) /gt_box/throttled/zed2i/zed_node/left_raw/image_raw_color/compressed" /> 
+    <node name="zed2i_right_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/zed2i/zed_node/right_raw/image_raw_color/compressed $(arg zed2i_frequency) /gt_box/throttled/zed2i/zed_node/right_raw/image_raw_color/compressed" /> 
+    <node name="zed2i_pointcloud_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/zed2i/zed_node/point_cloud/cloud_registered $(arg zed2i_frequency) /gt_box/throttled/zed2i/zed_node/point_cloud/cloud_registered" /> 
   </group>
 </launch>
