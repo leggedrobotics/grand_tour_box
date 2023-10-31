@@ -7,6 +7,7 @@
   <arg name="alphasense_cam_frequency" default="5.0"/>
   <arg name="hesai_frequency" default="5.0"/>
   <arg name="livox_frequency" default="5.0"/>
+  <arg name="zed2i_frequency" default="5.0"/>
 
   <group ns="$(arg box_namespace)">
     <node name="alphasense_cam0_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/alphasense_driver_node/cam0/compressed $(arg alphasense_cam_frequency) /gt_box/throttled/alphasense_driver_node/cam0/compressed" />
