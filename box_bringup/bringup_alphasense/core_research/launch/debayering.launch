@@ -22,7 +22,7 @@
   <arg name="gamma_correction/enabled"             default="false"/>
   <arg name="vignetting_correction/enabled"        default="false"/>
   <arg name="color_enhancer/enabled"               default="false"/>
-  <arg name="undistortion/enabled"                 default="true"/>
+  <arg name="undistortion/enabled"                 default="false"/>
 
   <!-- Camera -->
   <!-- Debayer  -->
@@ -80,7 +80,7 @@
   </group>
 
   <!-- Nodes -->
-  <!--node name="raw_image_pipeline_ros_node_cam0" type="raw_image_pipeline_ros_node" pkg="raw_image_pipeline_ros" output="screen" launch-prefix="$(arg launch_prefix)">
+  <node name="raw_image_pipeline_ros_node_cam0" type="raw_image_pipeline_ros_node" pkg="raw_image_pipeline_ros" output="screen" launch-prefix="$(arg launch_prefix)">
     <param name="input_topic"                          value="alphasense_driver_node/cam0"/>
     <param name="input_type"                           value="$(arg input_type)"/>
 
@@ -258,7 +258,7 @@
     <param name="undistortion/balance"                 value="$(arg undistortion/balance)"/>
     <param name="undistortion/fov_scale"               value="$(arg undistortion/fov_scale)"/>
     <param name="undistortion/calibration_file"        value="$(arg undistortion/calibration_file)"/>
-  </node-->
+  </node>
 
   <node name="raw_image_pipeline_ros_node_cam4" type="raw_image_pipeline_ros_node" pkg="raw_image_pipeline_ros" output="screen" launch-prefix="$(arg launch_prefix)">
     <param name="input_topic"                          value="/gt_box/alphasense_driver_node/cam4"/>
