@@ -9,8 +9,8 @@
   
   <arg name="output_encoding"                      default="BGR"/>   <!-- Format of the published image BGR and RGB supported-->
   <arg name="skip_number_of_images_for_slow_topic" default="5"/>     <!-- To publish images at a slower rate -->
-  <arg name="use_gpu"                              default="false"/>     <!-- To publish images at a slower rate -->
-  <arg name="debug"                                default="true"/> <!-- to export debug data to /tmp -->
+  <arg name="use_gpu"                              default="true"/>     <!-- To publish images at a slower rate -->
+  <arg name="debug"                                default="false"/> <!-- to export debug data to /tmp -->
 
   <arg name="disable_compression_plugins"          default="true"/>     <!-- To avoid publication of theora or compressedDepth topics -->
 
@@ -34,7 +34,7 @@
   <arg name="white_balance/clipping_percentile"    default="10"/>  <!-- simple WB, values [0-100]-->
   <arg name="white_balance/saturation_bright_thr"  default="0.8"/> <!-- grey_world, learned, ccc: [0.0, 1.0] -->
   <arg name="white_balance/saturation_dark_thr"    default="0.2"/> <!-- ccc-only: [0.0, 1.0] -->
-  <arg name="white_balance/temporal_consistency"   default="false"/>  <!-- ccc-only: uses a Kalman filter to track the illuminant estimate -->
+  <arg name="white_balance/temporal_consistency"   default="true"/>  <!-- ccc-only: uses a Kalman filter to track the illuminant estimate -->
   <!-- Color calibration -->
   <arg name="color_calibration/calibration_file"   default="$(find raw_image_pipeline)/config/alphasense_color_calib_example.yaml"/>
   <!-- Gamma correction options -->
