@@ -1,6 +1,6 @@
 image_width: 1920
 image_height: 1280
-camera_name: hdr_cam_middle
+camera_name: hdr_cam_front
 camera_matrix:
   rows: 3
   cols: 3

@@ -2,7 +2,7 @@
   <arg name="calibration" default="no"/>
   <include file="$(find bringup_adis16475)/launch/adis16475.launch"> <arg name="calibration" value="$(arg calibration)"/> </include>
   <include file="$(find bringup_hdr)/launch/usb_cam_left.launch"> <arg name="calibration" value="$(arg calibration)"/> </include>
-  <include file="$(find bringup_hdr)/launch/usb_cam_middle.launch"> <arg name="calibration" value="$(arg calibration)"/> </include>
+  <include file="$(find bringup_hdr)/launch/usb_cam_front.launch"> <arg name="calibration" value="$(arg calibration)"/> </include>
   <include file="$(find bringup_hdr)/launch/usb_cam_right.launch"> <arg name="calibration" value="$(arg calibration)"/> </include>
   <include file="$(find box_recording)/launch/rosbag_record_node.launch"> <arg name="calibration" value="$(arg calibration)"/> </include>
   <include file="$(find box_health)/launch/box_health_client.launch"> <arg name="calibration" value="$(arg calibration)"/> </include>
