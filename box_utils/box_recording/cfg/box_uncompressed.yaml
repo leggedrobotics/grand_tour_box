@@ -35,8 +35,8 @@ nuc:
   hdr:
     - /gt_box/v4l2_camera_left/camera_info
     - /gt_box/v4l2_camera_left/image_raw
-    - /gt_box/v4l2_camera_middle/camera_info
-    - /gt_box/v4l2_camera_middle/image_raw
+    - /gt_box/v4l2_camera_front/camera_info
+    - /gt_box/v4l2_camera_front/image_raw
     - /gt_box/v4l2_camera_right/camera_info
     - /gt_box/v4l2_camera_right/image_raw
 

@@ -72,7 +72,7 @@ class visualizationPublisher:
             "gt_box_stim320_imu_hz",
             "gt_box_camera_trigger_timestamps_hz",
             "gt_box_v4l2_camera_left_image_raw_hz",
-            "gt_box_v4l2_camera_middle_image_raw_hz",
+            "gt_box_v4l2_camera_front_image_raw_hz",
             "gt_box_v4l2_camera_right_image_raw_hz",
             "gt_box_leica_position_hz",
         ]

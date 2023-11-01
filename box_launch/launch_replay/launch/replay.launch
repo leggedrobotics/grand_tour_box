@@ -14,8 +14,8 @@
   <!-- uncompress the images-->
   <node name="uncompress_hdr_left" pkg="image_transport" type="republish" 
     args="compressed in:=/gt_box/v4l2_camera_left/image_raw raw out:=/gt_box/v4l2_camera_left/image_raw"> </node>
-  <node name="uncompress_hdr_middle" pkg="image_transport" type="republish" 
-    args="compressed in:=/gt_box/v4l2_camera_middle/image_raw raw out:=/gt_box/v4l2_camera_middle/image_raw"> </node>
+  <node name="uncompress_hdr_front" pkg="image_transport" type="republish" 
+    args="compressed in:=/gt_box/v4l2_camera_front/image_raw raw out:=/gt_box/v4l2_camera_front/image_raw"> </node>
   <node name="uncompress_hdr_right" pkg="image_transport" type="republish" 
     args="compressed in:=/gt_box/v4l2_camera_right/image_raw raw out:=/gt_box/v4l2_camera_right/image_raw"> </node>
   <node name="uncompress_alpahsense_cam0" pkg="image_transport" type="republish" 
