@@ -1,0 +1,53 @@
+<launch>
+
+<include file="$(find bringup_alphasense)/launch/debayer_single_camera.launch">
+    <arg name="camera_name" value="cam0"/>
+    <arg name="input_topic" value="alphasense_driver_node/cam0"/>
+    <arg name="output_prefix" value="alphasense_driver_node/cam0"/>
+    <arg name="output_frame" value="cam0_sensor_frame_helper"/>
+    <arg name="debayer/enabled" value="false"/>
+    <arg name="white_balance/enabled" value="true"/>
+    <arg name="undistortion/calibration_file" value="$(find raw_image_pipeline)/config/alphasense_calib_example.yaml"/>
+</include>
+
+<include file="$(find bringup_alphasense)/launch/debayer_single_camera.launch">
+    <arg name="camera_name" value="cam1"/>
+    <arg name="input_topic" value="alphasense_driver_node/cam1"/>
+    <arg name="output_prefix" value="alphasense_driver_node/cam1"/>
+    <arg name="output_frame" value="cam1_sensor_frame_helper"/>
+    <arg name="debayer/enabled" value="false"/>
+    <arg name="white_balance/enabled" value="true"/>
+    <arg name="undistortion/calibration_file" value="$(find raw_image_pipeline)/config/alphasense_calib_example.yaml"/>
+</include>
+
+<include file="$(find bringup_alphasense)/launch/debayer_single_camera.launch">
+    <arg name="camera_name" value="cam2"/>
+    <arg name="input_topic" value="alphasense_driver_node/cam2"/>
+    <arg name="output_prefix" value="alphasense_driver_node/cam2"/>
+    <arg name="output_frame" value="cam2_sensor_frame_helper"/>
+    <arg name="debayer/enabled" value="true"/>
+    <arg name="white_balance/enabled" value="true"/>
+    <arg name="undistortion/calibration_file" value="$(find raw_image_pipeline)/config/alphasense_calib_example.yaml"/>
+</include>
+
+<include file="$(find bringup_alphasense)/launch/debayer_single_camera.launch">
+    <arg name="camera_name" value="cam3"/>
+    <arg name="input_topic" value="alphasense_driver_node/cam3"/>
+    <arg name="output_prefix" value="alphasense_driver_node/cam3"/>
+    <arg name="output_frame" value="cam3_sensor_frame_helper"/>
+    <arg name="debayer/enabled" value="true"/>
+    <arg name="white_balance/enabled" value="true"/>
+    <arg name="undistortion/calibration_file" value="$(find raw_image_pipeline)/config/alphasense_calib_example.yaml"/>
+</include>
+
+<include file="$(find bringup_alphasense)/launch/debayer_single_camera.launch">
+    <arg name="camera_name" value="cam4"/>
+    <arg name="input_topic" value="alphasense_driver_node/cam4"/>
+    <arg name="output_prefix" value="alphasense_driver_node/cam4"/>
+    <arg name="output_frame" value="cam4_sensor_frame_helper"/>
+    <arg name="debayer/enabled" value="true"/>
+    <arg name="white_balance/enabled" value="true"/>
+    <arg name="undistortion/calibration_file" value="$(find raw_image_pipeline)/config/alphasense_calib_example.yaml"/>
+</include>
+
+</launch>
