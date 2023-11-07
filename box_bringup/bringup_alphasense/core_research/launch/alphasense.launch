@@ -9,6 +9,6 @@
     <arg if="$(eval arg('calibration') == 'imu' )" name="ncamera_settings" default="$(find bringup_alphasense)/config/ncamera_settings.yaml" />
     <node pkg="alphasense_driver_ros" type="alphasense_driver_ros" name="alphasense_driver_node" args="_ncamera_settings:=$(arg ncamera_settings) _translate_device_time:=False" />
 
-    <include file="$(find bringup_alphasense)/launch/debayering.launch" />
+    <include file="$(find bringup_alphasense)/launch/debayer_all.launch" />
   </group>
 </launch>

@@ -100,7 +100,12 @@ Getting Started
 ##### Few pointers:
 - many useful aliases are defined in grand_tour_box/box_utils/box_setup/alias/alias.sh
 - clock problems? restart with `restart-clocks-box`, `restart-clocks-jetson` or `restart-clocks-nuc` from opc
-- no images showing? right click on image, disable hide menu and then refresh image
+- alphasense images look orange? run:
+```
+rosservice call /gt_box/raw_image_pipeline_ros_node_cam2/reset_white_balance
+rosservice call /gt_box/raw_image_pipeline_ros_node_cam3/reset_white_balance
+rosservice call /gt_box/raw_image_pipeline_ros_node_cam4/reset_white_balance
+```
 
 ### Using boxi
 ```shell
