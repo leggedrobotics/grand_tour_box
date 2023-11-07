@@ -22,9 +22,6 @@
 [submodule "box_drivers/multimaster_fkie"]
 	path = box_drivers/multimaster_fkie
 	url = git@github.com:fkie/multimaster_fkie.git
-[submodule "box_drivers/adis16475_ros"]
-	path = box_drivers/adis16475_ros
-	url = git@github.com:leggedrobotics/adis16475_ros.git
 [submodule "box_drivers/stim320_ros"]
 	path = box_drivers/stim320_ros
 	url = git@github.com:leggedrobotics/stim320_ros.git
