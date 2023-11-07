@@ -31,3 +31,6 @@
 [submodule "box_drivers/rasp-camera-trigger"]
 	path = box_drivers/rasp-camera-trigger
 	url = git@github.com:leggedrobotics/rasp-camera-trigger.git
+[submodule "box_drivers/zed-ros-wrapper"]
+	path = box_drivers/zed-ros-wrapper
+	url = git@github.com:stereolabs/zed-ros-wrapper.git

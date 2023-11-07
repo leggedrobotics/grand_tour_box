@@ -11,11 +11,11 @@
     <arg name="use_v4l2_buffer_timestamps" default="true" />
     <arg name="timestamp_offset" default="0.0" />
     <arg name="output_encoding" default="rgb8" />
-    <arg name="camera_info_url" default="file:///home/beni/catkin_ws/src/grand_tour_box/box_bringup/bringup_hdr/usb_cam/cfg/camera_intrinsics_middle.yaml" />
+    <arg name="camera_info_url" default="file:///home/beni/catkin_ws/src/grand_tour_box/box_bringup/bringup_hdr/usb_cam/cfg/camera_intrinsics_front.yaml" />
     <arg name="camera_frame_id" default="camera" />
     <arg name="pixel_format" default="UYVY" />
 
-    <node pkg="v4l2_camera" type="v4l2_camera_node" name="v4l2_camera_middle" output="screen">
+    <node pkg="v4l2_camera" type="v4l2_camera_node" name="v4l2_camera_front" output="screen">
         <param name="publish_rate" value="$(arg publish_rate)" />
         <param name="use_image_transport" value="$(arg use_image_transport)" />
         <param name="video_device" value="$(arg video_device)" />

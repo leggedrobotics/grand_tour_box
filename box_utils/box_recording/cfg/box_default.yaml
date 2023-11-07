@@ -2,11 +2,11 @@ jetson:
   alphasense:
     - /gt_box/alphasense_driver_node/cam0/compressed
     - /gt_box/alphasense_driver_node/cam1/compressed
-    - /gt_box/alphasense_driver_node/cam2/compressed
-    - /gt_box/alphasense_driver_node/cam3/compressed
-    - /gt_box/alphasense_driver_node/cam4/compressed
+    - /gt_box/alphasense_driver_node/cam2/color/image/compressed
+    - /gt_box/alphasense_driver_node/cam3/color/image/compressed
+    - /gt_box/alphasense_driver_node/cam4/color/image/compressed
   hesai:
-    - /gt_box/hesai/pandar_packets
+    - /gt_box/hesai/pandar
   livox:
     - /gt_box/livox/imu
     - /gt_box/livox/lidar
@@ -23,6 +23,18 @@ jetson:
     - /gt_box/rover/piksi/position_receiver_0/ros/receiver_state
     - /gt_box/rover/piksi/position_receiver_0/sbp/base_pos_ecef
     - /gt_box/rover/piksi/position_receiver_0/ros/time_ref
+  zed2i:
+    - /gt_box/zed2i/joint_states
+    - /gt_box/zed2i/zed_node/confidence/confidence_map
+    - /gt_box/zed2i/zed_node/depth/depth_registered
+    - /gt_box/zed2i/zed_node/imu/data
+    - /gt_box/zed2i/zed_node/imu/data_raw
+    - /gt_box/zed2i/zed_node/odom
+    - /gt_box/zed2i/zed_node/odom/status
+    - /gt_box/zed2i/zed_node/point_cloud/cloud_registered
+    - /gt_box/zed2i/zed_node/rgb_raw/image_raw_color/compressed
+    - /gt_box/zed2i/zed_node/left_raw/image_raw_color/compressed
+    - /gt_box/zed2i/zed_node/right_raw/image_raw_color/compressed
   tf:
     - /tf_static
     - /tf
@@ -35,8 +47,8 @@ nuc:
   hdr:
     - /gt_box/v4l2_camera_left/camera_info
     - /gt_box/v4l2_camera_left/image_raw/compressed
-    - /gt_box/v4l2_camera_middle/camera_info
-    - /gt_box/v4l2_camera_middle/image_raw/compressed
+    - /gt_box/v4l2_camera_front/camera_info
+    - /gt_box/v4l2_camera_front/image_raw/compressed
     - /gt_box/v4l2_camera_right/camera_info
     - /gt_box/v4l2_camera_right/image_raw/compressed
 opc:
