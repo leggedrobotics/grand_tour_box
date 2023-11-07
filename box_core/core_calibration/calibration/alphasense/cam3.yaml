@@ -1,0 +1,20 @@
+image_width: 1440
+image_height: 1080
+camera_name: alphasense_cam3
+camera_matrix:
+  rows: 3
+  cols: 3
+  data: [700.0004860751175, 0.0, 759.12748516355, 0.0, 700.2597084484345, 558.7152269628036, 0.0, 0.0, 1.0]
+distortion_model: equidistant
+distortion_coefficients:
+  rows: 1
+  cols: 4
+  data: [-0.052613472487081335, 0.02399058162383638, -0.022391975531253255, 0.006869040142449324]
+rectification_matrix:
+  rows: 3
+  cols: 3
+  data: [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
+projection_matrix:
+  rows: 3
+  cols: 4
+  data: [700.0004860751175, 0.0, 759.12748516355, 0.0, 0.0, 700.2597084484345, 558.7152269628036, 0.0, 0.0, 1.0, 0.0]
