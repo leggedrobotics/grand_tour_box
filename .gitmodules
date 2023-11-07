@@ -22,9 +22,6 @@
 [submodule "box_drivers/multimaster_fkie"]
 	path = box_drivers/multimaster_fkie
 	url = git@github.com:fkie/multimaster_fkie.git
-[submodule "box_drivers/adis16475_ros"]
-	path = box_drivers/adis16475_ros
-	url = git@github.com:leggedrobotics/adis16475_ros.git
 [submodule "box_drivers/stim320_ros"]
 	path = box_drivers/stim320_ros
 	url = git@github.com:leggedrobotics/stim320_ros.git
@@ -37,3 +34,9 @@
 [submodule "box_drivers/zed-ros-wrapper"]
 	path = box_drivers/zed-ros-wrapper
 	url = git@github.com:stereolabs/zed-ros-wrapper.git
+[submodule "box_drivers/adis16475_node"]
+	path = box_drivers/adis16475_node
+	url = git@github.com:leggedrobotics/adis16475_node.git
+[submodule "box_drivers/ADIS16475-raspi"]
+	path = box_drivers/ADIS16475-raspi
+	url = git@github.com:leggedrobotics/ADIS16475-raspi.git
