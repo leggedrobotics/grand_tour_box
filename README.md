@@ -35,7 +35,7 @@ Project Structure
 
 The project is organized into the following directories:
 
-- **box_bringup**: Used to launch the box. Contains simple launch files with all the parameters (Single overlay structure).
+- **box_bringup**: Used to launch the drivers. Contains simple launch files with all the parameters (Single overlay structure).
 
 - **box_drivers**: Contains the external drivers, either as submodules/forked or directly included in a mono repo style. These packages should be mostly static.
 
@@ -44,6 +44,8 @@ The project is organized into the following directories:
 - **box_model**: Contains the URDF model and description of the box for GAZEBO.
 
 - **box_utils**: Helper packages for the project.
+  
+  - **box_health**: Publishes the health of the box (topic frequencies, clock offsets, space left on device, ...)
 
   - **box_mission_report**: Provides post-processing tools for a logged mission.
 
@@ -52,6 +54,10 @@ The project is organized into the following directories:
   - **box_rviz**: Provides a RVIZ interface for visualizing all sensor data and health monitoring.
 
   - **box_setup**: Contains scripts to initialize the box workspace and Docker containers.
+
+  - **box_throttling**: Throttle topics which are displayed in RVIZ
+
+  - **boxi**: Utility functions for the box: push / pull code, get data, ... 
 
 - **box_core**: Runs the core algorithms needed for the box. Packages for which a separate Git package is not useful and tightly coupled to the hardware.
 
@@ -63,6 +69,8 @@ The project is organized into the following directories:
 
   - **core_mapping**: Contains the core algorithms for mapping.
 
+  - **core_calibration**: Get and store calibrations from all the calibration software. 
+
 - **box_documentation**: Documentation
 
 <img align="right" width="60" height="60" src="https://github.com/leggedrobotics/grand_tour_box/blob/main/box_documentation/images/icon.png" alt="GrandTour">
@@ -71,22 +79,20 @@ Getting Started
 </h2>
 
 ### Most important workflows:
-###### Record data normally:
-- power on the box -> one the jetson and the nuc a detached tmux session starts, all the drivers are started and the topics start publishing.
-- on opc, run the command: `l-opc` -> a tmux session is launched, and the visualization is started. Only the throtteled topics are visualized (currently 1 Hz)
-- on opc via commandline, run `start-recording` , which uses the default yaml file which saves the compressed images and the hesai packets (instead of the uncompressed pointcloud)
-- the status of each recording node is visible in the rviz
-- on opc run `stop-recording` top stop the recording.
-- close the tmux session on opc with the command `tk`
-- copy it to the opc with the command `copy_data` which copies all bags in the data folders on the nuc and jetson to the opc
+###### Start the box
+- Simply power on the box -> On the jetson, the nuc and the pi a detached tmux session starts, all the drivers are started and the topics start publishing.
+- on opc, run the command: `boxi start` -> a tmux session is launched, and the visualization is started. Only the throttled topics are visualized
+###### Record data normally
+- Start the box
+- run: `/gt_box/rosbag_record_coordinator/start_recording`
+- To stop the recordung, run: `/gt_box/rosbag_record_coordinator/stop_recording`
+- copy it to the opc with the command `boxi get_data --jetson --nuc`
 - delete the data on the jetson and nuc (else it will be copied again)
-- merge the bags
-###### Transform bag with compressed topics into uncompressed topics (not really tested, hacky)
-- run `l-replay`, which opens another tmux session
-- follow the instructions echoed on the terminal: first start recording with `start-recording-uncompressed`, then play bag with --clock flag, then stop recording
+- merge the bags: `rosrun box_recording merge_bags.py out.bag *` `copy_data` which copies all bags in the data folders on the nuc and jetson to the opc
 
-###### Record data fro cam-lidar calibration (1hz images):
-- power on the box -> one the jetson and the nuc a detached tmux session starts, all the drivers are started and the topics are published.
+###### Record data for calibration
+- There are different calibration modes: 
+- Start the box
 - ssh into jetson (ssh jetson), kill the tmux session `tk`, then run l-jetson-calibration -> the drivers now wtart to publish uncompressed images at 1hz and full pointclouds
 - run `l-opc` on opc (visualization won't work, because throtteled topics are selected)
 - start recording with `start-recording-calibration` -> this records the topics to calibrate (right now the uncompressed front facing alphasense and the pointlcouds of the lidars)
