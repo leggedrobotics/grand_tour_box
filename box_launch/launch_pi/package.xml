@@ -12,4 +12,5 @@
   <exec_depend>bringup_fkie</exec_depend>
   <depend>box_health</depend>
   <depend>bringup_adis16475</depend>
+  <depend>camera_trigger</depend>
 </package>
