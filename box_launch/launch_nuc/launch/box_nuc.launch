@@ -1,6 +1,5 @@
 <launch>
   <arg name="calibration" default="no"/>
-  <include file="$(find bringup_adis16475)/launch/adis16475.launch"> <arg name="calibration" value="$(arg calibration)"/> </include>
   <include file="$(find bringup_hdr)/launch/usb_cam_left.launch"> <arg name="calibration" value="$(arg calibration)"/> </include>
   <include file="$(find bringup_hdr)/launch/usb_cam_front.launch"> <arg name="calibration" value="$(arg calibration)"/> </include>
   <include file="$(find bringup_hdr)/launch/usb_cam_right.launch"> <arg name="calibration" value="$(arg calibration)"/> </include>

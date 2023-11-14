@@ -54,7 +54,7 @@ string offset_mgbe0_eth0
 string status_eth0_ptp4l
 
 # rpi
-float64 gt_box_adis16475_imu_hz
+float64 gt_box_adis16475_hz
 float64 gt_box_stim320_imu_hz
 float64 gt_box_camera_trigger_timestamps_hz
 
