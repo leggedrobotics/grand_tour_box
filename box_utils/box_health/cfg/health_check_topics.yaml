@@ -19,5 +19,6 @@ nuc:
   - /gt_box/v4l2_camera_left/image_raw
   - /gt_box/v4l2_camera_front/image_raw
   - /gt_box/v4l2_camera_right/image_raw
+  - /gt_box/adis16475
 opc:
   - /gt_box/leica/position

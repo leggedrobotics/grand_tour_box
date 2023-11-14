@@ -7,6 +7,7 @@ string status_enp46s0_ptp4l
 float64 gt_box_v4l2_camera_left_image_raw_hz
 float64 gt_box_v4l2_camera_front_image_raw_hz
 float64 gt_box_v4l2_camera_right_image_raw_hz
+float64 gt_box_adis16475_hz
 
 float32 cpu_usage_nuc
 string avail_memory_nuc

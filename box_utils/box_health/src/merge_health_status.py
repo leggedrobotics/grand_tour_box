@@ -68,7 +68,7 @@ class visualizationPublisher:
             "gt_box_livox_imu_hz",
             "gt_box_alphasense_driver_node_imu_hz",
             "gt_box_rover_piksi_position_receiver_0_ros_pos_enu_hz",
-            "gt_box_adis16475_imu_hz",
+            "gt_box_adis16475_hz",
             "gt_box_stim320_imu_hz",
             "gt_box_camera_trigger_timestamps_hz",
             "gt_box_v4l2_camera_left_image_raw_hz",
