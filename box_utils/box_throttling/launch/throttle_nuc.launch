@@ -3,7 +3,7 @@
   <arg name="calibration" default="no"/>
   <arg name="box_namespace" default="gt_box"/>
 
-  <rosparam command="load" file="$(find core_throttling)/cfg/frequencies.yaml" />
+  <rosparam command="load" file="$(find box_throttling)/cfg/frequencies.yaml" />
   <arg name="hdr_frequency" default="5.0"/>
 
   <group ns="$(arg box_namespace)">

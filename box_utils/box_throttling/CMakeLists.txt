@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(core_throttling)
+project(box_throttling)
 
 find_package(catkin REQUIRED)
 catkin_package(

@@ -11,11 +11,10 @@
   <depend>launch_scripts</depend>
   <depend>bringup_alphasense</depend>
   <depend>bringup_hesai</depend>
-  <depend>bringup_imu</depend>
   <depend>bringup_livox</depend>
   <depend>bringup_gps</depend>
-  <depend>bringup_adis16475</depend>
   <depend>bringup_stim320</depend>
+  <depend>bringup_zed2i</depend>
   <exec_depend>bringup_fkie</exec_depend>
   <depend>box_recording</depend>
   <depend>box_rviz</depend>
