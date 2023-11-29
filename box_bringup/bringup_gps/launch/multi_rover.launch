@@ -7,7 +7,7 @@
   <!-- The next line allows you to set a predefined ENU frame. -->
   <!--rosparam file="$(find piksi_multi_cpp)/cfg/enu_origin.yaml" /-->
   <group if="$(eval arg('calibration') == 'no')" ns="$(arg box_namespace)/$(arg ns)">
-    <node name="piksi_refrence" pkg="piksi_multi_cpp" type="piksi_multi" output="log" required="true">
+    <node name="piksi_reference" pkg="piksi_multi_cpp" type="piksi_multi" output="log" required="true">
         <param name="device_ids" value="$(arg device_ids_refrence)" />
         <param name="use_gps_time" value="true" />
 
