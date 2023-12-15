@@ -124,6 +124,12 @@ int main(int argc, char **argv)
         ros::Time higher_timestamp_jetson = lower_it->second;
         // TODO: interpolate between to get jetson timestamp of position
         // position->header.stamp = interpolated_time;
+        ros::Duration ap20_duration = higher_timestamp_ap20 - lower_timestamp_ap20;
+        ros::Duration jetson_duration = higher_timestamp_jetson - lower_timestamp_jetson;
+        ros::Duration position_duration_ap20 = position_time - lower_timestamp_ap20;
+        float frac = position_duration_ap20.toSec() / ap20_duration.toSec();
+
+        position->header.stamp = lower_timestamp_jetson + ros::Duration(frac*jetson_duration.toSec());
       }
       else{
         ROS_ERROR("Zero or too many relevant timestamps");
