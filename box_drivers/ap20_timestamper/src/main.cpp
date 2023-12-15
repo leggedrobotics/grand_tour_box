@@ -9,10 +9,7 @@
 #include "geometry_msgs/PointStamped.h"
 #include "sensor_msgs/Imu.h"
 
-std::mutex timestamp_imu_queue_mutex;
-std::mutex position_queue_mutex;
-
-// The name of the kernel timestamping module reading from our loopback GPIO (26)
+// the name of the kernel timestamping module reading from the triggered gpio 325
 const std::string timestamper_module = "time_stamper";
 const std::string timestamps_fn = std::string("/sys/kernel/") + timestamper_module + "/ts_buffer";
 
@@ -38,7 +35,6 @@ std::vector<ros::Time> read_timestamps()
 
 void timestamp_callback(const std_msgs::Time& msg)
 {
-  const std::lock_guard<std::mutex> lock(timestamp_imu_queue_mutex);
   if(imu_message_queue.empty()){
     timestamp_queue.push(msg);
   }
@@ -53,7 +49,6 @@ void timestamp_callback(const std_msgs::Time& msg)
 
 void imu_callback(const sensor_msgs::Imu::Ptr& msg)
 {
-  const std::lock_guard<std::mutex> lock(timestamp_imu_queue_mutex);
   if(timestamp_queue.empty()){
     imu_message_queue.push(msg);
   }
@@ -68,14 +63,11 @@ void imu_callback(const sensor_msgs::Imu::Ptr& msg)
 
 void position_callback(const geometry_msgs::PointStamped::Ptr& msg)
 {
-  const std::lock_guard<std::mutex> lock(position_queue_mutex);
   position_message_queue.push(msg);
 }
 
 int main(int argc, char **argv)
 {
-
-
   ros::init(argc, argv, "ap20_trigger");
   ros::NodeHandle n;
 
@@ -84,10 +76,7 @@ int main(int argc, char **argv)
 
   ros::Subscriber imu_sub = n.subscribe("/imu/data_raw", 1000, imu_callback);
   ros::Subscriber position_sub = n.subscribe("/leica/position", 1000, position_callback);
-  //ros::Rate loop_rate(pwm_freq);
- 
-
-
+  ros::Rate loop_rate(200);
 
   while (ros::ok())
   {
@@ -104,46 +93,45 @@ int main(int argc, char **argv)
     }
 
     if(!position_message_queue.empty()){
-      // TODO: Throw away message if time smaller than smallest time in queue
       geometry_msgs::PointStampedPtr position = position_message_queue.front();
-      ros::Time position_time = position->header.stamp;
+      ros::Time ap20_position = position->header.stamp;
       position_message_queue.pop();
 
+      // ap20 timestamps are every 5ms, so ns = xx0'000'000 or = xx5'000'000
+      // an offset of +-4ms achieves one measurement >= ap20_position
+      // and one measurement <= ap20_position (can be the same measurement)
       ros::Duration offset(0, 4000000);
-      auto lower_it = time_matcher.lower_bound(position_time - offset);
-      auto upper_it = time_matcher.upper_bound(position_time + offset);
+      auto lower_it = time_matcher.lower_bound(ap20_position - offset);
+      auto upper_it = time_matcher.upper_bound(ap20_position + offset);
       int num_relevant_timestamps = std::distance(lower_it, upper_it);
       if (num_relevant_timestamps == 1){
         position->header.stamp = lower_it->second;
       }
       else if (num_relevant_timestamps == 2){
-        ros::Time lower_timestamp_ap20 = lower_it->first;
-        ros::Time lower_timestamp_jetson = lower_it->second;
+        // interpolate between two imu timestamps a & b
+        // ap20_a + frac*(ap20_b - ap20_a) = ap20_position
+        // jetson_position = jetson_a + frac * (jetson_b - jetson_a)
+        ros::Time ap20_a = lower_it->first;
+        ros::Time jetson_a = lower_it->second;
         lower_it++;
-        ros::Time higher_timestamp_ap20 = lower_it->first;
-        ros::Time higher_timestamp_jetson = lower_it->second;
-        // TODO: interpolate between to get jetson timestamp of position
-        // position->header.stamp = interpolated_time;
-        ros::Duration ap20_duration = higher_timestamp_ap20 - lower_timestamp_ap20;
-        ros::Duration jetson_duration = higher_timestamp_jetson - lower_timestamp_jetson;
-        ros::Duration position_duration_ap20 = position_time - lower_timestamp_ap20;
-        float frac = position_duration_ap20.toSec() / ap20_duration.toSec();
+        ros::Time ap20_b = lower_it->first;
+        ros::Time jetson_b = lower_it->second;
 
-        position->header.stamp = lower_timestamp_jetson + ros::Duration(frac*jetson_duration.toSec());
+        double frac = (ap20_position - ap20_a).toSec() / (ap20_b - ap20_a).toSec();
+        position->header.stamp = jetson_a + ros::Duration(frac * (jetson_b - jetson_a).toSec());        
       }
       else{
         ROS_ERROR("Zero or too many relevant timestamps");
       }
       ap20_position_pub.publish(*position);
 
-      // delete all keys in the map smaller than position time
-      for(auto it = time_matcher.begin(); it != time_matcher.lower_bound(position_time); ){
+      // delete all the imu measurements which happened before the current position measurement
+      for(auto it = time_matcher.begin(); it != time_matcher.lower_bound(ap20_position); ){
         it = time_matcher.erase(it);
       }
     }
     ros::spinOnce();
-    //loop_rate.sleep();
+    loop_rate.sleep();
   }
-
   return 0;
 }
