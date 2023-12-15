@@ -26,4 +26,9 @@ else
     tail --pid=$pid -f /dev/null # wait untill the process finishes / is fully killed
     echo "ROSmaster was stopped."
 fi
+
+if [ $(hostname) == "jetson" ]
+then
+    rosrun ap20_timestamper stop_ap20.sh
+fi
 echo "Cleaned Up Session"

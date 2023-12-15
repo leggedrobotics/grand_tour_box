@@ -1,0 +1,20 @@
+network:
+  version: 2
+  renderer: NetworkManager
+  ethernets:
+    mgbe0:
+      dhcp4: no
+    mgbe1:
+      addresses:
+        - 192.168.20.1/24
+      dhcp4: no
+    usb1:
+      dhcp4: no
+  bridges:
+    br0:
+      dhcp4: no
+      addresses:
+        - 192.168.2.51/24
+      interfaces:
+        - mgbe0
+        - usb1

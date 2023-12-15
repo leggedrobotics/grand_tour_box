@@ -41,6 +41,9 @@ jetson:
     - /gt_box/zed2i/zed_node/rgb_raw/image_raw_color/compressed
     - /gt_box/zed2i/zed_node/left_raw/image_raw_color/compressed
     - /gt_box/zed2i/zed_node/right_raw/image_raw_color/compressed
+  ap20:
+    - /gt_box/ap20_imu
+    - /gt_box/ap20_prism_position
   tf:
     - /tf_static
     - /tf

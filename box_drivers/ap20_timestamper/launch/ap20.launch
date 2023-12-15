@@ -1,0 +1,4 @@
+<launch>
+    <node pkg="ap20_timestamper" type="ap20_timestamper" name="ap20_timestamp_merger" output="screen" />
+    <node pkg="ap20_timestamper" type="start_ap20.sh" name="start_ap20" output="screen" />
+</launch>
