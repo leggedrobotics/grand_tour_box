@@ -2,6 +2,8 @@
   <arg name="box_namespace" default="gt_box"/>
   <arg name="calibration" default="no"/>
 
-  <node pkg="ap20_timestamper" type="ap20_timestamper" name="ap20_timestamp_merger" output="screen" />
-  <node pkg="ap20_timestamper" type="start_ap20.sh" name="start_ap20" output="screen" />
+  <group ns="$(arg box_namespace)">
+    <node pkg="ap20_timestamper" type="ap20_timestamper" name="ap20_timestamp_merger" output="screen" />
+    <node pkg="ap20_timestamper" type="start_ap20.sh" name="start_ap20" output="screen" />
+  </group> 
 </launch>
