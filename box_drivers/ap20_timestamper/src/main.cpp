@@ -68,6 +68,9 @@ void position_callback(const geometry_msgs::PointStamped::Ptr& msg)
 
 int main(int argc, char **argv)
 {
+  // empty old timestamps from previous measurements
+  while(!read_timestamps().empty()) {}
+
   ros::init(argc, argv, "ap20_trigger");
   ros::NodeHandle n;
 
