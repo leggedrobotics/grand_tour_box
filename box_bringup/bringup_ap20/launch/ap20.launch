@@ -1,3 +1,0 @@
-<launch>
-    <node pkg="bringup_ap20" type="start_ap20.sh" name="start_ap20" output="screen" />
-</launch>
