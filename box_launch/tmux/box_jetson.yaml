@@ -6,9 +6,6 @@ windows:
 - window_name: grand_tour_box_robot
   layout: tiled
   shell_command_before:
-      # the following line is to force all traffic to the AP20 to go over usb0 (instead of mgbe0)
-      # ugly hack, but I didnt manage to do it in netplan
-    - echo rsl | sudo -S ip route add 192.168.2.40/32 dev usb0
     - export HOSTNAME
     - export DISPLAY=:0.0
     - export ROS_MASTER_URI=http://192.168.2.51:11311
