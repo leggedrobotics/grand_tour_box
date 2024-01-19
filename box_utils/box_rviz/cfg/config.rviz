@@ -25,7 +25,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: HDR Front
+    SyncSource: Alphasense Front Middle
   - Class: rviz/Views
     Expanded:
       - /Current View1
@@ -37,6 +37,7 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
+        - /Overlay1/Strings1/String Alphasense1
         - /Lidar1/Livox Lidar1
       Splitter Ratio: 0.5572755336761475
     Tree Height: 846
@@ -438,7 +439,7 @@ Visualization Manager:
           Displays:
             - Class: jsk_rviz_plugin/PieChart
               Enabled: true
-              Name: Livox
+              Name: Livox IMU
               Topic: /gt_box/visualization/gt_box_livox_imu_hz
               Value: true
               auto color change: true
@@ -461,7 +462,7 @@ Visualization Manager:
               top: 285
             - Class: jsk_rviz_plugin/PieChart
               Enabled: true
-              Name: Alphasense
+              Name: Alphas. IMU
               Topic: /gt_box/visualization/gt_box_alphasense_driver_node_imu_hz
               Value: true
               auto color change: true
@@ -484,7 +485,7 @@ Visualization Manager:
               top: 285
             - Class: jsk_rviz_plugin/PieChart
               Enabled: true
-              Name: Adis
+              Name: Adis IMU
               Topic: /gt_box/visualization/gt_box_adis16475_hz
               Value: true
               auto color change: true
@@ -498,6 +499,29 @@ Visualization Manager:
               max color: 78; 154; 6
               max color change threthold: 9
               max value: 10
+              med color: 245; 121; 0
+              med color change threthold: 8
+              min value: 0
+              show caption: true
+              size: 90
+              text size: 12
+              top: 285
+            - Class: jsk_rviz_plugin/PieChart
+              Enabled: true
+              Name: AP20 IMU
+              Topic: /gt_box/visualization//gt_box/visualization/gt_box_ap20_imu_hz
+              Value: true
+              auto color change: true
+              background color: 0; 0; 0
+              backround alpha: 0
+              clockwise rotate direction: false
+              foreground alpha: 0.699999988079071
+              foreground alpha 2: 0.4000000059604645
+              foreground color: 239; 41; 41
+              left: 410
+              max color: 78; 154; 6
+              max color change threthold: 9
+              max value: 20
               med color: 245; 121; 0
               med color change threthold: 8
               min value: 0
@@ -555,8 +579,8 @@ Visualization Manager:
               width: 1200
             - Class: jsk_rviz_plugin/PieChart
               Enabled: true
-              Name: Totalstation
-              Topic: /gt_box/visualization/gt_box_rover_piksi_position_receiver_0_ros_pos_enu_hz
+              Name: Prism Pos
+              Topic: /gt_box/visualization//gt_box/visualization/gt_box_ap20_imu_hz
               Value: true
               auto color change: true
               background color: 0; 0; 0
@@ -565,7 +589,7 @@ Visualization Manager:
               foreground alpha: 0.699999988079071
               foreground alpha 2: 0.4000000059604645
               foreground color: 239; 41; 41
-              left: 410
+              left: 511
               max color: 78; 154; 6
               max color change threthold: 9
               max value: 20
@@ -575,7 +599,7 @@ Visualization Manager:
               show caption: true
               size: 90
               text size: 12
-              top: 285
+              top: 155
           Enabled: true
           Name: Other
         - Class: rviz/Group
@@ -1062,7 +1086,7 @@ Visualization Manager:
       Near Clip Distance: 0.009999999776482582
       Pitch: 0.5703982710838318
       Target Frame: base
-      Yaw: 6.203583717346191
+      Yaw: 6.198583602905273
     Saved: ~
 Window Geometry:
   Alphasense Front Left:
