@@ -1,6 +1,7 @@
 from boxi import BOX_ROOT_DIR, shell_run
 import socket
 
+
 def add_arguments(parser):
     parser.set_defaults(main=main)
     return parser

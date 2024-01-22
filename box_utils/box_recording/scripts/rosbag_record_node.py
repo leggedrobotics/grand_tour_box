@@ -65,7 +65,6 @@ class RosbagRecordNode(object):
         timestamp = request.timestamp
         self.bag_base_path = self.data_path + "/" + timestamp + "_" + self.node
 
-
         topic_cfgs = request.topics.split(" ")
         print()
         bag_configs = {}
@@ -80,8 +79,10 @@ class RosbagRecordNode(object):
         self.bag_configs = bag_configs
         for bag_name, topics in bag_configs.items():
             bag_path = self.bag_base_path + "_" + bag_name
-            bash_command = f"rosrun box_recording record_bag.sh {bag_path} {topics} __name:=record_{self.node}_{bag_name}"
-        
+            bash_command = (
+                f"rosrun box_recording record_bag.sh {bag_path} {topics} __name:=record_{self.node}_{bag_name}"
+            )
+
             self.processes.append(subprocess.Popen(bash_command, shell=True, stderr=subprocess.PIPE))
             self.bag_running = True
             self.publish_recording_status.publish(self.bag_running)
@@ -111,7 +112,7 @@ class RosbagRecordNode(object):
 
         if request.verbose:
             # output = subprocess.check_output([f"rosbag info --freq {self.bag_path}*.bag"], shell=True)
-            response.result = "Not implemented yet" #str(output)[2:-1]
+            response.result = "Not implemented yet"  # str(output)[2:-1]
 
         self.bag_running = False
         self.publish_recording_status.publish(self.bag_running)

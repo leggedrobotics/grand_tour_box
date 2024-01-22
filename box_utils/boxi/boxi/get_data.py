@@ -8,7 +8,7 @@ def add_arguments(parser):
     parser.set_defaults(main=main)
     parser.add_argument("--jetson", action="store_true", help="Get data from Jetson")
     parser.add_argument("--nuc", action="store_true", help="Get data from Nuc")
-    #parser.add_argument("--recent", action="store_true", help="Get only the bags of the most recent recording")
+    # parser.add_argument("--recent", action="store_true", help="Get only the bags of the most recent recording")
     return parser
 
 

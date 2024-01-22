@@ -2,11 +2,13 @@ from boxi import BOX_ROOT_DIR, shell_run
 import socket
 import logging as log
 
+
 def add_arguments(parser):
     modes = ["", "camera", "lidar", "imu"]
     parser.set_defaults(main=main)
     parser.add_argument("-m", choices=modes, help="calibration mode of the box", default="")
     return parser
+
 
 def main(args):
     hosts = ["opc", "jetson", "nuc"]
@@ -19,7 +21,7 @@ def main(args):
         mode = "_calib_" + args.m
 
     for host in hosts:
-        print("Start ros in calibration mode \"" + str(args.m) + "\" on", host)
+        print('Start ros in calibration mode "' + str(args.m) + '" on', host)
         if host == hostname:
             cmd = f"boxi start -c box_" + host + mode
         else:

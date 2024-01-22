@@ -10,7 +10,6 @@ def add_arguments(parser):
 
 
 def main(args):
-
     hosts = []
     if args.jetson:
         cmd = f"sudo systemctl restart ptp4l_mgbe0.service"

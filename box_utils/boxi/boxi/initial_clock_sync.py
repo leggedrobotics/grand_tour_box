@@ -10,7 +10,6 @@ def add_arguments(parser):
 
 
 def main(args):
-
     # set jetson time to opc time
     print("set jetson time to opc time")
     cmd = f"ssh -t rsl@jetson /home/rsl/.local/bin/boxi set_time_to_opc"

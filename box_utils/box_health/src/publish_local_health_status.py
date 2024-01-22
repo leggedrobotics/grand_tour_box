@@ -11,6 +11,7 @@ import rospy, rostopic
 from std_msgs.msg import String
 from box_health.msg import healthStatus_jetson, healthStatus_nuc, healthStatus_opc, healthStatus_rpi
 
+
 def load_yaml(path: str) -> dict:
     with open(path) as file:
         res = yaml.load(file, Loader=yaml.FullLoader)
@@ -19,15 +20,18 @@ def load_yaml(path: str) -> dict:
         res = {}
     return res
 
+
 def last_line(text: str) -> str:
     idx = text.rfind("\n", 0, len(text) - 1)
     return text[idx + 1 :]
 
+
 def chrony_line(text: str) -> str:
-    jetson_idx = text.find('jetson')
+    jetson_idx = text.find("jetson")
     line_start_idx = text.rfind("\n", 0, jetson_idx)
     line_end_idx = text.find("\n", jetson_idx, len(text))
     return text[line_start_idx + 1 : line_end_idx]
+
 
 def offset_from_status(line: str) -> str:
     idx = line.find("offset")
@@ -38,6 +42,7 @@ def offset_from_status(line: str) -> str:
     else:
         rospy.logerr("[BoxStatus] Error reading offset from line: " + line)
         return "error reading offset"
+
 
 class FrequencyFinder:
     def __init__(self, topic):
@@ -53,6 +58,7 @@ class FrequencyFinder:
         else:
             rospy.logdebug("[BoxStatus] Error reading frequency of " + self.topic)
             return 0.0
+
 
 class BoxStatus:
     def __init__(self):
@@ -77,6 +83,7 @@ class BoxStatus:
         self.check_gps_status = "rover" in "".join(self.topics)
         if self.check_gps_status:
             from piksi_rtk_msgs.msg import ReceiverState_V2_6_5
+
             rospy.loginfo("[BoxStatus] Check GPS stats on host " + self.hostname)
             self.GPS_subscriber = rospy.Subscriber(
                 "/gt_box/rover/piksi/position_receiver_0/ros/receiver_state", ReceiverState_V2_6_5, self.set_GPS_status
@@ -90,7 +97,6 @@ class BoxStatus:
                 "/gt_box/alphasense_driver_node/debug_info", String, self.set_alphasense_ptp_status
             )
             self.set_alphasense_ptp_status_default()
-
 
         if self.hostname == "jetson":
             self.health_status_publisher = rospy.Publisher(
@@ -130,12 +136,12 @@ class BoxStatus:
     def set_alphasense_ptp_status(self, data):
         string = data.data
         idx = string.find("uptime")
-        string = string[idx+8:]
+        string = string[idx + 8 :]
         idx_minus = string.find("\n")
         uptime = int(string[:idx_minus])
 
         idx = string.find("last_ptp_sync_uptime")
-        string = string[idx+22:]
+        string = string[idx + 22 :]
         idx_minus = string.find("\n")
         last_ptp_sync_uptime = int(string[:idx_minus])
 
@@ -153,16 +159,16 @@ class BoxStatus:
             return "waiting for ptp4l"
         else:
             return offset_from_status(recent_line)
-        
+
     def check_chrony_offset(self, recent_line):
-        offset_idx_start = recent_line.find('[') + 1
-        offset_idx_end = recent_line.find(']')
+        offset_idx_start = recent_line.find("[") + 1
+        offset_idx_end = recent_line.find("]")
         offset = recent_line[offset_idx_start:offset_idx_end].strip()
         unit_idx = offset.find(next(filter(str.isalpha, offset)))
         offset_num = int(offset[:unit_idx])
         unit = offset[unit_idx:]
         if unit == "ns":
-            pass          
+            pass
         elif unit == "us":
             offset_num *= 1e3
         elif unit == "ms":
@@ -172,15 +178,15 @@ class BoxStatus:
         else:
             rospy.logerr("[BoxStatus] Unknown unit:", unit)
         return str(int(offset_num))
-    
+
     def get_chrony_status(self, recent_line):
         states = {
-            '*': "current synced",
-            '+': "combined" ,
-            '-': "not combined",
-            '?': "unreachable",
-            'x': "time may be in error",
-            '~': "time too variable",
+            "*": "current synced",
+            "+": "combined",
+            "-": "not combined",
+            "?": "unreachable",
+            "x": "time may be in error",
+            "~": "time too variable",
         }
         state_symbol = recent_line[1]
         return states[state_symbol]
@@ -191,7 +197,7 @@ class BoxStatus:
         if error:
             rospy.logerr("[BoxStatus] Error subprocess reading clocks: " + str(error))
         return last_line(output_status.decode("utf-8"))
-    
+
     def read_chrony_status(self):
         p = subprocess.Popen(["chronyc", "sources"], stdout=subprocess.PIPE)
         (output_status, error) = p.communicate()
@@ -211,9 +217,15 @@ class BoxStatus:
 
             elif self.hostname == "nuc":
                 # enp45s0 gets time from the jetson mgbe0 port, hence enp45s0 is a client, not a master
-                health_msg.offset_mgbe0_enp45s0 = self.check_clock_offset(self.read_clock_status("ptp4l_enp45s0.service"))
-                health_msg.status_enp46s0_ptp4l = self.check_if_grandmaster(self.read_clock_status("ptp4l_enp46s0.service"))
-                health_msg.offset_enp45s0_enp46s0 = self.check_clock_offset(self.read_clock_status("phc2sys_NIC.service"))
+                health_msg.offset_mgbe0_enp45s0 = self.check_clock_offset(
+                    self.read_clock_status("ptp4l_enp45s0.service")
+                )
+                health_msg.status_enp46s0_ptp4l = self.check_if_grandmaster(
+                    self.read_clock_status("ptp4l_enp46s0.service")
+                )
+                health_msg.offset_enp45s0_enp46s0 = self.check_clock_offset(
+                    self.read_clock_status("phc2sys_NIC.service")
+                )
                 health_msg.offset_enp45s0_systemclock = self.check_clock_offset(
                     self.read_clock_status("phc2sys_system.service")
                 )
@@ -222,15 +234,13 @@ class BoxStatus:
                     chrony_line = self.read_chrony_status()
                     health_msg.offset_chrony_opc_jetson = self.check_chrony_offset(chrony_line)
                     health_msg.chrony_status = self.get_chrony_status(chrony_line)
-                except: 
-                    health_msg.offset_chrony_opc_jetson = '-1'
+                except:
+                    health_msg.offset_chrony_opc_jetson = "-1"
                     health_msg.chrony_status = "error reading status"
             elif self.hostname == "rpi":
                 health_msg.offset_mgbe0_eth0 = self.check_clock_offset(self.read_clock_status("ptp4l.service"))
                 health_msg.status_eth0_ptp4l = self.check_if_grandmaster(self.read_clock_status("ptp4l.service"))
-                health_msg.offset_eth0_systemclock = self.check_clock_offset(
-                    self.read_clock_status("phc2sys.service")
-                )
+                health_msg.offset_eth0_systemclock = self.check_clock_offset(self.read_clock_status("phc2sys.service"))
             else:
                 rospy.logerr("[BoxStatus] This hostname is unknown: " + self.hostname)
         except Exception as error:
@@ -256,7 +266,7 @@ class BoxStatus:
         health_msg.gps_utc_time_ready = self.gps_utc_time_ready
         self.set_GPS_status_default()
         return health_msg
-    
+
     def get_alphasense_ptp_status(self, health_msg):
         health_msg.alphasense_frames_no_ptp = self.alphasense_frames_no_ptp
         return health_msg
@@ -285,7 +295,7 @@ class BoxStatus:
             if stderr:
                 rospy.logerr(stderr)
             if stdout:
-                setattr(health_msg, "cpu_usage_" + self.hostname, float(stdout.decode().replace(',','.')))
+                setattr(health_msg, "cpu_usage_" + self.hostname, float(stdout.decode().replace(",", ".")))
             else:
                 setattr(health_msg, "cpu_usage_" + self.hostname, -1.0)
                 rospy.logerr("[BoxStatus] CPU usage could not be determined. ")
