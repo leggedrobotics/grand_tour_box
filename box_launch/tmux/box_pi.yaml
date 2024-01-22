@@ -10,6 +10,8 @@ windows:
     - export DISPLAY=:0.0
     - export ROS_MASTER_URI=http://192.168.2.57:11311
     - export ROS_IP=192.168.2.57
+    # ping own ip until it is reachable
+    - until ping -c1 192.168.2.57 >/dev/null 2>&1; do :; done
 
   options:
     pane-border-status: top
