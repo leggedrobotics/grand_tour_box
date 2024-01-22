@@ -11,6 +11,7 @@ def add_arguments(parser):
     parser.add_argument("-c", choices=yamls, help="tmux configuration file name", default="box_opc")
     return parser
 
+
 def main(args):
     cfg = os.path.join(BOX_ROOT_DIR, "box_launch/tmux", args.c + ".yaml")
     shell_run(f"tmuxp load  {cfg} -d")

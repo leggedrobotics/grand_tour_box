@@ -2,9 +2,11 @@ from boxi import BOX_ROOT_DIR, shell_run
 import socket
 import logging as log
 
+
 def add_arguments(parser):
     parser.set_defaults(main=main)
     return parser
+
 
 def main(args):
     hosts = ["opc", "jetson", "nuc"]

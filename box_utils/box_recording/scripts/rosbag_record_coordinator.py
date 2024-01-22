@@ -55,7 +55,7 @@ class RosbagRecordCoordinator(object):
             request.yaml_file = self.default_yaml
         else:
             if not os.path.isabs(request.yaml_file):
-                request.yaml_file = join(str(self.rp.get_path("box_recording")), "cfg", request.yaml_file+".yaml")
+                request.yaml_file = join(str(self.rp.get_path("box_recording")), "cfg", request.yaml_file + ".yaml")
 
         if not os.path.exists(request.yaml_file):
             rospy.loginfo("[RosbagRecordCoordinator] Failed to start recording given that yaml cannot be found!")
@@ -76,10 +76,7 @@ class RosbagRecordCoordinator(object):
                 print(bag_dict)
                 service_name = self.namespace + "rosbag_record_node_" + node + "/start_recording"
 
-                rospy.loginfo(
-                    "[RosbagRecordCoordinator] Trying to start rosbag recording process on "
-                    + node
-                )
+                rospy.loginfo("[RosbagRecordCoordinator] Trying to start rosbag recording process on " + node)
                 try:
                     # Evaluate if service is offered
                     rospy.wait_for_service(service_name, 2.0)

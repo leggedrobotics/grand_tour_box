@@ -2,8 +2,9 @@
 
 import sys
 import rosbag
-    
+
 threshold = 100000
+
 
 def check_clock_offsets(bag):
     counters = {
@@ -11,7 +12,7 @@ def check_clock_offsets(bag):
         "offset_mgbe0_mgbe1": 0,
         "offset_enp45s0_systemclock": 0,
         "offset_enp45s0_enp46s0": 0,
-        "offset_mgbe0_enp45s0": 0
+        "offset_mgbe0_enp45s0": 0,
     }
 
     for topic, msg, t in rosbag.Bag(bag).read_messages():
@@ -35,11 +36,12 @@ def check_clock_offsets(bag):
                 counters["offset_mgbe0_enp45s0"] += 1
 
     print("With threshold " + str(threshold) + ": ")
-    print("mbge0 - systemclock:",  counters["offset_mgbe0_systemclock"])
+    print("mbge0 - systemclock:", counters["offset_mgbe0_systemclock"])
     print("mgbe0 - mgbe1:", counters["offset_mgbe0_mgbe1"])
-    print("enp45s0 - systemclock:",  counters["offset_enp45s0_systemclock"])
+    print("enp45s0 - systemclock:", counters["offset_enp45s0_systemclock"])
     print("enp45s0 - enp46s0:", counters["offset_enp45s0_enp46s0"])
-    print("mgbe0 - enp45s0:",  counters["offset_mgbe0_enp45s0"])
+    print("mgbe0 - enp45s0:", counters["offset_mgbe0_enp45s0"])
+
 
 if __name__ == "__main__":
     bag_path = sys.argv[1]
