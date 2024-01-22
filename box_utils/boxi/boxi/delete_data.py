@@ -1,7 +1,4 @@
-from boxi import BOX_ROOT_DIR, shell_run
-import argparse
-
-USERNAME = "rsl"
+from boxi import USERNAME, shell_run
 
 
 def add_arguments(parser):
@@ -12,8 +9,6 @@ def add_arguments(parser):
 
 
 def main(args):
-    rsync_part1 = "rsync --progress rsl@"
-    rsync_part2 = ":~/git/grand_tour_box/box_utils/box_recording/data/* ."
     hosts = []
     if args.jetson:
         hosts.append("jetson")
@@ -21,7 +16,10 @@ def main(args):
         hosts.append("nuc")
     if len(hosts) == 0:
         print("No host specified. Specify host with --hostname")
+        exit()
     for host in hosts:
-        cmd = f"{rsync_part1}{host}{rsync_part2}"
+        cmd = f"ssh -o ConnectTimeout=4 " + USERNAME + "@" + host + " rm ~/catkin_ws/src/grand_tour_box/box_utils/box_recording/data/*"
         print(cmd)
-        shell_run(cmd)
+        user_is_sure = input("Are you sure you want to delete data on " + host + "? y/n \n")
+        if user_is_sure == 'y':
+            shell_run(cmd)

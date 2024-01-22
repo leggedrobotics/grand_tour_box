@@ -9,7 +9,7 @@ def add_arguments(parser):
 
 
 def main(args):
-    hosts = ["opc", "jetson", "nuc"]
+    hosts = ["opc", "jetson", "nuc", "pi"]
     hostname = socket.gethostname()
 
     for host in hosts:
