@@ -20,6 +20,8 @@ float64 gt_box_zed2i_zed_node_point_cloud_cloud_registered_hz
 float64 gt_box_zed2i_zed_node_left_raw_image_raw_color_hz
 float64 gt_box_zed2i_zed_node_right_raw_image_raw_color_hz
 float64 gt_box_zed2i_zed_node_depth_depth_registered_hz
+float64 gt_box_ap20_imu_hz
+float64 gt_box_ap20_prism_position_hz
 
 uint8 gps_num_sat
 bool gps_rtk_mode_fix

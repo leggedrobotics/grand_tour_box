@@ -11,7 +11,6 @@
   <depend>launch_scripts</depend>
   <depend>bringup_hdr</depend>
   <depend>bringup_livox</depend>
-  <depend>bringup_gps</depend>
   <exec_depend>bringup_fkie</exec_depend>
   <depend>box_recording</depend>
   <depend>box_rviz</depend>

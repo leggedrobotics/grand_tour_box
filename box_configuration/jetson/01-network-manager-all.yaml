@@ -15,3 +15,8 @@ network:
         - to: 192.168.2.40
           scope: link
       dhcp4: no
+    usb1:
+      routes:
+        - to: 192.168.2.40
+          scope: link
+      dhcp4: no

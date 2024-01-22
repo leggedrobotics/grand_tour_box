@@ -15,6 +15,8 @@ jetson:
   - /gt_box/zed2i/zed_node/left_raw/image_raw_color
   - /gt_box/zed2i/zed_node/right_raw/image_raw_color
   - /gt_box/zed2i/zed_node/depth/depth_registered
+  - /gt_box/ap20_imu
+  - /gt_box/ap20_prism_position
 nuc:
   - /gt_box/v4l2_camera_left/image_raw
   - /gt_box/v4l2_camera_front/image_raw

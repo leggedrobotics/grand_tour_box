@@ -79,6 +79,8 @@ class visualizationPublisher:
             "gt_box_zed2i_zed_node_left_raw_image_raw_color_hz",
             "gt_box_zed2i_zed_node_right_raw_image_raw_color_hz",
             "gt_box_zed2i_zed_node_depth_depth_registered_hz",
+            "gt_box_ap20_imu_hz",
+            "gt_box_ap20_prism_position_hz",
         ]
 
         self.publishers_float = {}
