@@ -1,7 +1,5 @@
-from boxi import BOX_ROOT_DIR, shell_run
+from boxi import USERNAME, shell_run
 import argparse
-
-USERNAME = "rsl"
 
 
 def add_arguments(parser):
@@ -12,7 +10,7 @@ def add_arguments(parser):
 
 
 def main(args):
-    rsync_part1 = "rsync --progress rsl@"
+    rsync_part1 = "rsync --progress "+USERNAME+"@"
     rsync_part2 = ":~/git/grand_tour_box/box_utils/box_recording/data/* ."
     hosts = []
     if args.jetson:

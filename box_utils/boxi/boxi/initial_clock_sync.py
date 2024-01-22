@@ -1,8 +1,6 @@
 from boxi import BOX_ROOT_DIR, shell_run
 import argparse
 
-USERNAME = "rsl"
-
 
 def add_arguments(parser):
     parser.set_defaults(main=main)
