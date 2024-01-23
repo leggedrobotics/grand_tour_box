@@ -67,10 +67,10 @@ ncamera:
   # Number of enabled cameras and individual camera configuration.
   num_cams: 5                     # 1 - 8
   cams:
-    0: *standard_camera_config      # Front left, used for stereo
-    1: *camera_1_config             # Front right, used for stereo
-    2: *standard_camera_config      # Left
-    3: *standard_camera_config      # Front middle
+    0: *standard_camera_config      # Front left
+    1: *camera_1_config             # Front right
+    2: *standard_camera_config      # Front middle
+    3: *standard_camera_config      # Left
     4: *standard_camera_config      # Right
 #    5: *standard_camera_config
 #    6: *standard_camera_config
