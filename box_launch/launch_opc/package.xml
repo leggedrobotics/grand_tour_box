@@ -9,11 +9,7 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <depend>launch_scripts</depend>
-  <depend>bringup_hesai</depend>
   <depend>bringup_totalstation</depend>
-  <depend>bringup_adis16448_versavis</depend>
-  <depend>bringup_adis16475</depend>
-  <depend>bringup_stim320</depend>
   <exec_depend>bringup_fkie</exec_depend>
   <depend>box_recording</depend>
   <depend>box_rviz</depend>
