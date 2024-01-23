@@ -18,14 +18,23 @@ def main(args):
         print("No host specified. Specify host with --hostname")
         exit()
     for host in hosts:
-        cmd = (
+        cmd1 = (
             f"ssh -o ConnectTimeout=4 "
             + USERNAME
             + "@"
             + host
             + " rm ~/catkin_ws/src/grand_tour_box/box_utils/box_recording/data/*"
         )
-        print(cmd)
-        user_is_sure = input("Are you sure you want to delete data on " + host + "? y/n \n")
+        print(cmd1)
+        cmd2 = (
+            f"ssh -o ConnectTimeout=4 "
+            + USERNAME
+            + "@"
+            + host
+            + " rm -rf ~/.ros"
+        )
+        print(cmd2)
+        user_is_sure = input("Are you sure you want to delete recorded and logging data on " + host + "? y/n \n")
         if user_is_sure == "y":
-            shell_run(cmd)
+            shell_run(cmd1)
+            shell_run(cmd2)
