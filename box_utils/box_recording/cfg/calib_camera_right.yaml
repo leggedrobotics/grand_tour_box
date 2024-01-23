@@ -1,0 +1,14 @@
+jetson:
+  alphasense:
+    - /gt_box/alphasense_driver_node/cam4/compressed
+  utils:
+    - /gt_box/health_status/jetson
+nuc:
+  utils:
+    - /gt_box/health_status/nuc
+  hdr:
+    - /gt_box/v4l2_camera_right/image_raw/compressed
+opc:
+  utils:
+    - /gt_box/health_status/opc
+    - /gt_box/health_status/merged
