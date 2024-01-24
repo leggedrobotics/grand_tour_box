@@ -1,0 +1,43 @@
+<?xml version="1.0" ?>
+
+<robot name="cameras" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- IMU STIM320 -->
+  <link name="imu_stim320" />
+  <joint name="alphasense_front_left_to_imu_stim320" type="fixed">   
+    <origin xyz=" ${calib['alphasense_front_left_to_imu_stim320']['x']}
+                  ${calib['alphasense_front_left_to_imu_stim320']['y']}
+                  ${calib['alphasense_front_left_to_imu_stim320']['z']}" 
+            rpy=" ${calib['alphasense_front_left_to_imu_stim320']['roll']}
+                  ${calib['alphasense_front_left_to_imu_stim320']['pitch']}
+                  ${calib['alphasense_front_left_to_imu_stim320']['yaw']}" />
+    <parent link="alphasense_front_left" />
+    <child link="imu_stim320" />
+  </joint>
+
+  <!-- IMU ADIS16475 -->
+  <link name="imu_adis16475" />
+  <joint name="alphasense_front_left_to_imu_adis16475" type="fixed">   
+    <origin xyz=" ${calib['alphasense_front_left_to_imu_adis16475']['x']}
+                  ${calib['alphasense_front_left_to_imu_adis16475']['y']}
+                  ${calib['alphasense_front_left_to_imu_adis16475']['z']}" 
+            rpy=" ${calib['alphasense_front_left_to_imu_adis16475']['roll']}
+                  ${calib['alphasense_front_left_to_imu_adis16475']['pitch']}
+                  ${calib['alphasense_front_left_to_imu_adis16475']['yaw']}" />
+    <parent link="alphasense_front_left" />
+    <child link="imu_adis16475" />
+  </joint>
+
+  <!-- IMU alphasesnse -->
+  <link name="imu_alphasense" />
+  <joint name="alphasense_front_left_to_imu_alphasense" type="fixed">   
+    <origin xyz=" ${calib['alphasense_front_left_to_imu_alphasense']['x']}
+                  ${calib['alphasense_front_left_to_imu_alphasense']['y']}
+                  ${calib['alphasense_front_left_to_imu_alphasense']['z']}" 
+            rpy=" ${calib['alphasense_front_left_to_imu_alphasense']['roll']}
+                  ${calib['alphasense_front_left_to_imu_alphasense']['pitch']}
+                  ${calib['alphasense_front_left_to_imu_alphasense']['yaw']}" />
+    <parent link="alphasense_front_left" />
+    <child link="imu_alphasense" />
+  </joint>
+</robot>
