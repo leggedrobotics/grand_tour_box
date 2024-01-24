@@ -8,6 +8,7 @@ command_register = [
     "black",
     "start",
     "initial_clock_sync",
+    "delete_data",
     "set_time_to_opc",
     "restart_ptp",
     "stop_all",

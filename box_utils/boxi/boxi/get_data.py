@@ -1,26 +1,22 @@
-from boxi import BOX_ROOT_DIR, shell_run
+from boxi import USERNAME, shell_run
 import argparse
-
-USERNAME = "rsl"
 
 
 def add_arguments(parser):
     parser.set_defaults(main=main)
     parser.add_argument("--jetson", action="store_true", help="Get data from Jetson")
     parser.add_argument("--nuc", action="store_true", help="Get data from Nuc")
-    # parser.add_argument("--recent", action="store_true", help="Get only the bags of the most recent recording")
     return parser
 
 
 def main(args):
-    rsync_part1 = "rsync --progress rsl@"
+    rsync_part1 = "rsync --progress "+USERNAME+"@"
     rsync_part2 = ":~/git/grand_tour_box/box_utils/box_recording/data/* ."
     hosts = []
     if args.jetson:
         hosts.append("jetson")
     if args.nuc:
         hosts.append("nuc")
-
     if len(hosts) == 0:
         print("No host specified. Specify host with --hostname")
     for host in hosts:
