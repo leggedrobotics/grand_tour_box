@@ -14,7 +14,7 @@ nuc:
     - /gt_box/adis16475
     - /gt_box/livox/imu
   hdr:
-    - /gt_box/v4l2_camera_middle/image_raw/compressed
+    - /gt_box/v4l2_camera_front/image_raw/compressed
 opc:
   utils:
     - /gt_box/health_status/opc
