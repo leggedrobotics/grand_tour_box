@@ -6,7 +6,7 @@ import time
 from pytictac import CpuTimer
 
 
-def shell_run(cmd, cwd=None, env={}, time=True):
+def shell_run(cmd, cwd=None, env={}, time=True, continue_on_error=True):
     """Execute shell command."""
     # Support both list and str format for commands
     # if isinstance(cmd, str):
@@ -25,7 +25,8 @@ def shell_run(cmd, cwd=None, env={}, time=True):
 
         if p.wait() != 0:
             print()
-            raise RuntimeError(f"Error Return non 0 --- while executing {cmd}")
+            if not continue_on_error:
+                raise RuntimeError(f"Error Return non 0 --- while executing {cmd}")
 
 
 if __name__ == "__main__":
