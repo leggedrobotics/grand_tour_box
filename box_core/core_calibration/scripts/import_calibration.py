@@ -9,8 +9,8 @@ import os
 # Front
 rosrun kalibr kalibr_calibrate_cameras \
  	--target /home/beni/catkin_ws/src/kalibr/aprilboard_6x6.yaml \
- 	--models pinhole-radtan pinhole-radtan pinhole-radtan pinhole-radtan \
- 	--topics /gt_box/alphasense_driver_node/cam0/compressed /gt_box/alphasense_driver_node/cam1/compressed /gt_box/alphasense_driver_node/cam2/compressed /gt_box/v4l2_camera_middle/image_raw/compressed \
+ 	--models pinhole-equi pinhole-equi pinhole-equi pinhole-equi \
+ 	--topics /gt_box/alphasense_driver_node/cam0/compressed /gt_box/alphasense_driver_node/cam1/compressed /gt_box/alphasense_driver_node/cam2/compressed /gt_box/v4l2_camera_front/image_raw/compressed \
  	--bag bagname.bag
 
 # Left
@@ -84,7 +84,7 @@ def transformation_to_xyz_rpy(transformation):
 topic_to_frame = {
         "/alphasense_driver_ros/cam0": "alphasense_front_left",
         "/alphasense_driver_ros/cam1": "alphasense_front_right",
-        "/alphasense_driver_ros/cam2": "alphasense_front_middle",
+        "/alphasense_driver_ros/cam2": "alphasense_front_front",
         "/alphasense_driver_ros/cam3": "alphasense_left",
         "/alphasense_driver_ros/cam4": "alphasense_right",
     }
