@@ -6,5 +6,5 @@ string status_eth0_ptp4l
 float64 gt_box_stim320_imu_hz
 float64 gt_box_camera_trigger_timestamps_hz
 
-float32 cpu_usage_rpi
-string avail_memory_rpi
+float32 cpu_usage_pi
+string avail_memory_pi

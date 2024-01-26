@@ -9,7 +9,7 @@ import re
 
 import rospy, rostopic
 from std_msgs.msg import String
-from box_health.msg import healthStatus_jetson, healthStatus_nuc, healthStatus_opc, healthStatus_rpi
+from box_health.msg import healthStatus_jetson, healthStatus_nuc, healthStatus_opc, healthStatus_pi
 
 
 def load_yaml(path: str) -> dict:
@@ -110,9 +110,9 @@ class BoxStatus:
             self.health_status_publisher = rospy.Publisher(
                 self.namespace + "health_status/" + self.hostname, healthStatus_opc, queue_size=2
             )
-        elif self.hostname == "rpi":
+        elif self.hostname == "pi":
             self.health_status_publisher = rospy.Publisher(
-                self.namespace + "health_status/" + self.hostname, healthStatus_rpi, queue_size=2
+                self.namespace + "health_status/" + self.hostname, healthStatus_pi, queue_size=2
             )
         else:
             rospy.logerr("[BoxStatus] Hostname " + self.hostname + " is unknown.")
@@ -237,7 +237,7 @@ class BoxStatus:
                 except:
                     health_msg.offset_chrony_opc_jetson = "-1"
                     health_msg.chrony_status = "error reading status"
-            elif self.hostname == "rpi":
+            elif self.hostname == "pi":
                 health_msg.offset_mgbe0_eth0 = self.check_clock_offset(self.read_clock_status("ptp4l.service"))
                 health_msg.status_eth0_ptp4l = self.check_if_grandmaster(self.read_clock_status("ptp4l.service"))
                 health_msg.offset_eth0_systemclock = self.check_clock_offset(self.read_clock_status("phc2sys.service"))
@@ -278,8 +278,8 @@ class BoxStatus:
             return healthStatus_nuc()
         elif self.hostname == "opc":
             return healthStatus_opc()
-        elif self.hostname == "rpi":
-            return healthStatus_rpi()
+        elif self.hostname == "pi":
+            return healthStatus_pi()
         else:
             rospy.logerr("[BoxStatus] Hostname " + self.hostname + " is unknown.")
 
