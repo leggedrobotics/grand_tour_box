@@ -23,7 +23,7 @@ def main(args):
             + USERNAME
             + "@"
             + host
-            + " rm /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_recording/data/*"
+            + " rm -f /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_recording/data/*"
         )
         print(cmd1)
         cmd2 = (

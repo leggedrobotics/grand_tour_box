@@ -6,7 +6,7 @@ import rospy
 from threading import Lock
 import numpy as np
 
-from box_health.msg import healthStatus, healthStatus_jetson, healthStatus_nuc, healthStatus_opc, healthStatus_rpi
+from box_health.msg import healthStatus, healthStatus_jetson, healthStatus_nuc, healthStatus_opc, healthStatus_pi
 from std_msgs.msg import Float32, Bool, ColorRGBA
 from jsk_rviz_plugins.msg import *
 
@@ -117,7 +117,7 @@ class BoxStatusMerger:
             self.namespace + "health_status/opc", healthStatus_opc, self.callback, "opc"
         )
         self.subscriber_opc = rospy.Subscriber(
-            self.namespace + "health_status/rpi", healthStatus_rpi, self.callback, "rpi"
+            self.namespace + "health_status/pi", healthStatus_pi, self.callback, "pi"
         )
         self.recording_jetson = rospy.Subscriber(
             self.namespace + "health_status/recording_jetson", Bool, self.recording_callback, "jetson"
@@ -133,7 +133,7 @@ class BoxStatusMerger:
             "jetson": [],
             "nuc": [],
             "opc": [],
-            "rpi": [],
+            "pi": [],
         }
 
         for host in self.message_fields:
@@ -240,8 +240,8 @@ class BoxStatusMerger:
             color_wrapper("{:.2f}".format(getattr(self.complete_health_msg, "cpu_usage_jetson")), 50, 80, 90, False),
             getattr(self.complete_health_msg, "avail_memory_nuc"),
             color_wrapper("{:.2f}".format(getattr(self.complete_health_msg, "cpu_usage_nuc")), 50, 80, 90, False),
-            getattr(self.complete_health_msg, "avail_memory_rpi"),
-            color_wrapper("{:.2f}".format(getattr(self.complete_health_msg, "cpu_usage_rpi")), 50, 80, 90, False),
+            getattr(self.complete_health_msg, "avail_memory_pi"),
+            color_wrapper("{:.2f}".format(getattr(self.complete_health_msg, "cpu_usage_pi")), 50, 80, 90, False),
             "<span style='color: rgb(34,139,34);'>Recording</span>"
             if self.recording_status["jetson"]
             else "Not recording",

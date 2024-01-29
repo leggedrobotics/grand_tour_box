@@ -29,7 +29,7 @@ add_message_files(
   healthStatus_jetson.msg
   healthStatus_nuc.msg
   healthStatus_opc.msg
-  healthStatus_rpi.msg
+  healthStatus_pi.msg
 )
 
 catkin_install_python(

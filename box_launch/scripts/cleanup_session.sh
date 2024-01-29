@@ -10,7 +10,7 @@ killall roscore
 killall rosmaster
 
 # Clean PWM if on pi
-if [ $(hostname) == "rpi" ]
+if [ $(hostname) == "pi" ]
 then
     pigs p 19 0  # Set GPIO19 dutycycle to 0 (off)  [https://abyz.me.uk/rpi/pigpio/pigs.html#P/PWM]
     echo "Cleaned Up pigpiod"

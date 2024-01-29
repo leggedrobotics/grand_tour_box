@@ -15,6 +15,7 @@ command_register = [
     "start_all",
     "get_data",
     "kill_all",
+    "shutdown",
 ]
 
 

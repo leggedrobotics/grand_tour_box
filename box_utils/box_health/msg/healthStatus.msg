@@ -55,10 +55,10 @@ string offset_eth0_systemclock
 string offset_mgbe0_eth0
 string status_eth0_ptp4l
 
-# rpi
+# pi
 float64 gt_box_adis16475_hz
 float64 gt_box_stim320_imu_hz
 float64 gt_box_camera_trigger_timestamps_hz
 
-float32 cpu_usage_rpi
-string avail_memory_rpi
+float32 cpu_usage_pi
+string avail_memory_pi
