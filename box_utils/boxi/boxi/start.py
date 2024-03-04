@@ -25,7 +25,6 @@ def load_wifi_config(config_file='wifi_config.ini'):
         sys.exit(1)
     config = configparser.ConfigParser()
     config.read(config_file_path)
-    print(config.sections())
     return config['WiFi']['ssid'], config['WiFi']['password']
 
 def connect_to_wifi(ssid, password):
