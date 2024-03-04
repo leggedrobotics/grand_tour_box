@@ -3,6 +3,7 @@ import argparse
 import configparser
 import os
 import subprocess
+import sys
 from pathlib import Path
 from time import sleep
 
@@ -18,9 +19,14 @@ def add_arguments(parser):
 # ssid=wifiNetworkName
 # password=wifiPassword
 def load_wifi_config(config_file='wifi_config.ini'):
+    config_file_path = os.path.expanduser('~/'+config_file)
+    if not os.path.exists(config_file_path):
+        print("Place a wifi_config.ini file in your user home directory.")
+        sys.exit(1)
     config = configparser.ConfigParser()
-    config.read(config_file)
-    return config['WiFi']['ssid'], config['Wifi']['password']
+    config.read(config_file_path)
+    print(config.sections())
+    return config['WiFi']['ssid'], config['WiFi']['password']
 
 def connect_to_wifi(ssid, password):
     print(f"Attempting to connect to Grand Tour Box router.")
