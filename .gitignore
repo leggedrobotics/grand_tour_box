@@ -3,3 +3,4 @@
 *.egg-info
 *.bag
 *__pycache__
+wifi_config.ini
