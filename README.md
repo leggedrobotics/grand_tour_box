@@ -6,9 +6,7 @@
   <a href="#project-structure">Project Structure</a> •
   <a href="#getting-started">Getting Started</a> •
   <a href="#contributing">Contributing</a> •
-  <a href="#credits">Credits</a>
-    
-  ![Formatting](https://github.com/leggedrobotics/wild_visual_navigation/actions/workflows/formatting.yml/badge.svg)
+<!--   <a href="#credits">Credits</a> -->
 </p>
 
 <img align="right" width="60" height="60" src="https://github.com/leggedrobotics/grand_tour_box/blob/main/box_documentation/images/icon.png" alt="Citation">
@@ -81,11 +79,24 @@ Getting Started
 ### Most important workflows:
 ###### Start the box
 - Simply power on the box -> On the jetson, the nuc and the pi a detached tmux session starts, all the drivers are started and the topics start publishing.
-- on opc, run the command: `boxi start` -> a tmux session is launched, and the visualization is started. Only the throttled topics are visualized
+- on opc, run the command: `boxi start` -> a tmux session is launched, and the visualization is started. Only the throttled topics are visualized.
+> **_Alphasense images look orange?:_**  You can reset the white balance. Make sure there is good lighting and something white in frame! Then call:
+> ```
+> rosservice call /gt_box/raw_image_pipeline_ros_node_cam2/reset_white_balance
+> rosservice call /gt_box/raw_image_pipeline_ros_node_cam3/reset_white_balance
+> rosservice call /gt_box/raw_image_pipeline_ros_node_cam4/reset_white_balance
+> ```
 ###### Record data normally
 - Start the box
-- run: `/gt_box/rosbag_record_coordinator/start_recording`
-- To stop the recordung, run: `/gt_box/rosbag_record_coordinator/stop_recording`
+- call: `/gt_box/rosbag_record_coordinator/start_recording` service.
+  - Takes a [cfg file](https://github.com/leggedrobotics/grand_tour_box/tree/main/box_utils/box_recording/cfg) argument specifying which topics to record.
+  - Can be called via the `node_manager` GUI -> services, which has a dropdown for the config files.
+- To stop the recording, run: `/gt_box/rosbag_record_coordinator/stop_recording`
+  - Also accessible via the `node_manager` GUI.
+- To sanity-check the recorded data, use `rqt_bag`:
+  - `ssh -X jetson` (to enable GUI forwarding)
+  - `rosrun rqt_bag rqt_bag file.bag`
+    - To see images, right click on timeline and enable thumbnails, and/or view -> image.
 - copy it to the opc with the command `boxi get_data --jetson --nuc`
 - delete the data on the jetson and nuc (else it will be copied again)
 - merge the bags: `rosrun box_recording merge_bags.py out.bag *` `copy_data` which copies all bags in the data folders on the nuc and jetson to the opc
@@ -93,7 +104,7 @@ Getting Started
 ###### Record data for calibration
 - There are different calibration modes: 
 - Start the box
-- ssh into jetson (ssh jetson), kill the tmux session `tk`, then run l-jetson-calibration -> the drivers now wtart to publish uncompressed images at 1hz and full pointclouds
+- ssh into jetson (ssh jetson), kill the tmux session `tk`, then run l-jetson-calibration -> the drivers now start to publish uncompressed images at 1hz and full pointclouds
 - run `l-opc` on opc (visualization won't work, because throtteled topics are selected)
 - start recording with `start-recording-calibration` -> this records the topics to calibrate (right now the uncompressed front facing alphasense and the pointlcouds of the lidars)
 - stop recording with `stop-recording`
@@ -106,12 +117,6 @@ Getting Started
 ##### Few pointers:
 - many useful aliases are defined in grand_tour_box/box_utils/box_setup/alias/alias.sh
 - clock problems? restart with `restart-clocks-box`, `restart-clocks-jetson` or `restart-clocks-nuc` from opc
-- alphasense images look orange? run:
-```
-rosservice call /gt_box/raw_image_pipeline_ros_node_cam2/reset_white_balance
-rosservice call /gt_box/raw_image_pipeline_ros_node_cam3/reset_white_balance
-rosservice call /gt_box/raw_image_pipeline_ros_node_cam4/reset_white_balance
-```
 
 ### Using boxi
 ```shell
@@ -124,47 +129,10 @@ export PATH=${HOME}/.local/bin${PATH:+:${PATH}}
 
 Now you can run:
 ```shell
-boxi push-code-to-box --jetson
+boxi push --jetson --nuc # Push code changes to the jetson and nuc
 boxi black
-boxi start -c box # Select the correct tmux configuration name defaults to box
+boxi start -c box_jetson # Select the correct tmux configuration name. defaults to opc.
 ```
-And many more to be implemented to easily use the box
-
-### Launch Structure Overview:
-
----
-1. **tmux configuration** explained
-The software is started based on pre-defined tmux configuration.
-    ```shell
-    tmuxp load $(rospack find box_launch)/tmux/box_replay.yaml
-    ```
-    Each `tmux session` is started using the `box_launch/scripts/initalize_session.sh` scripts.
-We then open a set of terminals within the tmux-session.
-The `tmux/box_replay.yaml` tmux configuration specifies all the box_launch/launch files that will be launched by fkie.launch.
-More explanations in point 2/3 below. 
-The launch files should only point to launch files within `box_launch/launch` folder.
-The `tmux/box_replay.yaml` mainly launches the `roslaunch box_launch fkie.launch`.
-
----
-
-2. **box_launch fkie.launch** explained
-Starts the fkie node manager, which is responsible to start all launch files.
-The provided launch files should all live within **box_launch/launch files**. 
-
----
-
-3. **box_launch/launch files** explained
-The launch files within `box_launch/launch` solely add a `capability parameter` which is used by `fkie`.
-Each launch files calls the respective `bringup_XXXXX` package launch file.
-
----
-
-4. **bringup_XXXXX packages** explained
-The bringup packages contain all the parameters and the define the nodes that are launched.
-
----
-
-
 
 ### Install dependencies
 
@@ -325,6 +293,40 @@ catkin build anymal_rsl_user_interface
 ```
 git submodule update --remote usb_cam
 ```
+
+### Launch Structure Overview:
+
+---
+1. **tmux configuration** explained
+The software is started based on pre-defined tmux configuration.
+    ```shell
+    tmuxp load $(rospack find box_launch)/tmux/box_replay.yaml
+    ```
+    Each `tmux session` is started using the `box_launch/scripts/initalize_session.sh` scripts.
+We then open a set of terminals within the tmux-session.
+The `tmux/box_replay.yaml` tmux configuration specifies all the box_launch/launch files that will be launched by fkie.launch.
+More explanations in point 2/3 below. 
+The launch files should only point to launch files within `box_launch/launch` folder.
+The `tmux/box_replay.yaml` mainly launches the `roslaunch box_launch fkie.launch`.
+
+---
+
+2. **box_launch fkie.launch** explained
+Starts the fkie node manager, which is responsible to start all launch files.
+The provided launch files should all live within **box_launch/launch files**. 
+
+---
+
+3. **box_launch/launch files** explained
+The launch files within `box_launch/launch` solely add a `capability parameter` which is used by `fkie`.
+Each launch files calls the respective `bringup_XXXXX` package launch file.
+
+---
+
+4. **bringup_XXXXX packages** explained
+The bringup packages contain all the parameters and the define the nodes that are launched.
+
+---
 
 <img align="right" width="60" height="60" src="https://github.com/leggedrobotics/grand_tour_box/blob/main/box_documentation/images/icon.png" alt="GrandTour">
 <h2 id="contributing">
