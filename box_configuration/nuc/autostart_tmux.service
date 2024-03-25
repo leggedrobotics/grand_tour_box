@@ -3,6 +3,7 @@ Description=Autostart Terminal and Run tmuxp
 After=network-online.target
 After=phc2sys_system.service
 After=ptp4l.service
+After=wait_for_jetson_once.service
 
 [Service]
 Type=forking
