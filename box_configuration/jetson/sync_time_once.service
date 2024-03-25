@@ -1,5 +1,5 @@
 [Unit]
-Description= Get time from internet
+Description= Get time from Jetson RTC Hardware Clock
 After=network-online.target
 
 [Service]
