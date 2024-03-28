@@ -1,0 +1,10 @@
+# udev rules to ensure consistent naming for the HDR camera devices.
+
+# Left Camera
+SUBSYSTEM=="video4linux", ATTR{index}=="0", ATTRS{devpath}=="1", ATTRS{busnum}=="2", SYMLINK+="hdr_camera_left"
+
+# Right Camera
+SUBSYSTEM=="video4linux", ATTR{index}=="0", ATTRS{devpath}=="1", ATTRS{busnum}=="4", SYMLINK+="hdr_camera_right"
+
+# Front Camera
+SUBSYSTEM=="video4linux", ATTR{index}=="0", ATTRS{devpath}=="2", ATTRS{busnum}=="4", SYMLINK+="hdr_camera_front"

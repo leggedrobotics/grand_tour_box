@@ -7,7 +7,7 @@
     <arg  if="$(eval arg('calibration') == 'camera' )" name="publish_rate" default="4" />
     <arg  if="$(eval arg('calibration') == 'imu' )" name="publish_rate" default="30" />
     <arg name="use_image_transport" default="True" />
-    <arg name="video_device" default="/dev/video2" />
+    <arg name="video_device" default="/dev/hdr_camera_left" />
     <arg name="use_v4l2_buffer_timestamps" default="true" />
     <arg name="timestamp_offset" default="0.0" />
     <arg name="output_encoding" default="rgb8" />
