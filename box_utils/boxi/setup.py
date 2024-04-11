@@ -29,4 +29,10 @@ if __name__ == "__main__":
                 "boxi = boxi.__main__:main",
             ]
         },
+        install_requires=[
+            'argcomplete>=3.2.2',
+            'pytictac>=1.0.9',
+            'setuptools>=45.2.0',
+            'torch>=2.2.1',
+        ]
     )
