@@ -1,4 +1,4 @@
-session_name: box_pi
+session_name: pi
 
 before_script: "../scripts/initialize_session.sh"
 
@@ -21,7 +21,7 @@ windows:
       - source /home/rsl/catkin_ws/devel/setup.bash
       - roslaunch bringup_fkie fkie.launch
           autostart_launch_files:="
-            $(rospack find launch_pi)/launch/box_pi.launch
+            $(rospack find launch_pi)/launch/pi_calib_camera.launch
             "
           use_gui:=false
     - shell_command:

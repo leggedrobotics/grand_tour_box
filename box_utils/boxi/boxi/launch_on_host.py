@@ -1,11 +1,8 @@
 from boxi import BOX_ROOT_DIR, shell_run
-import argparse
 import configparser
 import os
 import subprocess
-import sys
 from pathlib import Path
-from time import sleep
 
 
 def add_arguments(parser):
@@ -34,6 +31,7 @@ def connect_to_wifi(ssid, password):
         print("Successfully connected")
     except subprocess.CalledProcessError as e:
         print(f"Failed to connect via WiFi. Connect manually or with ethernet. Error: {e}")
+
 
 def main(args):
     ssid, password = load_wifi_config()

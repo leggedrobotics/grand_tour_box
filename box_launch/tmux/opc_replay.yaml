@@ -1,4 +1,4 @@
-session_name: box_replay
+session_name: opc
 
 before_script: "../scripts/initialize_session.sh"
 
