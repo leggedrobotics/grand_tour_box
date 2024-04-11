@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>launch_box</name>
+  <version>1.0.0</version>
+  <description>RSL's launch_box package.</description>
+  <license>Proprietary</license>
+  <maintainer email="jonfrey@ethz.ch">Jonas Frey</maintainer>
+  <author email="jonfrey@ethz.ch">Jonas Frey</author>
+  <buildtool_depend>catkin</buildtool_depend>
+</package>
