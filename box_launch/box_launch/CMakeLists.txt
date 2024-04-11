@@ -9,7 +9,7 @@
 # See the License for more information.
 #=============================================================================
 cmake_minimum_required(VERSION 3.10)
-project(launch_box)
+project(box_launch)
 
 #==
 # Dependencies

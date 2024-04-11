@@ -27,9 +27,9 @@ def main(args):
     hostname = socket.gethostname()
 
     for host in hosts:
-        print('Start ros in calibration mode "' + str(args.m) + '" on', host)
+        print('Start ros in calibration mode "' + str(args.mode) + '" on', host)
         if host == hostname:
-            cmd = f"boxi start -c " + host + "_" + args.mode
+            cmd = f"boxi launch_on_host -c " + host + "_" + args.mode
         else:
             cmd = f"ssh -o ConnectTimeout=4 rsl@" + host + " -t /home/rsl/.local/bin/boxi launch_on_host -c " + host + "_" + args.mode
         try:
