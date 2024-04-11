@@ -14,18 +14,20 @@ def add_arguments(parser):
     parser.add_argument("-c", choices=yamls, help="tmux configuration file name", default="box_opc")
     return parser
 
+
 # Use a .gitignored .ini file to store ssid and password. Example format:
 # [WiFi]
 # ssid=wifiNetworkName
 # password=wifiPassword
-def load_wifi_config(config_file='wifi_config.ini'):
-    config_file_path = os.path.expanduser('~/'+config_file)
+def load_wifi_config(config_file="wifi_config.ini"):
+    config_file_path = os.path.expanduser("~/" + config_file)
     if not os.path.exists(config_file_path):
         print("To autoconnect, place a wifi_config.ini file in your user home directory.")
         return None, None
     config = configparser.ConfigParser()
     config.read(config_file_path)
-    return config['WiFi']['ssid'], config['WiFi']['password']
+    return config["WiFi"]["ssid"], config["WiFi"]["password"]
+
 
 def connect_to_wifi(ssid, password):
     print(f"Attempting to connect to Grand Tour Box router.")
@@ -34,6 +36,7 @@ def connect_to_wifi(ssid, password):
         print("Successfully connected")
     except subprocess.CalledProcessError as e:
         print(f"Failed to connect via WiFi. Connect manually or with ethernet. Error: {e}")
+
 
 def main(args):
     ssid, password = load_wifi_config()
