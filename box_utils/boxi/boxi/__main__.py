@@ -4,17 +4,18 @@ import logging as log
 import importlib
 
 command_register = [
-    "push",
+    
     "black",
-    "start",
-    "initial_clock_sync",
+    "catkin_build",
     "delete_data",
-    "set_time_to_opc",
-    "restart_ptp",
-    "stop_all",
-    "start_all",
     "get_data",
-    "kill_all",
+    "initial_clock_sync",
+    "kill",
+    "launch",
+    "launch_on_host",
+    "push",
+    "restart_ptp",
+    "set_time_to_opc",
     "shutdown",
 ]
 
