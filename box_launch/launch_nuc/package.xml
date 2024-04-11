@@ -12,6 +12,7 @@
   <depend>bringup_hdr</depend>
   <depend>bringup_livox</depend>
   <exec_depend>bringup_fkie</exec_depend>
+  <depend>box_launch</depend>
   <depend>box_recording</depend>
   <depend>box_rviz</depend>
   <depend>box_health</depend>

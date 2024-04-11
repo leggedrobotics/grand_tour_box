@@ -96,5 +96,7 @@ This is based on box_drivers/zed-ros-wrapper/zed_wrapper/launch/include/zed_came
             <!-- GPU ID -->
             <param name="general/gpu_id"                    value="$(arg gpu_id)" />
         </node>
+
+      
     </group>
 </launch>

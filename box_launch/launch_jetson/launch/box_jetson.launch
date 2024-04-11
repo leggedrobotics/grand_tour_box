@@ -1,7 +1,7 @@
 <launch>
   <arg name="calibration" default="no"/>
-  <include file="$(find bringup_alphasense)/launch/alphasense.launch"> <arg name="calibration" value="$(arg calibration)"/> </include>
   <include file="$(find bringup_zed2i)/launch/zed2i.launch"> <arg name="calibration" value="$(arg calibration)"/> </include>
+  <include file="$(find bringup_alphasense)/launch/alphasense.launch"> <arg name="calibration" value="$(arg calibration)"/> </include>
   <include file="$(find bringup_gps)/launch/rover.launch"> <arg name="calibration" value="$(arg calibration)"/> </include>
   <include file="$(find bringup_hesai)/launch/hesai_lidar.launch"> <arg name="calibration" value="$(arg calibration)"/> </include>
   <include file="$(find bringup_livox)/launch/livox_lidar.launch"> <arg name="calibration" value="$(arg calibration)"/> </include>
