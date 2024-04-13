@@ -1,0 +1,78 @@
+<?xml version="1.0" ?>
+
+<robot name="box" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+<!-- YAML file containing the default values from CAD -->
+<xacro:property name="default_calib" value="$(find box_model)/urdf/box/calibrations/default_calibration.yaml" />
+
+<!-- load the YAML calibration file into a property -->
+<xacro:property name="calib" value="${xacro.load_yaml(default_calib)}"/>
+   
+  <!-- Origin -->
+  <link name="leica_world"/> 
+
+  <!-- Totalstation base position --> 
+  <link name="leica_base"/>
+  <joint name="leica_world_to_leica_base" type="fixed">   
+    <origin xyz="1.0 1.0 1.0" rpy="0.0 0.0 0.0" />
+    <parent link="leica_world" />
+    <child link="leica_base" />
+  </joint>
+
+  <!-- Totalstation model --> 
+  <link name="leica_base_model">
+    <visual>
+      <geometry>
+        <cylinder length="0.2" radius="0.08"/>
+      </geometry>
+    </visual>
+  </link>
+  <joint name="leica_base_to_leica_base_model" type="fixed">   
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+    <parent link="leica_base" />
+    <child link="leica_base_model" />
+  </joint>
+
+  <!-- Measured prism position, changes when totalstation is tracking --> 
+  <link name="leica_pos"/>
+  <joint name="leica_world_to_leica_pos" type="fixed">
+    <origin xyz="0.15 0.0 -0.3" rpy="0.0 0.0 0.0" />
+    <parent link="leica_world" />
+    <child link="leica_pos" />
+  </joint>
+
+  <!-- Prism -->
+  <link name="prism"/>
+  <joint name="leica_pos_to_prism" type="fixed">   
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+    <parent link="leica_pos" />
+    <child link="prism" />
+  </joint>
+
+  <!-- Box base -->
+  <link name="box_base"/>
+  <joint name="prism_to_box_base" type="fixed">   
+    <origin xyz="-0.075 0.0 -0.15" rpy="0.0 0.0 0.0" />
+    <parent link="prism" />
+    <child link="box_base" />
+  </joint>
+
+  <!-- Model base -->
+  <link name="model_base">
+    <visual>
+      <geometry>
+        <mesh filename="package://box_model/urdf/box/mesh/box_model1.dae" />
+      </geometry>
+    </visual>
+  </link>
+  <joint name="box_base_to_model_base" type="fixed">
+    <origin xyz="0.0 0.0 0.0" rpy="${pi} 0.0 ${pi/2}" />
+    <parent link="box_base" />
+    <child link="model_base" />    
+  </joint>
+
+  <xacro:include filename="$(find box_model)/urdf/cameras/cameras.urdf.xacro" />
+  <xacro:include filename="$(find box_model)/urdf/lidars/lidars.urdf.xacro" />
+  <xacro:include filename="$(find box_model)/urdf/imus/imus.urdf.xacro" />
+
+</robot>
