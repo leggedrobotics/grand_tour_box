@@ -1,11 +1,11 @@
 """
-Calibration File Manager. Allows for easy updated to the calibration.yaml file.
+Calibration File Manager. Allows for easy updates to the calibration.yaml file.
 
 Example Usage:
 from calibration_tools.calibration import CalibFileManager
 
 def main():
-    manager = CalibFileManager('calibration.yaml', 'relative/path/to/box_model/dir')
+    manager = CalibFileManager('default_calibration.yaml', 'calibration.yaml', 'relative/path/to/box_model/dir')
     # calib_name must match an exisitng calibration name in the .xacro files.
     manager.update_calibration(
             calib_name="box_base_to_alphasense_base",
@@ -27,6 +27,7 @@ import xml.etree.ElementTree as ET
 import os
 import glob
 import numpy as np
+import sys
 from dataclasses import dataclass, field
 from typing import Dict, List
 
@@ -59,9 +60,10 @@ class CalibrationData:
 
 class CalibFileManager:
 
-    def __init__(self, calibration_file: str, box_model_directory: str):
+    def __init__(self, calibration_input_file: str, calibration_output_file: str, box_model_directory: str):
         """Initialize the calibration manager, load data and generate enums."""
-        self.calibration_file = calibration_file
+        self.calibration_input_file = calibration_input_file
+        self.calibration_output_file = calibration_output_file
         self.box_model_directory = box_model_directory
         self.calib_data = self._load_calibration()
         self.valid_names = self._load_calib_names()
@@ -69,11 +71,10 @@ class CalibFileManager:
     def _load_calibration(self) -> CalibrationData:
         """Load calibration data from a YAML file. Creates a new file if not found."""
         try:
-            with open(self.calibration_file, "r") as file:
+            with open(self.calibration_input_file, "r") as file:
                 data = yaml.safe_load(file) or {}
         except FileNotFoundError:
-            print(f"Calibration file not found. Creating a new calibration file at {self.calibration_file}.")
-            data = {}
+            sys.exit(f"Deafault calibration file not found. Check default calib file: {self.calibration_input_file}.")
         return CalibrationData(data)
 
     def _load_calib_names(self):
@@ -102,5 +103,5 @@ class CalibFileManager:
 
         yaml.add_representer(np.float32, numpy_float_handler)
         yaml.add_representer(np.float64, numpy_float_handler)
-        with open(self.calibration_file, "w") as file:
+        with open(self.calibration_output_file, "w") as file:
             yaml.dump(self.calib_data.data, file, sort_keys=False)

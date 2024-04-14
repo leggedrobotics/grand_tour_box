@@ -1,0 +1,158 @@
+# Default calibration, hand aligned
+# TODO(kappi): Replace with CAD values for new calib relationships.
+
+box_base_to_cameras_front:
+  x: 0.45
+  y: 0.0
+  z: 0.09
+  roll: 0.0
+  pitch: 0.0
+  yaw: 0.0
+
+cameras_front_to_hdr_front:
+  x: 0.0
+  y: 0.0
+  z: 0.0
+  roll: -1.57079632679
+  pitch: 0.0
+  yaw: -1.57079632679
+
+hdr_front_to_alphasense_front_left:
+  x: -0.055
+  y: -0.04
+  z: 0.0
+  roll: 0.0
+  pitch: 0.0
+  yaw: 0.0
+
+
+alphasense_front_left_to_alphasense_front_middle:
+  x: 0.054
+  y: 0.0
+  z: 0.0
+  roll: 0.0
+  pitch: 0.0
+  yaw: 0.0
+
+
+alphasense_front_middle_to_alphasense_front_right:
+  x: 0.054
+  y: 0.0
+  z: 0.0
+  roll: 0.0
+  pitch: 0.0
+  yaw: 0.0
+
+
+alphasense_front_right_to_zed_right:
+  x: 0.005
+  y: 0.08
+  z: 0.0
+  roll: 0.0
+  pitch: 0.0
+  yaw: 0.0
+
+
+zed_right_to_zed_left:
+  x: -0.12
+  y: 0.0
+  z: 0.0
+  roll: 0.0
+  pitch: 0.0
+  yaw: 0.0
+
+box_base_to_cameras_right:
+  x: 0.37
+  y: -0.10
+  z: 0.09
+  roll: 0.0
+  pitch: 0.0
+  yaw: 0.0
+
+cameras_right_to_hdr_right:
+  x: 0.0
+  y: 0.0
+  z: 0.0
+  roll: 1.57079632679
+  pitch: 3.14159265359
+  yaw: 0.0
+
+hdr_right_to_alphasense_right:
+  x: 0.0
+  y: -0.04
+  z: 0.0
+  roll: 0.0
+  pitch: 0.0
+  yaw: 0.0
+
+box_base_to_cameras_left:
+  x: 0.37
+  y: 0.10
+  z: 0.09
+  roll: 0.0
+  pitch: 0.0
+  yaw: 0.0
+
+cameras_left_to_hdr_left:
+  x: 0.0
+  y: 0.0
+  z: 0.0
+  roll: -1.57079632679
+  pitch: 0.0
+  yaw: 0.0
+
+hdr_left_to_alphasense_left:
+  x: 0.0
+  y: -0.04
+  z: 0.0
+  roll: 0.0
+  pitch: 0.0
+  yaw: 0.0
+
+box_base_to_lidars:
+  x: 0.37
+  y: 0.0
+  z: 0.2
+  roll: 0.0
+  pitch: 0.0
+  yaw: 0.0
+
+lidars_to_hesai:
+  x: 0.0
+  y: 0.0
+  z: 0.0
+  roll: 0.0
+  pitch: 0.0
+  yaw: 1.57079632679
+
+hesai_to_livox:
+  x: 0.0
+  y: 0.0
+  z: 0.10
+  roll: 3.14159265359
+  pitch: 0.0
+  yaw: -1.57079632679
+
+alphasense_front_left_to_imu_stim320:
+  x: 0.054
+  y: 0.07
+  z: -0.06
+  roll: 1.57079632679
+  pitch: -1.57079632679
+  yaw: 0.0
+
+alphasense_front_left_to_imu_adis16475:
+  x: 0.054
+  y: 0.03
+  z: -0.03
+  roll: 1.57079632679
+  pitch: 0.0
+  yaw: 0.0
+
+alphasense_front_left_to_imu_alphasense:
+  x: 0.054
+  y: 0.0
+  z: -0.06
+  roll: 1.57079632679
+  pitch: -1.57079632679
+  yaw: 0.0

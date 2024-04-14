@@ -1,22 +1,27 @@
 """
-Standalone script to load the calibration data output from Frank Fu (fu@oxfordrobotics.institute)
-and store update our .xacro calibration files. 
+Standalone script that loads calibration output data from Frank Fu (fu@oxfordrobotics.institute) and saves 
+it in a format usable by our .xacro files.
+
+This script relies on the presence of default_calibration.yaml, and will overwrite individual calibrations that it
+can compute, such that the output always contains all necessary calibrations.
+
+Example Usage:
+python box_utils/box_calibration/calib_importer.py test_calib.yaml box_model/box_model/urdf 
 """
 
 import os
 import glob
 import sys
 import numpy as np
+import argparse
 from typing import Dict
 from calibration_tools.parsers.calib_parser import Calibration, CalibParser
 from calibration_tools.parsers.yaml_calib_parser import YamlCalibParser
 from calibration_tools.calib_file_manager import CalibFileManager
 
-CALIB_OUTPUT_FILE = "test_calibrations.yaml"
-BOX_MODEL_DIR = "box_model/box_model/urdf"
-
 
 def process_calibrations(raw_calibrations: Dict[str, Calibration], manager: CalibFileManager):
+    print("Processing calibrations...")
     # Set the alphasense base, coincident with alphasense Cam0 / front-left.
     try:
         manager.update_calibration(
@@ -30,7 +35,6 @@ def process_calibrations(raw_calibrations: Dict[str, Calibration], manager: Cali
     parser = CalibParser()
 
     # Set the box_base frame to be coincident with the Stim320 IMU
-    tf = np.identity(4)
     manager.update_calibration("box_base_to_imu_stim320", **parser.row_major_se3_to_xyz_rpy(np.identity(4)))
 
     # Alphasense Cameras - Cam0 / front-left -> camX is equivalent to alphasense_base -> camX
@@ -50,10 +54,13 @@ def process_calibrations(raw_calibrations: Dict[str, Calibration], manager: Cali
     )
     # TODO(kappi): Get zed_right_to_zed_left from Zed2i driver.
 
+    # TODO(kappi): HDR, Lasers, IMU
+
+    print(f"Writing calibrations to {manager.calibration_output_file}")
     manager.save_calibration_file()
 
 
-def main():
+def main(args):
     # Path of the directory where this script is located
     script_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -65,15 +72,23 @@ def main():
     parser = YamlCalibParser()
     all_calibrations = {}
 
+    print(f"Found raw input calib files: {yaml_input_paths}")
     for file_path in yaml_input_paths:
         calibrations = parser.parse_calib_file(file_path)
         all_calibrations.update(calibrations)
 
     # Tool to manage safely saving calibrations to our .xacro files.
-    manager = CalibFileManager(CALIB_OUTPUT_FILE, BOX_MODEL_DIR)
+    print(f"Loading .xacro files to register valid calibrations...")
+    manager = CalibFileManager(
+        os.path.join(script_dir, "default_calibration.yaml"), args.calib_output_file, args.box_model_dir
+    )
 
     process_calibrations(all_calibrations, manager)
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description="Update .xacro calibration files from calibration data.")
+    parser.add_argument("calib_output_file", type=str, help="The relative output file path for calibration data.")
+    parser.add_argument("box_model_dir", type=str, help="Relative directory path for the box model URDF files.")
+    args = parser.parse_args()
+    main(args)
