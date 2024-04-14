@@ -1,0 +1,106 @@
+"""
+Calibration File Manager. Allows for easy updated to the calibration.yaml file.
+
+Example Usage:
+from calibration_tools.calibration import CalibFileManager
+
+def main():
+    manager = CalibFileManager('calibration.yaml', 'relative/path/to/box_model/dir')
+    # calib_name must match an exisitng calibration name in the .xacro files.
+    manager.update_calibration(
+            calib_name="box_base_to_alphasense_base",
+            x=0.45,
+            y=0.0,
+            z=0.1,
+            roll=0.0,
+            pitch=0.0,
+            yaw=0.0
+        )
+    manager.save_calibration_file()
+
+if __name__ == "__main__":
+    main()
+"""
+
+import yaml
+import xml.etree.ElementTree as ET
+import os
+import glob
+import numpy as np
+from dataclasses import dataclass, field
+from typing import Dict, List
+
+
+def find_xacro_files(directory: str) -> List[str]:
+    """Recursively find all .xacro files in the given directory."""
+    return glob.glob(os.path.join(directory, "**", "*.xacro"), recursive=True)
+
+
+def extract_joint_names_from_xacro(file_path: str) -> List[str]:
+    """Extract joint names from a given xacro file."""
+    joint_names = []
+    print(f"Parsing .xacro file: {file_path}")
+    tree = ET.parse(file_path)
+    root = tree.getroot()
+    for joint in root.findall(".//joint"):
+        if "name" in joint.attrib:
+            joint_names.append(joint.attrib["name"])
+    return joint_names
+
+
+@dataclass
+class CalibrationData:
+    data: Dict[str, Dict[str, float]] = field(default_factory=dict)
+
+    def update_calibration(self, name, x: float, y: float, z: float, roll: float, pitch: float, yaw: float):
+        """Update calibration data for a specified joint name."""
+        self.data[name] = {"x": x, "y": y, "z": z, "roll": roll, "pitch": pitch, "yaw": yaw}
+
+
+class CalibFileManager:
+
+    def __init__(self, calibration_file: str, box_model_directory: str):
+        """Initialize the calibration manager, load data and generate enums."""
+        self.calibration_file = calibration_file
+        self.box_model_directory = box_model_directory
+        self.calib_data = self._load_calibration()
+        self.valid_names = self._load_calib_names()
+
+    def _load_calibration(self) -> CalibrationData:
+        """Load calibration data from a YAML file. Creates a new file if not found."""
+        try:
+            with open(self.calibration_file, "r") as file:
+                data = yaml.safe_load(file) or {}
+        except FileNotFoundError:
+            print(f"Calibration file not found. Creating a new calibration file at {self.calibration_file}.")
+            data = {}
+        return CalibrationData(data)
+
+    def _load_calib_names(self):
+        """Load joint names from xacro files and generate calibration enums."""
+        if not os.path.isdir(self.box_model_directory):
+            raise ValueError(f"The specified directory does not exist: {self.box_model_directory}")
+        xacro_files = find_xacro_files(self.box_model_directory)
+        if len(xacro_files) == 0:
+            raise ValueError(f"{self.box_model_directory} has no .xacro files. Check box_model dir path.")
+        joint_names = set()
+        for file_path in xacro_files:
+            joint_names.update(extract_joint_names_from_xacro(file_path))
+        return joint_names
+
+    def update_calibration(self, calib_name, x: float, y: float, z: float, roll: float, pitch: float, yaw: float):
+        """Update the calibration for a given enum name and transformation values. Checks if name is valid."""
+        if not calib_name in self.valid_names:
+            raise ValueError(f"{calib_name} is not a valid calibration entry. Check or update .xacro files.")
+        self.calib_data.update_calibration(calib_name, x, y, z, roll, pitch, yaw)
+
+    def save_calibration_file(self):
+        """Save the current calibration data back to the YAML file."""
+
+        def numpy_float_handler(dumper, data):
+            return dumper.represent_float(float(data))
+
+        yaml.add_representer(np.float32, numpy_float_handler)
+        yaml.add_representer(np.float64, numpy_float_handler)
+        with open(self.calibration_file, "w") as file:
+            yaml.dump(self.calib_data.data, file, sort_keys=False)

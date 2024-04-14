@@ -19,65 +19,65 @@
 
   <!-- Alphasense Cam0/ front left (should be identity)-->
   <link name="alphasense_front_left" />
-  <joint name="alphasesnse_base_to_alphasense_front_left" type="fixed">   
-    <origin xyz=" ${calib['alphasesnse_base_to_alphasense_front_left']['x']}
-                  ${calib['alphasesnse_base_to_alphasense_front_left']['y']}
-                  ${calib['alphasesnse_base_to_alphasense_front_left']['z']}" 
-            rpy=" ${calib['alphasesnse_base_to_alphasense_front_left']['roll']}
-                  ${calib['alphasesnse_base_to_alphasense_front_left']['pitch']}
-                  ${calib['alphasesnse_base_to_alphasense_front_left']['yaw']}" />
+  <joint name="alphasense_base_to_alphasense_front_left" type="fixed">   
+    <origin xyz=" ${calib['alphasense_base_to_alphasense_front_left']['x']}
+                  ${calib['alphasense_base_to_alphasense_front_left']['y']}
+                  ${calib['alphasense_base_to_alphasense_front_left']['z']}" 
+            rpy=" ${calib['alphasense_base_to_alphasense_front_left']['roll']}
+                  ${calib['alphasense_base_to_alphasense_front_left']['pitch']}
+                  ${calib['alphasense_base_to_alphasense_front_left']['yaw']}" />
     <parent link="alphasense_base" />
     <child link="alphasense_front_left" />
   </joint>
 
   <!-- Alphasense Cam1/ front right -->
   <link name="alphasense_front_right" />
-  <joint name="alphasesnse_base_to_alphasense_front_right" type="fixed">   
-    <origin xyz=" ${calib['alphasesnse_base_to_alphasense_front_right']['x']}
-                  ${calib['alphasesnse_base_to_alphasense_front_right']['y']}
-                  ${calib['alphasesnse_base_to_alphasense_front_right']['z']}" 
-            rpy=" ${calib['alphasesnse_base_to_alphasense_front_right']['roll']}
-                  ${calib['alphasesnse_base_to_alphasense_front_right']['pitch']}
-                  ${calib['alphasesnse_base_to_alphasense_front_right']['yaw']}" />
+  <joint name="alphasense_base_to_alphasense_front_right" type="fixed">   
+    <origin xyz=" ${calib['alphasense_base_to_alphasense_front_right']['x']}
+                  ${calib['alphasense_base_to_alphasense_front_right']['y']}
+                  ${calib['alphasense_base_to_alphasense_front_right']['z']}" 
+            rpy=" ${calib['alphasense_base_to_alphasense_front_right']['roll']}
+                  ${calib['alphasense_base_to_alphasense_front_right']['pitch']}
+                  ${calib['alphasense_base_to_alphasense_front_right']['yaw']}" />
     <parent link="alphasense_base" />
     <child link="alphasense_front_right" />
   </joint>
 
   <!-- Alphasense Cam2/ front middle -->
   <link name="alphasense_front_middle" />
-  <joint name="alphasesnse_base_to_alphasense_front_middle" type="fixed">   
-    <origin xyz=" ${calib['alphasesnse_base_to_alphasense_front_middle']['x']}
-                  ${calib['alphasesnse_base_to_alphasense_front_middle']['y']}
-                  ${calib['alphasesnse_base_to_alphasense_front_middle']['z']}" 
-            rpy=" ${calib['alphasesnse_base_to_alphasense_front_middle']['roll']}
-                  ${calib['alphasesnse_base_to_alphasense_front_middle']['pitch']}
-                  ${calib['alphasesnse_base_to_alphasense_front_middle']['yaw']}" />
+  <joint name="alphasense_base_to_alphasense_front_middle" type="fixed">   
+    <origin xyz=" ${calib['alphasense_base_to_alphasense_front_middle']['x']}
+                  ${calib['alphasense_base_to_alphasense_front_middle']['y']}
+                  ${calib['alphasense_base_to_alphasense_front_middle']['z']}" 
+            rpy=" ${calib['alphasense_base_to_alphasense_front_middle']['roll']}
+                  ${calib['alphasense_base_to_alphasense_front_middle']['pitch']}
+                  ${calib['alphasense_base_to_alphasense_front_middle']['yaw']}" />
     <parent link="alphasense_base" />
     <child link="alphasense_front_middle" />
   </joint>
 
   <!-- Alphasense Cam3/ left -->
   <link name="alphasense_left" />
-  <joint name="alphasesnse_base_to_alphasense_left" type="fixed">   
-    <origin xyz=" ${calib['alphasesnse_base_to_alphasense_left']['x']}
-                  ${calib['alphasesnse_base_to_alphasense_left']['y']}
-                  ${calib['alphasesnse_base_to_alphasense_left']['z']}" 
-            rpy=" ${calib['alphasesnse_base_to_alphasense_left']['roll']}
-                  ${calib['alphasesnse_base_to_alphasense_left']['pitch']}
-                  ${calib['alphasesnse_base_to_alphasense_left']['yaw']}" />
+  <joint name="alphasense_base_to_alphasense_left" type="fixed">   
+    <origin xyz=" ${calib['alphasense_base_to_alphasense_left']['x']}
+                  ${calib['alphasense_base_to_alphasense_left']['y']}
+                  ${calib['alphasense_base_to_alphasense_left']['z']}" 
+            rpy=" ${calib['alphasense_base_to_alphasense_left']['roll']}
+                  ${calib['alphasense_base_to_alphasense_left']['pitch']}
+                  ${calib['alphasense_base_to_alphasense_left']['yaw']}" />
     <parent link="alphasense_base" />
     <child link="alphasense_left" />
   </joint>
 
   <!-- Alphasense Cam4/ right -->
   <link name="alphasense_right" />
-  <joint name="alphasesnse_base_to_alphasense_right" type="fixed">   
-    <origin xyz=" ${calib['alphasesnse_base_to_alphasense_right']['x']}
-                  ${calib['alphasesnse_base_to_alphasense_right']['y']}
-                  ${calib['alphasesnse_base_to_alphasense_right']['z']}" 
-            rpy=" ${calib['alphasesnse_base_to_alphasense_right']['roll']}
-                  ${calib['alphasesnse_base_to_alphasense_right']['pitch']}
-                  ${calib['alphasesnse_base_to_alphasense_right']['yaw']}" />
+  <joint name="alphasense_base_to_alphasense_right" type="fixed">   
+    <origin xyz=" ${calib['alphasense_base_to_alphasense_right']['x']}
+                  ${calib['alphasense_base_to_alphasense_right']['y']}
+                  ${calib['alphasense_base_to_alphasense_right']['z']}" 
+            rpy=" ${calib['alphasense_base_to_alphasense_right']['roll']}
+                  ${calib['alphasense_base_to_alphasense_right']['pitch']}
+                  ${calib['alphasense_base_to_alphasense_right']['yaw']}" />
     <parent link="alphasense_base" />
     <child link="alphasense_right" />
   </joint>
@@ -176,3 +176,5 @@
     <parent link="zed_right" />
     <child link="zed_left" />
   </joint>
+
+</robot>
