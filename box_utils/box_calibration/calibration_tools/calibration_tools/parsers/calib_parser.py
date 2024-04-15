@@ -19,7 +19,7 @@ class Calibration:
 
     def to_output_format(self) -> tuple:
         """Packages the calibration data into tuple."""
-        return (self.x, self.y, self.z, self.roll, self.pitch, self.yaw)
+        return (float(self.x), float(self.y), float(self.z), float(self.roll), float(self.pitch), float(self.yaw))
 
 
 class CalibParser:
@@ -27,35 +27,39 @@ class CalibParser:
     Base class for parsing calibration files.
     """
 
-    def row_major_se3_roll(self, T):
+    @staticmethod
+    def row_major_se3_roll(T):
         try:
             return math.atan2(T[1, 0], T[0, 0])
         except ZeroDivisionError:
             print("[calib_parser] Error: gimbal lock in roll")
 
-    def row_major_se3_pitch(self, T):
+    @staticmethod
+    def row_major_se3_pitch(T):
         try:
             return math.atan2(-T[2, 0], math.sqrt(T[2, 1] ** 2 + T[2, 2] ** 2))
         except ZeroDivisionError:
             print("[calib_parser] Error: gimbal lock in pitch")
 
-    def row_major_se3_yaw(self, T):
+    @staticmethod
+    def row_major_se3_yaw(T):
         try:
             return math.atan2(T[2, 1], T[2, 2])
         except ZeroDivisionError:
             print("[calib_parser] Error: gimbal lock in yaw")
 
-    def row_major_se3_to_xyz_rpy(self, transformation):
+    @staticmethod
+    def row_major_se3_to_xyz_rpy(transformation):
         # Ensure transformation is a numpy array
         transformation = np.array(transformation)
 
         xyz_rpy = {
-            "x": transformation[0, 3],
-            "y": transformation[1, 3],
-            "z": transformation[2, 3],
-            "roll": self.row_major_se3_roll(transformation),
-            "pitch": self.row_major_se3_pitch(transformation),
-            "yaw": self.row_major_se3_yaw(transformation),
+            "x": float(transformation[0, 3]),
+            "y": float(transformation[1, 3]),
+            "z": float(transformation[2, 3]),
+            "roll": float(CalibParser.row_major_se3_roll(transformation)),
+            "pitch": float(CalibParser.row_major_se3_pitch(transformation)),
+            "yaw": float(CalibParser.row_major_se3_yaw(transformation)),
         }
         return xyz_rpy
 

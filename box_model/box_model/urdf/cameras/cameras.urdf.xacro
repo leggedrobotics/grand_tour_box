@@ -138,7 +138,7 @@
 
   <!-- ////////// ZED2i ////////// -->
 
-  <!-- ZED Base (coincides with Zed2i right cam) -->
+  <!-- ZED Base -->
   <link name="zed_base" />
   <joint name="box_base_to_zed_base" type="fixed">   
     <origin xyz=" ${calib['box_base_to_zed_base']['x']}
@@ -151,30 +151,6 @@
     <child link="zed_base" />
   </joint>
 
-  <!-- Zed right (should be identity)-->
-  <link name="zed_right" />
-  <joint name="zed_base_to_zed_right" type="fixed">   
-    <origin xyz=" ${calib['zed_base_to_zed_right']['x']}
-                  ${calib['zed_base_to_zed_right']['y']}
-                  ${calib['zed_base_to_zed_right']['z']}" 
-            rpy=" ${calib['zed_base_to_zed_right']['roll']}
-                  ${calib['zed_base_to_zed_right']['pitch']}
-                  ${calib['zed_base_to_zed_right']['yaw']}" />
-    <parent link="zed_base" />
-    <child link="zed_right" />
-  </joint>
-
-  <!-- Zed left (parent is zed_right not zed_base because we use the zed2i calib data) -->
-  <link name="zed_left" />
-  <joint name="zed_right_to_zed_left" type="fixed">   
-    <origin xyz=" ${calib['zed_right_to_zed_left']['x']}
-                  ${calib['zed_right_to_zed_left']['y']}
-                  ${calib['zed_right_to_zed_left']['z']}" 
-            rpy=" ${calib['zed_right_to_zed_left']['roll']}
-                  ${calib['zed_right_to_zed_left']['pitch']}
-                  ${calib['zed_right_to_zed_left']['yaw']}" />
-    <parent link="zed_right" />
-    <child link="zed_left" />
-  </joint>
+  <!-- Zed right and left from from Zed2i TF Publisher -->
 
 </robot>

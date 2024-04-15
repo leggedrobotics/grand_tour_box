@@ -19,42 +19,103 @@ from calibration_tools.parsers.calib_parser import Calibration, CalibParser
 from calibration_tools.parsers.yaml_calib_parser import YamlCalibParser
 from calibration_tools.calib_file_manager import CalibFileManager
 
+DEFAULT_CALIBRATION_FILE = "calibration_default_data/default_calibration.yaml"
+INPUT_CALIBRATION_DIR = "calibration_input_data"
+
+
+class TopicMap:
+    """Calib Input data is named by Ros Topic Name."""
+
+    STIM320_TO_ALPHASENSE_FRONT_LEFT = "stim320_to_alphasense_front_left"
+    ALPHASENSE_FRONT_LEFT_TO_ALPHASENSE_FRONT_LEFT = "/gt_box/alphasense_driver_node/cam0"
+    ALPHASENSE_FRONT_LEFT_TO_ALPHASENSE_FRONT_RIGHT = "/gt_box/alphasense_driver_node/cam1"
+    ALPHASENSE_FRONT_LEFT_TO_ALPHASENSE_FRONT_MIDDLE = "/gt_box/alphasense_driver_node/cam2/color/image"
+    ALPHASENSE_FRONT_LEFT_TO_ALPHASENSE_LEFT = "/gt_box/alphasense_driver_node/cam3/color/image"
+    ALPHASENSE_FRONT_LEFT_TO_ALPHASENSE_RIGHT = "/gt_box/alphasense_driver_node/cam4/color/image"
+    ALPHASENSE_FRONT_LEFT_TO_ZED_LEFT = "/gt_box/zed2i/zed_node/left_raw/image_raw_color"
+    ALPHASENSE_FRONT_LEFT_TO_ZED_RIGHT = "/gt_box/zed2i/zed_node/right_raw/image_raw_color"
+
+
+def inverse_transform(T):
+    """Compute the inverse of an SE(3) transformation matrix."""
+    R = T[0:3, 0:3]  # Rotation matrix
+    t = T[0:3, 3]  # Translation vector
+    T_inv = np.eye(4)  # Initialize a 4x4 identity matrix
+    R_inv = R.T  # Transpose of rotation matrix is its inverse
+    T_inv[0:3, 0:3] = R_inv
+    T_inv[0:3, 3] = -R_inv @ t
+    return T_inv
+
+
+def process_alphasense(raw_calibrations: Dict[str, Calibration], manager: CalibFileManager):
+    # Alphasense Cameras - Cam0 / front-left -> camX is equivalent to alphasense_base -> camX
+    manager.update_calibration(
+        "alphasense_base_to_alphasense_front_left",
+        *raw_calibrations[TopicMap.ALPHASENSE_FRONT_LEFT_TO_ALPHASENSE_FRONT_LEFT].to_output_format(),
+    )
+    manager.update_calibration(
+        "alphasense_base_to_alphasense_front_right",
+        *raw_calibrations[TopicMap.ALPHASENSE_FRONT_LEFT_TO_ALPHASENSE_FRONT_RIGHT].to_output_format(),
+    )
+    manager.update_calibration(
+        "alphasense_base_to_alphasense_front_middle",
+        *raw_calibrations[TopicMap.ALPHASENSE_FRONT_LEFT_TO_ALPHASENSE_FRONT_MIDDLE].to_output_format(),
+    )
+    manager.update_calibration(
+        "alphasense_base_to_alphasense_left",
+        *raw_calibrations[TopicMap.ALPHASENSE_FRONT_LEFT_TO_ALPHASENSE_LEFT].to_output_format(),
+    )
+    manager.update_calibration(
+        "alphasense_base_to_alphasense_right",
+        *raw_calibrations[TopicMap.ALPHASENSE_FRONT_LEFT_TO_ALPHASENSE_RIGHT].to_output_format(),
+    )
+
+
+def process_zed2i(raw_calibrations: Dict[str, Calibration], manager: CalibFileManager):
+    # Zed2i Cameras - compute the location of the Zed2i base_link, and then use Zed2i's
+    # published tf_static for the nested calibrations.
+    alphasense_to_zed_left = raw_calibrations[TopicMap.ALPHASENSE_FRONT_LEFT_TO_ZED_LEFT].se3
+    zed_left_to_zed_base = np.identity(4)  # TODO(load from Zed2i .xacro)
+    box_base_to_alphasense = raw_calibrations[TopicMap.STIM320_TO_ALPHASENSE_FRONT_LEFT].se3
+    box_base_to_zed_base = box_base_to_alphasense @ alphasense_to_zed_left @ zed_left_to_zed_base
+
+    manager.update_calibration(f"box_base_to_zed_base", **CalibParser.row_major_se3_to_xyz_rpy(box_base_to_zed_base))
+
+
+def process_hdr(raw_calibrations: Dict[str, Calibration], manager: CalibFileManager):
+    pass
+
+
+def process_stim320(raw_calibrations: Dict[str, Calibration], manager: CalibFileManager):
+    # Set the alphasense base, coincident with alphasense Cam0 / front-left.
+    manager.update_calibration(
+        "box_base_to_alphasense_base",
+        *raw_calibrations[TopicMap.STIM320_TO_ALPHASENSE_FRONT_LEFT].to_output_format(),
+    )
+
+    # Set the box_base frame to be coincident with the Stim320 IMU
+    manager.update_calibration("box_base_to_imu_stim320", **CalibParser.row_major_se3_to_xyz_rpy(np.identity(4)))
+
 
 def process_calibrations(raw_calibrations: Dict[str, Calibration], manager: CalibFileManager):
     print("Processing calibrations...")
-    # Set the alphasense base, coincident with alphasense Cam0 / front-left.
+    # Note: stim320 must be done first to establish the box_base frame.
     try:
-        manager.update_calibration(
-            "box_base_to_alphasense_base",
-            *raw_calibrations["stim320_to_alphasense_front_left"].to_output_format(),
-        )
+        process_stim320(raw_calibrations, manager)
     except KeyError as e:
-        sys.exit(f"stim320_to_alphasense_front_left not found in calibration data. box_base cannot be established.")
-    box_base_to_alphasense_front_right_tf = raw_calibrations["stim320_to_alphasense_front_left"].se3
-
-    parser = CalibParser()
-
-    # Set the box_base frame to be coincident with the Stim320 IMU
-    manager.update_calibration("box_base_to_imu_stim320", **parser.row_major_se3_to_xyz_rpy(np.identity(4)))
-
-    # Alphasense Cameras - Cam0 / front-left -> camX is equivalent to alphasense_base -> camX
-    cams = ["front_left", "front_right", "front_middle", "left", "right"]
-    for cam in cams:
-        manager.update_calibration(
-            f"alphasense_base_to_alphasense_{cam}",
-            *raw_calibrations[f"alphasense_front_left_to_alphasense_{cam}"].to_output_format(),
+        sys.exit(
+            f">>> FAILED! : \n"
+            f"{TopicMap.STIM320_TO_ALPHASENSE_FRONT_LEFT} not found in calibration data. "
+            f"box_base cannot be established.s",
         )
 
-    # Zed2i Cameras - transform from Alphasense Cam0 / front-left to box_base frame.
-    tf = box_base_to_alphasense_front_right_tf @ raw_calibrations[f"alphasense_front_left_to_zed_left"].se3
-    manager.update_calibration(f"box_base_to_zed_base", **parser.row_major_se3_to_xyz_rpy(tf))
-    manager.update_calibration(
-        f"zed_base_to_zed_right",
-        **parser.row_major_se3_to_xyz_rpy(np.identity(4)),
-    )
-    # TODO(kappi): Get zed_right_to_zed_left from Zed2i driver.
+    process_alphasense(raw_calibrations, manager)
 
-    # TODO(kappi): HDR, Lasers, IMU
+    process_zed2i(raw_calibrations, manager)
+
+    process_hdr(raw_calibrations, manager)
+
+    # TODO(kappi): Lasers, IMUs
 
     print(f"Writing calibrations to {manager.calibration_output_file}")
     manager.save_calibration_file()
@@ -65,7 +126,7 @@ def main(args):
     script_dir = os.path.dirname(os.path.abspath(__file__))
 
     # Path to the calibration_data directory
-    calib_dir = os.path.join(script_dir, "calibration_input_data")
+    calib_dir = os.path.join(script_dir, INPUT_CALIBRATION_DIR)
 
     # List of all YAML files in the calibration_data directory
     yaml_input_paths = glob.glob(os.path.join(calib_dir, "**/*.yaml"), recursive=True)
@@ -77,12 +138,13 @@ def main(args):
         calibrations = parser.parse_calib_file(file_path)
         all_calibrations.update(calibrations)
 
-    # Tool to manage safely saving calibrations to our .xacro files.
+    # Tool to manage safely saving calibrations for our .xacro files.
     print(f"Loading .xacro files to register valid calibrations...")
     manager = CalibFileManager(
-        os.path.join(script_dir, "default_calibration.yaml"), args.calib_output_file, args.box_model_dir
+        os.path.join(script_dir, DEFAULT_CALIBRATION_FILE),
+        args.calib_output_file,
+        args.box_model_dir,
     )
-
     process_calibrations(all_calibrations, manager)
 
 

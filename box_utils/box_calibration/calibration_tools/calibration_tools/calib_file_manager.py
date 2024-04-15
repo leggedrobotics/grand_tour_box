@@ -61,7 +61,13 @@ class CalibrationData:
 class CalibFileManager:
 
     def __init__(self, calibration_input_file: str, calibration_output_file: str, box_model_directory: str):
-        """Initialize the calibration manager, load data and generate enums."""
+        """Initialize the calibration manager, load data and generate enums.
+
+        Args:
+            calibration_input_file (str): Existing calibration file to augment. Usually default values from CAD.
+            calibration_output_file (str): Output file, usually in box_model/urdf/box/calibrations.
+            box_model_directory (str): Directory containing box model .xacro files. Eg: box_model/box_model/urdf
+        """
         self.calibration_input_file = calibration_input_file
         self.calibration_output_file = calibration_output_file
         self.box_model_directory = box_model_directory

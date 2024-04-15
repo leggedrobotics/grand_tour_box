@@ -52,7 +52,12 @@
   <!-- Box base -->
   <link name="box_base"/>
   <joint name="prism_to_box_base" type="fixed">   
-    <origin xyz="-0.075 0.0 -0.15" rpy="0.0 0.0 0.0" />
+    <origin xyz=" ${calib['prism_to_box_base']['x']}
+                  ${calib['prism_to_box_base']['y']}
+                  ${calib['prism_to_box_base']['z']}" 
+            rpy=" ${calib['prism_to_box_base']['roll']}
+                  ${calib['prism_to_box_base']['pitch']}
+                  ${calib['prism_to_box_base']['yaw']}" />
     <parent link="prism" />
     <child link="box_base" />
   </joint>

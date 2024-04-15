@@ -1,4 +1,4 @@
-alphasense_front_left_to_alphasense_front_left:
+/gt_box/alphasense_driver_node/cam0:
 - - 1.0
   - 0.0
   - 0.0
@@ -15,7 +15,7 @@ alphasense_front_left_to_alphasense_front_left:
   - 0.0
   - 0.0
   - 1.0
-alphasense_front_left_to_alphasense_front_right:
+/gt_box/alphasense_driver_node/cam1:
 - - 0.9999838161362952
   - 0.002942616135564963
   - 0.004869135012590029
@@ -32,7 +32,7 @@ alphasense_front_left_to_alphasense_front_right:
   - 0.0
   - 0.0
   - 1.0
-alphasense_front_left_to_alphasense_front_middle:
+/gt_box/alphasense_driver_node/cam2/color/image:
 - - -0.9999763888209684
   - 0.004602454557147427
   - 0.00510286317912922
@@ -49,7 +49,7 @@ alphasense_front_left_to_alphasense_front_middle:
   - 0.0
   - 0.0
   - 1.0
-alphasense_front_left_to_alphasense_left:
+/gt_box/alphasense_driver_node/cam3/color/image:
 - - 0.010127323407739919
   - -0.16382682502716997
   - 0.9864371286210349
@@ -66,7 +66,7 @@ alphasense_front_left_to_alphasense_left:
   - 0.0
   - 0.0
   - 1.0
-alphasense_front_left_to_alphasense_right:
+/gt_box/alphasense_driver_node/cam4/color/image:
 - - 0.0043489422962634805
   - 0.1775472353293076
   - -0.9841026704200245
@@ -83,7 +83,7 @@ alphasense_front_left_to_alphasense_right:
   - 0.0
   - 0.0
   - 1.0
-alphasense_front_left_to_zed_left:
+/gt_box/zed2i/zed_node/left_raw/image_raw_color:
 - - -0.9999969500698463
   - 0.002374958886580617
   - 0.0006778062350397705
@@ -117,7 +117,7 @@ alphasense_front_left_to_zed_left:
   - 0.0
   - 0.0
   - 1.0
-alphasense_front_left_to_zed_right:
+/gt_box/zed2i/zed_node/right_raw/image_raw_color:
 - - -0.9999818961409659
   - 0.00501225056784999
   - 0.003329374500362103
