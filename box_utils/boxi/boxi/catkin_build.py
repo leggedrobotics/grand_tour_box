@@ -40,7 +40,7 @@ def main(args):
         else:
             cmd += f"ssh -o ConnectTimeout=4 rsl@{host} -t /home/rsl/.local/bin/boxi catkin_build --{host}"
             if args.clean:
-                cmd =+ " --clean"
+                cmd += " --clean"
 
         try:
             shell_run(cmd)
