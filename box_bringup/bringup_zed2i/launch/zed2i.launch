@@ -73,28 +73,9 @@ This is based on box_drivers/zed-ros-wrapper/zed_wrapper/launch/include/zed_came
 
         <node name="$(arg node_name)" pkg="zed_wrapper" type="zed_wrapper_node" output="screen" required="true"><!-- launch-prefix="valgrind" -->
             <param name="capability_group" value="Cameras"/>
-            <rosparam file="$(find zed_wrapper)/params/common.yaml" command="load" />
-            <rosparam file="$(find zed_wrapper)/params/$(arg camera_model).yaml" command="load" />
-            <!-- Our custom params to override default zed2i -->
+
             <rosparam file="$(find bringup_zed2i)/config/params.yaml" command="load" />
-
-            <!-- Camera name -->
-            <param name="general/camera_name"               value="$(arg camera_name)" />
-
-            <!-- Base frame -->
-            <param name="general/base_frame"                value="$(arg base_frame)" />
-
-            <!-- SVO file path -->
-            <param name="svo_file"                          value="$(arg svo_file)" />
-
-            <!-- Remote stream -->
-            <param name="stream"                            value="$(arg stream)" />
-
-            <!-- Camera ID -->
-            <param name="general/zed_id"                    value="$(arg camera_id)" />
-
-            <!-- GPU ID -->
-            <param name="general/gpu_id"                    value="$(arg gpu_id)" />
+        
         </node>
 
       
