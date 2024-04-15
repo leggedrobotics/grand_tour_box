@@ -2,7 +2,7 @@ from boxi import BOX_ROOT_DIR, shell_run
 import argparse
 
 BOX_MODEL_DIR = "box_model/box_model/urdf"
-CALIB_OUTPUT_FILE = "box_model/box_model/urdf/box/calibrations/calibration.yaml"
+CALIB_OUTPUT_FILE = "box_model/box_model/urdf/box/calibrations/test_calibration.yaml"
 
 
 def add_arguments(parser):

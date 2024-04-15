@@ -16,6 +16,7 @@ command_register = [
     "get_data",
     "kill_all",
     "shutdown",
+    "load_calib",
 ]
 
 

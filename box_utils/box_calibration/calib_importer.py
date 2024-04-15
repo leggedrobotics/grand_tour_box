@@ -26,7 +26,7 @@ INPUT_CALIBRATION_DIR = "calibration_input_data"
 class TopicMap:
     """Calib Input data is named by Ros Topic Name."""
 
-    STIM320_TO_ALPHASENSE_FRONT_LEFT = "stim320_to_alphasense_front_left"
+    ALPHASENSE_FRONT_LEFT_TO_STIM_320 = "alphasense_front_left_to_imu_stim320"
     ALPHASENSE_FRONT_LEFT_TO_ALPHASENSE_FRONT_LEFT = "/gt_box/alphasense_driver_node/cam0"
     ALPHASENSE_FRONT_LEFT_TO_ALPHASENSE_FRONT_RIGHT = "/gt_box/alphasense_driver_node/cam1"
     ALPHASENSE_FRONT_LEFT_TO_ALPHASENSE_FRONT_MIDDLE = "/gt_box/alphasense_driver_node/cam2/color/image"
@@ -76,7 +76,7 @@ def process_zed2i(raw_calibrations: Dict[str, Calibration], manager: CalibFileMa
     # published tf_static for the nested calibrations.
     alphasense_to_zed_left = raw_calibrations[TopicMap.ALPHASENSE_FRONT_LEFT_TO_ZED_LEFT].se3
     zed_left_to_zed_base = np.identity(4)  # TODO(load from Zed2i .xacro)
-    box_base_to_alphasense = raw_calibrations[TopicMap.STIM320_TO_ALPHASENSE_FRONT_LEFT].se3
+    box_base_to_alphasense = inverse_transform(raw_calibrations[TopicMap.ALPHASENSE_FRONT_LEFT_TO_STIM_320].se3)
     box_base_to_zed_base = box_base_to_alphasense @ alphasense_to_zed_left @ zed_left_to_zed_base
 
     manager.update_calibration(f"box_base_to_zed_base", **CalibParser.row_major_se3_to_xyz_rpy(box_base_to_zed_base))
@@ -90,7 +90,7 @@ def process_stim320(raw_calibrations: Dict[str, Calibration], manager: CalibFile
     # Set the alphasense base, coincident with alphasense Cam0 / front-left.
     manager.update_calibration(
         "box_base_to_alphasense_base",
-        *raw_calibrations[TopicMap.STIM320_TO_ALPHASENSE_FRONT_LEFT].to_output_format(),
+        *raw_calibrations[TopicMap.ALPHASENSE_FRONT_LEFT_TO_STIM_320].to_output_format(),
     )
 
     # Set the box_base frame to be coincident with the Stim320 IMU
@@ -105,8 +105,8 @@ def process_calibrations(raw_calibrations: Dict[str, Calibration], manager: Cali
     except KeyError as e:
         sys.exit(
             f">>> FAILED! : \n"
-            f"{TopicMap.STIM320_TO_ALPHASENSE_FRONT_LEFT} not found in calibration data. "
-            f"box_base cannot be established.s",
+            f"{TopicMap.ALPHASENSE_FRONT_LEFT_TO_STIM_320} not found in calibration data. "
+            f"box_base cannot be established.",
         )
 
     process_alphasense(raw_calibrations, manager)
