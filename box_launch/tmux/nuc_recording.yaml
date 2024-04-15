@@ -19,7 +19,7 @@ windows:
       - source ~/catkin_ws/devel/setup.bash
       - roslaunch bringup_fkie fkie.launch
           autostart_launch_files:="
-            $(rospack find launch_nuc)/launch/box_nuc.launch
+            $(rospack find launch_nuc)/launch/nuc_recording.launch
             "
           use_gui:=false
     - shell_command:
