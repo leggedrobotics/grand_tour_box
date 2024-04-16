@@ -3,6 +3,7 @@ import argparse
 import os
 import socket
 
+
 def add_arguments(parser):
     parser.set_defaults(main=main)
     parser.add_argument("--jetson", action="store_true", help="Build on Jetson")
@@ -35,8 +36,15 @@ def main(args):
         cmd = ""
         if host == hostname:
             if args.clean:
-                cmd += f"cd ~/catkin_ws; catkin clean --all -y; "
+                if host != "jetson":
+                    # Never fully clean on jetson otherwise this takes 20 minutes to rebuild OpenCV with CUDA support
+                    cmd += f"cd ~/catkin_ws; catkin clean --all -y; "
+
+            if host == "jetson":
+                cmd += f"cd ~/catkin_ws; catkin build opencv_catkin --cmake-args -DCUDA_ARCH_BIN=8.7; "
+
             cmd += f"cd ~/catkin_ws; catkin build launch_{host}"
+
         else:
             cmd += f"ssh -o ConnectTimeout=4 rsl@{host} -t /home/rsl/.local/bin/boxi catkin_build --{host}"
             if args.clean:

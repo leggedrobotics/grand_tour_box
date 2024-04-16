@@ -1,10 +1,10 @@
-import argparse
-import argcomplete
+#!/usr/bin/python3
+# PYTHON_ARGCOMPLETE_OK
+import argparse, argcomplete
 import logging as log
 import importlib
 
 command_register = [
-    
     "black",
     "catkin_build",
     "delete_data",
@@ -23,10 +23,7 @@ command_register = [
 def main():
     parser = get_parser()
     parser.set_defaults(main=lambda x: parser.print_help())
-    try:
-        argcomplete.autocomplete(parser)
-    except NameError:
-        pass
+    argcomplete.autocomplete(parser)
     args = parser.parse_args()
     args.main(args)
 

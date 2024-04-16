@@ -17,7 +17,7 @@ def main(args):
         if args.all:
             shell_run("boxi kill --all")
         else:
-             shell_run("boxi kill")
+            shell_run("boxi kill")
 
     if args.all:
         hosts = ["opc", "jetson", "nuc", "pi"]
@@ -31,7 +31,14 @@ def main(args):
         if host == hostname:
             cmd = f"boxi launch_on_host -c " + host + "_" + args.mode
         else:
-            cmd = f"ssh -o ConnectTimeout=4 rsl@" + host + " -t /home/rsl/.local/bin/boxi launch_on_host -c " + host + "_" + args.mode
+            cmd = (
+                f"ssh -o ConnectTimeout=4 rsl@"
+                + host
+                + " -t /home/rsl/.local/bin/boxi launch_on_host -c "
+                + host
+                + "_"
+                + args.mode
+            )
         try:
             shell_run(cmd)
         except:

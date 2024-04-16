@@ -15,7 +15,7 @@ def main(args):
         hosts = ["opc", "jetson", "nuc", "pi"]
     else:
         hosts = [socket.gethostname()]
-    
+
     hostname = socket.gethostname()
     for host in hosts:
         print("Killing ROS on", host)

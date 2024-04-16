@@ -3,6 +3,7 @@ import argparse
 
 USERNAME = "rsl"
 
+
 def add_arguments(parser):
     parser.set_defaults(main=main)
     parser.add_argument("--jetson", action="store_true", help="Sync to Jetson")
