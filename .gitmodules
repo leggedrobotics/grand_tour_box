@@ -37,3 +37,7 @@
 [submodule "box_drivers/ADIS16475-raspi"]
 	path = box_drivers/ADIS16475-raspi
 	url = git@github.com:leggedrobotics/ADIS16475-raspi.git
+[submodule "box_drivers/raw_image_pipeline"]
+	path = box_drivers/raw_image_pipeline
+	url = git@github.com:leggedrobotics/raw_image_pipeline.git
+	branch = master
