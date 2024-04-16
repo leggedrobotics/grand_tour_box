@@ -43,7 +43,7 @@
   <!-- Box base -->
   <link name="box_base"/>
   <joint name="prism_to_box_base" type="fixed">
-    <origin rpy="0.0 0.0 0.0" xyz="-0.075 0.0 -0.15"/>
+    <origin rpy=" 0.0                   0.0                   0.0" xyz=" -0.075                   0.0                   -0.15"/>
     <parent link="prism"/>
     <child link="box_base"/>
   </joint>
@@ -60,136 +60,120 @@
     <parent link="box_base"/>
     <child link="model_base"/>
   </joint>
-  <!-- Cameras front (coincide with front hdr cam) -->
-  <link name="cameras_front"/>
-  <joint name="box_base_to_cameras_front" type="fixed">
-    <origin rpy=" 0.0                   0.0                   0.0" xyz=" 0.45                   0.0                   0.09"/>
+  <!-- ////////// Alphasense ////////// -->
+  <!-- Alphasense base (coincides with alphasense Cam0/ front left) -->
+  <link name="alphasense_base"/>
+  <joint name="box_base_to_alphasense_base" type="fixed">
+    <origin rpy=" 0.0                   -0.0                   0.0" xyz=" 0.0                   0.0                   0.0"/>
     <parent link="box_base"/>
-    <child link="cameras_front"/>
+    <child link="alphasense_base"/>
   </joint>
-  <!-- HDR camera front -->
-  <link name="hdr_front"/>
-  <joint name="cameras_front_to_hdr_front" type="fixed">
-    <origin rpy=" -1.57079632679                   0.0                   -1.57079632679" xyz=" 0.0                   0.0                   0.0"/>
-    <parent link="cameras_front"/>
-    <child link="hdr_front"/>
-  </joint>
-  <!-- Alphasense front left -->
+  <!-- Alphasense Cam0/ front left (should be identity)-->
   <link name="alphasense_front_left"/>
-  <joint name="hdr_front_to_alphasense_front_left" type="fixed">
-    <origin rpy=" 0.0                   0.0                   0.0" xyz=" -0.055                   -0.04                   0.0"/>
-    <parent link="hdr_front"/>
+  <joint name="alphasense_base_to_alphasense_front_left" type="fixed">
+    <origin rpy=" 0.0                   -0.0                   0.0" xyz=" 0.0                   0.0                   0.0"/>
+    <parent link="alphasense_base"/>
     <child link="alphasense_front_left"/>
   </joint>
-  <!-- Alphasense front middle -->
-  <link name="alphasense_front_middle"/>
-  <joint name="alphasense_front_left_to_alphasense_front_middle" type="fixed">
-    <origin rpy=" 0.0                   0.0                   0.0" xyz=" 0.054                   0.0                   0.0"/>
-    <parent link="alphasense_front_left"/>
-    <child link="alphasense_front_middle"/>
-  </joint>
-  <!-- Alphasense front right -->
+  <!-- Alphasense Cam1/ front right -->
   <link name="alphasense_front_right"/>
-  <joint name="alphasense_front_middle_to_alphasense_front_right" type="fixed">
-    <origin rpy=" 0.0                   0.0                   0.0" xyz=" 0.054                   0.0                   0.0"/>
-    <parent link="alphasense_front_middle"/>
+  <joint name="alphasense_base_to_alphasense_front_right" type="fixed">
+    <origin rpy=" -0.0029393004042356442                   0.004871180163295483                   0.0006816981213750387" xyz=" -0.11019818815545741                   1.0443869016379444e-05                   0.00025540782272211936"/>
+    <parent link="alphasense_base"/>
     <child link="alphasense_front_right"/>
   </joint>
-  <!-- Zed right -->
-  <link name="zed_right"/>
-  <joint name="alphasense_front_right_to_zed_right" type="fixed">
-    <origin rpy=" 0.0                   0.0                   0.0" xyz=" 0.005                   0.08                   0.0"/>
-    <parent link="alphasense_front_right"/>
-    <child link="zed_right"/>
+  <!-- Alphasense Cam2/ front middle -->
+  <link name="alphasense_front_middle"/>
+  <joint name="alphasense_base_to_alphasense_front_middle" type="fixed">
+    <origin rpy=" -3.136983778289491                   -0.005097155708924058                   -0.0012557767788089916" xyz=" -0.054698757442450376                   -0.00020882496281570827                   -1.3877157931421699e-05"/>
+    <parent link="alphasense_base"/>
+    <child link="alphasense_front_middle"/>
   </joint>
-  <!-- Zed left -->
-  <link name="zed_left"/>
-  <joint name="zed_right_to_zed_left" type="fixed">
-    <origin rpy=" 0.0                   0.0                   0.0" xyz=" -0.12                   0.0                   0.0"/>
-    <parent link="zed_right"/>
-    <child link="zed_left"/>
+  <!-- Alphasense Cam3/ left -->
+  <link name="alphasense_left"/>
+  <joint name="alphasense_base_to_alphasense_left" type="fixed">
+    <origin rpy=" 1.5179219498551384                   -1.3779789320747404                   1.4581154559729528" xyz=" 0.047741167988699394                   -0.010988463753934308                   -0.06505666385033826"/>
+    <parent link="alphasense_base"/>
+    <child link="alphasense_left"/>
   </joint>
-  <!-- Cameras right (coincide with right hdr cam) -->
-  <link name="cameras_right"/>
-  <joint name="box_base_to_cameras_right" type="fixed">
-    <origin rpy=" 0.0                   0.0                   0.0" xyz=" 0.37                   -0.1                   0.09"/>
-    <parent link="box_base"/>
-    <child link="cameras_right"/>
-  </joint>
-  <!-- HDR camera right -->
-  <link name="hdr_right"/>
-  <joint name="cameras_right_to_hdr_right" type="fixed">
-    <origin rpy=" 1.57079632679                   3.14159265359                   0.0" xyz=" 0.0                   0.0                   0.0"/>
-    <parent link="cameras_right"/>
-    <child link="hdr_right"/>
-  </joint>
+  <!-- Alphasense Cam4/ right -->
   <link name="alphasense_right"/>
-  <joint name="hdr_right_to_alphasense_right" type="fixed">
-    <origin rpy=" 0.0                   0.0                   0.0" xyz=" 0.0                   -0.04                   0.0"/>
-    <parent link="hdr_right"/>
+  <joint name="alphasense_base_to_alphasense_right" type="fixed">
+    <origin rpy=" -1.5458536755417267                   1.3955245673292458                   1.4168617596472088" xyz=" -0.1567271351088724                   -0.011454790409696271                   -0.06597305132157129"/>
+    <parent link="alphasense_base"/>
     <child link="alphasense_right"/>
   </joint>
-  <!-- Cameras left (coincide with left hdr cam) -->
-  <link name="cameras_left"/>
-  <joint name="box_base_to_cameras_left" type="fixed">
-    <origin rpy=" 0.0                   0.0                   0.0" xyz=" 0.37                   0.1                   0.09"/>
+  <!-- ////////// HDR ////////// -->
+  <!-- HDR Base (coincides with front hdr cam) -->
+  <link name="hdr_base"/>
+  <joint name="box_base_to_hdr_base" type="fixed">
+    <origin rpy=" 0.0                   0.0                   0.0" xyz=" 0.0                   0.0                   0.0"/>
     <parent link="box_base"/>
-    <child link="cameras_left"/>
+    <child link="hdr_base"/>
+  </joint>
+  <!-- HDR camera front (should be identity) -->
+  <link name="hdr_front"/>
+  <joint name="hdr_base_to_hdr_front" type="fixed">
+    <origin rpy=" 0.0                   0.0                   0.0" xyz=" 0.0                   0.0                   0.0"/>
+    <parent link="hdr_base"/>
+    <child link="hdr_front"/>
   </joint>
   <!-- HDR camera left -->
   <link name="hdr_left"/>
-  <joint name="cameras_left_to_hdr_left" type="fixed">
-    <origin rpy=" -1.57079632679                   0.0                   0.0" xyz=" 0.0                   0.0                   0.0"/>
-    <parent link="cameras_left"/>
+  <joint name="hdr_base_to_hdr_left" type="fixed">
+    <origin rpy=" 0.0                   0.0                   0.0" xyz=" 0.0                   0.0                   0.0"/>
+    <parent link="hdr_base"/>
     <child link="hdr_left"/>
   </joint>
-  <!-- Alphasense left -->
-  <link name="alphasense_left"/>
-  <joint name="hdr_left_to_alphasense_left" type="fixed">
-    <origin rpy=" 0.0                   0.0                   0.0" xyz=" 0.0                   -0.04                   0.0"/>
-    <parent link="hdr_left"/>
-    <child link="alphasense_left"/>
+  <!-- HDR camera right -->
+  <link name="hdr_right"/>
+  <joint name="hdr_base_to_hdr_right" type="fixed">
+    <origin rpy=" 0.0                   0.0                   0.0" xyz=" 0.0                   0.0                   0.0"/>
+    <parent link="hdr_base"/>
+    <child link="hdr_right"/>
   </joint>
-  <!-- Lidars (coincide with hesai) -->
-  <link name="lidars"/>
-  <joint name="box_base_to_lidars" type="fixed">
-    <origin rpy=" 0.0                   0.0                   0.0" xyz=" 0.37                   0.0                   0.2"/>
+  <!-- ////////// ZED2i ////////// -->
+  <!-- ZED Base -->
+  <link name="zed_base"/>
+  <joint name="box_base_to_zed_base" type="fixed">
+    <origin rpy=" -3.1392184529965577                   -0.0006804673548911917                   0.0011198404612205875" xyz=" 0.004928341904269176                   -0.07386742204771816                   0.022120515689282243"/>
     <parent link="box_base"/>
-    <child link="lidars"/>
+    <child link="zed_base"/>
   </joint>
+  <!-- Zed right and left from from Zed2i TF Publisher -->
   <!-- Hesai -->
   <link name="hesai"/>
-  <joint name="lidars_to_hesai" type="fixed">
-    <origin rpy=" 0.0                   0.0                   1.57079632679" xyz=" 0.0                   0.0                   0.0"/>
-    <parent link="lidars"/>
+  <joint name="box_base_to_hesai" type="fixed">
+    <origin rpy=" 0.0                   0.0                   0.0" xyz=" 0.0                   0.0                   0.0"/>
+    <parent link="box_base"/>
     <child link="hesai"/>
   </joint>
   <!-- Livox -->
   <link name="livox"/>
-  <joint name="hesai_to_livox" type="fixed">
-    <origin rpy=" 3.14159265359                   0.0                   -1.57079632679" xyz=" 0.0                   0.0                   0.1"/>
-    <parent link="hesai"/>
+  <joint name="box_base_to_livox" type="fixed">
+    <origin rpy=" 0.0                   0.0                   0.0" xyz=" 0.0                   0.0                   0.0"/>
+    <parent link="box_base"/>
     <child link="livox"/>
   </joint>
   <!-- IMU STIM320 -->
   <link name="imu_stim320"/>
-  <joint name="alphasense_front_left_to_imu_stim320" type="fixed">
-    <origin rpy=" 1.57079632679                   -1.57079632679                   0.0" xyz=" 0.054                   0.07                   -0.06"/>
-    <parent link="alphasense_front_left"/>
+  <joint name="box_base_to_imu_stim320" type="fixed">
+    <origin rpy=" 0.0                   -0.0                   0.0" xyz=" 0.0                   0.0                   0.0"/>
+    <parent link="box_base"/>
     <child link="imu_stim320"/>
   </joint>
   <!-- IMU ADIS16475 -->
   <link name="imu_adis16475"/>
-  <joint name="alphasense_front_left_to_imu_adis16475" type="fixed">
-    <origin rpy=" 1.57079632679                   0.0                   0.0" xyz=" 0.054                   0.03                   -0.03"/>
-    <parent link="alphasense_front_left"/>
+  <joint name="box_base_to_imu_adis16475" type="fixed">
+    <origin rpy=" 0.0                   0.0                   0.0" xyz=" 0.0                   0.0                   0.0"/>
+    <parent link="box_base"/>
     <child link="imu_adis16475"/>
   </joint>
   <!-- IMU alphasesnse -->
   <link name="imu_alphasense"/>
-  <joint name="alphasense_front_left_to_imu_alphasense" type="fixed">
-    <origin rpy=" 1.57079632679                   -1.57079632679                   0.0" xyz=" 0.054                   0.0                   -0.06"/>
-    <parent link="alphasense_front_left"/>
+  <joint name="box_base_to_imu_alphasense" type="fixed">
+    <origin rpy=" 0.0                   0.0                   0.0" xyz=" 0.0                   0.0                   0.0"/>
+    <parent link="box_base"/>
     <child link="imu_alphasense"/>
   </joint>
 </robot>

@@ -17,11 +17,11 @@ box_base_to_model_base:
   pitch: 0.0
   yaw: 0.0
 box_base_to_alphasense_base:
-  x: 0.0
-  y: 0.0
-  z: 0.0
+  x: 0.054
+  y: 0.07
+  z: -0.06
   roll: 0.0
-  pitch: -0.0
+  pitch: -1.5707963267948966
   yaw: 0.0
 alphasense_base_to_alphasense_front_left:
   x: 0.0
@@ -87,12 +87,12 @@ hdr_base_to_hdr_right:
   pitch: 0.0
   yaw: 0.0
 box_base_to_zed_base:
-  x: 0.004928341904269176
-  y: -0.07386742204771816
-  z: 0.022120515689282243
-  roll: -3.1392184529965577
-  pitch: -0.0006804673548911917
-  yaw: 0.0011198404612205875
+  x: 0.08212051568928225
+  y: 0.04907165809573082
+  z: 0.14386742204771819
+  roll: 1.5701158575221625
+  pitch: -0.00237420004356465
+  yaw: 1.5719177828250257
 box_base_to_imu_stim320:
   x: 0.0
   y: 0.0

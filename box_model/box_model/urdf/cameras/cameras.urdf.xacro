@@ -119,7 +119,7 @@
             rpy=" ${calib['hdr_base_to_hdr_left']['roll']}
                   ${calib['hdr_base_to_hdr_left']['pitch']}
                   ${calib['hdr_base_to_hdr_left']['yaw']}" />
-    <parent link="cameras_left" />
+    <parent link="hdr_base" />
     <child link="hdr_left" />
   </joint>
 
