@@ -1,0 +1,13 @@
+# Copy to /lib/systemd/system/
+[Unit]
+Description=Precision Time Protocol (PTP) service
+Documentation=man:ptp4l
+After=network-online.target
+
+
+[Service]
+Type=simple
+ExecStart=/usr/sbin/ptp4l -f /etc/linuxptp/ptp4l.conf -i eth0 -H -s
+
+[Install]
+WantedBy=multi-user.target

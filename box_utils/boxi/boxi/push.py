@@ -9,6 +9,7 @@ def add_arguments(parser):
     parser.add_argument("--jetson", action="store_true", help="Sync to Jetson")
     parser.add_argument("--nuc", action="store_true", help="Sync to Nuc")
     parser.add_argument("--pi", action="store_true", help="Sync to Pi")
+    parser.add_argument("--all", action="store_true", help="Sync to All")
     return parser
 
 
@@ -22,6 +23,8 @@ def main(args):
         hosts.append("nuc")
     if args.pi:
         hosts.append("pi")
+    if args.all:
+        hosts = ["jetson", "nuc", "pi"]
 
     for host in hosts:
         cmd = f"{rsync} {BOX_ROOT_DIR} {host}:/home/rsl/git"
