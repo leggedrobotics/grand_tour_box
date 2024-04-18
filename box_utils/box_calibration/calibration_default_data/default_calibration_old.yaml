@@ -1,4 +1,5 @@
 # Default calibration, hand aligned
+# TODO(kappi): Delete once default_calibration.yaml is fully populated with CAD values for new calib relationships.
 
 box_base_to_cameras_front:
   x: 0.45

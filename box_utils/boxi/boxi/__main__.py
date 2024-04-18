@@ -17,6 +17,7 @@ command_register = [
     "restart_ptp",
     "set_time_to_opc",
     "shutdown",
+    "load_calib",
 ]
 
 
