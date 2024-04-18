@@ -7,16 +7,16 @@ alias rlist='rostopic list'
 alias rhz='rostopic hz'
 alias rinfo='rostopic info'
 
-alias l-nuc='tmuxp load $(rospack find launch_box)/../tmux/box_nuc.yaml'
-alias l-jetson='tmuxp load $(rospack find launch_box)/../tmux/box_jetson.yaml'
-alias l-opc='tmuxp load $(rospack find launch_box)/../tmux/box_opc.yaml'
-alias l-replay='tmuxp load $(rospack find launch_box)/../tmux/box_replay.yaml'
+alias l-nuc='tmuxp load $(rospack find box_launch)/../tmux/nuc_recording.yaml'
+alias l-jetson='tmuxp load $(rospack find box_launch)/../tmux/jetson_recording.yaml'
+alias l-opc='tmuxp load $(rospack find box_launch)/../tmux/opc_recording.yaml'
+alias l-replay='tmuxp load $(rospack find box_launch)/../tmux/opc_replay.yaml'
 alias ssh-nuc='ssh -X rsl@192.168.2.56'
 alias ssh-jetson='ssh -X rsl@192.168.2.51'
 alias ping-nuc='ping 192.168.2.56'
 alias ping-jetson='ping 192.168.2.51'
-alias attach-nuc='tmux attach-session -t box_nuc'
-alias attach-jetson='tmux attach-session -t box_jetson'
+alias attach-nuc='tmux attach-session -t nuc'
+alias attach-jetson='tmux attach-session -t jetson'
 
 restart-tmux(){
     echo "this will take 30 seconds..."

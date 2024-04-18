@@ -1,0 +1,147 @@
+# Was present when I inherited the box. Keeping to make sure.
+alphasense_front_left_to_alphasense_front_middle:
+  pitch: 0.0
+  roll: 0.0
+  x: 0.054
+  y: 0.0
+  yaw: 0.0
+  z: 0.0
+alphasense_front_middle_to_alphasense_front_right:
+  pitch: 0.0
+  roll: 0.0
+  x: 0.054
+  y: 0.0
+  yaw: 0.0
+  z: 0.0
+alphasense_front_right_to_alphasense_front_left:
+- - -0.9999987651583234
+  - -0.0003063525086187779
+  - -0.0015413727513097155
+  - 0.09986248558162866
+- - 0.00031315745766388335
+  - -0.9999901979170428
+  - -0.004416559999613726
+  - 0.0003503518392249239
+- - -0.0015400046184107998
+  - -0.004417037238233506
+  - 0.999989059024048
+  - -0.00032991669764813656
+- - 0.0
+  - 0.0
+  - 0.0
+  - 1.0
+alphasense_front_right_to_zed_right:
+  pitch: 0.0
+  roll: 0.0
+  x: 0.005
+  y: 0.08
+  yaw: 0.0
+  z: 0.0
+alphasense_left_to_alphasense_front_right:
+- - 0.999994674522737
+  - 0.0032591637369882836
+  - 0.00016964048265133923
+  - -0.050222118346075165
+- - -0.003259665090051265
+  - 0.9999900538376435
+  - 0.0030441434394832593
+  - 2.561080562785989e-05
+- - -0.00015971743347140252
+  - -0.0030446801991257564
+  - 0.9999953521956085
+  - -0.0007629188141190216
+- - 0.0
+  - 0.0
+  - 0.0
+  - 1.0
+box_base_to_cameras_front:
+  pitch: 0.0
+  roll: 0.0
+  x: 0.45
+  y: 0.0
+  yaw: 0.0
+  z: 0.09
+box_base_to_cameras_left:
+  pitch: 0.0
+  roll: 0.0
+  x: 0.37
+  y: 0.1
+  yaw: 0.0
+  z: 0.09
+box_base_to_cameras_right:
+  pitch: 0.0
+  roll: 0.0
+  x: 0.37
+  y: -0.1
+  yaw: 0.0
+  z: 0.09
+box_base_to_lidars:
+  pitch: 0.0
+  roll: 0.0
+  x: 0.37
+  y: 0.0
+  yaw: 0.0
+  z: 0.2
+cameras_front_to_hdr_front:
+  pitch: 0.0
+  roll: -1.57079632679
+  x: 0.0
+  y: 0.0
+  yaw: -1.57079632679
+  z: 0.0
+cameras_left_to_hdr_left:
+  pitch: 0.0
+  roll: -1.57079632679
+  x: 0.0
+  y: 0.0
+  yaw: 0.0
+  z: 0.0
+cameras_right_to_hdr_right:
+  pitch: 3.14159265359
+  roll: 1.57079632679
+  x: 0.0
+  y: 0.0
+  yaw: 0.0
+  z: 0.0
+hdr_front_to_alphasense_front_left:
+  pitch: 0.0
+  roll: 0.0
+  x: -0.055
+  y: -0.04
+  yaw: 0.0
+  z: 0.0
+hdr_left_to_alphasense_left:
+  pitch: 0.0
+  roll: 0.0
+  x: 0.0
+  y: -0.04
+  yaw: 0.0
+  z: 0.0
+hdr_right_to_alphasense_right:
+  pitch: 0.0
+  roll: 0.0
+  x: 0.0
+  y: -0.04
+  yaw: 0.0
+  z: 0.0
+hesai_to_livox:
+  pitch: 0.0
+  roll: 3.14159265359
+  x: 0.0
+  y: 0.0
+  yaw: -1.57079632679
+  z: 0.1
+lidars_to_hesai:
+  pitch: 0.0
+  roll: 0.0
+  x: 0.0
+  y: 0.0
+  yaw: 1.57079632679
+  z: 0.0
+zed_right_to_zed_left:
+  pitch: 0.0
+  roll: 0.0
+  x: -0.12
+  y: 0.0
+  yaw: 0.0
+  z: 0.0
