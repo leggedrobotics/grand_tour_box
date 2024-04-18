@@ -9,7 +9,7 @@ After=wait_for_jetson_once.service
 [Service]
 Type=forking
 ExecStartPre=/bin/sleep 30
-ExecStart=/usr/bin/tmuxp load /home/rsl/git/grand_tour_box/box_launch/tmux/box_nuc.yaml -d
+ExecStart=/usr/bin/tmuxp load /home/rsl/git/grand_tour_box/box_launch/tmux/nuc_recording.yaml -d
 User=rsl
 
 [Install]

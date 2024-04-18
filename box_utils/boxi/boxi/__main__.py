@@ -1,20 +1,21 @@
-import argparse
-import argcomplete
+#!/usr/bin/python3
+# PYTHON_ARGCOMPLETE_OK
+import argparse, argcomplete
 import logging as log
 import importlib
 
 command_register = [
-    "push",
     "black",
-    "start",
-    "initial_clock_sync",
+    "catkin_build",
     "delete_data",
-    "set_time_to_opc",
-    "restart_ptp",
-    "stop_all",
-    "start_all",
     "get_data",
-    "kill_all",
+    "initial_clock_sync",
+    "kill",
+    "launch",
+    "launch_on_host",
+    "push",
+    "restart_ptp",
+    "set_time_to_opc",
     "shutdown",
 ]
 
@@ -22,10 +23,7 @@ command_register = [
 def main():
     parser = get_parser()
     parser.set_defaults(main=lambda x: parser.print_help())
-    try:
-        argcomplete.autocomplete(parser)
-    except NameError:
-        pass
+    argcomplete.autocomplete(parser)
     args = parser.parse_args()
     args.main(args)
 
