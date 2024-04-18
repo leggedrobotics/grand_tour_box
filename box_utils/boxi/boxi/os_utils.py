@@ -3,8 +3,6 @@ import os
 import shlex
 import subprocess
 import time
-from pytictac import CpuTimer
-
 
 def shell_run(cmd, cwd=None, env={}, time=True, continue_on_error=True):
     """Execute shell command."""
@@ -17,16 +15,15 @@ def shell_run(cmd, cwd=None, env={}, time=True, continue_on_error=True):
     env_variables.update(env)
 
     # Execute command
-    with CpuTimer("Execute command", verbose=time):
-        try:
-            p = subprocess.Popen(cmd, cwd=cwd, env=env_variables, shell=True)
-        except Exception as e:
-            raise RuntimeError(f"{e} --- while executing {cmd}")
+    try:
+        p = subprocess.Popen(cmd, cwd=cwd, env=env_variables, shell=True)
+    except Exception as e:
+        raise RuntimeError(f"{e} --- while executing {cmd}")
 
-        if p.wait() != 0:
-            print()
-            if not continue_on_error:
-                raise RuntimeError(f"Error Return non 0 --- while executing {cmd}")
+    if p.wait() != 0:
+        print()
+        if not continue_on_error:
+            raise RuntimeError(f"Error Return non 0 --- while executing {cmd}")
 
 
 if __name__ == "__main__":

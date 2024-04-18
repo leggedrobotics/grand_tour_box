@@ -16,6 +16,7 @@ command_register = [
     "push",
     "restart_ptp",
     "set_time_to_opc",
+    "set_git_user",
     "shutdown",
     "load_calib",
 ]
