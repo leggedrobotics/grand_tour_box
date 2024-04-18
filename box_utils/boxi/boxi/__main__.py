@@ -10,6 +10,7 @@ command_register = [
     "initial_clock_sync",
     "delete_data",
     "set_time_to_opc",
+    "set_git_user",
     "restart_ptp",
     "stop_all",
     "start_all",
