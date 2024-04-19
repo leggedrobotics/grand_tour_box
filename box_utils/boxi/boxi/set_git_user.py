@@ -21,7 +21,7 @@ def main(args):
         shell_run(cmd_usr_name)
 
     if args.jonas:
-        print("Setting git for turcan")
+        print("Setting git for Jonas")
         cmd_mail = f"git config --global user.email 'jonfrey@leggedrobotics.com'"
         cmd_usr_name=f"git config --global user.name 'Jonas Frey'"
         shell_run(cmd_mail)
