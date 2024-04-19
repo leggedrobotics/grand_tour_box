@@ -12,7 +12,8 @@
   <depend>bringup_alphasense</depend>
   <depend>bringup_hesai</depend>
   <depend>bringup_livox</depend>
-  <depend>bringup_gps</depend>
+  <!--Disable until CPT-7 Arrives-->
+  <!--<depend>bringup_gps</depend>-->
   <depend>bringup_stim320</depend>
   <depend>bringup_ap20</depend>
   <depend>bringup_zed2i</depend>
