@@ -9,7 +9,7 @@
 [submodule "box_drivers/HesaiLidar_General_ROS_GrandTour"]
 	path = box_drivers/HesaiLidar_General_ROS_GrandTour
 	url = git@github.com:leggedrobotics/HesaiLidar_General_ROS_GrandTour.git
-	branch = master
+	branch = grandTour
 [submodule "box_drivers/leica_totalstation_interface"]
 	path = box_drivers/leica_totalstation_interface
 	url = git@github.com:leggedrobotics/leica_totalstation_interface.git
