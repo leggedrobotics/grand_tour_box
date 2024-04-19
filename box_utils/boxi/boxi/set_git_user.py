@@ -35,9 +35,9 @@ def main(args):
         shell_run(cmd_usr_name)
 
     if args.beni:
-        print("Setting git for beni")
-        cmd_mail = f"git config --global user.email '.com'"
-        cmd_usr_name=f"git config --global user.name 'Benjamin'"
+        print("Setting git for Beni")
+        cmd_mail = f"git config --global user.email 'benjamin.krummenacher@outlook.com'"
+        cmd_usr_name=f"git config --global user.name 'Benjamin Krummenacher'"
         shell_run(cmd_mail)
         shell_run(cmd_usr_name)
 
