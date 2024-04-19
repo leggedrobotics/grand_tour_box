@@ -15,12 +15,12 @@ box_base_to_model_base:
   yaw: 0.0
 
 box_base_to_alphasense_base:
-  x: 0.0
-  y: 0.0
-  z: 0.0
-  roll: 0.0
+  roll: -100.0
   pitch: 0.0
-  yaw: 0.0
+  yaw: -90.0
+  x: 72.417
+  y: 32.600
+  z: 88.835
 
 alphasense_base_to_alphasense_front_left:
   x: 0.0
@@ -31,44 +31,44 @@ alphasense_base_to_alphasense_front_left:
   yaw: 0.0
 
 alphasense_base_to_alphasense_front_right:
-  x: 0.0
-  y: 0.0
-  z: 0.0
   roll: 0.0
-  pitch: 0.0
+  pitch: -0.0
   yaw: 0.0
+  x: 110.000
+  y: -0.000
+  z: -0.000
 
 alphasense_base_to_alphasense_front_middle:
-  x: 0.0
-  y: 0.0
-  z: 0.0
   roll: 0.0
   pitch: 0.0
-  yaw: 0.0
+  yaw: -0.0
+  x: 55.000
+  y: -0.018
+  z: -0.003
 
 alphasense_base_to_alphasense_left:
-  x: 0.0
-  y: 0.0
-  z: 0.0
-  roll: 0.0
-  pitch: 0.0
-  yaw: 0.0
+  roll: 80.0
+  pitch: -80.0
+  yaw: -90.0
+  x: -45.276
+  y: 11.398
+  z: -64.779
 
 alphasense_base_to_alphasense_right:
-  x: 0.0
-  y: 0.0
-  z: 0.0
-  roll: 0.0
-  pitch: 0.0
-  yaw: 0.0
+  roll: -80.0
+  pitch: -80.0
+  yaw: -90.0
+  x: 155.426
+  y: 11.403
+  z: -64.779
 
 box_base_to_hdr_base:
-  x: 0.0
-  y: 0.0
-  z: 0.0
-  roll: 0.0
+  roll: -90.0
   pitch: 0.0
-  yaw: 0.0
+  yaw: -90.0
+  x: 58.533
+  y: -22.400
+  z: 54.006
 
 hdr_base_to_hdr_front:
   x: 0.0
@@ -79,20 +79,20 @@ hdr_base_to_hdr_front:
   yaw: 0.0
 
 hdr_base_to_hdr_left:
-  x: 0.0
-  y: 0.0
-  z: 0.0
-  roll: 0.0
-  pitch: 0.0
-  yaw: 0.0
+  roll: 180.0
+  pitch: -80.0
+  yaw: 180.0
+  x: -86.525
+  y: 0.000
+  z: -55.241
 
 hdr_base_to_hdr_right:
-  x: 0.0
-  y: 0.0
-  z: 0.0
-  roll: 0.0
-  pitch: 0.0
-  yaw: 0.0
+  roll: -180.0
+  pitch: 80.0
+  yaw: 180.0
+  x: 86.525
+  y: 0.000
+  z: -55.242
 
 box_base_to_zed_base:
   x: 0.0
@@ -111,12 +111,12 @@ box_base_to_imu_stim320:
   yaw: 0.0
 
 box_base_to_imu_adis16475:
-  x: 0.0
-  y: 0.0
-  z: 0.0
   roll: 0.0
   pitch: 0.0
-  yaw: 0.0
+  yaw: 90.0
+  x: 31.566
+  y: -55.900
+  z: 1.550
 
 box_base_to_imu_alphasense:
   x: 0.0
@@ -127,17 +127,17 @@ box_base_to_imu_alphasense:
   yaw: 0.0
 
 box_base_to_hesai:
-  x: 0.0
-  y: 0.0
-  z: 0.0
   roll: 0.0
-  pitch: 0.0
-  yaw: 0.0
+  pitch: -0.0
+  yaw: 90.0
+  x: 12.775
+  y: -22.400
+  z: 169.144
 
 box_base_to_livox:
-  x: 0.0
-  y: 0.0
-  z: 0.0
-  roll: 0.0
+  roll: -180.0
   pitch: 0.0
-  yaw: 0.0
+  yaw: -0.0
+  x: 12.775
+  y: -22.400
+  z: 263.755
