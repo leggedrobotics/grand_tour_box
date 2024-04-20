@@ -1,4 +1,4 @@
-from boxi import BOX_ROOT_DIR, shell_run
+from boxi import BOX_ROOT_DIR, shell_run, bcolors
 import argparse
 
 USERNAME = "rsl"
@@ -19,13 +19,17 @@ def main(args):
     hosts = []
     if args.jetson:
         hosts.append("jetson")
-    if args.nuc:
+    elif args.nuc:
         hosts.append("nuc")
-    if args.pi:
+    elif args.pi:
         hosts.append("pi")
-    if args.all:
+    elif args.all:
         hosts = ["jetson", "nuc", "pi"]
+    else:
+        print(f"{bcolors.WARNING}{bcolors.BOLD}No host provided. Please provide a host name.{bcolors.ENDC}")
+        return
 
     for host in hosts:
         cmd = f"{rsync} {BOX_ROOT_DIR} {host}:/home/rsl/git"
+        print(cmd)
         shell_run(cmd)
