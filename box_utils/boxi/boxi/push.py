@@ -19,13 +19,14 @@ def main(args):
     hosts = []
     if args.jetson:
         hosts.append("jetson")
-    elif args.nuc:
+    if args.nuc:
         hosts.append("nuc")
-    elif args.pi:
+    if args.pi:
         hosts.append("pi")
-    elif args.all:
+    if args.all:
         hosts = ["jetson", "nuc", "pi"]
-    else:
+        
+    if len(hosts) == 0:
         print(f"{bcolors.WARNING}{bcolors.BOLD}No host provided. Please provide a host name.{bcolors.ENDC}")
         return
 
