@@ -21,7 +21,7 @@ def main(args):
         shell_run(cmd_usr_name)
 
     if args.jonas:
-        print("Setting git for turcan")
+        print("Setting git for Jonas")
         cmd_mail = f"git config --global user.email 'jonfrey@ethz.ch'"
         cmd_usr_name = f"git config --global user.name 'Jonas Frey'"
         shell_run(cmd_mail)
@@ -29,14 +29,14 @@ def main(args):
 
     if args.kappi:
         print("Setting git for kappi")
-        cmd_mail = f"git config --global user.email 'xyz'"
+        cmd_mail = f"git config --global user.email 'kpatterson@ethz.ch'"
         cmd_usr_name = f"git config --global user.name 'kappi'"
         shell_run(cmd_mail)
         shell_run(cmd_usr_name)
 
     if args.beni:
-        print("Setting git for beni")
-        cmd_mail = f"git config --global user.email ' benjamin.krummenacher@outlook.com'"
+        print("Setting git for Beni")
+        cmd_mail = f"git config --global user.email 'benjamin.krummenacher@outlook.com'"
         cmd_usr_name = f"git config --global user.name 'Benjamin Krummenacher'"
         shell_run(cmd_mail)
         shell_run(cmd_usr_name)
