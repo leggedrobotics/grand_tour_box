@@ -2,9 +2,8 @@
 [Unit]
 Description=Synchronize system clock or PTP hardware clock (PHC)
 Documentation=man:phc2sys
-After=ntpdate.service
-Requires=ptp4l.service
-After=ptp4l.service
+Requires=ptp4l_eth0.service
+After=ptp4l_eth0.service
 
 [Service]
 Type=simple

@@ -8,15 +8,14 @@ alias rhz='rostopic hz'
 alias rinfo='rostopic info'
 
 alias l-nuc='tmuxp load $(rospack find box_launch)/../tmux/nuc_recording.yaml'
+alias l-pi='tmuxp load $(rospack find box_launch)/../tmux/pi_recording.yaml'
 alias l-jetson='tmuxp load $(rospack find box_launch)/../tmux/jetson_recording.yaml'
 alias l-opc='tmuxp load $(rospack find box_launch)/../tmux/opc_recording.yaml'
 alias l-replay='tmuxp load $(rospack find box_launch)/../tmux/opc_replay.yaml'
-alias ssh-nuc='ssh -X rsl@192.168.2.56'
-alias ssh-jetson='ssh -X rsl@192.168.2.51'
-alias ping-nuc='ping 192.168.2.56'
-alias ping-jetson='ping 192.168.2.51'
 alias attach-nuc='tmux attach-session -t nuc'
 alias attach-jetson='tmux attach-session -t jetson'
+alias attach-pi='tmux attach-session -t pi'
+
 
 restart-tmux(){
     echo "this will take 30 seconds..."
@@ -25,7 +24,8 @@ restart-tmux(){
 
 alias reboot-nuc='ssh -t rsl@192.168.2.56 "echo rsl | sudo -S reboot"'
 alias reboot-jetson='ssh -t rsl@192.168.2.51 "echo rsl | sudo -S reboot"'
-alias reboot-box='reboot-nuc; reboot-jetson'
+alias reboot-pi='ssh -t rsl@192.168.2.57 "echo rsl | sudo -S reboot"'
+alias reboot-box='reboot-nuc; reboot-pi; reboot-jetson'
 
 alias shutdown-nuc='ssh -t rsl@192.168.2.56 "echo rsl | sudo -S shutdown -h now"'
 alias shutdown-jetson='ssh -t rsl@192.168.2.51 "echo rsl | sudo -S shutdown -h now"'

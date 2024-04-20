@@ -22,7 +22,7 @@ def main(args):
 
     if args.jonas:
         print("Setting git for Jonas")
-        cmd_mail = f"git config --global user.email 'jonfrey@leggedrobotics.com'"
+        cmd_mail = f"git config --global user.email 'jonfrey@ethz.ch'"
         cmd_usr_name = f"git config --global user.name 'Jonas Frey'"
         shell_run(cmd_mail)
         shell_run(cmd_usr_name)
