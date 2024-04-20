@@ -242,15 +242,21 @@ class BoxStatusMerger:
             color_wrapper("{:.2f}".format(getattr(self.complete_health_msg, "cpu_usage_nuc")), 50, 80, 90, False),
             getattr(self.complete_health_msg, "avail_memory_pi"),
             color_wrapper("{:.2f}".format(getattr(self.complete_health_msg, "cpu_usage_pi")), 50, 80, 90, False),
-            "<span style='color: rgb(34,139,34);'>Recording</span>"
-            if self.recording_status["jetson"]
-            else "Not recording",
-            "<span style='color: rgb(34,139,34);'>Recording</span>"
-            if self.recording_status["nuc"]
-            else "Not recording",
-            "<span style='color: rgb(34,139,34);'>Recording</span>"
-            if self.recording_status["opc"]
-            else "Not recording",
+            (
+                "<span style='color: rgb(34,139,34);'>Recording</span>"
+                if self.recording_status["jetson"]
+                else "Not recording"
+            ),
+            (
+                "<span style='color: rgb(34,139,34);'>Recording</span>"
+                if self.recording_status["nuc"]
+                else "Not recording"
+            ),
+            (
+                "<span style='color: rgb(34,139,34);'>Recording</span>"
+                if self.recording_status["opc"]
+                else "Not recording"
+            ),
         )
         self.publisher.text_publisher.publish(text)
 
