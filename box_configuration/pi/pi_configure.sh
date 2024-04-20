@@ -30,3 +30,11 @@ sudo make install
 sudo systemctl enable pigpiod
 sudo systemctl start pigpiod
 
+
+
+
+# Installing fkie multi master
+pip install grpcio-tools -v
+ # Push with git history boxi once
+
+catkin build fkie_multimaster
