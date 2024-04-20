@@ -11,7 +11,7 @@
   <author email="jonfrey@ethz.ch">Jonas Frey</author>
   <author email="schmirob@ethz.ch">Robin Schmid</author>
   <maintainer email="jonfrey@ethz.ch">Jonas Frey</maintainer>
-
+  
   <buildtool_depend>catkin</buildtool_depend>
   <depend>message_generation</depend>
   <depend>message_runtime</depend>
