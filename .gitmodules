@@ -1,7 +1,7 @@
 [submodule "box_drivers/Livox-SDK2"]
 	path = box_drivers/Livox-SDK2
 	url = git@github.com:leggedrobotics/Livox-SDK2.git
-	branch = grandTour
+	branch = master
 [submodule "box_drivers/livox_ros_driver2"]
 	path = box_drivers/livox_ros_driver2
 	url = git@github.com:leggedrobotics/livox_ros_driver2.git
@@ -16,7 +16,7 @@
 	branch = master
 [submodule "box_drivers/multimaster_fkie"]
 	path = box_drivers/multimaster_fkie
-	url = git@github.com:fkie/multimaster_fkie.git
+	url = git@github.com:leggedrobotics/multimaster_fkie.git
 	branch = grandTour
 [submodule "box_drivers/stim320_ros"]
 	path = box_drivers/stim320_ros
@@ -25,6 +25,7 @@
 [submodule "box_drivers/ros2_v4l2_camera"]
 	path = box_drivers/ros2_v4l2_camera
 	url = git@github.com:leggedrobotics/ros2_v4l2_camera.git
+	branch = galactic
 [submodule "box_drivers/rasp-camera-trigger"]
 	path = box_drivers/rasp-camera-trigger
 	url = git@github.com:leggedrobotics/rasp-camera-trigger.git
