@@ -80,4 +80,4 @@ sudo apt install netplan.io linuxptp tmux tmuxp
 echo "192.168.2.51	jetson" >> /etc/hosts
 echo "192.168.2.56	nuc" >> /etc/hosts
 echo "192.168.2.57	pi" >> /etc/hosts
-echo "192.168.2.151	opc" >> /etc/hosts
+echo "192.168.2.154	opc" >> /etc/hosts
