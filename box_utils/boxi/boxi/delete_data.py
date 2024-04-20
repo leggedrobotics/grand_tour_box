@@ -26,13 +26,7 @@ def main(args):
             + " rm -f /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_recording/data/*"
         )
         print(cmd1)
-        cmd2 = (
-            f"ssh -o ConnectTimeout=4 "
-            + USERNAME
-            + "@"
-            + host
-            + " rm -rf ~/.ros"
-        )
+        cmd2 = f"ssh -o ConnectTimeout=4 " + USERNAME + "@" + host + " rm -rf ~/.ros"
         print(cmd2)
         user_is_sure = input("Are you sure you want to delete recorded and logging data on " + host + "? y/n \n")
         if user_is_sure == "y":

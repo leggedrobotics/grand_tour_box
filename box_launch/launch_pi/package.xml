@@ -13,4 +13,6 @@
   <depend>box_health</depend>
   <depend>bringup_adis16475</depend>
   <depend>camera_trigger</depend>
+  <depend>box_fan_control</depend>
+  <depend>box_launch</depend>
 </package>

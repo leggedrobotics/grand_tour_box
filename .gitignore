@@ -4,3 +4,4 @@
 *.bag
 *__pycache__
 wifi_config.ini
+.DS_Store

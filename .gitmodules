@@ -1,42 +1,47 @@
 [submodule "box_drivers/Livox-SDK2"]
 	path = box_drivers/Livox-SDK2
 	url = git@github.com:leggedrobotics/Livox-SDK2.git
+	branch = grandTour
 [submodule "box_drivers/livox_ros_driver2"]
 	path = box_drivers/livox_ros_driver2
 	url = git@github.com:leggedrobotics/livox_ros_driver2.git
-[submodule "box_drivers/HesaiLidar_General_ROS"]
-	path = box_drivers/HesaiLidar_General_ROS
-	url = git@github.com:HesaiTechnology/HesaiLidar_General_ROS.git
-	ignore = dirty
-[submodule "box_drivers/smb_imu_interface"]
-	path = box_drivers/smb_imu_interface
-	url = git@github.com:ETHZ-RobotX/smb_imu_interface.git
+	branch = grandTour
+[submodule "box_drivers/HesaiLidar_General_ROS_GrandTour"]
+	path = box_drivers/HesaiLidar_General_ROS_GrandTour
+	url = git@github.com:leggedrobotics/HesaiLidar_General_ROS_GrandTour.git
+	branch = grandTour
 [submodule "box_drivers/leica_totalstation_interface"]
 	path = box_drivers/leica_totalstation_interface
 	url = git@github.com:leggedrobotics/leica_totalstation_interface.git
-	ignore = dirty
-[submodule "box_drivers/ethz_piksi_ros"]
-	path = box_drivers/ethz_piksi_ros
-	url = git@github.com:leggedrobotics/ethz_piksi_ros.git
-	ignore = dirty
+	branch = master
 [submodule "box_drivers/multimaster_fkie"]
 	path = box_drivers/multimaster_fkie
 	url = git@github.com:fkie/multimaster_fkie.git
+	branch = grandTour
 [submodule "box_drivers/stim320_ros"]
 	path = box_drivers/stim320_ros
 	url = git@github.com:leggedrobotics/stim320_ros.git
+	branch = master
 [submodule "box_drivers/ros2_v4l2_camera"]
 	path = box_drivers/ros2_v4l2_camera
 	url = git@github.com:leggedrobotics/ros2_v4l2_camera.git
 [submodule "box_drivers/rasp-camera-trigger"]
 	path = box_drivers/rasp-camera-trigger
 	url = git@github.com:leggedrobotics/rasp-camera-trigger.git
+	branch = master
 [submodule "box_drivers/zed-ros-wrapper"]
 	path = box_drivers/zed-ros-wrapper
-	url = git@github.com:stereolabs/zed-ros-wrapper.git
+	url = git@github.com:leggedrobotics/zed-ros-wrapper.git
+	branch = grandTour
 [submodule "box_drivers/adis16475_node"]
 	path = box_drivers/adis16475_node
 	url = git@github.com:leggedrobotics/adis16475_node.git
+	branch = main
 [submodule "box_drivers/ADIS16475-raspi"]
 	path = box_drivers/ADIS16475-raspi
 	url = git@github.com:leggedrobotics/ADIS16475-raspi.git
+	branch = main
+[submodule "box_drivers/raw_image_pipeline"]
+	path = box_drivers/raw_image_pipeline
+	url = git@github.com:leggedrobotics/raw_image_pipeline.git
+	branch = master

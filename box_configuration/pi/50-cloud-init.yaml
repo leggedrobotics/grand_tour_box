@@ -1,0 +1,12 @@
+# Let NetworkManager manage all devices on this system
+# Copy to /etc/netplan/
+network:
+    ethernets:
+        eth0:
+            addresses:
+              - 192.168.2.57/24
+            dhcp4: no
+            gateway4: 192.168.2.51
+            nameservers:
+              addresses: [8.8.8.8]
+    version: 2

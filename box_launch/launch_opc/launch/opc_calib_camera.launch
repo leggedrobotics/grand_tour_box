@@ -1,4 +1,4 @@
 <launch>
   <arg name="calibration" default="camera"/>
-  <include file="$(find launch_opc)/launch/box_opc.launch"> <arg name="calibration" value="$(arg calibration)"/> </include>
+  <include file="$(find launch_opc)/launch/opc_recording.launch"> <arg name="calibration" value="$(arg calibration)"/> </include>
 </launch>
