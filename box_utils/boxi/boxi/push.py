@@ -25,12 +25,11 @@ def main(args):
         hosts.append("pi")
     if args.all:
         hosts = ["jetson", "nuc", "pi"]
-        
+    
     if len(hosts) == 0:
         print(f"{bcolors.WARNING}{bcolors.BOLD}No host provided. Please provide a host name.{bcolors.ENDC}")
         return
 
     for host in hosts:
         cmd = f"{rsync} {BOX_ROOT_DIR} {host}:/home/rsl/git"
-        print(cmd)
         shell_run(cmd)
