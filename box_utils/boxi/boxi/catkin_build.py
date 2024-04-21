@@ -1,6 +1,4 @@
-from boxi import BOX_ROOT_DIR, shell_run, bcolors
-import argparse
-import os
+from boxi import shell_run, bcolors
 import socket
 
 
@@ -38,11 +36,13 @@ def main(args):
             if args.clean:
                 if host != "jetson":
                     # Never fully clean on jetson otherwise this takes 20 minutes to rebuild OpenCV with CUDA support
-                    cmd += f"cd ~/catkin_ws; catkin clean --all -y; "
+                    cmd += "cd ~/catkin_ws; catkin clean --all -y; "
                 else:
-                    print(f"{bcolors.WARNING}{bcolors.BOLD}catkin clean --all -- will be not executed on the jetson - given that building opencv takes ages! Clean by hand if needed.{bcolors.ENDC}")
+                    print(
+                        f"{bcolors.WARNING}{bcolors.BOLD}catkin clean --all -- will be not executed on the jetson - given that building opencv takes ages! Clean by hand if needed.{bcolors.ENDC}"
+                    )
             if host == "jetson":
-                cmd += f"cd ~/catkin_ws; catkin build opencv_catkin --cmake-args -DCUDA_ARCH_BIN=8.7; "
+                cmd += "cd ~/catkin_ws; catkin build opencv_catkin --cmake-args -DCUDA_ARCH_BIN=8.7; "
 
             cmd += f"cd ~/catkin_ws; catkin build launch_{host}"
 

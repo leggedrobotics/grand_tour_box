@@ -7,9 +7,15 @@ import yaml
 import subprocess
 import re
 
-import rospy, rostopic
+import rospy
+import rostopic
 from std_msgs.msg import String
-from box_health.msg import healthStatus_jetson, healthStatus_nuc, healthStatus_opc, healthStatus_pi
+from box_health.msg import (
+    healthStatus_jetson,
+    healthStatus_nuc,
+    healthStatus_opc,
+    healthStatus_pi,
+)
 
 
 def load_yaml(path: str) -> dict:
@@ -48,7 +54,9 @@ class FrequencyFinder:
     def __init__(self, topic):
         self.topic = topic
         self.rt = rostopic.ROSTopicHz(100)
-        self.sub = rospy.Subscriber(self.topic, rospy.AnyMsg, self.rt.callback_hz, callback_args=self.topic)
+        self.sub = rospy.Subscriber(
+            self.topic, rospy.AnyMsg, self.rt.callback_hz, callback_args=self.topic
+        )
         rospy.sleep(0.2)
 
     def find_frequency(self):
@@ -68,7 +76,9 @@ class BoxStatus:
         rospy.init_node(f"health_status_publisher_{self.hostname}")
 
         rp = rospkg.RosPack()
-        topics_yaml = join(str(rp.get_path("box_health")), "cfg/health_check_topics.yaml")
+        topics_yaml = join(
+            str(rp.get_path("box_health")), "cfg/health_check_topics.yaml"
+        )
         topics_allPCs = load_yaml(topics_yaml)
         self.topics = []
         if self.hostname in topics_allPCs:
@@ -86,33 +96,47 @@ class BoxStatus:
 
             rospy.loginfo("[BoxStatus] Check GPS stats on host " + self.hostname)
             self.GPS_subscriber = rospy.Subscriber(
-                "/gt_box/rover/piksi/position_receiver_0/ros/receiver_state", ReceiverState_V2_6_5, self.set_GPS_status
+                "/gt_box/rover/piksi/position_receiver_0/ros/receiver_state",
+                ReceiverState_V2_6_5,
+                self.set_GPS_status,
             )
             self.set_GPS_status_default()
 
         self.check_alphasense_ptp = "alphasense" in "".join(self.topics)
         if self.check_alphasense_ptp:
-            rospy.loginfo("[BoxStatus] Check Alphasense PTP status on host " + self.hostname)
+            rospy.loginfo(
+                "[BoxStatus] Check Alphasense PTP status on host " + self.hostname
+            )
             self.alphasense_subscriber = rospy.Subscriber(
-                "/gt_box/alphasense_driver_node/debug_info", String, self.set_alphasense_ptp_status
+                "/gt_box/alphasense_driver_node/debug_info",
+                String,
+                self.set_alphasense_ptp_status,
             )
             self.set_alphasense_ptp_status_default()
 
         if self.hostname == "jetson":
             self.health_status_publisher = rospy.Publisher(
-                self.namespace + "health_status/" + self.hostname, healthStatus_jetson, queue_size=2
+                self.namespace + "health_status/" + self.hostname,
+                healthStatus_jetson,
+                queue_size=2,
             )
         elif self.hostname == "nuc":
             self.health_status_publisher = rospy.Publisher(
-                self.namespace + "health_status/" + self.hostname, healthStatus_nuc, queue_size=2
+                self.namespace + "health_status/" + self.hostname,
+                healthStatus_nuc,
+                queue_size=2,
             )
         elif self.hostname == "opc":
             self.health_status_publisher = rospy.Publisher(
-                self.namespace + "health_status/" + self.hostname, healthStatus_opc, queue_size=2
+                self.namespace + "health_status/" + self.hostname,
+                healthStatus_opc,
+                queue_size=2,
             )
         elif self.hostname == "pi":
             self.health_status_publisher = rospy.Publisher(
-                self.namespace + "health_status/" + self.hostname, healthStatus_pi, queue_size=2
+                self.namespace + "health_status/" + self.hostname,
+                healthStatus_pi,
+                queue_size=2,
             )
         else:
             rospy.logerr("[BoxStatus] Hostname " + self.hostname + " is unknown.")
@@ -149,7 +173,10 @@ class BoxStatus:
         self.alphasense_frames_no_ptp = frames_not_synced
 
     def check_if_grandmaster(self, recent_line):
-        if "assuming the grand master role" or "LISTENING to GRAND_MASTER on RS_GRAND_MASTER" in recent_line:
+        if (
+            "assuming the grand master role"
+            or "LISTENING to GRAND_MASTER on RS_GRAND_MASTER" in recent_line
+        ):
             return "grand master"
         else:
             return "not grand master"
@@ -208,12 +235,18 @@ class BoxStatus:
     def check_clocks(self, health_msg):
         try:
             if self.hostname == "jetson":
-                health_msg.status_mgbe0_ptp4l = self.check_if_grandmaster(self.read_clock_status("ptp4l_mgbe0.service"))
-                health_msg.status_mgbe1_ptp4l = self.check_if_grandmaster(self.read_clock_status("ptp4l_mgbe1.service"))
+                health_msg.status_mgbe0_ptp4l = self.check_if_grandmaster(
+                    self.read_clock_status("ptp4l_mgbe0.service")
+                )
+                health_msg.status_mgbe1_ptp4l = self.check_if_grandmaster(
+                    self.read_clock_status("ptp4l_mgbe1.service")
+                )
                 health_msg.offset_mgbe0_systemclock = self.check_clock_offset(
                     self.read_clock_status("phc2sys_mgbe0.service")
                 )
-                health_msg.offset_mgbe0_mgbe1 = self.check_clock_offset(self.read_clock_status("phc2sys_mgbe1.service"))
+                health_msg.offset_mgbe0_mgbe1 = self.check_clock_offset(
+                    self.read_clock_status("phc2sys_mgbe1.service")
+                )
 
             elif self.hostname == "nuc":
                 # enp45s0 gets time from the jetson mgbe0 port, hence enp45s0 is a client, not a master
@@ -232,15 +265,23 @@ class BoxStatus:
             elif self.hostname == "opc":
                 try:
                     chrony_line = self.read_chrony_status()
-                    health_msg.offset_chrony_opc_jetson = self.check_chrony_offset(chrony_line)
+                    health_msg.offset_chrony_opc_jetson = self.check_chrony_offset(
+                        chrony_line
+                    )
                     health_msg.chrony_status = self.get_chrony_status(chrony_line)
                 except:
                     health_msg.offset_chrony_opc_jetson = "-1"
                     health_msg.chrony_status = "error reading status"
             elif self.hostname == "pi":
-                health_msg.offset_mgbe0_eth0 = self.check_clock_offset(self.read_clock_status("ptp4l.service"))
-                health_msg.status_eth0_ptp4l = self.check_if_grandmaster(self.read_clock_status("ptp4l.service"))
-                health_msg.offset_eth0_systemclock = self.check_clock_offset(self.read_clock_status("phc2sys.service"))
+                health_msg.offset_mgbe0_eth0 = self.check_clock_offset(
+                    self.read_clock_status("ptp4l.service")
+                )
+                health_msg.status_eth0_ptp4l = self.check_if_grandmaster(
+                    self.read_clock_status("ptp4l.service")
+                )
+                health_msg.offset_eth0_systemclock = self.check_clock_offset(
+                    self.read_clock_status("phc2sys.service")
+                )
             else:
                 rospy.logerr("[BoxStatus] This hostname is unknown: " + self.hostname)
         except Exception as error:
@@ -256,7 +297,11 @@ class BoxStatus:
 
     def get_topic_frequencies(self, health_msg):
         for topic in self.topics:
-            setattr(health_msg, topic[1:].replace("/", "_") + "_hz", self.get_frequency_if_available(topic))
+            setattr(
+                health_msg,
+                topic[1:].replace("/", "_") + "_hz",
+                self.get_frequency_if_available(topic),
+            )
         return health_msg
 
     def get_GPS_status(self, health_msg):
@@ -295,7 +340,11 @@ class BoxStatus:
             if stderr:
                 rospy.logerr(stderr)
             if stdout:
-                setattr(health_msg, "cpu_usage_" + self.hostname, float(stdout.decode().replace(",", ".")))
+                setattr(
+                    health_msg,
+                    "cpu_usage_" + self.hostname,
+                    float(stdout.decode().replace(",", ".")),
+                )
             else:
                 setattr(health_msg, "cpu_usage_" + self.hostname, -1.0)
                 rospy.logerr("[BoxStatus] CPU usage could not be determined. ")

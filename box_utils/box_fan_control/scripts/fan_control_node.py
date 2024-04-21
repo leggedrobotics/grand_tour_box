@@ -28,7 +28,9 @@ class FanControlNode(object):
         for m in ["normal", "hot", "cold"]:
             servers[m] = rospy.Service(f"~{m}", Trigger, partial(self.set_mode, mode=m))
 
-        servers["set_fan_speed"] = rospy.Service(f"~set_fan_speed", SetFanSpeed, self.set_fan_speed)
+        servers["set_fan_speed"] = rospy.Service(
+            "~set_fan_speed", SetFanSpeed, self.set_fan_speed
+        )
         rospy.loginfo(
             f"[FanControllerNode] Started in mode {self.mode} / Fan speed {self.desired_fan_speed_in_percentage}%."
         )
@@ -43,7 +45,6 @@ class FanControlNode(object):
             else:
                 # Implement PD Controller
                 current_temperature = self.get_current_temperature()
-                error = self.desired_temperature - current_temperature
 
                 if self.desired_temperature - 10 > current_temperature:
                     control_signal = 0
@@ -52,6 +53,7 @@ class FanControlNode(object):
                 else:
                     control_signal = 60
 
+                # error = self.desired_temperature - current_temperature
                 # current_time = rospy.get_time()
                 # delta_time = current_time - self.last_time
                 # derivative = (error - self.last_error) / delta_time
@@ -73,7 +75,9 @@ class FanControlNode(object):
         try:
             with open("/sys/class/thermal/thermal_zone0/temp", "r") as file:
                 temp_str = file.read()
-            return float(temp_str) / 1000  # Convert from millidegree Celsius to degree Celsius
+            return (
+                float(temp_str) / 1000
+            )  # Convert from millidegree Celsius to degree Celsius
         except FileNotFoundError:
             print("Could not read temperature from file - Return critical_temperature")
             return self.critical_temperature
@@ -85,7 +89,9 @@ class FanControlNode(object):
     def get_params(self):
         self.mode = rospy.get_param("~mode", "normal")
         self.control_rate = rospy.get_param("~control_rate", 5)
-        self.desired_fan_speed_in_percentage = rospy.get_param("~desired_fan_speed_in_percentage", 40)
+        self.desired_fan_speed_in_percentage = rospy.get_param(
+            "~desired_fan_speed_in_percentage", 40
+        )
         self.critical_temperature = rospy.get_param("~critical_temperature", 70)
 
         # Initialize PD controller variables
@@ -97,7 +103,9 @@ class FanControlNode(object):
         response.success = True
         response.message = f"Fan speed set to {request.fan_speed_in_percentage}%."
         self.desired_fan_speed_in_percentage = request.fan_speed_in_percentage.data
-        rospy.loginfo(f"[FanControllerNode] Fan speed set to {request.fan_speed_in_percentage}%.")
+        rospy.loginfo(
+            f"[FanControllerNode] Fan speed set to {request.fan_speed_in_percentage}%."
+        )
         return response
 
     def set_mode(self, request, mode):
@@ -117,7 +125,9 @@ class FanControlNode(object):
         elif mode == "cold":
             self.desired_temperature = 40.0
 
-        rospy.loginfo(f"[FanControllerNode] Switched from {self.mode} mode to {mode} mode.")
+        rospy.loginfo(
+            f"[FanControllerNode] Switched from {self.mode} mode to {mode} mode."
+        )
         return response
 
 

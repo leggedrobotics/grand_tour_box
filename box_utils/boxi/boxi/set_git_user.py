@@ -1,5 +1,4 @@
-from boxi import BOX_ROOT_DIR, shell_run
-import argparse
+from boxi import shell_run
 
 
 def add_arguments(parser):
@@ -14,29 +13,29 @@ def add_arguments(parser):
 def main(args):
     if args.turcan:
         print("Setting git for turcan")
-        cmd_mail = f"git config --global user.email 'tutuna@leggedrobotics.com'"
-        cmd_usr_name = f"git config --global user.name 'Turcan Tuna'"
+        cmd_mail = "git config --global user.email 'tutuna@leggedrobotics.com'"
+        cmd_usr_name = "git config --global user.name 'Turcan Tuna'"
 
         shell_run(cmd_mail)
         shell_run(cmd_usr_name)
 
     if args.jonas:
         print("Setting git for Jonas")
-        cmd_mail = f"git config --global user.email 'jonfrey@ethz.ch'"
-        cmd_usr_name = f"git config --global user.name 'Jonas Frey'"
+        cmd_mail = "git config --global user.email 'jonfrey@ethz.ch'"
+        cmd_usr_name = "git config --global user.name 'Jonas Frey'"
         shell_run(cmd_mail)
         shell_run(cmd_usr_name)
 
     if args.kappi:
         print("Setting git for kappi")
-        cmd_mail = f"git config --global user.email 'kpatterson@ethz.ch'"
-        cmd_usr_name = f"git config --global user.name 'kappi'"
+        cmd_mail = "git config --global user.email 'kpatterson@ethz.ch'"
+        cmd_usr_name = "git config --global user.name 'kappi'"
         shell_run(cmd_mail)
         shell_run(cmd_usr_name)
 
     if args.beni:
         print("Setting git for Beni")
-        cmd_mail = f"git config --global user.email 'benjamin.krummenacher@outlook.com'"
-        cmd_usr_name = f"git config --global user.name 'Benjamin Krummenacher'"
+        cmd_mail = "git config --global user.email 'bkrumme@ethz.ch'"
+        cmd_usr_name = "git config --global user.name 'Benjamin Krummenacher'"
         shell_run(cmd_mail)
         shell_run(cmd_usr_name)
