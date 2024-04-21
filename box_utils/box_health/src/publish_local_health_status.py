@@ -54,9 +54,7 @@ class FrequencyFinder:
     def __init__(self, topic):
         self.topic = topic
         self.rt = rostopic.ROSTopicHz(100)
-        self.sub = rospy.Subscriber(
-            self.topic, rospy.AnyMsg, self.rt.callback_hz, callback_args=self.topic
-        )
+        self.sub = rospy.Subscriber(self.topic, rospy.AnyMsg, self.rt.callback_hz, callback_args=self.topic)
         rospy.sleep(0.2)
 
     def find_frequency(self):
@@ -76,9 +74,7 @@ class BoxStatus:
         rospy.init_node(f"health_status_publisher_{self.hostname}")
 
         rp = rospkg.RosPack()
-        topics_yaml = join(
-            str(rp.get_path("box_health")), "cfg/health_check_topics.yaml"
-        )
+        topics_yaml = join(str(rp.get_path("box_health")), "cfg/health_check_topics.yaml")
         topics_allPCs = load_yaml(topics_yaml)
         self.topics = []
         if self.hostname in topics_allPCs:
@@ -104,9 +100,7 @@ class BoxStatus:
 
         self.check_alphasense_ptp = "alphasense" in "".join(self.topics)
         if self.check_alphasense_ptp:
-            rospy.loginfo(
-                "[BoxStatus] Check Alphasense PTP status on host " + self.hostname
-            )
+            rospy.loginfo("[BoxStatus] Check Alphasense PTP status on host " + self.hostname)
             self.alphasense_subscriber = rospy.Subscriber(
                 "/gt_box/alphasense_driver_node/debug_info",
                 String,
@@ -173,10 +167,7 @@ class BoxStatus:
         self.alphasense_frames_no_ptp = frames_not_synced
 
     def check_if_grandmaster(self, recent_line):
-        if (
-            "assuming the grand master role"
-            or "LISTENING to GRAND_MASTER on RS_GRAND_MASTER" in recent_line
-        ):
+        if "assuming the grand master role" or "LISTENING to GRAND_MASTER on RS_GRAND_MASTER" in recent_line:
             return "grand master"
         else:
             return "not grand master"
@@ -235,18 +226,12 @@ class BoxStatus:
     def check_clocks(self, health_msg):
         try:
             if self.hostname == "jetson":
-                health_msg.status_mgbe0_ptp4l = self.check_if_grandmaster(
-                    self.read_clock_status("ptp4l_mgbe0.service")
-                )
-                health_msg.status_mgbe1_ptp4l = self.check_if_grandmaster(
-                    self.read_clock_status("ptp4l_mgbe1.service")
-                )
+                health_msg.status_mgbe0_ptp4l = self.check_if_grandmaster(self.read_clock_status("ptp4l_mgbe0.service"))
+                health_msg.status_mgbe1_ptp4l = self.check_if_grandmaster(self.read_clock_status("ptp4l_mgbe1.service"))
                 health_msg.offset_mgbe0_systemclock = self.check_clock_offset(
                     self.read_clock_status("phc2sys_mgbe0.service")
                 )
-                health_msg.offset_mgbe0_mgbe1 = self.check_clock_offset(
-                    self.read_clock_status("phc2sys_mgbe1.service")
-                )
+                health_msg.offset_mgbe0_mgbe1 = self.check_clock_offset(self.read_clock_status("phc2sys_mgbe1.service"))
 
             elif self.hostname == "nuc":
                 # enp45s0 gets time from the jetson mgbe0 port, hence enp45s0 is a client, not a master
@@ -265,23 +250,15 @@ class BoxStatus:
             elif self.hostname == "opc":
                 try:
                     chrony_line = self.read_chrony_status()
-                    health_msg.offset_chrony_opc_jetson = self.check_chrony_offset(
-                        chrony_line
-                    )
+                    health_msg.offset_chrony_opc_jetson = self.check_chrony_offset(chrony_line)
                     health_msg.chrony_status = self.get_chrony_status(chrony_line)
                 except:
                     health_msg.offset_chrony_opc_jetson = "-1"
                     health_msg.chrony_status = "error reading status"
             elif self.hostname == "pi":
-                health_msg.offset_mgbe0_eth0 = self.check_clock_offset(
-                    self.read_clock_status("ptp4l.service")
-                )
-                health_msg.status_eth0_ptp4l = self.check_if_grandmaster(
-                    self.read_clock_status("ptp4l.service")
-                )
-                health_msg.offset_eth0_systemclock = self.check_clock_offset(
-                    self.read_clock_status("phc2sys.service")
-                )
+                health_msg.offset_mgbe0_eth0 = self.check_clock_offset(self.read_clock_status("ptp4l.service"))
+                health_msg.status_eth0_ptp4l = self.check_if_grandmaster(self.read_clock_status("ptp4l.service"))
+                health_msg.offset_eth0_systemclock = self.check_clock_offset(self.read_clock_status("phc2sys.service"))
             else:
                 rospy.logerr("[BoxStatus] This hostname is unknown: " + self.hostname)
         except Exception as error:

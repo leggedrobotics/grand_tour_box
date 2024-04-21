@@ -38,26 +38,18 @@ def color_wrapper(text, perfect, ok, bad, biggerbetter):
             if value > perfect:
                 color = array_to_color(green)
             elif value > ok:
-                color = array_to_color(
-                    (((value - ok) / (perfect - ok)) * (green - orange)) + orange
-                )
+                color = array_to_color((((value - ok) / (perfect - ok)) * (green - orange)) + orange)
             elif value > bad:
-                color = array_to_color(
-                    (((value - bad) / (ok - bad)) * (green - orange)) + orange
-                )
+                color = array_to_color((((value - bad) / (ok - bad)) * (green - orange)) + orange)
             else:
                 color = array_to_color(red)
         else:
             if value < perfect:
                 color = array_to_color(green)
             elif value < ok:
-                color = array_to_color(
-                    (((value - perfect) / (ok - perfect)) * (orange - green)) + green
-                )
+                color = array_to_color((((value - perfect) / (ok - perfect)) * (orange - green)) + green)
             elif value < bad:
-                color = array_to_color(
-                    (((value - ok) / (bad - ok)) * (red - orange)) + orange
-                )
+                color = array_to_color((((value - ok) / (bad - ok)) * (red - orange)) + orange)
             else:
                 color = array_to_color(red)
 
@@ -105,9 +97,7 @@ class visualizationPublisher:
                 self.namespace + "visualization/" + topic, Float32, queue_size=10
             )
 
-        self.text_publisher = rospy.Publisher(
-            "visualization/clock_status", OverlayText, queue_size=1
-        )
+        self.text_publisher = rospy.Publisher("visualization/clock_status", OverlayText, queue_size=1)
 
 
 class BoxStatusMerger:
@@ -164,9 +154,7 @@ class BoxStatusMerger:
         }
 
         for host in self.message_fields:
-            filename = (
-                os.path.dirname(__file__) + "/../msg/healthStatus_" + host + ".msg"
-            )
+            filename = os.path.dirname(__file__) + "/../msg/healthStatus_" + host + ".msg"
             for line in open(filename):
                 li = line.strip()
                 if li and not li.startswith("#") and not li.isspace():
@@ -182,9 +170,7 @@ class BoxStatusMerger:
     def callback(self, partial_health_data, sender):
         with mutex:
             for field in self.message_fields[sender]:
-                setattr(
-                    self.complete_health_msg, field, getattr(partial_health_data, field)
-                )
+                setattr(self.complete_health_msg, field, getattr(partial_health_data, field))
 
     def recording_callback(self, recording_status, sender):
         with recording_mutex:
@@ -314,13 +300,9 @@ class BoxStatusMerger:
                 3,
                 False,
             ),
-            color_wrapper(
-                getattr(self.complete_health_msg, "gps_rtk_mode_fix"), 1, 0, 0, True
-            ),
+            color_wrapper(getattr(self.complete_health_msg, "gps_rtk_mode_fix"), 1, 0, 0, True),
             getattr(self.complete_health_msg, "gps_fix_mode"),
-            color_wrapper(
-                getattr(self.complete_health_msg, "gps_num_sat"), 10, 5, 0, True
-            ),
+            color_wrapper(getattr(self.complete_health_msg, "gps_num_sat"), 10, 5, 0, True),
             getattr(self.complete_health_msg, "avail_memory_jetson"),
             color_wrapper(
                 "{:.2f}".format(getattr(self.complete_health_msg, "cpu_usage_jetson")),

@@ -27,27 +27,13 @@ class TopicMap:
     """Calib Input data is named by Ros Topic Name."""
 
     ALPHASENSE_FRONT_LEFT_TO_STIM_320 = "alphasense_front_left_to_imu_stim320"
-    ALPHASENSE_FRONT_LEFT_TO_ALPHASENSE_FRONT_LEFT = (
-        "/gt_box/alphasense_driver_node/cam0"
-    )
-    ALPHASENSE_FRONT_LEFT_TO_ALPHASENSE_FRONT_RIGHT = (
-        "/gt_box/alphasense_driver_node/cam1"
-    )
-    ALPHASENSE_FRONT_LEFT_TO_ALPHASENSE_FRONT_MIDDLE = (
-        "/gt_box/alphasense_driver_node/cam2/color/image"
-    )
-    ALPHASENSE_FRONT_LEFT_TO_ALPHASENSE_LEFT = (
-        "/gt_box/alphasense_driver_node/cam3/color/image"
-    )
-    ALPHASENSE_FRONT_LEFT_TO_ALPHASENSE_RIGHT = (
-        "/gt_box/alphasense_driver_node/cam4/color/image"
-    )
-    ALPHASENSE_FRONT_LEFT_TO_ZED_LEFT = (
-        "/gt_box/zed2i/zed_node/left_raw/image_raw_color"
-    )
-    ALPHASENSE_FRONT_LEFT_TO_ZED_RIGHT = (
-        "/gt_box/zed2i/zed_node/right_raw/image_raw_color"
-    )
+    ALPHASENSE_FRONT_LEFT_TO_ALPHASENSE_FRONT_LEFT = "/gt_box/alphasense_driver_node/cam0"
+    ALPHASENSE_FRONT_LEFT_TO_ALPHASENSE_FRONT_RIGHT = "/gt_box/alphasense_driver_node/cam1"
+    ALPHASENSE_FRONT_LEFT_TO_ALPHASENSE_FRONT_MIDDLE = "/gt_box/alphasense_driver_node/cam2/color/image"
+    ALPHASENSE_FRONT_LEFT_TO_ALPHASENSE_LEFT = "/gt_box/alphasense_driver_node/cam3/color/image"
+    ALPHASENSE_FRONT_LEFT_TO_ALPHASENSE_RIGHT = "/gt_box/alphasense_driver_node/cam4/color/image"
+    ALPHASENSE_FRONT_LEFT_TO_ZED_LEFT = "/gt_box/zed2i/zed_node/left_raw/image_raw_color"
+    ALPHASENSE_FRONT_LEFT_TO_ZED_RIGHT = "/gt_box/zed2i/zed_node/right_raw/image_raw_color"
 
 
 def inverse_transform(T):
@@ -61,55 +47,37 @@ def inverse_transform(T):
     return T_inv
 
 
-def process_alphasense(
-    raw_calibrations: Dict[str, Calibration], manager: CalibFileManager
-):
+def process_alphasense(raw_calibrations: Dict[str, Calibration], manager: CalibFileManager):
     # Alphasense Cameras - Cam0 / front-left -> camX is equivalent to alphasense_base -> camX
     manager.update_calibration(
         "alphasense_base_to_alphasense_front_left",
-        *raw_calibrations[
-            TopicMap.ALPHASENSE_FRONT_LEFT_TO_ALPHASENSE_FRONT_LEFT
-        ].to_output_format(),
+        *raw_calibrations[TopicMap.ALPHASENSE_FRONT_LEFT_TO_ALPHASENSE_FRONT_LEFT].to_output_format(),
     )
     manager.update_calibration(
         "alphasense_base_to_alphasense_front_right",
-        *raw_calibrations[
-            TopicMap.ALPHASENSE_FRONT_LEFT_TO_ALPHASENSE_FRONT_RIGHT
-        ].to_output_format(),
+        *raw_calibrations[TopicMap.ALPHASENSE_FRONT_LEFT_TO_ALPHASENSE_FRONT_RIGHT].to_output_format(),
     )
     manager.update_calibration(
         "alphasense_base_to_alphasense_front_middle",
-        *raw_calibrations[
-            TopicMap.ALPHASENSE_FRONT_LEFT_TO_ALPHASENSE_FRONT_MIDDLE
-        ].to_output_format(),
+        *raw_calibrations[TopicMap.ALPHASENSE_FRONT_LEFT_TO_ALPHASENSE_FRONT_MIDDLE].to_output_format(),
     )
     manager.update_calibration(
         "alphasense_base_to_alphasense_left",
-        *raw_calibrations[
-            TopicMap.ALPHASENSE_FRONT_LEFT_TO_ALPHASENSE_LEFT
-        ].to_output_format(),
+        *raw_calibrations[TopicMap.ALPHASENSE_FRONT_LEFT_TO_ALPHASENSE_LEFT].to_output_format(),
     )
     manager.update_calibration(
         "alphasense_base_to_alphasense_right",
-        *raw_calibrations[
-            TopicMap.ALPHASENSE_FRONT_LEFT_TO_ALPHASENSE_RIGHT
-        ].to_output_format(),
+        *raw_calibrations[TopicMap.ALPHASENSE_FRONT_LEFT_TO_ALPHASENSE_RIGHT].to_output_format(),
     )
 
 
 def process_zed2i(raw_calibrations: Dict[str, Calibration], manager: CalibFileManager):
     # Zed2i Cameras - compute the location of the Zed2i base_link, and then use Zed2i's
     # published tf_static for the nested calibrations.
-    alphasense_to_zed_left = raw_calibrations[
-        TopicMap.ALPHASENSE_FRONT_LEFT_TO_ZED_LEFT
-    ].se3
+    alphasense_to_zed_left = raw_calibrations[TopicMap.ALPHASENSE_FRONT_LEFT_TO_ZED_LEFT].se3
     zed_left_to_zed_base = np.identity(4)  # TODO(load from Zed2i .xacro)
-    box_base_to_alphasense = inverse_transform(
-        raw_calibrations[TopicMap.ALPHASENSE_FRONT_LEFT_TO_STIM_320].se3
-    )
-    box_base_to_zed_base = (
-        box_base_to_alphasense @ alphasense_to_zed_left @ zed_left_to_zed_base
-    )
+    box_base_to_alphasense = inverse_transform(raw_calibrations[TopicMap.ALPHASENSE_FRONT_LEFT_TO_STIM_320].se3)
+    box_base_to_zed_base = box_base_to_alphasense @ alphasense_to_zed_left @ zed_left_to_zed_base
 
     manager.update_calibration(
         "box_base_to_zed_base",
@@ -121,15 +89,11 @@ def process_hdr(raw_calibrations: Dict[str, Calibration], manager: CalibFileMana
     pass
 
 
-def process_stim320(
-    raw_calibrations: Dict[str, Calibration], manager: CalibFileManager
-):
+def process_stim320(raw_calibrations: Dict[str, Calibration], manager: CalibFileManager):
     # Set the alphasense base, coincident with alphasense Cam0 / front-left.
     manager.update_calibration(
         "box_base_to_alphasense_base",
-        *raw_calibrations[
-            TopicMap.ALPHASENSE_FRONT_LEFT_TO_STIM_320
-        ].to_output_format(),
+        *raw_calibrations[TopicMap.ALPHASENSE_FRONT_LEFT_TO_STIM_320].to_output_format(),
     )
 
     # Set the box_base frame to be coincident with the Stim320 IMU
@@ -139,9 +103,7 @@ def process_stim320(
     )
 
 
-def process_calibrations(
-    raw_calibrations: Dict[str, Calibration], manager: CalibFileManager
-):
+def process_calibrations(raw_calibrations: Dict[str, Calibration], manager: CalibFileManager):
     print("Processing calibrations...")
     # Note: stim320 must be done first to establish the box_base frame.
     try:
@@ -194,9 +156,7 @@ def main(args):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Update .xacro calibration files from calibration data."
-    )
+    parser = argparse.ArgumentParser(description="Update .xacro calibration files from calibration data.")
     parser.add_argument(
         "calib_output_file",
         type=str,

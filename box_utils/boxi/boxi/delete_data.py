@@ -25,11 +25,7 @@ def main(args):
         print(cmd1)
         cmd2 = f"ssh -o ConnectTimeout=4 {USERNAME}@{host} rm -rf ~/.ros"
         print(cmd2)
-        user_is_sure = input(
-            "Are you sure you want to delete recorded and logging data on "
-            + host
-            + "? y/n \n"
-        )
+        user_is_sure = input("Are you sure you want to delete recorded and logging data on " + host + "? y/n \n")
         if user_is_sure == "y":
             shell_run(cmd1)
             shell_run(cmd2)

@@ -25,9 +25,7 @@ def main(args):
         hosts = ["jetson", "nuc", "pi"]
 
     if len(hosts) == 0:
-        print(
-            f"{bcolors.WARNING}{bcolors.BOLD}No host provided. Please provide a host name.{bcolors.ENDC}"
-        )
+        print(f"{bcolors.WARNING}{bcolors.BOLD}No host provided. Please provide a host name.{bcolors.ENDC}")
         return
 
     for host in hosts:

@@ -14,9 +14,7 @@ def main():
     )
     parser.add_argument("outputbag", help="output bag file with topics merged")
     parser.add_argument("inputbag", nargs="+", help="input bag files")
-    parser.add_argument(
-        "-v", "--verbose", action="store_true", default=False, help="verbose output"
-    )
+    parser.add_argument("-v", "--verbose", action="store_true", default=False, help="verbose output")
     parser.add_argument(
         "-t",
         "--topics",
@@ -56,16 +54,10 @@ def main():
             total_included_count += included_count
             total_skipped_count += skipped_count
             if args.verbose:
-                print(
-                    "< Included %d messages and skipped %d"
-                    % (included_count, skipped_count)
-                )
+                print("< Included %d messages and skipped %d" % (included_count, skipped_count))
 
     if args.verbose:
-        print(
-            "Total: Included %d messages and skipped %d"
-            % (total_included_count, total_skipped_count)
-        )
+        print("Total: Included %d messages and skipped %d" % (total_included_count, total_skipped_count))
 
 
 if __name__ == "__main__":

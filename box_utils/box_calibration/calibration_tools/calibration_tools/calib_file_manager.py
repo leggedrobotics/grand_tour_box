@@ -52,9 +52,7 @@ def extract_joint_names_from_xacro(file_path: str) -> List[str]:
 class CalibrationData:
     data: Dict[str, Dict[str, float]] = field(default_factory=dict)
 
-    def update_calibration(
-        self, name, x: float, y: float, z: float, roll: float, pitch: float, yaw: float
-    ):
+    def update_calibration(self, name, x: float, y: float, z: float, roll: float, pitch: float, yaw: float):
         """Update calibration data for a specified joint name."""
         self.data[name] = {
             "x": x,
@@ -93,22 +91,16 @@ class CalibFileManager:
             with open(self.calibration_input_file, "r") as file:
                 data = yaml.safe_load(file) or {}
         except FileNotFoundError:
-            sys.exit(
-                f"Deafault calibration file not found. Check default calib file: {self.calibration_input_file}."
-            )
+            sys.exit(f"Deafault calibration file not found. Check default calib file: {self.calibration_input_file}.")
         return CalibrationData(data)
 
     def _load_calib_names(self):
         """Load joint names from xacro files and generate calibration enums."""
         if not os.path.isdir(self.box_model_directory):
-            raise ValueError(
-                f"The specified directory does not exist: {self.box_model_directory}"
-            )
+            raise ValueError(f"The specified directory does not exist: {self.box_model_directory}")
         xacro_files = find_xacro_files(self.box_model_directory)
         if len(xacro_files) == 0:
-            raise ValueError(
-                f"{self.box_model_directory} has no .xacro files. Check box_model dir path."
-            )
+            raise ValueError(f"{self.box_model_directory} has no .xacro files. Check box_model dir path.")
         joint_names = set()
         for file_path in xacro_files:
             joint_names.update(extract_joint_names_from_xacro(file_path))
@@ -126,9 +118,7 @@ class CalibFileManager:
     ):
         """Update the calibration for a given enum name and transformation values. Checks if name is valid."""
         if calib_name not in self.valid_names:
-            raise ValueError(
-                f"{calib_name} is not a valid calibration entry. Check or update .xacro files."
-            )
+            raise ValueError(f"{calib_name} is not a valid calibration entry. Check or update .xacro files.")
         self.calib_data.update_calibration(calib_name, x, y, z, roll, pitch, yaw)
 
     def save_calibration_file(self):

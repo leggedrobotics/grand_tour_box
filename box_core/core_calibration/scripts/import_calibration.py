@@ -106,9 +106,7 @@ if __name__ == "__main__":
     folder_path = sys.argv[1]
     directory = os.fsencode(folder_path)
 
-    kalibr_camera_results = [
-        "/home/beni/data/calib/alphasense/c014/cam_cam/2023-05-24-11-14-20-camchain.yaml"
-    ]
+    kalibr_camera_results = ["/home/beni/data/calib/alphasense/c014/cam_cam/2023-05-24-11-14-20-camchain.yaml"]
     kalibr_imu_results = []
     diffcal_lidar_results = []
 
@@ -122,7 +120,9 @@ if __name__ == "__main__":
             diffcal_lidar_results.append(folder_path + filename)
 
     diffcal_results_file = "/home/beni/catkin_ws/src/diffcal_gui_ros/outputs/1695128729535201549/output_config.yaml"
-    default_calibration = "/home/beni/catkin_ws/src/grand_tour_box/box_model/box_model/urdf/box/calibrations/default_calibration.yaml"
+    default_calibration = (
+        "/home/beni/catkin_ws/src/grand_tour_box/box_model/box_model/urdf/box/calibrations/default_calibration.yaml"
+    )
     output_file = "/home/beni/catkin_ws/src/grand_tour_box/box_model/box_model/urdf/box/calibrations/calibration.yaml"
 
 with open(output_file, "r") as file:
@@ -137,11 +137,7 @@ for kalibr_file in kalibr_camera_results:
     for cam in kalibr_calibration:
         if previous_cam:  # first cam doesn't have a transformation to a previous cam
             xyz_rpy = transformation_to_xyz_rpy(kalibr_calibration[cam]["T_cn_cnm1"])
-            name = (
-                frame_from_cam(kalibr_calibration, cam)
-                + "_to_"
-                + frame_from_cam(kalibr_calibration, previous_cam)
-            )
+            name = frame_from_cam(kalibr_calibration, cam) + "_to_" + frame_from_cam(kalibr_calibration, previous_cam)
             if name in calibration:
                 calibration[name] = xyz_rpy
             else:
@@ -155,11 +151,7 @@ for kalibr_file in kalibr_imu_results:
 
         xyz_rpy = transformation_to_xyz_rpy(kalibr_calibration["cam0"]["T_cam_imu"])
         name = "alphasense_front_left_to_imu_adis16475"
-        name = (
-            frame_from_cam(kalibr_calibration, cam)
-            + "_to_"
-            + frame_from_cam(kalibr_calibration, previous_cam)
-        )
+        name = frame_from_cam(kalibr_calibration, cam) + "_to_" + frame_from_cam(kalibr_calibration, previous_cam)
         if name in calibration:
             calibration[name] = xyz_rpy
         else:
