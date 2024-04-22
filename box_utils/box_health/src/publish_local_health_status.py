@@ -7,9 +7,15 @@ import yaml
 import subprocess
 import re
 
-import rospy, rostopic
+import rospy
+import rostopic
 from std_msgs.msg import String
-from box_health.msg import healthStatus_jetson, healthStatus_nuc, healthStatus_opc, healthStatus_pi
+from box_health.msg import (
+    healthStatus_jetson,
+    healthStatus_nuc,
+    healthStatus_opc,
+    healthStatus_pi,
+)
 
 
 def load_yaml(path: str) -> dict:
@@ -86,7 +92,9 @@ class BoxStatus:
 
             rospy.loginfo("[BoxStatus] Check GPS stats on host " + self.hostname)
             self.GPS_subscriber = rospy.Subscriber(
-                "/gt_box/rover/piksi/position_receiver_0/ros/receiver_state", ReceiverState_V2_6_5, self.set_GPS_status
+                "/gt_box/rover/piksi/position_receiver_0/ros/receiver_state",
+                ReceiverState_V2_6_5,
+                self.set_GPS_status,
             )
             self.set_GPS_status_default()
 
@@ -94,25 +102,35 @@ class BoxStatus:
         if self.check_alphasense_ptp:
             rospy.loginfo("[BoxStatus] Check Alphasense PTP status on host " + self.hostname)
             self.alphasense_subscriber = rospy.Subscriber(
-                "/gt_box/alphasense_driver_node/debug_info", String, self.set_alphasense_ptp_status
+                "/gt_box/alphasense_driver_node/debug_info",
+                String,
+                self.set_alphasense_ptp_status,
             )
             self.set_alphasense_ptp_status_default()
 
         if self.hostname == "jetson":
             self.health_status_publisher = rospy.Publisher(
-                self.namespace + "health_status/" + self.hostname, healthStatus_jetson, queue_size=2
+                self.namespace + "health_status/" + self.hostname,
+                healthStatus_jetson,
+                queue_size=2,
             )
         elif self.hostname == "nuc":
             self.health_status_publisher = rospy.Publisher(
-                self.namespace + "health_status/" + self.hostname, healthStatus_nuc, queue_size=2
+                self.namespace + "health_status/" + self.hostname,
+                healthStatus_nuc,
+                queue_size=2,
             )
         elif self.hostname == "opc":
             self.health_status_publisher = rospy.Publisher(
-                self.namespace + "health_status/" + self.hostname, healthStatus_opc, queue_size=2
+                self.namespace + "health_status/" + self.hostname,
+                healthStatus_opc,
+                queue_size=2,
             )
         elif self.hostname == "pi":
             self.health_status_publisher = rospy.Publisher(
-                self.namespace + "health_status/" + self.hostname, healthStatus_pi, queue_size=2
+                self.namespace + "health_status/" + self.hostname,
+                healthStatus_pi,
+                queue_size=2,
             )
         else:
             rospy.logerr("[BoxStatus] Hostname " + self.hostname + " is unknown.")
@@ -256,7 +274,11 @@ class BoxStatus:
 
     def get_topic_frequencies(self, health_msg):
         for topic in self.topics:
-            setattr(health_msg, topic[1:].replace("/", "_") + "_hz", self.get_frequency_if_available(topic))
+            setattr(
+                health_msg,
+                topic[1:].replace("/", "_") + "_hz",
+                self.get_frequency_if_available(topic),
+            )
         return health_msg
 
     def get_GPS_status(self, health_msg):
@@ -295,7 +317,11 @@ class BoxStatus:
             if stderr:
                 rospy.logerr(stderr)
             if stdout:
-                setattr(health_msg, "cpu_usage_" + self.hostname, float(stdout.decode().replace(",", ".")))
+                setattr(
+                    health_msg,
+                    "cpu_usage_" + self.hostname,
+                    float(stdout.decode().replace(",", ".")),
+                )
             else:
                 setattr(health_msg, "cpu_usage_" + self.hostname, -1.0)
                 rospy.logerr("[BoxStatus] CPU usage could not be determined. ")

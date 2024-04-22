@@ -8,48 +8,48 @@ import os
 """
 # Front
 rosrun kalibr kalibr_calibrate_cameras \
- 	--target /home/beni/catkin_ws/src/kalibr/aprilboard_6x6.yaml \
- 	--models pinhole-equi pinhole-equi pinhole-equi pinhole-equi \
- 	--topics /gt_box/alphasense_driver_node/cam0/compressed /gt_box/alphasense_driver_node/cam1/compressed /gt_box/alphasense_driver_node/cam2/compressed /gt_box/v4l2_camera_front/image_raw/compressed \
- 	--bag bagname.bag
+    --target /home/beni/catkin_ws/src/kalibr/aprilboard_6x6.yaml \
+    --models pinhole-equi pinhole-equi pinhole-equi pinhole-equi \
+    --topics /gt_box/alphasense_driver_node/cam0/compressed /gt_box/alphasense_driver_node/cam1/compressed /gt_box/alphasense_driver_node/cam2/compressed /gt_box/v4l2_camera_front/image_raw/compressed \
+    --bag bagname.bag
 
 # Left
 rosrun kalibr kalibr_calibrate_cameras \
- 	--target /home/beni/catkin_ws/src/kalibr/aprilboard_6x6.yaml \
- 	--models pinhole-radtan pinhole-radtan \
- 	--topics /gt_box/alphasense_driver_node/cam3/compressed /gt_box/v4l2_camera_left/image_raw/compressed \
- 	--bag bagname.bag
+    --target /home/beni/catkin_ws/src/kalibr/aprilboard_6x6.yaml \
+    --models pinhole-radtan pinhole-radtan \
+    --topics /gt_box/alphasense_driver_node/cam3/compressed /gt_box/v4l2_camera_left/image_raw/compressed \
+    --bag bagname.bag
 
 # Right
 rosrun kalibr kalibr_calibrate_cameras \
- 	--target /home/beni/catkin_ws/src/kalibr/aprilboard_6x6.yaml \
- 	--models pinhole-radtan pinhole-radtan \
- 	--topics /gt_box/alphasense_driver_node/cam4/compressed /gt_box/v4l2_camera_right/image_raw/compressed \
- 	--bag bagname.bag
-   
+    --target /home/beni/catkin_ws/src/kalibr/aprilboard_6x6.yaml \
+    --models pinhole-radtan pinhole-radtan \
+    --topics /gt_box/alphasense_driver_node/cam4/compressed /gt_box/v4l2_camera_right/image_raw/compressed \
+    --bag bagname.bag
+
 # IMU adis16448
 rosrun kalibr kalibr_calibrate_imu_camera \
-	--target /home/beni/catkin_ws/src/kalibr/aprilboard_6x6.yaml \
-	--imu imu_adis16448.yaml \
-	--imu-models calibrated \
-	--cam cameras-front-camchain.yaml \
-	--bag moving_bagname.bag
+    --target /home/beni/catkin_ws/src/kalibr/aprilboard_6x6.yaml \
+    --imu imu_adis16448.yaml \
+    --imu-models calibrated \
+    --cam cameras-front-camchain.yaml \
+    --bag moving_bagname.bag
 
 # IMU stim320
 rosrun kalibr kalibr_calibrate_imu_camera \
-	--target /home/beni/catkin_ws/src/kalibr/aprilboard_6x6.yaml \
-	--imu imu_stim320.yaml \
-	--imu-models calibrated \
-	--cam cameras-front-camchain.yaml \
-	--bag moving_bagname.bag
+    --target /home/beni/catkin_ws/src/kalibr/aprilboard_6x6.yaml \
+    --imu imu_stim320.yaml \
+    --imu-models calibrated \
+    --cam cameras-front-camchain.yaml \
+    --bag moving_bagname.bag
 
 # IMU alphasense
 rosrun kalibr kalibr_calibrate_imu_camera \
-	--target /home/beni/catkin_ws/src/kalibr/aprilboard_6x6.yaml \
-	--imu imu_alphasense.yaml \
-	--imu-models calibrated \
-	--cam cameras-front-camchain.yaml \
-	--bag moving_bagname.bag
+    --target /home/beni/catkin_ws/src/kalibr/aprilboard_6x6.yaml \
+    --imu imu_alphasense.yaml \
+    --imu-models calibrated \
+    --cam cameras-front-camchain.yaml \
+    --bag moving_bagname.bag
 """
 
 

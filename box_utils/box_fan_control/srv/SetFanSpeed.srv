@@ -1,0 +1,4 @@
+std_msgs/Int32 fan_speed_in_percentage
+---
+bool success
+string message

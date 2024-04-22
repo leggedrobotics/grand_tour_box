@@ -1,4 +1,3 @@
-import os
 from setuptools import find_packages, setup
 
 if __name__ == "__main__":
@@ -30,7 +29,8 @@ if __name__ == "__main__":
             ]
         },
         install_requires=[
-            'argcomplete>=3.2.2',
-            'setuptools>=45.2.0',
-        ]
+            "argcomplete>=3.2.2",
+            "setuptools>=45.2.0",
+            "black==24.4.0",
+        ],
     )

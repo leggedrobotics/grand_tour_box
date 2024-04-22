@@ -1,5 +1,4 @@
 from boxi import USERNAME, shell_run
-import argparse
 
 
 def add_arguments(parser):

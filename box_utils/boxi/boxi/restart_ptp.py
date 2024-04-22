@@ -1,5 +1,4 @@
 from boxi import LOCAL_HOSTNAME, shell_run
-import argparse
 
 
 def add_arguments(parser):
@@ -9,27 +8,27 @@ def add_arguments(parser):
 
 def main(args):
     if LOCAL_HOSTNAME == "jetson":
-        cmd = f"sudo systemctl restart ptp4l_mgbe0.service"
+        cmd = "sudo systemctl restart ptp4l_mgbe0.service"
         shell_run(cmd)
-        cmd = f"sudo systemctl restart ptp4l_mgbe1.service"
+        cmd = "sudo systemctl restart ptp4l_mgbe1.service"
         shell_run(cmd)
-        cmd = f"sudo systemctl restart phc2sys_mgbe0.service"
+        cmd = "sudo systemctl restart phc2sys_mgbe0.service"
         shell_run(cmd)
-        cmd = f"sudo systemctl restart phc2sys_mgbe1.service"
+        cmd = "sudo systemctl restart phc2sys_mgbe1.service"
         shell_run(cmd)
 
     if LOCAL_HOSTNAME == "nuc":
-        cmd = f"systemctl restart ptp4l_enp45s0.service"
+        cmd = "systemctl restart ptp4l_enp45s0.service"
         shell_run(cmd)
-        cmd = f"systemctl restart ptp4l_enp46s0.service"
+        cmd = "systemctl restart ptp4l_enp46s0.service"
         shell_run(cmd)
-        cmd = f"systemctl restart phc2sys_system.service"
+        cmd = "systemctl restart phc2sys_enp45s0.service"
         shell_run(cmd)
-        cmd = f"systemctl restart phc2sys_NIC.service"
+        cmd = "systemctl restart phc2sys_enp46s0.service"
         shell_run(cmd)
 
     if LOCAL_HOSTNAME == "pi":
-        cmd = f"systemctl restart ptp4l.service"
+        cmd = "systemctl restart ptp4l_eth0.service"
         shell_run(cmd)
-        cmd = f"systemctl restart phc2sys.service"
+        cmd = "systemctl restart phc2sys_eth0.service"
         shell_run(cmd)

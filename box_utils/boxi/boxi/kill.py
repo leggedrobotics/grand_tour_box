@@ -1,6 +1,5 @@
-from boxi import BOX_ROOT_DIR, shell_run
+from boxi import shell_run
 import socket
-import logging as log
 
 
 def add_arguments(parser):
@@ -20,9 +19,9 @@ def main(args):
     for host in hosts:
         print("Killing ROS on", host)
         if host == hostname:
-            cmd = f"tmux kill-server"
+            cmd = "tmux kill-server"
         else:
-            cmd = f"ssh -o ConnectTimeout=2 rsl@" + host + " -t tmux kill-server"
+            cmd = f"ssh -o ConnectTimeout=2 rsl@{host} -t tmux kill-server"
         try:
             shell_run(cmd)
         except:
