@@ -13,11 +13,11 @@
 
   <!-- uncompress the images-->
   <node name="uncompress_hdr_left" pkg="image_transport" type="republish" 
-    args="compressed in:=/gt_box/v4l2_camera_left/image_raw raw out:=/gt_box/v4l2_camera_left/image_raw"> </node>
+    args="compressed in:=/gt_box/hdr_camera_left/image_raw raw out:=/gt_box/hdr_camera_left/image_raw"> </node>
   <node name="uncompress_hdr_front" pkg="image_transport" type="republish" 
-    args="compressed in:=/gt_box/v4l2_camera_front/image_raw raw out:=/gt_box/v4l2_camera_front/image_raw"> </node>
+    args="compressed in:=/gt_box/hdr_camera_front/image_raw raw out:=/gt_box/hdr_camera_front/image_raw"> </node>
   <node name="uncompress_hdr_right" pkg="image_transport" type="republish" 
-    args="compressed in:=/gt_box/v4l2_camera_right/image_raw raw out:=/gt_box/v4l2_camera_right/image_raw"> </node>
+    args="compressed in:=/gt_box/hdr_camera_right/image_raw raw out:=/gt_box/hdr_camera_right/image_raw"> </node>
   <node name="uncompress_alpahsense_cam0" pkg="image_transport" type="republish" 
     args="compressed in:=/gt_box/alphasense_driver_node/cam0 raw out:=/gt_box/alphasense_driver_node/cam0"> </node>
   <node name="uncompress_alpahsense_cam1" pkg="image_transport" type="republish" 

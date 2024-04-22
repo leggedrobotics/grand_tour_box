@@ -317,7 +317,7 @@ Visualization Manager:
             - Class: jsk_rviz_plugin/PieChart
               Enabled: true
               Name: HDR L
-              Topic: /gt_box/visualization/gt_box_v4l2_camera_left_image_raw_hz
+              Topic: /gt_box/visualization/gt_box_hdr_camera_left_image_raw_hz
               Value: true
               auto color change: true
               background color: 0; 0; 0
@@ -340,7 +340,7 @@ Visualization Manager:
             - Class: jsk_rviz_plugin/PieChart
               Enabled: true
               Name: HDR M
-              Topic: /gt_box/visualization/gt_box_v4l2_camera_front_image_raw_hz
+              Topic: /gt_box/visualization/gt_box_hdr_camera_front_image_raw_hz
               Value: true
               auto color change: true
               background color: 0; 0; 0
@@ -363,7 +363,7 @@ Visualization Manager:
             - Class: jsk_rviz_plugin/PieChart
               Enabled: true
               Name: HDR R
-              Topic: /gt_box/visualization/gt_box_v4l2_camera_right_image_raw_hz
+              Topic: /gt_box/visualization/gt_box_hdr_camera_right_image_raw_hz
               Value: true
               auto color change: true
               background color: 0; 0; 0
@@ -725,7 +725,7 @@ Visualization Manager:
       Displays:
         - Class: rviz/Image
           Enabled: true
-          Image Topic: /gt_box/v4l2_camera_right/image_raw
+          Image Topic: /gt_box/hdr_camera_right/image_raw
           Max Value: 1
           Median window: 5
           Min Value: 0
@@ -737,7 +737,7 @@ Visualization Manager:
           Value: true
         - Class: rviz/Image
           Enabled: true
-          Image Topic: /gt_box/v4l2_camera_left/image_raw
+          Image Topic: /gt_box/hdr_camera_left/image_raw
           Max Value: 1
           Median window: 5
           Min Value: 0
@@ -749,7 +749,7 @@ Visualization Manager:
           Value: true
         - Class: rviz/Image
           Enabled: true
-          Image Topic: /gt_box/v4l2_camera_front/image_raw
+          Image Topic: /gt_box/hdr_camera_front/image_raw
           Max Value: 1
           Median window: 5
           Min Value: 0

@@ -54,12 +54,12 @@ nuc:
     - /gt_box/livox/imu
     - /gt_box/health_status/nuc
   hdr:
-    - /gt_box/v4l2_camera_left/camera_info
-    - /gt_box/v4l2_camera_left/image_raw/compressed
-    - /gt_box/v4l2_camera_front/camera_info
-    - /gt_box/v4l2_camera_front/image_raw/compressed
-    - /gt_box/v4l2_camera_right/camera_info
-    - /gt_box/v4l2_camera_right/image_raw/compressed
+    - /gt_box/hdr_camera_left/camera_info
+    - /gt_box/hdr_camera_left/image_raw/compressed
+    - /gt_box/hdr_camera_front/camera_info
+    - /gt_box/hdr_camera_front/image_raw/compressed
+    - /gt_box/hdr_camera_right/camera_info
+    - /gt_box/hdr_camera_right/image_raw/compressed
 opc:
   utils:
     - /gt_box/health_status/opc

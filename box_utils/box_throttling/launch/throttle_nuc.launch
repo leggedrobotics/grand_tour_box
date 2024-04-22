@@ -7,8 +7,8 @@
   <arg name="hdr_frequency" default="5.0"/>
 
   <group ns="$(arg box_namespace)">
-    <node name="hdrcam_throttler_left" type="throttle" pkg="topic_tools" args="messages /gt_box/v4l2_camera_left/image_raw/compressed $(arg hdr_frequency) /gt_box/throttled/v4l2_camera_left/image_raw/compressed" />
-    <node name="hdrcam_throttler_front" type="throttle" pkg="topic_tools" args="messages /gt_box/v4l2_camera_front/image_raw/compressed $(arg hdr_frequency) /gt_box/throttled/v4l2_camera_front/image_raw/compressed" />
-    <node name="hdrcam_throttler_right" type="throttle" pkg="topic_tools" args="messages /gt_box/v4l2_camera_right/image_raw/compressed $(arg hdr_frequency) /gt_box/throttled/v4l2_camera_right/image_raw/compressed" />
+    <node name="hdrcam_throttler_left" type="throttle" pkg="topic_tools" args="messages /gt_box/hdr_camera_left/image_raw/compressed $(arg hdr_frequency) /gt_box/throttled/hdr_camera_left/image_raw/compressed" />
+    <node name="hdrcam_throttler_front" type="throttle" pkg="topic_tools" args="messages /gt_box/hdr_camera_front/image_raw/compressed $(arg hdr_frequency) /gt_box/throttled/hdr_camera_front/image_raw/compressed" />
+    <node name="hdrcam_throttler_right" type="throttle" pkg="topic_tools" args="messages /gt_box/hdr_camera_right/image_raw/compressed $(arg hdr_frequency) /gt_box/throttled/hdr_camera_right/image_raw/compressed" />
   </group>
 </launch>
