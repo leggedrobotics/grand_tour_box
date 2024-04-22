@@ -1,0 +1,13 @@
+[Unit]
+Description=Autostart Terminal and Run tmuxp
+After=network-online.target
+After=phc2sys_eth0.service
+
+[Service]
+Type=forking
+ExecStartPre=/bin/sleep 30
+ExecStart=/usr/bin/tmuxp load /home/rsl/git/grand_tour_box/box_launch/tmux/pi_recording.yaml -d
+User=rsl
+
+[Install]
+WantedBy=multi-user.target
