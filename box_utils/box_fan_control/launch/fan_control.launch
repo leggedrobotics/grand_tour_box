@@ -2,7 +2,7 @@
   <arg name="box_namespace" default="gt_box"/>
   <group ns="$(arg box_namespace)">
     <param name="capability_group" value="Health"/>
-    <node pkg="box_fan_control" type="fan_control_node.py" name="box_fan_control_node" output="screen">
+    <node pkg="box_fan_control" type="fan_control_node.py" name="box_fan_control_node">
     </node>
   </group>
 </launch>

@@ -41,8 +41,9 @@ def connect_to_wifi(ssid, password):
 
 
 def main(args):
-    ssid, password = load_wifi_config()
-    if ssid and password:
-        connect_to_wifi(ssid, password)
+    if os.path.exists("~/wifi_config.ini"):
+        ssid, password = load_wifi_config()
+        if ssid and password:
+            connect_to_wifi(ssid, password)
     cfg = os.path.join(BOX_ROOT_DIR, "box_launch/tmux", args.c + ".yaml")
     shell_run(f"tmuxp load  {cfg} -d")

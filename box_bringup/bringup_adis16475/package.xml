@@ -5,7 +5,7 @@
   <description>The bringup_adis16475 package</description>
   <maintainer email="code@lennart-werner.de">Lennart Werner</maintainer>
   <license>Proprietary</license>
-  <depend>adis16475_node</depend>
+  <depend>adis16475_driver_ros</depend>
   <export>
   </export>
 </package>
