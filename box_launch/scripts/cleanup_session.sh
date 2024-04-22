@@ -29,6 +29,6 @@ fi
 
 if [ $(hostname) == "jetson" ]
 then
-    rosrun ap20_timestamper stop_ap20.sh
+    rosrun ap20_driver_ros stop_ap20.sh
 fi
 echo "Cleaned Up Session"
