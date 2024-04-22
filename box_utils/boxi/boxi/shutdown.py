@@ -15,6 +15,6 @@ def main(args):
     cmd = "ssh -t rsl@nuc 'sudo shutdown -h now'"
     shell_run(cmd)
 
-    print("shutdown jetson")
-    cmd = "ssh -t rsl@pi 'sudo shutdown -h now'"
+    print("shutdown pi")
+    cmd = "ssh -t rsl@pi 'sleep 15; sudo shutdown -h now'"
     shell_run(cmd)
