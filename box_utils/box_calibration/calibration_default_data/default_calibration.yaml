@@ -95,11 +95,11 @@ hdr_base_to_hdr_right:
   z: -0.055
 
 box_base_to_zed_base:
-  x: 0.0
-  y: 0.0
-  z: 0.0
-  roll: 0.0
-  pitch: 0.0
+  x: 0.075
+  y: -0.022
+  z: 0.028
+  roll: -180.0
+  pitch: 10.0
   yaw: 0.0
 
 box_base_to_imu_stim320:
