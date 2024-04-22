@@ -28,7 +28,7 @@ class FanControlNode(object):
         for m in ["normal", "hot", "cold"]:
             servers[m] = rospy.Service(f"~{m}", Trigger, partial(self.set_mode, mode=m))
 
-        servers["set_fan_speed"] = rospy.Service(f"~set_fan_speed", SetFanSpeed, self.set_fan_speed)
+        servers["set_fan_speed"] = rospy.Service("~set_fan_speed", SetFanSpeed, self.set_fan_speed)
         rospy.loginfo(
             f"[FanControllerNode] Started in mode {self.mode} / Fan speed {self.desired_fan_speed_in_percentage}%."
         )
@@ -43,7 +43,6 @@ class FanControlNode(object):
             else:
                 # Implement PD Controller
                 current_temperature = self.get_current_temperature()
-                error = self.desired_temperature - current_temperature
 
                 if self.desired_temperature - 10 > current_temperature:
                     control_signal = 0
@@ -52,6 +51,7 @@ class FanControlNode(object):
                 else:
                     control_signal = 60
 
+                # error = self.desired_temperature - current_temperature
                 # current_time = rospy.get_time()
                 # delta_time = current_time - self.last_time
                 # derivative = (error - self.last_error) / delta_time

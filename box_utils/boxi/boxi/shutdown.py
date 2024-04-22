@@ -1,5 +1,4 @@
-from boxi import BOX_ROOT_DIR, shell_run
-import argparse
+from boxi import shell_run
 
 
 def add_arguments(parser):
@@ -9,13 +8,13 @@ def add_arguments(parser):
 
 def main(args):
     print("shutdown jetson")
-    cmd = f"ssh -t rsl@jetson 'sudo shutdown -h now'"
+    cmd = "ssh -t rsl@jetson 'sudo shutdown -h now'"
     shell_run(cmd)
 
     print("shutdown nuc")
-    cmd = f"ssh -t rsl@nuc 'sudo shutdown -h now'"
+    cmd = "ssh -t rsl@nuc 'sudo shutdown -h now'"
     shell_run(cmd)
 
     print("shutdown jetson")
-    cmd = f"ssh -t rsl@pi 'sudo shutdown -h now'"
+    cmd = "ssh -t rsl@pi 'sudo shutdown -h now'"
     shell_run(cmd)

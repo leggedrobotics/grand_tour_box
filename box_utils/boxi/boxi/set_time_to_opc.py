@@ -1,5 +1,4 @@
-from boxi import BOX_ROOT_DIR, shell_run
-import argparse
+from boxi import shell_run
 
 
 def add_arguments(parser):
@@ -8,5 +7,5 @@ def add_arguments(parser):
 
 
 def main(args):
-    cmd = f"remote_time=$(ssh rsl@opc date --iso=ns) && sudo -S date -s $remote_time && sudo /usr/sbin/hwclock -w"
+    cmd = "remote_time=$(ssh rsl@opc date --iso=ns) && sudo -S date -s $remote_time && sudo /usr/sbin/hwclock -w"
     shell_run(cmd)

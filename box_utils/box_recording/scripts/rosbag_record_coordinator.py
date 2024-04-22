@@ -10,7 +10,11 @@ import yaml
 import os
 from box_recording.srv import StopRecordingInternal, StopRecordingInternalRequest
 from box_recording.srv import StartRecordingInternal, StartRecordingInternalRequest
-from box_recording.srv import StartRecording, StartRecordingResponse, StartRecordingRequest
+from box_recording.srv import (
+    StartRecording,
+    StartRecordingResponse,
+    StartRecordingRequest,
+)
 from box_recording.srv import StopRecording, StopRecordingResponse, StopRecordingRequest
 
 
@@ -55,7 +59,11 @@ class RosbagRecordCoordinator(object):
             request.yaml_file = self.default_yaml
         else:
             if not os.path.isabs(request.yaml_file):
-                request.yaml_file = join(str(self.rp.get_path("box_recording")), "cfg", request.yaml_file + ".yaml")
+                request.yaml_file = join(
+                    str(self.rp.get_path("box_recording")),
+                    "cfg",
+                    request.yaml_file + ".yaml",
+                )
 
         if not os.path.exists(request.yaml_file):
             rospy.loginfo("[RosbagRecordCoordinator] Failed to start recording given that yaml cannot be found!")
@@ -144,17 +152,17 @@ class RosbagRecordCoordinator(object):
         pretty = ""
         for k, v in pretty_ls.items():
             length = 82
-            pretty += "-" * 82
+            pretty += "-" * length
             pretty += k
-            print("-" * 82)
+            print("-" * length)
             print(k)
             v = v.replace(" \\ ", "")
             for a in v.split("\\n"):
                 print(a)
                 pretty += a
-            print("-" * 82)
+            print("-" * length)
             print("\n")
-            pretty += "-" * 82
+            pretty += "-" * length
             pretty += ""
 
         response.result = pretty
