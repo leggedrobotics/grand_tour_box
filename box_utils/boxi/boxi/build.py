@@ -40,7 +40,7 @@ def main(args):
             cmd += f"cd ~/catkin_ws; catkin build launch_{host}"
 
         else:
-            cmd += f"ssh -o ConnectTimeout=4 rsl@{host} -t /home/rsl/.local/bin/boxi catkin_build --{host}"
+            cmd += f"ssh -o ConnectTimeout=4 rsl@{host} -t /home/rsl/.local/bin/boxi build --{host}"
 
             if args.clean:
                 cmd += " --clean"
