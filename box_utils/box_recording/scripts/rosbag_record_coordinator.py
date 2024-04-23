@@ -96,19 +96,18 @@ class RosbagRecordCoordinator(object):
                             topic_cfgs += f"{bag_name}----{topic} "
                         int_request.topics = topic_cfgs[:-1]
                         int_request.timestamp = timestamp
-                        response.message += f" {node}-{bag_name}"
-
+                        response.message += f"{node}-{bag_name} [SUC], "
                         start_recording_srv(int_request)
                         rospy.loginfo("[RosbagRecordCoordinator] Starting rosbag recording process on " + node)
                     self.bag_running = True
 
                 except rospy.ROSException as exception:
                     response.suc = False
-                    response.message = response.message + " " + node
+                    response.message += f"{node} [FAILED] Exception: " + str(exception) + ", "
                     print("Service did not process request: " + str(exception))
                     rospy.logerr("Failed to start rosbag recording process on " + node)
             if response.suc:
-                response.message += " Successfully started all nodes"
+                response.message += " - All nodes started recording."
                 rospy.loginfo("[RosbagRecordCoordinator] Successfully started rosbag recording process on all nodes")
         return response
 
@@ -142,7 +141,7 @@ class RosbagRecordCoordinator(object):
 
             if response.suc:
                 self.bag_running = False
-                response.message = "Successfully stop all nodes"
+                response.message = "Successfully stoped all nodes"
             rospy.loginfo("[RosbagRecordCoordinator] Sent STOP to all nodes.")
         else:
             response.suc = False
