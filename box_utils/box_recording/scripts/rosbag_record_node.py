@@ -9,6 +9,7 @@ import rospkg
 import psutil
 import signal
 import os
+import rosparam
 from std_msgs.msg import Bool
 from box_recording.srv import StartRecordingInternalResponse, StartRecordingInternal
 from box_recording.srv import StopRecordingInternalResponse, StopRecordingInternal
@@ -63,7 +64,12 @@ class RosbagRecordNode(object):
         rospy.loginfo("[RosbagRecordNode(" + self.node + ")] Trying to start rosbag recording process.")
         response = StartRecordingInternalResponse()
         timestamp = request.timestamp
-        self.bag_base_path = self.data_path + "/" + timestamp + "_" + self.node
+        self.bag_base_path = os.path.join(self.data_path, timestamp)
+
+        # Check if we're on lpc. If so, dump rosparams to yaml file.
+        if self.node == "jetson":
+            yaml_file_path = os.path.join(self.bag_base_path, f"{timestamp}_{self.node}.yaml")
+            rosparam.dump_params(yaml_file_path, "/")
 
         topic_cfgs = request.topics.split(" ")
         print()
@@ -78,18 +84,19 @@ class RosbagRecordNode(object):
 
         self.bag_configs = bag_configs
         for bag_name, topics in bag_configs.items():
-            bag_path = self.bag_base_path + "_" + bag_name
+            bag_path = os.path.join(self.bag_base_path, timestamp + "_" + self.node + "_" + bag_name)
             bash_command = (
                 f"rosrun box_recording record_bag.sh {bag_path} {topics} __name:=record_{self.node}_{bag_name}"
             )
 
             self.processes.append(subprocess.Popen(bash_command, shell=True, stderr=subprocess.PIPE))
             self.bag_running = True
-            self.publish_recording_status.publish(self.bag_running)
+
             response.suc = True
             response.message = "Starting rosbag recording process."
             rospy.loginfo(f"[RosbagRecordNode({self.node} {bag_name})] Starting rosbag recording process.")
 
+        self.publish_recording_status.publish(self.bag_running)
         return response
 
     def stop_recording(self, request):
