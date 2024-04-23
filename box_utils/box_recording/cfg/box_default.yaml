@@ -11,46 +11,38 @@ jetson:
     - /gt_box/alphasense_driver_node/cam4/color/image/compressed
     - /gt_box/alphasense_driver_node/cam4/color/camera_info
   hesai:
-    - /gt_box/hesai/pandar
+    - /gt_box/hesai/pandar_packets
   livox:
     - /gt_box/livox/imu
     - /gt_box/livox/lidar
   utils:
-    - /gt_box/alphasense_driver_node/aux_imu
     - /gt_box/alphasense_driver_node/imu
     - /gt_box/health_status/jetson
-  gps:
-    - /gt_box/rover/piksi_reference/position_receiver_0/ros/vel_ned
-    - /gt_box/rover/piksi_reference/position_receiver_0/ros/vel_ned_cov
-    - /gt_box/rover/piksi_reference/position_receiver_0/ros/pos_enu
-    - /gt_box/rover/piksi_reference/position_receiver_0/ros/pos_enu_cov
-    - /gt_box/rover/piksi_reference/position_receiver_0/ros/navsatfix
-    - /gt_box/rover/piksi_reference/position_receiver_0/ros/receiver_state
-    - /gt_box/rover/piksi_reference/position_receiver_0/sbp/base_pos_ecef
-    - /gt_box/rover/piksi_reference/position_receiver_0/ros/time_ref
-    - /gt_box/rover/piksi_reference/position_receiver_0/ros/baseline_ned
   zed2i:
-    - /gt_box/zed2i/joint_states
-    - /gt_box/zed2i/zed_node/confidence/confidence_map
-    - /gt_box/zed2i/zed_node/depth/depth_registered
-    - /gt_box/zed2i/zed_node/imu/data
-    - /gt_box/zed2i/zed_node/imu/data_raw
-    - /gt_box/zed2i/zed_node/odom
-    - /gt_box/zed2i/zed_node/odom/status
-    - /gt_box/zed2i/zed_node/point_cloud/cloud_registered
-    - /gt_box/zed2i/zed_node/rgb_raw/image_raw_color/compressed
-    - /gt_box/zed2i/zed_node/left_raw/image_raw_color/compressed
-    - /gt_box/zed2i/zed_node/right_raw/image_raw_color/compressed
+    - /gt_box/zed2i/temperature/imu
+    - /gt_box/zed2i/temperature/left
+    - /gt_box/zed2i/temperature/right
+    - /gt_box/zed2i/confidence/confidence_map
+    - /gt_box/zed2i/depth/depth_registered
+    - /gt_box/zed2i/imu/data
+    - /gt_box/zed2i/imu/data_raw
+    - /gt_box/zed2i/imu/mag
+    - /gt_box/zed2i/odom
+    - /gt_box/zed2i/odom/status
+    - /gt_box/zed2i/point_cloud/cloud_registered
+    - /gt_box/zed2i/rgb_raw/image_raw_color/compressed
+    - /gt_box/zed2i/left_raw/image_raw_color/compressed
+    - /gt_box/zed2i/right_raw/image_raw_color/compressed
   ap20:
-    - /gt_box/ap20_imu
-    - /gt_box/ap20_prism_position
+    - /gt_box/ap20/ap20_imu
+    - /gt_box/ap20/prism_position
   tf:
     - /tf_static
     - /tf
 nuc:
   utils:
-    - /gt_box/stim320
-    - /gt_box/adis16475
+    - /gt_box/stim320/imu
+    - /gt_box/adis16475/imu
     - /gt_box/livox/imu
     - /gt_box/health_status/nuc
   hdr:
@@ -64,7 +56,3 @@ opc:
   utils:
     - /gt_box/health_status/opc
     - /gt_box/health_status/merged
-  leica:
-    - /gt_box/leica/position
-    - /gt_box/leica/status
-    - /gt_box/leica/timestamp_info
