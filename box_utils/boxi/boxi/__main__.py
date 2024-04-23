@@ -6,7 +6,7 @@ import importlib
 
 command_register = [
     "black",
-    "catkin_build",
+    "build",
     "delete_data",
     "get_data",
     "initial_clock_sync",
@@ -16,7 +16,7 @@ command_register = [
     "push",
     "restart_ptp",
     "set_time_to_opc",
-    "set_git_user",
+    "git_set_user",
     "shutdown",
     "load_calib",
 ]
