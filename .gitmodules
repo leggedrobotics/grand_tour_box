@@ -6,10 +6,6 @@
 	path = box_drivers/livox_ros_driver2
 	url = git@github.com:leggedrobotics/livox_ros_driver2.git
 	branch = grandTour
-[submodule "box_drivers/hesai_lidar_driver"]
-	path = box_drivers/hesai_lidar_driver
-	url = git@github.com:leggedrobotics/hesai_lidar_driver.git
-	branch = grandTour
 [submodule "box_drivers/leica_totalstation_interface"]
 	path = box_drivers/leica_totalstation_interface
 	url = git@github.com:leggedrobotics/leica_totalstation_interface.git
@@ -45,4 +41,8 @@
 [submodule "box_drivers/raw_image_pipeline"]
 	path = box_drivers/raw_image_pipeline
 	url = git@github.com:leggedrobotics/raw_image_pipeline.git
+	branch = master
+[submodule "box_drivers/hesai_lidar_ros_driver"]
+	path = box_drivers/hesai_lidar_ros_driver
+	url = git@github.com:leggedrobotics/hesai_lidar_ros_driver.git
 	branch = master
