@@ -10,10 +10,10 @@ killall roscore
 killall rosmaster
 
 # Clean PWM if on pi
-if [ $(hostname) == "pi" ]
-then
-    pigs p 19 0  # Set GPIO19 dutycycle to 0 (off)  [https://abyz.me.uk/rpi/pigpio/pigs.html#P/PWM]
-    echo "Cleaned Up pigpiod"
+# if [ $(hostname) == "pi" ]
+# then
+#    pigs p 19 0  # Set GPIO19 dutycycle to 0 (off)  [https://abyz.me.uk/rpi/pigpio/pigs.html#P/PWM]
+#    echo "Cleaned Up pigpiod"
 
 pid=$(pgrep rosmaster)
 if [ -z "$pid" ]
@@ -29,6 +29,7 @@ fi
 
 if [ $(hostname) == "jetson" ]
 then
-    rosrun ap20_driver_ros ap20_stop_sending_data.sh
+   ~git/grand_tour_box/box_drivers/ap20_driver/ap20_driver_ros/script/ap20_stop_sending_data.sh
 fi
+
 echo "Cleaned Up Session"

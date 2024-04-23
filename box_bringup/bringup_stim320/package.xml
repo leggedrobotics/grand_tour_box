@@ -5,7 +5,7 @@
   <description>The bringup_stim320 package</description>
   <maintainer email="bkrumme@ethz.ch">Benjamin Krummenacher</maintainer>
   <license>Proprietary</license>
-  <depend>stim320_ros</depend>
+  <depend>stim320_driver_ros</depend>
   <export>
   </export>
 </package>

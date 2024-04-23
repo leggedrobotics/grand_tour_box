@@ -74,8 +74,8 @@ int main(int argc, char **argv)
   ros::init(argc, argv, "ap20_trigger");
   ros::NodeHandle n;
 
-  ros::Publisher ap20_imu_pub = n.advertise<sensor_msgs::Imu>("~ap20_imu", 1000);
-  ros::Publisher ap20_position_pub = n.advertise<geometry_msgs::PointStamped>("~ap20_prism_position", 100);
+  ros::Publisher ap20_imu_pub = n.advertise<sensor_msgs::Imu>("~imu", 1000);
+  ros::Publisher ap20_position_pub = n.advertise<geometry_msgs::PointStamped>("~prism_position", 100);
 
   ros::Subscriber imu_sub = n.subscribe("/box_gt/ap20/imu/data_raw", 1000, imu_callback);
   ros::Subscriber position_sub = n.subscribe("/box_gt/ap20/leica/position", 1000, position_callback);

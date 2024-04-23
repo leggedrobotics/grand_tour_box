@@ -1,8 +1,7 @@
 <launch>
   <arg name="box_namespace" default="gt_box"/>
-  <param name="capability_group" value="Visualization"/>
   <group ns="$(arg box_namespace)">
-
+    <param name="capability_group" value="Driver"/>
     <arg name="pcap_file"  default=""/>
     <arg name="server_ip" default="192.168.2.201"/>
     <arg name="lidar_recv_port"  default="2368"/>
@@ -23,7 +22,8 @@
     <arg name="fixed_frame"  default=""/>
     <arg name="target_frame"  default=""/>
 
-    <node pkg="hesai_lidar" name="hesai_lidar_unpack" ns="$(arg namespace)" type="hesai_lidar_node" output="screen" >
+    <node pkg="hesai_lidar" name="hesai_lidar_unpack" type="hesai_lidar_node" output="screen" >
+      
       <param name="pcap_file" type="string" value="$(arg pcap_file)"/>
       <param name="server_ip" type="string" value="$(arg server_ip)"/>
       <param name="lidar_recv_port"  type="int" value="$(arg lidar_recv_port)"/>

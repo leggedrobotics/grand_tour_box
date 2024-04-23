@@ -2,7 +2,7 @@
   <arg name="box_namespace" default="gt_box"/>
   <arg name="calibration" default="no"/>
   <group if="$(eval arg('calibration') == 'no' or arg('calibration') == 'lidar')" ns="$(arg box_namespace)">
-
+    
     <arg name="pcap_file"  default=""/>
     <arg name="server_ip" default="192.168.2.201"/>
     <arg name="lidar_recv_port"  default="2368"/>
@@ -17,14 +17,13 @@
     <arg if="$(eval arg('calibration') == 'lidar' )" name="publish_type" default="points"/>
     <arg name="timestamp_type" default=""/>
     <arg name="data_type" default=""/>
-    <arg name="namespace" default="hesai"/>
     <arg name="lidar_correction_file"  default="$(find bringup_hesai)/config/PandarXT-32.csv"/>
     <arg name="multicast_ip"  default=""/>
     <arg name="coordinate_correction_flag"  default="false"/>
     <arg name="fixed_frame"  default=""/>
     <arg name="target_frame"  default=""/>
-
-    <node pkg="hesai_lidar" name="hesai_lidar" ns="$(arg namespace)" type="hesai_lidar_node" output="screen" >
+    <node pkg="hesai_lidar" name="hesai_lidar" type="hesai_lidar_node" output="screen" >
+      <param name="capability_group" value="Driver"/>
       <param name="pcap_file" type="string" value="$(arg pcap_file)"/>
       <param name="server_ip" type="string" value="$(arg server_ip)"/>
       <param name="lidar_recv_port"  type="int" value="$(arg lidar_recv_port)"/>
