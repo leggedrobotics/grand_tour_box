@@ -10,21 +10,21 @@ import os
 rosrun kalibr kalibr_calibrate_cameras \
     --target /home/beni/catkin_ws/src/kalibr/aprilboard_6x6.yaml \
     --models pinhole-equi pinhole-equi pinhole-equi pinhole-equi \
-    --topics /gt_box/alphasense_driver_node/cam0/compressed /gt_box/alphasense_driver_node/cam1/compressed /gt_box/alphasense_driver_node/cam2/compressed /gt_box/v4l2_camera_front/image_raw/compressed \
+    --topics /gt_box/alphasense_driver_node/cam0/compressed /gt_box/alphasense_driver_node/cam1/compressed /gt_box/alphasense_driver_node/cam2/compressed /gt_box/hdr_camera_front/image_raw/compressed \
     --bag bagname.bag
 
 # Left
 rosrun kalibr kalibr_calibrate_cameras \
     --target /home/beni/catkin_ws/src/kalibr/aprilboard_6x6.yaml \
     --models pinhole-radtan pinhole-radtan \
-    --topics /gt_box/alphasense_driver_node/cam3/compressed /gt_box/v4l2_camera_left/image_raw/compressed \
+    --topics /gt_box/alphasense_driver_node/cam3/compressed /gt_box/hdr_camera_left/image_raw/compressed \
     --bag bagname.bag
 
 # Right
 rosrun kalibr kalibr_calibrate_cameras \
     --target /home/beni/catkin_ws/src/kalibr/aprilboard_6x6.yaml \
     --models pinhole-radtan pinhole-radtan \
-    --topics /gt_box/alphasense_driver_node/cam4/compressed /gt_box/v4l2_camera_right/image_raw/compressed \
+    --topics /gt_box/alphasense_driver_node/cam4/compressed /gt_box/hdr_camera_right/image_raw/compressed \
     --bag bagname.bag
 
 # IMU adis16448

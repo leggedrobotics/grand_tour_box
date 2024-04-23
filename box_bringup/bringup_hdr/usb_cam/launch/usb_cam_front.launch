@@ -14,9 +14,10 @@
     <arg name="camera_info_url" default="file:///home/beni/catkin_ws/src/grand_tour_box/box_bringup/bringup_hdr/usb_cam/cfg/camera_intrinsics_front.yaml" />
     <arg name="camera_frame_id" default="camera" />
     <arg name="pixel_format" default="UYVY" />
-    <arg name="camera_name" default="v4l2_camera_front" />
+    <arg name="camera_name" default="hdr_camera_front" />
 
     <node pkg="v4l2_camera" type="v4l2_camera_node" name="$(arg camera_name)" output="screen">
+        <param name="capability_group" value="Driver"/>
         <param name="publish_rate" value="$(arg publish_rate)" />
         <param name="use_image_transport" value="$(arg use_image_transport)" />
         <param name="video_device" value="$(arg video_device)" />

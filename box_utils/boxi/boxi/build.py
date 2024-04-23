@@ -35,10 +35,13 @@ def main(args):
         if host == hostname:
             if args.clean:
                 cmd += "cd ~/catkin_ws; catkin clean --all -y; "
+            if host == "jetson":
+                cmd += "cd ~/catkin_ws; catkin build hesai_lidar; "
             cmd += f"cd ~/catkin_ws; catkin build launch_{host}"
 
         else:
-            cmd += f"ssh -o ConnectTimeout=4 rsl@{host} -t /home/rsl/.local/bin/boxi catkin_build --{host}"
+            cmd += f"ssh -o ConnectTimeout=4 rsl@{host} -t /home/rsl/.local/bin/boxi build --{host}"
+
             if args.clean:
                 cmd += " --clean"
 
