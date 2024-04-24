@@ -9,23 +9,26 @@ import rospkg
 import psutil
 import signal
 import os
+import rosparam
+import shutil
+from pathlib import Path
 from std_msgs.msg import Bool
+from std_msgs.msg import Float32
 from box_recording.srv import StartRecordingInternalResponse, StartRecordingInternal
-from box_recording.srv import StopRecordingInternalResponse, StopRecordingInternal
+from box_recording.srv import StopRecordingInternalResponse, StopRecordingInternal, StopRecordingInternalRequest
+import time
 
 
 class RosbagRecordNode(object):
     def __init__(self):
         # Get the host name of the machine
         self.node = socket.gethostname()
-
-        self.namespace = rospy.get_namespace()
-
         rospy.init_node(f"rosbag_record_node_{self.node}")
 
         # Set up services
         servers = {}
         self.processes = []
+        self.bag_base_path = None
         servers["start"] = rospy.Service("~start_recording", StartRecordingInternal, self.start_recording)
         servers["stop"] = rospy.Service("~stop_recording", StopRecordingInternal, self.stop_recording)
 
@@ -33,10 +36,8 @@ class RosbagRecordNode(object):
         default_path = rospkg.RosPack().get_path("box_recording") + "/data"
         self.data_path = rospy.get_param("~data_path", default_path)
 
-        self.publish_recording_status = rospy.Publisher(
-            self.namespace + "health_status/recording_" + self.node, Bool, queue_size=3
-        )
-        self.publish_recording_status.publish(self.bag_running)
+        self.pub_recording_status = rospy.Publisher("~recording_status", Bool, queue_size=3)
+        self.pub_disk_space_free_in_gb = rospy.Publisher("~disk_space_free_in_gb", Float32, queue_size=3)
 
         if not os.path.exists(self.data_path):
             self.data_path = default_path
@@ -53,6 +54,34 @@ class RosbagRecordNode(object):
         self.rosbag_recorder_bash_script = os.path.join(rp.get_path("box_recording"), "bin/record_bag.sh")
         rospy.loginfo("[RosbagRecordNode(" + self.node + ")] Set up to record to " + self.data_path)
 
+        rate = rospy.Rate(1)
+        free_disk_space_in_gb = 0
+
+        while rospy.is_shutdown() is False:
+            if self.bag_running:
+                p = self.bag_base_path
+            else:
+                p = "~"
+
+            if os.path.exists(p):
+                free_disk_space_in_gb = shutil.disk_usage(p)[2] / 1000000000
+            else:
+                rospy.logerr(f"[RosbagRecordNode({self.node})] Failed to check free disk space on {p}.")
+
+            if free_disk_space_in_gb < 5 and self.bag_running:
+                rospy.logerr(f"[RosbagRecordNode({self.node})] Reached low disk space. Stopping recording.")
+                request = StopRecordingInternalRequest()
+                self.stop_recording(request)
+                time.sleep(30)
+                exit - 1
+            else:
+                rospy.loginfo(f"[RosbagRecordNode({self.node})] Free disk space: " + str(free_disk_space_in_gb) + " GB")
+
+            self.pub_disk_space_free_in_gb.publish(free_disk_space_in_gb)
+            self.pub_recording_status.publish(self.bag_running)
+
+            rate.sleep()
+
     def terminate_process_and_children(self, p):
         process = psutil.Process(p.pid)
         for sub_process in process.children(recursive=True):
@@ -63,7 +92,14 @@ class RosbagRecordNode(object):
         rospy.loginfo("[RosbagRecordNode(" + self.node + ")] Trying to start rosbag recording process.")
         response = StartRecordingInternalResponse()
         timestamp = request.timestamp
-        self.bag_base_path = self.data_path + "/" + timestamp + "_" + self.node
+        self.bag_base_path = os.path.join(self.data_path, timestamp)
+
+        Path(self.bag_base_path).mkdir(parents=True, exist_ok=True)
+
+        # Check if we're on lpc. If so, dump rosparams to yaml file.
+        if self.node == "jetson":
+            yaml_file_path = os.path.join(self.bag_base_path, f"{timestamp}_{self.node}.yaml")
+            rosparam.dump_params(yaml_file_path, "/")
 
         topic_cfgs = request.topics.split(" ")
         print()
@@ -78,14 +114,14 @@ class RosbagRecordNode(object):
 
         self.bag_configs = bag_configs
         for bag_name, topics in bag_configs.items():
-            bag_path = self.bag_base_path + "_" + bag_name
+            bag_path = os.path.join(self.bag_base_path, timestamp + "_" + self.node + "_" + bag_name)
             bash_command = (
                 f"rosrun box_recording record_bag.sh {bag_path} {topics} __name:=record_{self.node}_{bag_name}"
             )
 
             self.processes.append(subprocess.Popen(bash_command, shell=True, stderr=subprocess.PIPE))
             self.bag_running = True
-            self.publish_recording_status.publish(self.bag_running)
+
             response.suc = True
             response.message = "Starting rosbag recording process."
             rospy.loginfo(f"[RosbagRecordNode({self.node} {bag_name})] Starting rosbag recording process.")
@@ -115,12 +151,9 @@ class RosbagRecordNode(object):
             response.result = "Not implemented yet"  # str(output)[2:-1]
 
         self.bag_running = False
-        self.publish_recording_status.publish(self.bag_running)
-
         return response
 
 
 if __name__ == "__main__":
     rospy.loginfo("Starting ROS bag record node")
     RosbagRecordNode()
-    rospy.spin()

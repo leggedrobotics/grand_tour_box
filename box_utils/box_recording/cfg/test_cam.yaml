@@ -4,7 +4,7 @@ jetson:
     - /gt_box/health_status/jetson
 nuc:
   hdr:
-    - /gt_box/v4l2_camera_front/image_raw
+    - /gt_box/hdr_camera_front/image_raw
     - /gt_box/health_status/nuc
     - /gt_box/camera_trigger_timestamps
 

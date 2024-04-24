@@ -3,7 +3,7 @@
   <arg name="calibration" default="no"/>
   <arg name="box_namespace" default="gt_box"/>
   <group ns="$(arg box_namespace)">
-    <param name="capability_group" value="Health"/>
+    <param name="capability_group" value="Monitoring"/>
     <node pkg="box_health" type="publish_local_health_status.py" name="box_health_$(arg hostname)" output="screen">
     </node>
   </group>

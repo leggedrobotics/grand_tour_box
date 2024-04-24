@@ -39,6 +39,7 @@ sudo systemctl enable pigpiod
 sudo systemctl start pigpiod
 
 
+sudo apt-get install tmuxp
 
 
 # Installing fkie multi master

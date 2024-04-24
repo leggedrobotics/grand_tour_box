@@ -31,9 +31,9 @@ float64 gt_box_zed2i_zed_node_depth_depth_registered_hz
 float64 gt_box_ap20_imu_hz
 float64 gt_box_ap20_prism_position_hz
 
-float64 gt_box_v4l2_camera_left_image_raw_hz
-float64 gt_box_v4l2_camera_front_image_raw_hz
-float64 gt_box_v4l2_camera_right_image_raw_hz
+float64 gt_box_hdr_camera_left_image_raw_hz
+float64 gt_box_hdr_camera_front_image_raw_hz
+float64 gt_box_hdr_camera_right_image_raw_hz
 
 float64 gt_box_leica_position_hz
 

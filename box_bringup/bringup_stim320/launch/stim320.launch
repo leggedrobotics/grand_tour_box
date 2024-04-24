@@ -5,6 +5,7 @@
     <arg name="serial_port" default="/dev/ttyUSB0"/>
     <arg name="baud_rate" default="921600"/>
     <node name="stim320" pkg="stim320_ros" type="stim320_node" output="screen">
+      <param name="capability_group" value="Driver"/>
       <param name="serial_port" value="$(arg serial_port)"/>
       <param name="baud_rate" value="$(arg baud_rate)"/>
     </node>

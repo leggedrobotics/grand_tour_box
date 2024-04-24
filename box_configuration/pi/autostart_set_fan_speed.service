@@ -3,7 +3,7 @@ Description=Set fan speed
 
 [Service]
 Type=forking
-ExecStart=/usr/bin/python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_fan_control/scripts/fan_control_node_simple.py
+ExecStart=/usr/bin/python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_fan_control/scripts/set_fan_speed.py
 User=rsl
 
 [Install]
