@@ -2,8 +2,8 @@
 
 <robot name="lidars" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-  <!-- Hesai -->
-  <link name="hesai" />
+  <!-- hesaiXT32 -->
+  <link name="hesaiXT32" />
   <joint name="box_base_to_hesai" type="fixed">   
     <origin xyz=" ${calib['box_base_to_hesai']['x']}
                   ${calib['box_base_to_hesai']['y']}
@@ -12,7 +12,7 @@
                   ${calib['box_base_to_hesai']['pitch']}
                   ${calib['box_base_to_hesai']['yaw']}" />
     <parent link="box_base" />
-    <child link="hesai" />
+    <child link="hesaiXT32" />
   </joint>
 
   <!-- Livox -->
