@@ -19,6 +19,7 @@ command_register = [
     "git_set_user",
     "shutdown",
     "load_calib",
+    "mission_summary",
 ]
 
 
