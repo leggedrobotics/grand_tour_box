@@ -2,7 +2,7 @@ jetson:
   alphasense:
     - /gt_box/alphasense_driver_node/cam3/compressed
   hesai:
-    - /gt_box/hesai/pandar
+    - /gt_box/hesai/points
   livox:
     - /gt_box/livox/lidar
   utils:

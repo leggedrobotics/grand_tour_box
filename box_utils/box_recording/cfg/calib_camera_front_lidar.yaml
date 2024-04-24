@@ -8,7 +8,7 @@ jetson:
     - /gt_box/zed2i/zed_node/left_raw/image_raw_color/compressed
     - /gt_box/zed2i/zed_node/right_raw/image_raw_color/compressed
   hesai:
-    - /gt_box/hesai/pandar
+    - /gt_box/hesai/points
   livox:
     - /gt_box/livox/lidar
   utils:
