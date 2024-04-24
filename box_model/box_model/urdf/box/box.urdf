@@ -141,12 +141,12 @@
     <child link="zed_base"/>
   </joint>
   <!-- Zed right and left from from Zed2i TF Publisher -->
-  <!-- Hesai -->
-  <link name="hesai"/>
+  <!-- hesaiXT32 -->
+  <link name="hesaiXT32"/>
   <joint name="box_base_to_hesai" type="fixed">
     <origin rpy=" 0.0                   0.0                   0.0" xyz=" 0.0                   0.0                   0.0"/>
     <parent link="box_base"/>
-    <child link="hesai"/>
+    <child link="hesaiXT32"/>
   </joint>
   <!-- Livox -->
   <link name="livox"/>

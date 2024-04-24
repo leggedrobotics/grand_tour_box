@@ -412,7 +412,7 @@ Visualization Manager:
               top: 155
             - Class: jsk_rviz_plugin/PieChart
               Enabled: true
-              Name: Hesai
+              Name: HesaiXT32
               Topic: /gt_box/visualization/gt_box_hesai_pandar_packets_hz
               Value: true
               auto color change: true
@@ -830,7 +830,7 @@ Visualization Manager:
           Size (Pixels): 3
           Size (m): 0.009999999776482582
           Style: Flat Squares
-          Topic: /gt_box/hesai/pandar
+          Topic: /gt_box/hesai/points
           Unreliable: false
           Use Fixed Frame: true
           Use rainbow: true

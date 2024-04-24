@@ -29,11 +29,7 @@
       <param name="capability_group" value="Throttling"/>
     </node>
     
-    <node name="hesai_packet_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/hesai/pandar_packets $(arg hesai_frequency) /gt_box/throttled/hesai/pandar_packets">
-      <param name="capability_group" value="Throttling"/>
-    </node>
-    
-    <node name="hesai_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/hesai/pandar $(arg hesai_frequency) /gt_box/throttled/hesai/pandar">
+    <node name="hesai_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/hesai/points $(arg hesai_frequency) /gt_box/hesai/points_throttled">
       <param name="capability_group" value="Throttling"/>
     </node>
     
