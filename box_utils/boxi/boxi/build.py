@@ -49,8 +49,6 @@ def main(args):
                     cmd += f"cd ~/catkin_ws; catkin clean {args.package} -y; "
                 else:
                     cmd += "cd ~/catkin_ws; catkin clean --all -y; "
-            if host == "jetson":
-                cmd += "cd ~/catkin_ws; catkin build hesai_lidar; "
 
             if args.package != "":
                 cmd += f"cd ~/catkin_ws; catkin build {args.package}"
