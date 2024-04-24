@@ -11,11 +11,18 @@ import rospy
 import rostopic
 from std_msgs.msg import String
 from box_health.msg import (
-    healthStatus_jetson,
-    healthStatus_nuc,
-    healthStatus_opc,
-    healthStatus_pi,
+    HealthStatusJetson,
+    HealthStatusNuc,
+    HealthStatusOpc,
+    HealthStatusPi,
 )
+
+HEALTH_STATUS_MESSAGE = {
+    "jetson": HealthStatusJetson,
+    "nuc": HealthStatusNuc,
+    "opc": HealthStatusOpc,
+    "pi": HealthStatusPi,
+}
 
 
 def load_yaml(path: str) -> dict:
@@ -85,19 +92,6 @@ class BoxStatus:
             finder = FrequencyFinder(topic)
             self.finders[topic] = finder
 
-        # check GPS status on PC which checks the GPS topic frequency
-        self.check_gps_status = "rover" in "".join(self.topics)
-        if self.check_gps_status:
-            from piksi_rtk_msgs.msg import ReceiverState_V2_6_5
-
-            rospy.loginfo("[BoxStatus] Check GPS stats on host " + self.hostname)
-            self.GPS_subscriber = rospy.Subscriber(
-                "/gt_box/rover/piksi/position_receiver_0/ros/receiver_state",
-                ReceiverState_V2_6_5,
-                self.set_GPS_status,
-            )
-            self.set_GPS_status_default()
-
         self.check_alphasense_ptp = "alphasense" in "".join(self.topics)
         if self.check_alphasense_ptp:
             rospy.loginfo("[BoxStatus] Check Alphasense PTP status on host " + self.hostname)
@@ -108,45 +102,24 @@ class BoxStatus:
             )
             self.set_alphasense_ptp_status_default()
 
-        if self.hostname == "jetson":
-            self.health_status_publisher = rospy.Publisher(
-                self.namespace + "health_status/" + self.hostname,
-                healthStatus_jetson,
-                queue_size=2,
-            )
-        elif self.hostname == "nuc":
-            self.health_status_publisher = rospy.Publisher(
-                self.namespace + "health_status/" + self.hostname,
-                healthStatus_nuc,
-                queue_size=2,
-            )
-        elif self.hostname == "opc":
-            self.health_status_publisher = rospy.Publisher(
-                self.namespace + "health_status/" + self.hostname,
-                healthStatus_opc,
-                queue_size=2,
-            )
-        elif self.hostname == "pi":
-            self.health_status_publisher = rospy.Publisher(
-                self.namespace + "health_status/" + self.hostname,
-                healthStatus_pi,
-                queue_size=2,
-            )
-        else:
-            rospy.logerr("[BoxStatus] Hostname " + self.hostname + " is unknown.")
+        self.health_status_publisher = rospy.Publisher(
+            "~health_status",
+            HEALTH_STATUS_MESSAGE[self.hostname],
+            queue_size=2,
+        )
         self.rate = rospy.Rate(1.2)
 
-    def set_GPS_status_default(self):
-        self.gps_num_sat = 0
-        self.gps_rtk_mode_fix = False
-        self.gps_fix_mode = "unknown"
-        self.gps_utc_time_ready = False
+        while not rospy.is_shutdown():
+            health_msg = HEALTH_STATUS_MESSAGE[self.hostname]()
+            health_msg = self.check_clocks(health_msg)
+            health_msg = self.get_topic_frequencies(health_msg)
 
-    def set_GPS_status(self, data):
-        self.gps_num_sat = data.num_sat
-        self.gps_rtk_mode_fix = data.rtk_mode_fix
-        self.gps_fix_mode = data.fix_mode
-        self.gps_utc_time_ready = data.utc_time_ready
+            if self.check_alphasense_ptp:
+                health_msg = self.get_alphasense_ptp_status(health_msg)
+
+            health_msg = self.get_PC_status(health_msg)
+            self.health_status_publisher.publish(health_msg)
+            self.rate.sleep()
 
     def set_alphasense_ptp_status_default(self):
         self.alphasense_frames_no_ptp = -1
@@ -242,10 +215,10 @@ class BoxStatus:
                     self.read_clock_status("ptp4l_enp46s0.service")
                 )
                 health_msg.offset_enp45s0_enp46s0 = self.check_clock_offset(
-                    self.read_clock_status("phc2sys_NIC.service")
+                    self.read_clock_status("phc2sys_enp45s0.service")
                 )
                 health_msg.offset_enp45s0_systemclock = self.check_clock_offset(
-                    self.read_clock_status("phc2sys_system.service")
+                    self.read_clock_status("phc2sys_enp46s0.service")
                 )
             elif self.hostname == "opc":
                 try:
@@ -256,9 +229,11 @@ class BoxStatus:
                     health_msg.offset_chrony_opc_jetson = "-1"
                     health_msg.chrony_status = "error reading status"
             elif self.hostname == "pi":
-                health_msg.offset_mgbe0_eth0 = self.check_clock_offset(self.read_clock_status("ptp4l.service"))
-                health_msg.status_eth0_ptp4l = self.check_if_grandmaster(self.read_clock_status("ptp4l.service"))
-                health_msg.offset_eth0_systemclock = self.check_clock_offset(self.read_clock_status("phc2sys.service"))
+                health_msg.offset_mgbe0_eth0 = self.check_clock_offset(self.read_clock_status("ptp4l_eth0.service"))
+                health_msg.status_eth0_ptp4l = self.check_if_grandmaster(self.read_clock_status("ptp4l_eth0.service"))
+                health_msg.offset_eth0_systemclock = self.check_clock_offset(
+                    self.read_clock_status("phc2sys_eth0.service")
+                )
             else:
                 rospy.logerr("[BoxStatus] This hostname is unknown: " + self.hostname)
         except Exception as error:
@@ -281,29 +256,9 @@ class BoxStatus:
             )
         return health_msg
 
-    def get_GPS_status(self, health_msg):
-        health_msg.gps_num_sat = self.gps_num_sat
-        health_msg.gps_rtk_mode_fix = self.gps_rtk_mode_fix
-        health_msg.gps_fix_mode = self.gps_fix_mode
-        health_msg.gps_utc_time_ready = self.gps_utc_time_ready
-        self.set_GPS_status_default()
-        return health_msg
-
     def get_alphasense_ptp_status(self, health_msg):
         health_msg.alphasense_frames_no_ptp = self.alphasense_frames_no_ptp
         return health_msg
-
-    def healthstatus(self):
-        if self.hostname == "jetson":
-            return healthStatus_jetson()
-        elif self.hostname == "nuc":
-            return healthStatus_nuc()
-        elif self.hostname == "opc":
-            return healthStatus_opc()
-        elif self.hostname == "pi":
-            return healthStatus_pi()
-        else:
-            rospy.logerr("[BoxStatus] Hostname " + self.hostname + " is unknown.")
 
     def get_PC_status(self, health_msg):
         process = subprocess.Popen(
@@ -351,25 +306,10 @@ class BoxStatus:
             rospy.logerr("[BoxStatus] Available memory could not be determined. ")
         return health_msg
 
-    def publish_health_status(self):
-        while not rospy.is_shutdown():
-            health_msg = self.healthstatus()
-
-            health_msg = self.check_clocks(health_msg)
-            health_msg = self.get_topic_frequencies(health_msg)
-            if self.check_gps_status:
-                health_msg = self.get_GPS_status(health_msg)
-            if self.check_alphasense_ptp:
-                health_msg = self.get_alphasense_ptp_status(health_msg)
-            health_msg = self.get_PC_status(health_msg)
-            self.health_status_publisher.publish(health_msg)
-            self.rate.sleep()
-
 
 if __name__ == "__main__":
     try:
         box_status = BoxStatus()
-        box_status.publish_health_status()
 
     except rospy.ROSInitException:
         pass
