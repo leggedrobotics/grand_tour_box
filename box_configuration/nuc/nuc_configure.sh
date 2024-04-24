@@ -4,7 +4,7 @@
 echo '' >> ~/.bashrc
 echo 'source /opt/ros/noetic/setup.bash' >> ~/.bashrc
 echo 'source catkin_ws/devel/setup.bash' >> ~/.bashrc
-echo 'source git/grand_tour_box/box_utils/box_setup/alias/alias.sh' >> ~/.bashrc
+echo 'source git/grand_tour_box/box_configuration/alias.sh' >> ~/.bashrc
 
 # netplan
 cp /home/rsl/git/grand_tour_box/box_configuration/nuc/01-network-manager-all.yaml /etc/netplan/01-network-manager-all.yaml

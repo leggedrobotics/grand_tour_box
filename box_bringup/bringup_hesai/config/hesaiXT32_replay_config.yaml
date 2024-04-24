@@ -19,8 +19,8 @@ lidar:
       yaw: 0
     ros:
       ros_frame_id: hesaiXT32                      #Frame id of packet message and point cloud message
-      ros_recv_packet_topic: /hesai/packets         #Topic used to receive lidar packets from rosbag
-      ros_send_packet_topic: /hesai/packets         #Topic used to send lidar raw packets through ROS
-      ros_send_point_cloud_topic: /hesai/points     #Topic used to send point cloud through ROS
+      ros_recv_packet_topic: /gt_box/hesai/packets         #Topic used to receive lidar packets from rosbag
+      ros_send_packet_topic: /gt_box/hesai/packets         #Topic used to send lidar raw packets through ROS
+      ros_send_point_cloud_topic: /gt_box/hesai/points     #Topic used to send point cloud through ROS
       send_packet_ros: true                          #true: Send packets through ROS 
       send_point_cloud_ros: true                     #true: Send point cloud through ROS    

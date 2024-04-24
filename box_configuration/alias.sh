@@ -1,6 +1,7 @@
 #!/bin/bash
 
 alias tk='tmux kill-server'
+alias tk_dev='tmux kill-session -a'
 
 alias l-nuc='tmuxp load $(rospack find box_launch)/../tmux/nuc_recording.yaml'
 alias l-pi='tmuxp load $(rospack find box_launch)/../tmux/pi_recording.yaml'
