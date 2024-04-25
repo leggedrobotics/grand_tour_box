@@ -1,7 +1,7 @@
 prism_to_box_base:
-  x: 0.013
-  y: -0.022
-  z: 0.340
+  x: -0.013
+  y: 0.022
+  z: -0.340
   roll: 0.0
   pitch: 0.0
   yaw: 0.0
