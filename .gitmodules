@@ -42,3 +42,7 @@
 	path = box_drivers/hesai_lidar_ros_driver
 	url = git@github.com:leggedrobotics/hesai_lidar_ros_driver.git
 	branch = master
+[submodule "box_drivers/Livox-LiDAR-SDK2"]
+	path = box_drivers/Livox-LiDAR-SDK2
+	url = git@github.com:leggedrobotics/Livox-LiDAR-SDK2.git
+	branch = master
