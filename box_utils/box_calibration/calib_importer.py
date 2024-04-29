@@ -32,8 +32,8 @@ class TopicMap:
     ALPHASENSE_FRONT_LEFT_TO_ALPHASENSE_FRONT_MIDDLE = "/gt_box/alphasense_driver_node/cam2/color/image"
     ALPHASENSE_FRONT_LEFT_TO_ALPHASENSE_LEFT = "/gt_box/alphasense_driver_node/cam3/color/image"
     ALPHASENSE_FRONT_LEFT_TO_ALPHASENSE_RIGHT = "/gt_box/alphasense_driver_node/cam4/color/image"
-    ALPHASENSE_FRONT_LEFT_TO_ZED_LEFT = "/gt_box/zed2i/zed_node/left_raw/image_raw_color"
-    ALPHASENSE_FRONT_LEFT_TO_ZED_RIGHT = "/gt_box/zed2i/zed_node/right_raw/image_raw_color"
+    ALPHASENSE_FRONT_LEFT_TO_ZED_LEFT = "/gt_box/zed2i_driver_node/zed_node/left_raw/image_raw_color"
+    ALPHASENSE_FRONT_LEFT_TO_ZED_RIGHT = "/gt_box/zed2i_driver_node/zed_node/right_raw/image_raw_color"
 
 
 def inverse_transform(T):

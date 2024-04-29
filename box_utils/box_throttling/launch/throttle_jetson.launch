@@ -37,15 +37,15 @@
       <param name="capability_group" value="Throttling"/>
     </node>
     
-    <node name="zed_left_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/zed2i/left/image_rect_color/compressed $(arg zed2i_frequency) /gt_box/throttled/gt_box/zed2i/left/image_rect_color/compressed"> 
+    <node name="zed_left_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/zed2i_driver_node/left/image_rect_color/compressed $(arg zed2i_frequency) /gt_box/throttled/gt_box/zed2i_driver_node/left/image_rect_color/compressed"> 
       <param name="capability_group" value="Throttling"/>
     </node>
     
-    <node name="zed_right_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/zed2i/right/image_rect_color/compressed $(arg zed2i_frequency) /gt_box/throttled/gt_box/zed2i/right/image_rect_color/compressed"> 
+    <node name="zed_right_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/zed2i_driver_node/right/image_rect_color/compressed $(arg zed2i_frequency) /gt_box/throttled/gt_box/zed2i_driver_node/right/image_rect_color/compressed"> 
       <param name="capability_group" value="Throttling"/>
     </node>
     
-    <node name="zed_pointcloud_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/zed2i/point_cloud/cloud_registered $(arg zed2i_frequency) /gt_box/throttled/zed2i/point_cloud/cloud_registered" > 
+    <node name="zed_pointcloud_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/zed2i_driver_node/point_cloud/cloud_registered $(arg zed2i_frequency) /gt_box/throttled/zed2i_driver_node/point_cloud/cloud_registered" > 
       <param name="capability_group" value="Throttling"/>
     </node>
     
