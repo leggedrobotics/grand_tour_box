@@ -1,7 +1,7 @@
 prism_to_box_base:
-  x: 0.013
-  y: -0.022
-  z: 0.340
+  x: -0.013
+  y: 0.022
+  z: -0.340
   roll: 0.0
   pitch: 0.0
   yaw: 0.0
@@ -18,9 +18,9 @@ box_base_to_alphasense_base:
   x: 0.072
   y: 0.033
   z: 0.089
-  roll: -100.0
-  pitch: 0.0
-  yaw: -90.0
+  roll: -1.745
+  pitch: 0.000
+  yaw: -1.571
 
 alphasense_base_to_alphasense_front_left:
   x: 0.0
@@ -34,41 +34,41 @@ alphasense_base_to_alphasense_front_right:
   x: 0.110
   y: -0.000
   z: -0.000
-  roll: 0.0
-  pitch: -0.0
-  yaw: 0.0
+  roll: 0.000
+  pitch: 0.000
+  yaw: 0.000
 
 alphasense_base_to_alphasense_front_middle:
   x: 0.055
   y: -0.000
   z: -0.000
-  roll: 0.0
-  pitch: 0.0
-  yaw: -0.0
+  roll: 0.000
+  pitch: 0.000
+  yaw: 0.000
 
 alphasense_base_to_alphasense_left:
   x: -0.045
   y: 0.011
   z: -0.065
-  roll: 80.0
-  pitch: -80.0
-  yaw: -90.0
+  roll: 1.396
+  pitch: -1.396
+  yaw: -1.571
 
 alphasense_base_to_alphasense_right:
   x: 0.155
   y: 0.011
   z: -0.065
-  roll: -80.0
-  pitch: -80.0
-  yaw: -90.0
+  roll: -1.396
+  pitch: -1.396
+  yaw: -1.571
 
 box_base_to_hdr_base:
   x: 0.059
   y: -0.022
   z: 0.054
-  roll: -90.0
-  pitch: 0.0
-  yaw: -90.0
+  roll: -1.571
+  pitch: 0.000
+  yaw: -1.571
 
 hdr_base_to_hdr_front:
   x: 0.0
@@ -82,25 +82,25 @@ hdr_base_to_hdr_left:
   x: -0.087
   y: 0.000
   z: -0.055
-  roll: 180.0
-  pitch: -80.0
-  yaw: 180.0
+  roll: 3.142
+  pitch: -1.396
+  yaw: 3.142
 
 hdr_base_to_hdr_right:
   x: 0.087
   y: 0.000
   z: -0.055
-  roll: -180.0
-  pitch: 80.0
-  yaw: 180.0
+  roll: 3.142
+  pitch: 1.396
+  yaw: 3.142
 
 box_base_to_zed_base:
   x: 0.075
   y: -0.022
   z: 0.028
-  roll: -180.0
-  pitch: 10.0
-  yaw: 0.0
+  roll: 3.142
+  pitch: 0.175
+  yaw: 0.000
 
 box_base_to_imu_stim320:
   x: 0.0
@@ -114,9 +114,9 @@ box_base_to_imu_adis16475:
   x: 0.032
   y: -0.056
   z: 0.002
-  roll: 0.0
-  pitch: 0.0
-  yaw: 90.0
+  roll: 0.000
+  pitch: 0.000
+  yaw: 1.571
 
 box_base_to_imu_alphasense:
   x: 0.0
@@ -130,14 +130,14 @@ box_base_to_hesai:
   x: 0.013
   y: -0.022
   z: 0.169
-  roll: 0.0
-  pitch: -0.0
-  yaw: 90.0
+  roll: 0.000
+  pitch: 0.000
+  yaw: 1.571
 
 box_base_to_livox:
   x: 0.013
   y: -0.022
   z: 0.264
-  roll: -180.0
-  pitch: 0.0
-  yaw: -0.0
+  roll: 3.142
+  pitch: 0.000
+  yaw: 0.000
