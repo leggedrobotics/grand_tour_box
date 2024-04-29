@@ -69,6 +69,7 @@ This is based on box_drivers/zed-ros-wrapper/zed_wrapper/launch/include/zed_came
             />
 
             <node name="$(arg camera_name)_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" output="screen" required="true">
+                <param name="capability_group" value="Driver"/>
                 <remap from="robot_description" to="$(arg camera_name)_description" />
             </node>
         </group>
