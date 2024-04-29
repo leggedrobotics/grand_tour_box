@@ -47,6 +47,7 @@ This is based on box_drivers/zed-ros-wrapper/zed_wrapper/launch/include/zed_came
         <arg name="cam_pos_y"             default="0.0" />
         <arg name="cam_pos_z"             default="0.0" />
 
+        <!-- This is rotated because our Zed2i is mounted upside down. -->
         <!-- Orientation respect to base frame (i.e. "base_link) -->
         <arg name="cam_roll"              default="0.0" />
         <arg name="cam_pitch"             default="0.0" />
