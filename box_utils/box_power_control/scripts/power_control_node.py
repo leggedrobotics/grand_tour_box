@@ -3,6 +3,7 @@ import rospy
 import os
 import requests
 import subprocess
+import rospkg
 from std_msgs.msg import Bool
 from std_srvs.srv import SetBool, SetBoolRequest, SetBoolResponse
 
@@ -12,9 +13,10 @@ class PowerControlNode(object):
         rospy.init_node("box_power_controller")
         # Get the parameters
         self.get_params()
-
-        # Get the current working directory
-        self.cwd = os.path.join(os.getcwd(), "/scripts")
+        
+        # Read the current ros package path
+        rospack = rospkg.RosPack()
+        self.absPathToFolder = os.path.join(rospack.get_path('box_power_control'), "scripts")
 
         # Set the servers.
         servers = {}
@@ -102,31 +104,35 @@ class PowerControlNode(object):
 
     def set_livox_mode(self, request: SetBoolRequest):
         response = SetBoolResponse()
-
         # Here get the current state of the LiDAR
         if request.data:
             try:
-                pathToScript = os.path.join(self.cwd, "/enable_livox.sh")
-                print(pathToScript)
+                pathToScript = os.path.join(self.absPathToFolder, "enable_livox.sh")
+                rospy.loginfo("pathToScript: %s", pathToScript)
                 output = subprocess.check_output(['/bin/bash', pathToScript], stderr=subprocess.STDOUT)
                 print("Enable_livox output:\n", output.decode('utf-8'))
+                response.success = True
+                response.message = "Livox-MID360 is enabled."
             except subprocess.CalledProcessError as e:
                 print("Failed to run script:", e.output.decode('utf-8'))
+                response.success = False
+                response.message = "Livox-MID360 enabling failed."
 
-            response.success = True
-            response.message = "Livox-MID360 is enabled."
             rospy.loginfo(f"[PowerControllerNode] Livox-MID360 is enabled.")
 
         if (not request.data):
             try:
-                pathToScript = os.path.join(self.cwd, "/disable_livox.sh")
+                pathToScript = os.path.join(self.absPathToFolder, "disable_livox.sh")
+                rospy.loginfo("pathToScript: %s", pathToScript)
                 output = subprocess.check_output(['/bin/bash', pathToScript], stderr=subprocess.STDOUT)
                 print("Enable_livox output:\n", output.decode('utf-8'))
+                response.success = True
+                response.message = "Livox-MID360 is disabled."
             except subprocess.CalledProcessError as e:
                 print("Failed to run script:", e.output.decode('utf-8'))
+                response.success = False
+                response.message = "Livox-MID360 disabling failed."
 
-            response.success = True
-            response.message = "Livox-MID360 is disabled."
             rospy.loginfo(f"[PowerControllerNode] Livox-MID360 is disabled.")
 
         return response
