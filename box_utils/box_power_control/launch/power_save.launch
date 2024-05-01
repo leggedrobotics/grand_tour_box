@@ -1,0 +1,9 @@
+<launch>
+  <arg name="box_namespace" default="gt_box"/>
+  <group ns="$(arg box_namespace)">
+    
+    <node pkg="box_power_control" type="power_control_node.py" name="box_power_control_node" output="screen">
+      <param name="capability_group" value="Monitoring"/>
+    </node>
+  </group>
+</launch>

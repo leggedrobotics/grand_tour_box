@@ -8,6 +8,7 @@
   <buildtool_depend>catkin</buildtool_depend>
   <depend>livox_sdk</depend>
   <depend>livox_ros_driver2</depend>
+  <depend>box_power_control</depend>
   <export>
   </export>
 </package>
