@@ -985,7 +985,7 @@ Visualization Manager:
       Displays:
         - Class: rviz/Image
           Enabled: true
-          Image Topic: /gt_box/throttled/gt_box/zed2i/left/image_rect_color
+          Image Topic: /gt_box/throttled/gt_box/zed2i_driver_node/left/image_rect_color
           Max Value: 1
           Median window: 5
           Min Value: 0
@@ -997,7 +997,7 @@ Visualization Manager:
           Value: true
         - Class: rviz/Image
           Enabled: true
-          Image Topic: /gt_box/throttled/gt_box/zed2i/left/image_rect_color
+          Image Topic: /gt_box/throttled/gt_box/zed2i_driver_node/left/image_rect_color
           Max Value: 1
           Median window: 5
           Min Value: 0
@@ -1030,7 +1030,7 @@ Visualization Manager:
           Size (Pixels): 3
           Size (m): 0.009999999776482582
           Style: Flat Squares
-          Topic: /gt_box/throttled/zed2i/point_cloud/cloud_registered
+          Topic: /gt_box/throttled/zed2i_driver_node/point_cloud/cloud_registered
           Unreliable: false
           Use Fixed Frame: true
           Use rainbow: true

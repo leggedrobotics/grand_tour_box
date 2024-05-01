@@ -83,7 +83,7 @@
   - 0.0
   - 0.0
   - 1.0
-/gt_box/zed2i/zed_node/left_raw/image_raw_color:
+/gt_box/zed2i_driver_node/zed_node/left_raw/image_raw_color:
 - - -0.9999969500698463
   - 0.002374958886580617
   - 0.0006778062350397705
@@ -100,7 +100,7 @@
   - 0.0
   - 0.0
   - 1.0
-/gt_box/zed2i/zed_node/rgb_raw/image_raw_color:
+/gt_box/zed2i_driver_node/zed_node/rgb_raw/image_raw_color:
 - - -0.9999955429334562
   - 0.002410244918977951
   - 0.0017620535328848668
@@ -117,7 +117,7 @@
   - 0.0
   - 0.0
   - 1.0
-/gt_box/zed2i/zed_node/right_raw/image_raw_color:
+/gt_box/zed2i_driver_node/zed_node/right_raw/image_raw_color:
 - - -0.9999818961409659
   - 0.00501225056784999
   - 0.003329374500362103

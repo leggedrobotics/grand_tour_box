@@ -25,7 +25,7 @@ This is based on box_drivers/zed-ros-wrapper/zed_wrapper/launch/include/zed_came
         <!-- Camera Model and Name -->
         <arg name="camera_name"           default="zed2i" />
         <arg name="camera_model"          default="zed2i" />
-        <arg name="node_name"             default="zed2i" />
+        <arg name="node_name"             default="zed2i_driver_node" />
 
         <!-- Load SVO file -->
         <arg name="svo_file"              default="" /><!-- <arg name="svo_file" default="path/to/svo/file.svo"> -->
@@ -47,6 +47,7 @@ This is based on box_drivers/zed-ros-wrapper/zed_wrapper/launch/include/zed_came
         <arg name="cam_pos_y"             default="0.0" />
         <arg name="cam_pos_z"             default="0.0" />
 
+        <!-- This is rotated because our Zed2i is mounted upside down. -->
         <!-- Orientation respect to base frame (i.e. "base_link) -->
         <arg name="cam_roll"              default="0.0" />
         <arg name="cam_pitch"             default="0.0" />
@@ -68,6 +69,7 @@ This is based on box_drivers/zed-ros-wrapper/zed_wrapper/launch/include/zed_came
             />
 
             <node name="$(arg camera_name)_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" output="screen" required="true">
+                <param name="capability_group" value="Driver"/>
                 <remap from="robot_description" to="$(arg camera_name)_description" />
             </node>
         </group>
