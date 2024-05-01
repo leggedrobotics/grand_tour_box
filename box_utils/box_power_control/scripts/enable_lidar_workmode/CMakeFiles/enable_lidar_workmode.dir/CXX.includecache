@@ -1,0 +1,44 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../include/livox_lidar_api.h
+stdbool.h
+-
+stdint.h
+-
+livox_lidar_def.h
+../include/livox_lidar_def.h
+
+../include/livox_lidar_def.h
+stdint.h
+-
+
+/home/rsl/catkin_ws/src/grand_tour_box/box_drivers/Livox-LiDAR-SDK2/samples/enable_lidar_workmode/enable_lidar.cpp
+livox_lidar_def.h
+/home/rsl/catkin_ws/src/grand_tour_box/box_drivers/Livox-LiDAR-SDK2/samples/enable_lidar_workmode/livox_lidar_def.h
+livox_lidar_api.h
+/home/rsl/catkin_ws/src/grand_tour_box/box_drivers/Livox-LiDAR-SDK2/samples/enable_lidar_workmode/livox_lidar_api.h
+winsock2.h
+-
+unistd.h
+-
+arpa/inet.h
+-
+stdio.h
+-
+stdlib.h
+-
+string.h
+-
+thread
+-
+chrono
+-
+iostream
+-
+

@@ -1,0 +1,1 @@
+/usr/bin/c++   -pthread -pthread  -rdynamic CMakeFiles/enable_lidar_workmode.dir/enable_lidar.cpp.o  -o enable_lidar_workmode  ../../sdk_core/liblivox_lidar_sdk_static.a 

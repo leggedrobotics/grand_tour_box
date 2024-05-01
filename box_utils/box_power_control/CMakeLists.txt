@@ -15,22 +15,9 @@ project(box_power_control)
 #==
 
 find_package(catkin REQUIRED COMPONENTS
-            message_generation
             std_msgs
             std_srvs
 )
-
-add_service_files(
-    FILES
-    CustomService.srv
-)
-
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-  std_srvs
-)
-
 
 #==
 # Package Configuration

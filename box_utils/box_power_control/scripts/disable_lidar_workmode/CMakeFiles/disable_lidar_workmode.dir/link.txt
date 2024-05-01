@@ -1,0 +1,1 @@
+/usr/bin/c++   -pthread -pthread  -rdynamic CMakeFiles/disable_lidar_workmode.dir/disable_lidar.cpp.o  -o disable_lidar_workmode  ../../sdk_core/liblivox_lidar_sdk_static.a 
