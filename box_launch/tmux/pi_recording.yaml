@@ -14,5 +14,8 @@ windows:
       - /home/rsl/git/grand_tour_box/box_configuration/pi/docker/run.sh --command=/home/rsl/git/grand_tour_box/box_configuration/pi/docker/launch_fkie.sh
     - shell_command:
       - source ~/catkin_ws/src/grand_tour_box/box_configuration/alias.sh 
+      - clear
       - df -h $HOME
+      - history -s tk
+      - history -s l-docker
       focus: true
