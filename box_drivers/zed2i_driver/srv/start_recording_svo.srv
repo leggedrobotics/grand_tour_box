@@ -1,6 +1,0 @@
-# Request
-bool start_recording
----
-# Response
-bool success
-string message
