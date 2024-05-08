@@ -61,7 +61,7 @@ class RosbagRecordNode(object):
             if self.bag_running:
                 p = self.bag_base_path
             else:
-                p = "~"
+                p = os.path.expanduser("~")
 
             if os.path.exists(p):
                 free_disk_space_in_gb = shutil.disk_usage(p)[2] / 1000000000
