@@ -12,7 +12,7 @@ find_package(CUDA ${ZED_CUDA_VERSION} REQUIRED)
 
 add_service_files(
   DIRECTORY srv
-  FILES start_recording_svo.srv
+  FILES StartRecordingSVO.srv
 )
 
 generate_messages(

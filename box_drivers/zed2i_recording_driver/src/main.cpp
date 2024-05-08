@@ -6,7 +6,7 @@
 #include <deque>
 #include <chrono>
 #include <sl/Camera.hpp>
-#include <zed2i_recording_driver_ros/start_recording_svo.h>
+#include <zed2i_recording_driver_ros/StartRecordingSVO.h>
 
 class ZedRecordingNode {
 private:
@@ -24,7 +24,7 @@ private:
 public:
     ZedRecordingNode() : nh_("~") {
         hz_pub_ = nh_.advertise<std_msgs::Float32>("recording_hz", 10);
-        service_ = nh_.advertiseService("start_recording_svo", &ZedRecordingNode::recordingService, this);
+        service_ = nh_.advertiseService("StartRecordingSVO", &ZedRecordingNode::recordingService, this);
         ROS_INFO("Initializing ZedRecordingNode...");
         openCamera();
     }
@@ -82,8 +82,8 @@ private:
         ROS_INFO_STREAM("ZED camera opened successfully. Resolution: " << init_params.camera_resolution << ", FPS: " << init_params.camera_fps);
     }
 
-    bool recordingService(zed2i_recording_driver_ros::start_recording_svo::Request &req,
-                               zed2i_recording_driver_ros::start_recording_svo::Response &res) {
+    bool recordingService(zed2i_recording_driver_ros::StartRecordingSVO::Request &req,
+                               zed2i_recording_driver_ros::StartRecordingSVO::Response &res) {
         recording_ = req.start_recording;
         video_filename_ = req.video_filename;
         ROS_INFO_STREAM("Recording service called. Recording: " << (recording_ ? "STARTED" : "STOPPED") << ", Filename: " << video_filename_);
