@@ -92,7 +92,7 @@ class RosbagRecordNode(object):
         p.wait()
         
     def toggle_zed_recording(self, start, response):
-        service_name = self.namespace + '/zed2i_recording_driver/StartRecordingSVO'
+        service_name = self.namespace + '/zed2i_recording_driver/start_recording_svo'
         rospy.loginfo(f"[RosbagRecordNode({self.node} zed2i)] Trying to start svo recording process on zed2i")
         rospy.wait_for_service(service_name, timeout=2.0)
         try:
@@ -103,7 +103,7 @@ class RosbagRecordNode(object):
 
             start_recording_svo_srv(req)
             response.message += f"zed2i [SUC], "
-            self.recording_zed = True
+            self.recording_zed = start
             rospy.loginfo(f"[RosbagRecordNode({self.node} zed2i)] {'Started' if start else 'Stopped'} svo recording process on zed2i")
         except rospy.ServiceException as e:
             response.suc = False

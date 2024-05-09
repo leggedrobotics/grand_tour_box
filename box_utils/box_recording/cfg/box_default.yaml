@@ -20,7 +20,7 @@ jetson:
     - /gt_box/alphasense_driver_node/imu
     - /gt_box/health_status/jetson
   zed2i:
-    - svo
+    - svo # SVO recording, not rosbag. Mutually exclusive: won't record zed ros topics if svo is set here.
   ap20:
     - /gt_box/ap20/ap20_imu
     - /gt_box/ap20/prism_position

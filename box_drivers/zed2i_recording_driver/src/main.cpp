@@ -24,7 +24,7 @@ private:
 public:
     ZedRecordingNode() : nh_("~") {
         hz_pub_ = nh_.advertise<std_msgs::Float32>("recording_hz", 10);
-        service_ = nh_.advertiseService("StartRecordingSVO", &ZedRecordingNode::recordingService, this);
+        service_ = nh_.advertiseService("start_recording_svo", &ZedRecordingNode::recordingService, this);
         ROS_INFO("Initializing ZedRecordingNode...");
         openCamera();
     }
