@@ -16,8 +16,6 @@ from box_recording.srv import (
     StartRecordingRequest,
 )
 from box_recording.srv import StopRecording, StopRecordingResponse, StopRecordingRequest
-from zed2i_recording_driver_ros.srv import StartRecordingSVO, StartRecordingSVORequest
-
 
 
 def load_yaml(path: str) -> dict:
@@ -107,31 +105,6 @@ class RosbagRecordCoordinator(object):
                     response.message += f"{node} [FAILED] Exception: " + str(exception) + ", "
                     print("Service did not process request: " + str(exception))
                     rospy.logerr("Failed to start rosbag recording process on " + node)
-            
-            # Start the zed recording if requested.
-            if request.record_zed:  
-                service_name = self.namespace + '/zed2i_recording_driver/StartRecodingSVO'
-                rospy.loginfo(f"[RosbagRecordCoordinator] Trying to start svo recording process on zed")
-                rospy.wait_for_service(service_name, timeout=5.0)  # Wait for the service to become available
-                try:
-                    start_recording_proxy = rospy.ServiceProxy(service_name, start_recording_svo)
-                    req = StartRecordingSVORequest()
-                    # Set any necessary fields of the request here
-                    # Example: req.some_field = some_value
-
-                    # Call the service and receive the response
-                    resp = start_recording_proxy(req)
-                    rospy.loginfo("[RosbagRecordCoordinator] Service call was successful.")
-
-                    # Process the response
-                    # Example: print(resp.some_response_field)
-                    response.message += f"zed [SUC], "
-                    rospy.loginfo("[RosbagRecordCoordinator] Started rosbag recording process on zed")
-                except rospy.ServiceException as e:
-                    response.suc = False
-                    response.message += f"zed [FAILED] Exception: " + str(exception) + ", "
-                    print("Service did not process request: " + str(exception))
-                    rospy.logerr("Failed to start rosbag recording process on zed")
             
             if response.suc:
                 response.message += " - All nodes started recording."

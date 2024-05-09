@@ -119,6 +119,9 @@ private:
 
     void recordSvo() {
         while (!recording_){
+            if (!running_) {
+                return;
+            }
             ROS_INFO_STREAM_THROTTLE(5, "Waiting for recording to start...");
             ros::Duration(0.1).sleep();
         }

@@ -20,20 +20,7 @@ jetson:
     - /gt_box/alphasense_driver_node/imu
     - /gt_box/health_status/jetson
   zed2i:
-    - /gt_box/zed2i_driver_node/temperature/imu
-    - /gt_box/zed2i_driver_node/temperature/left
-    - /gt_box/zed2i_driver_node/temperature/right
-    - /gt_box/zed2i_driver_node/confidence/confidence_map
-    - /gt_box/zed2i_driver_node/depth/depth_registered
-    - /gt_box/zed2i_driver_node/imu/data
-    - /gt_box/zed2i_driver_node/imu/data_raw
-    - /gt_box/zed2i_driver_node/imu/mag
-    - /gt_box/zed2i_driver_node/odom
-    - /gt_box/zed2i_driver_node/odom/status
-    - /gt_box/zed2i_driver_node/point_cloud/cloud_registered
-    - /gt_box/zed2i_driver_node/rgb_raw/image_raw_color/compressed
-    - /gt_box/zed2i_driver_node/left_raw/image_raw_color/compressed
-    - /gt_box/zed2i_driver_node/right_raw/image_raw_color/compressed
+    - svo
   ap20:
     - /gt_box/ap20/ap20_imu
     - /gt_box/ap20/prism_position

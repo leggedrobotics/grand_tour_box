@@ -1,5 +1,4 @@
 string yaml_file
-bool record_zed
 ---
 string timestamp
 bool suc
