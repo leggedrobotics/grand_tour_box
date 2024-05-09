@@ -76,7 +76,6 @@ class RosbagRecordCoordinator(object):
             response.message = "Recording process already runs."
             rospy.logwarn("[RosbagRecordCoordinator] Recording process already runs.")
         else:
-            # response.message = "Failed to start recording process on:"
             self.cfg = load_yaml(request.yaml_file)
 
             # Go through all the nodes (PCs) and start recording
@@ -106,6 +105,7 @@ class RosbagRecordCoordinator(object):
                     response.message += f"{node} [FAILED] Exception: " + str(exception) + ", "
                     print("Service did not process request: " + str(exception))
                     rospy.logerr("Failed to start rosbag recording process on " + node)
+            
             if response.suc:
                 response.message += " - All nodes started recording."
                 rospy.loginfo("[RosbagRecordCoordinator] Successfully started rosbag recording process on all nodes")

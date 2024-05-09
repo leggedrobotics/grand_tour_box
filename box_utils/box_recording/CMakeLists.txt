@@ -17,9 +17,11 @@ project(box_recording)
 find_package(catkin REQUIRED COMPONENTS
             message_generation
             std_msgs
+            zed2i_recording_driver_ros
 )
 
 add_service_files(
+    DIRECTORY srv
     FILES
     StartRecording.srv
     StartRecordingInternal.srv

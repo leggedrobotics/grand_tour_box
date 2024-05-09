@@ -20,12 +20,14 @@ sudo systemctl enable autostart_tmux
 
 # autostart ptp
 sudo cp ~/catkin_ws/src/grand_tour_box/box_configuration/jetson/sync_time_once.service /etc/systemd/system/sync_time_once.service
+sudo cp ~/catkin_ws/src/grand_tour_box/box_configuration/jetson/jetson_clocks_once.service /etc/systemd/system/jetson_clocks_once.service
 sudo cp ~/catkin_ws/src/grand_tour_box/box_configuration/jetson/ptp4l_mgbe0.service /lib/systemd/system/ptp4l_mgbe0.service
 sudo cp ~/catkin_ws/src/grand_tour_box/box_configuration/jetson/ptp4l_mgbe1.service /lib/systemd/system/ptp4l_mgbe1.service
 sudo cp ~/catkin_ws/src/grand_tour_box/box_configuration/jetson/phc2sys_mgbe0.service /lib/systemd/system/phc2sys_mgbe0.service
 sudo cp ~/catkin_ws/src/grand_tour_box/box_configuration/jetson/phc2sys_mgbe1.service /lib/systemd/system/phc2sys_mgbe1.service
 sudo systemctl daemon-reload
 sudo systemctl enable sync_time_once
+sudo systemctl enable jetson_clocks_once
 sudo systemctl enable ptp4l_mgbe0
 sudo systemctl enable ptp4l_mgbe1
 sudo systemctl enable phc2sys_mgbe0

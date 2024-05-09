@@ -16,6 +16,7 @@ from std_msgs.msg import Bool
 from std_msgs.msg import Float32
 from box_recording.srv import StartRecordingInternalResponse, StartRecordingInternal
 from box_recording.srv import StopRecordingInternalResponse, StopRecordingInternal, StopRecordingInternalRequest
+from zed2i_recording_driver_ros.srv import StartRecordingSVO, StartRecordingSVORequest
 import time
 
 
@@ -29,10 +30,12 @@ class RosbagRecordNode(object):
         servers = {}
         self.processes = []
         self.bag_base_path = None
+        self.namespace = rospy.get_namespace()
         servers["start"] = rospy.Service("~start_recording", StartRecordingInternal, self.start_recording)
         servers["stop"] = rospy.Service("~stop_recording", StopRecordingInternal, self.stop_recording)
 
         self.bag_running = False
+        self.recording_zed = False
         default_path = rospkg.RosPack().get_path("box_recording") + "/data"
         self.data_path = rospy.get_param("~data_path", default_path)
 
@@ -61,7 +64,7 @@ class RosbagRecordNode(object):
             if self.bag_running:
                 p = self.bag_base_path
             else:
-                p = "~"
+                p = os.path.expanduser("~")
 
             if os.path.exists(p):
                 free_disk_space_in_gb = shutil.disk_usage(p)[2] / 1000000000
@@ -87,6 +90,26 @@ class RosbagRecordNode(object):
         for sub_process in process.children(recursive=True):
             sub_process.send_signal(signal.SIGINT)
         p.wait()
+        
+    def toggle_zed_recording(self, start, response):
+        service_name = self.namespace + '/zed2i_recording_driver/start_recording_svo'
+        rospy.loginfo(f"[RosbagRecordNode({self.node} zed2i)] Trying to start svo recording process on zed2i")
+        rospy.wait_for_service(service_name, timeout=2.0)
+        try:
+            start_recording_svo_srv = rospy.ServiceProxy(service_name, StartRecordingSVO)
+            req = StartRecordingSVORequest()
+            req.start_recording = start
+            req.video_filename = self.bag_base_path + "_zed2i.svo2"
+
+            start_recording_svo_srv(req)
+            response.message += f"zed2i [SUC], "
+            self.recording_zed = start
+            rospy.loginfo(f"[RosbagRecordNode({self.node} zed2i)] {'Started' if start else 'Stopped'} svo recording process on zed2i")
+        except rospy.ServiceException as e:
+            response.suc = False
+            response.message += f"zed2i [FAILED] Exception: " + str(e) + ", "
+            rospy.logerr(f"Failed to {'start' if start else 'stop'} rosbag recording process on zed2i: {e}")
+        return response
 
     def start_recording(self, request):
         rospy.loginfo("[RosbagRecordNode(" + self.node + ")] Trying to start rosbag recording process.")
@@ -114,6 +137,10 @@ class RosbagRecordNode(object):
 
         self.bag_configs = bag_configs
         for bag_name, topics in bag_configs.items():
+            if bag_name == "zed2i" and "svo" in topics:
+                # If we are recording svo files instead of rosbags for the zed, we need to call the svo recording service.
+                response = self.toggle_zed_recording(True, response)
+                continue
             bag_path = os.path.join(self.bag_base_path, timestamp + "_" + self.node + "_" + bag_name)
             bash_command = (
                 f"rosrun box_recording record_bag.sh {bag_path} {topics} __name:=record_{self.node}_{bag_name}"
@@ -145,10 +172,13 @@ class RosbagRecordNode(object):
         for p in self.processes:
             self.terminate_process_and_children(p)
         self.processes = []
+        
+        if self.recording_zed:
+            response = self.toggle_zed_recording(False, response)
 
         if request.verbose:
             # output = subprocess.check_output([f"rosbag info --freq {self.bag_path}*.bag"], shell=True)
-            response.result = "Not implemented yet"  # str(output)[2:-1]
+            response.result += ". Other output not implemented yet"  # str(output)[2:-1]
 
         self.bag_running = False
         return response

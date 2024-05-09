@@ -1,0 +1,12 @@
+<launch>
+  <arg name="box_namespace" default="gt_box"/>
+  <arg name="calibration" default="no"/>
+
+  <group ns="$(arg box_namespace)">
+    <node pkg="zed2i_recording_driver_ros" type="zed2i_recording_driver_ros_node" name="zed2i_recording_driver" output="screen">
+      <param name="capability_group" value="Driver"/>
+      <rosparam file="$(find bringup_zed2i_recording)/config/params.yaml" command="load" />
+    </node>
+
+  </group> 
+</launch>
