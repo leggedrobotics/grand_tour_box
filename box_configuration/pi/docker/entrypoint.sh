@@ -13,8 +13,8 @@ echo "$HOST_USERNAME ALL=(ALL) NOPASSWD:ALL" >> sudo /etc/sudoers
 
 export HOSTNAME
 export DISPLAY=:0.0
-export ROS_MASTER_URI=http://192.168.2.58:11311
-export ROS_IP=192.168.2.58
+export ROS_MASTER_URI=http://192.168.2.57:11311
+export ROS_IP=192.168.2.57
 
 export PS1="\e[0;34m(docker) \e[0;32m\u@\h:\e[0;34m\W\$ \e[0m"
 
