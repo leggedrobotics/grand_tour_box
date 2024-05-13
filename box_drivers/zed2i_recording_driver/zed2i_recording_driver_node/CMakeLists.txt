@@ -1,26 +1,16 @@
 cmake_minimum_required(VERSION 3.5)
-project(zed2i_recording_driver_ros)
+project(zed2i_recording_driver_node)
 
-find_package(catkin REQUIRED COMPONENTS 
+find_package(catkin REQUIRED COMPONENTS
   roscpp
-  message_generation
-  std_msgs
+  zed2i_recording_driver_msgs
 )
 
 find_package(ZED 4 REQUIRED)
 find_package(CUDA ${ZED_CUDA_VERSION} REQUIRED)
 
-add_service_files(
-  DIRECTORY srv
-  FILES StartRecordingSVO.srv
-)
-
-generate_messages(
-  DEPENDENCIES std_msgs
-)
-
 catkin_package(
-  CATKIN_DEPENDS message_runtime roscpp std_msgs
+  CATKIN_DEPENDS zed2i_recording_driver_msgs roscpp
 )
 
 include_directories(

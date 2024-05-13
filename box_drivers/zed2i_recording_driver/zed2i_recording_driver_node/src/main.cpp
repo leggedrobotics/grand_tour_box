@@ -6,7 +6,7 @@
 #include <deque>
 #include <chrono>
 #include <sl/Camera.hpp>
-#include <zed2i_recording_driver_ros/StartRecordingSVO.h>
+#include <zed2i_recording_driver_msgs/StartRecordingSVO.h>
 
 class ZedRecordingNode {
 private:
@@ -82,8 +82,8 @@ private:
         ROS_INFO_STREAM("ZED camera opened successfully. Resolution: " << init_params.camera_resolution << ", FPS: " << init_params.camera_fps);
     }
 
-    bool recordingService(zed2i_recording_driver_ros::StartRecordingSVO::Request &req,
-                               zed2i_recording_driver_ros::StartRecordingSVO::Response &res) {
+    bool recordingService(zed2i_recording_driver_msgs::StartRecordingSVO::Request &req,
+                               zed2i_recording_driver_msgs::StartRecordingSVO::Response &res) {
         recording_ = req.start_recording;
         video_filename_ = req.video_filename;
         ROS_INFO_STREAM("Recording service called. Recording: " << (recording_ ? "STARTED" : "STOPPED") << ", Filename: " << video_filename_);
