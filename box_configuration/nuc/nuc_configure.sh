@@ -31,3 +31,20 @@ cp /home/rsl/git/grand_tour_box/box_configuration/nuc/99-hdr-camera.rules /etc/u
 
 cd git; git clone git@github.com:mmattamala/pybind11_catkin.git
  ln -s ~/git/pybind11_catkin ~/catkin_ws/src/
+
+
+
+ # Install alphasense drivers
+# Add the Sevensense PGP key to make this machine trust Sevensense's packages.
+curl -Ls http://deb.7sr.ch/pubkey.gpg | sudo gpg --dearmor -o /usr/share/keyrings/deb-7sr-ch-keyring.gpg
+
+# Add the Sevensense APT repository to the list of known sources.
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/deb-7sr-ch-keyring.gpg] http://deb.7sr.ch/alphasense/stable $(lsb_release -cs) main" \
+          | sudo tee /etc/apt/sources.list.d/sevensense.list
+
+# Install the Alphasense driver.
+sudo apt update -y
+sudo apt install alphasense-driver-core alphasense-viewer alphasense-firmware ros-noetic-alphasense-driver-ros ros-noetic-alphasense-driver -y
+
+# Set the maximum socket buffer size
+sudo sysctl -w net.core.rmem_max=11145728
