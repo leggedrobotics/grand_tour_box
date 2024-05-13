@@ -6,7 +6,7 @@
   <maintainer email="kpatterson@student.ethz.ch">Kappi Patterson</maintainer>
   <license>MIT</license>
   <buildtool_depend>catkin</buildtool_depend>
-  <depend>zed2i_recording_driver_ros</depend>
+  <depend>zed2i_recording_driver_node</depend>
   <export>
   </export>
 </package>

@@ -10,8 +10,6 @@
 
   <depend>launch_scripts</depend>
   <depend>bringup_alphasense</depend>
-  <depend>bringup_hesai</depend>
-  <depend>bringup_livox</depend>
   <!--Disable until CPT-7 Arrives-->
   <!--<depend>bringup_gps</depend>-->
   <depend>bringup_stim320</depend>

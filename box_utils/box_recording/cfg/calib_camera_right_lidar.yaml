@@ -1,15 +1,15 @@
 jetson:
   alphasense:
     - /gt_box/alphasense_driver_node/cam4/compressed
-  hesai:
-    - /gt_box/hesai/points
-  livox:
-    - /gt_box/livox/lidar
   utils:
     - /gt_box/health_status/jetson
 nuc:
   utils:
     - /gt_box/health_status/nuc
+  hesai:
+    - /gt_box/hesai/points
+  livox:
+    - /gt_box/livox/lidar
   hdr:
     - /gt_box/hdr_camera_right/image_raw/compressed
 opc:
