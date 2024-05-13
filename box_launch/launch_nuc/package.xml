@@ -11,6 +11,7 @@
   <depend>launch_scripts</depend>
   <depend>bringup_hdr</depend>
   <depend>bringup_livox</depend>
+  <depend>bringup_alphasense</depend>
   <exec_depend>bringup_fkie</exec_depend>
   <depend>box_launch</depend>
   <depend>box_recording</depend>
