@@ -7,15 +7,15 @@ jetson:
     - /gt_box/zed2i_driver_node/zed_node/rgb_raw/image_raw_color/compressed
     - /gt_box/zed2i_driver_node/zed_node/left_raw/image_raw_color/compressed
     - /gt_box/zed2i_driver_node/zed_node/right_raw/image_raw_color/compressed
-  hesai:
-    - /gt_box/hesai/points
-  livox:
-    - /gt_box/livox/lidar
   utils:
     - /gt_box/health_status/jetson
 nuc:
   utils:
     - /gt_box/health_status/nuc
+  hesai:
+    - /gt_box/hesai/points
+  livox:
+    - /gt_box/livox/lidar
   hdr:
     - /gt_box/hdr_camera_front/image_raw/compressed
 opc:

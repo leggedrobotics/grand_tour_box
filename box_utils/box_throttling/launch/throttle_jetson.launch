@@ -5,8 +5,6 @@
 
   <rosparam command="load" file="$(find box_throttling)/cfg/frequencies.yaml" />
   <arg name="alphasense_cam_frequency" default="5.0"/>
-  <arg name="hesai_frequency" default="5.0"/>
-  <arg name="livox_frequency" default="5.0"/>
   <arg name="zed2i_frequency" default="5.0"/>
 
   <group ns="$(arg box_namespace)">
@@ -26,14 +24,6 @@
     </node>
     
     <node name="alphasense_cam4_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/alphasense_driver_node/cam4/color/image/compressed $(arg alphasense_cam_frequency) /gt_box/throttled/alphasense_driver_node/cam4/compressed">
-      <param name="capability_group" value="Throttling"/>
-    </node>
-    
-    <node name="hesai_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/hesai/points $(arg hesai_frequency) /gt_box/hesai/points_throttled">
-      <param name="capability_group" value="Throttling"/>
-    </node>
-    
-    <node name="livox_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/livox/lidar $(arg livox_frequency) /gt_box/throttled/livox/lidar"> 
       <param name="capability_group" value="Throttling"/>
     </node>
     
