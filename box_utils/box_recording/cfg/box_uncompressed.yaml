@@ -10,11 +10,6 @@ jetson:
     - /gt_box/alphasense_driver_node/cam3/color/camera_info
     - /gt_box/alphasense_driver_node/cam4/color/image
     - /gt_box/alphasense_driver_node/cam4/color/camera_info
-  hesai:
-    - /gt_box/hesai/pandar
-  livox:
-    - /gt_box/livox/imu
-    - /gt_box/livox/lidar
   utils:
     - /gt_box/alphasense_driver_node/aux_imu
     - /gt_box/alphasense_driver_node/imu
@@ -30,17 +25,17 @@ jetson:
     - /gt_box/rover/piksi/position_receiver_0/ros/time_ref
     - /gt_box/rover/piksi_reference/position_receiver_0/ros/baseline_ned
   zed2i:
-    - /gt_box/zed2i/joint_states
-    - /gt_box/zed2i/zed_node/confidence/confidence_map
-    - /gt_box/zed2i/zed_node/depth/depth_registered
-    - /gt_box/zed2i/zed_node/imu/data
-    - /gt_box/zed2i/zed_node/imu/data_raw
-    - /gt_box/zed2i/zed_node/odom
-    - /gt_box/zed2i/zed_node/odom/status
-    - /gt_box/zed2i/zed_node/point_cloud/cloud_registered
-    - /gt_box/zed2i/zed_node/rgb_raw/image_raw_color
-    - /gt_box/zed2i/zed_node/left_raw/image_raw_color
-    - /gt_box/zed2i/zed_node/right_raw/image_raw_color
+    - /gt_box/zed2i_driver_node/joint_states
+    - /gt_box/zed2i_driver_node/confidence/confidence_map
+    - /gt_box/zed2i_driver_node/depth/depth_registered
+    - /gt_box/zed2i_driver_node/imu/data
+    - /gt_box/zed2i_driver_node/imu/data_raw
+    - /gt_box/zed2i_driver_node/odom
+    - /gt_box/zed2i_driver_node/odom/status
+    - /gt_box/zed2i_driver_node/point_cloud/cloud_registered
+    - /gt_box/zed2i_driver_node/rgb_raw/image_raw_color
+    - /gt_box/zed2i_driver_node/left_raw/image_raw_color
+    - /gt_box/zed2i_driver_node/right_raw/image_raw_color
   ap20:
     - /gt_box/ap20_imu
     - /gt_box/ap20_prism_position
@@ -53,13 +48,18 @@ nuc:
     - /gt_box/adis16475
     - /gt_box/livox/imu
     - /gt_box/health_status/nuc
+  hesai:
+    - /gt_box/hesai/points
+  livox:
+    - /gt_box/livox/imu
+    - /gt_box/livox/lidar
   hdr:
-    - /gt_box/v4l2_camera_left/camera_info
-    - /gt_box/v4l2_camera_left/image_raw
-    - /gt_box/v4l2_camera_front/camera_info
-    - /gt_box/v4l2_camera_front/image_raw
-    - /gt_box/v4l2_camera_right/camera_info
-    - /gt_box/v4l2_camera_right/image_raw
+    - /gt_box/hdr_camera_left/camera_info
+    - /gt_box/hdr_camera_left/image_raw
+    - /gt_box/hdr_camera_front/camera_info
+    - /gt_box/hdr_camera_front/image_raw
+    - /gt_box/hdr_camera_right/camera_info
+    - /gt_box/hdr_camera_right/image_raw
 
 opc:
   utils:

@@ -43,7 +43,7 @@ def main():
             with Bag(ifile, "r") as ib:
                 for topic, msg, t in ib:
                     if any(fnmatchcase(topic, pattern) for pattern in topics):
-                        if not topic in matchedtopics:
+                        if topic not in matchedtopics:
                             matchedtopics.append(topic)
                             if args.verbose:
                                 print("Including matched topic '%s'" % topic)

@@ -19,14 +19,15 @@ find_package(catkin REQUIRED COMPONENTS
             std_msgs
 )
 
-#add_service_files(
-#    FILES
-#)
+add_service_files(
+    FILES
+    SetFanSpeed.srv
+)
 
-#generate_messages(
-#  DEPENDENCIES
-#  std_msgs
-#)
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
 
 
 #==
@@ -34,7 +35,7 @@ find_package(catkin REQUIRED COMPONENTS
 #==
 
 catkin_package(
-    CATKIN_DEPENDS std_msgs
+    CATKIN_DEPENDS std_msgs message_runtime
 )
 
 #==

@@ -1,6 +1,0 @@
-# ADIS16448AMLZ parameters 
-imu_accelerator_sensitivity: 0.000833333
-imu_gyro_sensitivity: 0.04
-imu_acceleration_covariance: 0.043864908 # no idea where it is from
-imu_gyro_covariance: 6e-9 # no idea where it is from
-imu_sub_topic: "/versavis/imu_micro"

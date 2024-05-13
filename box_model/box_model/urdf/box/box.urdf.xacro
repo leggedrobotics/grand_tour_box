@@ -63,17 +63,30 @@
   </joint>
 
   <!-- Model base -->
-  <link name="model_base">
+  <link name="box_base_model">
     <visual>
       <geometry>
-        <mesh filename="package://box_model/urdf/box/mesh/box_model1.dae" />
+        <mesh filename="package://box_model/urdf/box/mesh/box_assembly_incl_livox_mount.dae" />
       </geometry>
     </visual>
   </link>
-  <joint name="box_base_to_model_base" type="fixed">
-    <origin xyz="0.0 0.0 0.0" rpy="${pi} 0.0 ${pi/2}" />
+  <joint name="box_base_to_box_base_model" type="fixed">
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
     <parent link="box_base" />
-    <child link="model_base" />    
+    <child link="box_base_model" />    
+  </joint>
+
+  <link name="prism_model">
+    <visual>
+      <geometry>
+        <mesh filename="package://box_model/urdf/box/mesh/leica_small_prism.dae" />
+      </geometry>
+    </visual>
+  </link>
+  <joint name="prism_to_prism_model" type="fixed">
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+    <parent link="box_base" />
+    <child link="prism_model" />    
   </joint>
 
   <xacro:include filename="$(find box_model)/urdf/cameras/cameras.urdf.xacro" />

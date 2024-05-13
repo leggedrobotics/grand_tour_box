@@ -4,8 +4,9 @@
   <version>1.0.0</version>
   <description>Box rviz</description>
   <license>Proprietary</license>
-  <maintainer email="schmirob@ethz.ch">Robin Schmid</maintainer>
+  <author email="jonfrey@ethz.ch">Jonas Frey</author>
   <author email="schmirob@ethz.ch">Robin Schmid</author>
+  <maintainer email="jonfrey@ethz.ch">Jonas Frey</maintainer>
   <buildtool_depend>catkin</buildtool_depend>
   <depend>rqt_rviz_wrapper</depend>
   <depend>box_throttling</depend>

@@ -6,7 +6,7 @@
   <maintainer email="bkrumme@student.ethz.ch">Benjamin Krummenacher</maintainer>
   <license>MIT</license>
   <buildtool_depend>catkin</buildtool_depend>
-  <depend>ap20_timestamper</depend>
+  <depend>ap20_driver_ros</depend>
   <export>
   </export>
 </package>

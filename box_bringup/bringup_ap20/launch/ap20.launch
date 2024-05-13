@@ -3,7 +3,11 @@
   <arg name="calibration" default="no"/>
 
   <group ns="$(arg box_namespace)">
-    <node pkg="ap20_timestamper" type="ap20_timestamper" name="ap20_timestamp_merger" output="screen" />
-    <node pkg="ap20_timestamper" type="start_ap20.sh" name="start_ap20" output="screen" />
+    <node pkg="ap20_driver_ros" type="ap20_driver_ros" name="ap20_driver" output="screen">
+      <param name="capability_group" value="Driver"/>
+    </node>
+
+    <node pkg="ap20_driver_ros" type="ap20_start_sending_data.sh" name="ap20_start_sending_data" output="screen"/>
+
   </group> 
 </launch>

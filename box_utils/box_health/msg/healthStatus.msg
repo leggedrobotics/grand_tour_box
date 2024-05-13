@@ -18,8 +18,8 @@ float64 gt_box_alphasense_driver_node_cam1_hz
 float64 gt_box_alphasense_driver_node_cam2_hz
 float64 gt_box_alphasense_driver_node_cam3_hz
 float64 gt_box_alphasense_driver_node_cam4_hz
-float64 gt_box_hesai_pandar_packets_hz
-float64 gt_box_hesai_pandar_hz
+float64 gt_box_hesai_packets_hz
+float64 gt_box_hesai_points_hz
 float64 gt_box_livox_lidar_hz
 float64 gt_box_livox_imu_hz
 float64 gt_box_alphasense_driver_node_imu_hz
@@ -31,9 +31,9 @@ float64 gt_box_zed2i_zed_node_depth_depth_registered_hz
 float64 gt_box_ap20_imu_hz
 float64 gt_box_ap20_prism_position_hz
 
-float64 gt_box_v4l2_camera_left_image_raw_hz
-float64 gt_box_v4l2_camera_front_image_raw_hz
-float64 gt_box_v4l2_camera_right_image_raw_hz
+float64 gt_box_hdr_camera_left_image_raw_hz
+float64 gt_box_hdr_camera_front_image_raw_hz
+float64 gt_box_hdr_camera_right_image_raw_hz
 
 float64 gt_box_leica_position_hz
 

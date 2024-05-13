@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>bringup_zed2i_recording</name>
+  <version>0.0.0</version>
+  <description>The bringup_zed2i_recording package</description>
+  <maintainer email="kpatterson@student.ethz.ch">Kappi Patterson</maintainer>
+  <license>MIT</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>zed2i_recording_driver_ros</depend>
+  <export>
+  </export>
+</package>

@@ -1,0 +1,12 @@
+[Unit]
+Description=Set fan speed
+After=network-online.target
+
+[Service]
+Type=forking
+ExecStartPre=/bin/sleep 5
+ExecStart=/usr/bin/python3 /home/rsl/git/grand_tour_box/box_utils/box_fan_control/scripts/set_fan_speed.py
+User=rsl
+
+[Install]
+WantedBy=multi-user.target

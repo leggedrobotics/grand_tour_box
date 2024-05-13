@@ -1,0 +1,9 @@
+# StartRecordingSVO.srv
+
+# request fields
+bool start_recording # Set to false to stop.
+string video_filename # Absolute filepath.
+
+---
+# response fields
+bool success

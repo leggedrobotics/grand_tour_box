@@ -24,7 +24,7 @@
   <arg name="gamma_correction/enabled"             default="false"/>
   <arg name="vignetting_correction/enabled"        default="false"/>
   <arg name="color_enhancer/enabled"               default="false"/>
-  <arg name="undistortion/enabled"                 default="false"/>
+  <arg name="undistortion/enabled"                 default="true"/>
 
   <!-- Camera -->
   <!-- Debayer  -->
@@ -50,7 +50,7 @@
   <arg name="color_enhancer/saturation_gain"       default="1.2"/> <!-- gain > 1.0 makes color more vibrant-->
   <!-- Undistortion -->
   <arg name="undistortion/balance"                 default="0.5"/> <!-- Balance [0,1] -->
-  <arg name="undistortion/fov_scale"               default="1.2"/> <!-- scale > 1.0 increases the FoV -->
+  <arg name="undistortion/fov_scale"               default="1.0"/> <!-- scale > 1.0 increases the FoV -->
   <arg name="undistortion/calibration_file"       default="$(find raw_image_pipeline)/config/alphasense_calib_example.yaml"/>
   
   <!-- Disable Image Transport plugins -->
@@ -83,6 +83,8 @@
 
   <!-- Nodes -->
   <node name="raw_image_pipeline_ros_node_$(arg camera_name)" type="raw_image_pipeline_ros_node" pkg="raw_image_pipeline_ros" output="screen" launch-prefix="$(arg launch_prefix)">
+    <param name="capability_group" value="Driver"/>
+
     <param name="input_topic"                          value="$(arg input_topic)"/>
     <param name="input_type"                           value="$(arg input_type)"/>
 

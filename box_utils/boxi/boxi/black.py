@@ -1,5 +1,4 @@
 from boxi import BOX_ROOT_DIR, shell_run
-import argparse
 import os
 
 

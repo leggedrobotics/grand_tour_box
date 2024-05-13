@@ -8,7 +8,7 @@
         name="rosbag_record_node_$(arg hostname)"
         type="rosbag_record_node.py"
         output="screen">
-        <param name="capability_group" value="Recorder"/>
+        <param name="capability_group" value="Recording"/>
     </node>
   </group>
 </launch>

@@ -8,12 +8,14 @@
 
   <license>Proprietary</license>
 
+  <author email="jonfrey@ethz.ch">Jonas Frey</author>
   <author email="schmirob@ethz.ch">Robin Schmid</author>
-  <maintainer email="schmirob@ethz.ch">Robin Schmid</maintainer>
-
+  <maintainer email="jonfrey@ethz.ch">Jonas Frey</maintainer>
+  
   <buildtool_depend>catkin</buildtool_depend>
   <depend>message_generation</depend>
   <depend>message_runtime</depend>
   <depend>std_msgs</depend>
+  <depend>zed2i_recording_driver_ros</depend>
   
 </package>

@@ -8,7 +8,12 @@ from pathlib import Path
 def add_arguments(parser):
     yamls = [s.stem for s in Path(BOX_ROOT_DIR).joinpath("box_launch/tmux").rglob("*.yaml")]
     parser.set_defaults(main=main)
-    parser.add_argument("-c", choices=yamls, help="tmux configuration file name", default="opc_recording")
+    parser.add_argument(
+        "-c",
+        choices=yamls,
+        help="tmux configuration file name",
+        default="opc_recording",
+    )
     return parser
 
 
@@ -27,7 +32,7 @@ def load_wifi_config(config_file="wifi_config.ini"):
 
 
 def connect_to_wifi(ssid, password):
-    print(f"Attempting to connect to Grand Tour Box router.")
+    print("Attempting to connect to Grand Tour Box router.")
     try:
         subprocess.check_call(["nmcli", "dev", "wifi", "connect", ssid, "password", password])
         print("Successfully connected")
@@ -36,8 +41,9 @@ def connect_to_wifi(ssid, password):
 
 
 def main(args):
-    ssid, password = load_wifi_config()
-    if ssid and password:
-        connect_to_wifi(ssid, password)
+    if os.path.exists("~/wifi_config.ini"):
+        ssid, password = load_wifi_config()
+        if ssid and password:
+            connect_to_wifi(ssid, password)
     cfg = os.path.join(BOX_ROOT_DIR, "box_launch/tmux", args.c + ".yaml")
     shell_run(f"tmuxp load  {cfg} -d")

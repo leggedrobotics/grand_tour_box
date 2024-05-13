@@ -2,8 +2,8 @@
 
 <robot name="lidars" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-  <!-- Hesai -->
-  <link name="hesai" />
+  <!-- hesaiXT32 -->
+  <link name="hesaiXT32" />
   <joint name="box_base_to_hesai" type="fixed">   
     <origin xyz=" ${calib['box_base_to_hesai']['x']}
                   ${calib['box_base_to_hesai']['y']}
@@ -12,7 +12,20 @@
                   ${calib['box_base_to_hesai']['pitch']}
                   ${calib['box_base_to_hesai']['yaw']}" />
     <parent link="box_base" />
-    <child link="hesai" />
+    <child link="hesaiXT32" />
+  </joint>
+
+  <link name="hesaiXT32_model">
+    <visual>
+      <geometry>
+        <mesh filename="package://box_model/urdf/box/mesh/hesai_lidar.dae" />
+      </geometry>
+    </visual>
+  </link>
+  <joint name="hesaiXT32_to_hesaiXT32_model" type="fixed">
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+    <parent link="hesaiXT32" />
+    <child link="hesaiXT32_model" />    
   </joint>
 
   <!-- Livox -->
@@ -27,4 +40,19 @@
     <parent link="box_base" />
     <child link="livox" />
   </joint>
+
+  <link name="livox_model">
+    <visual>
+      <geometry>
+        <mesh filename="package://box_model/urdf/box/mesh/livox_mid360_lidar.dae" />
+      </geometry>
+    </visual>
+  </link>
+  <joint name="livox_to_livox_model" type="fixed">
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+    <parent link="livox" />
+    <child link="livox_model" />    
+  </joint>
+
 </robot>
+

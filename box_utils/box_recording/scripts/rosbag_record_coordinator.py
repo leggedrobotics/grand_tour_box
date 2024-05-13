@@ -10,7 +10,11 @@ import yaml
 import os
 from box_recording.srv import StopRecordingInternal, StopRecordingInternalRequest
 from box_recording.srv import StartRecordingInternal, StartRecordingInternalRequest
-from box_recording.srv import StartRecording, StartRecordingResponse, StartRecordingRequest
+from box_recording.srv import (
+    StartRecording,
+    StartRecordingResponse,
+    StartRecordingRequest,
+)
 from box_recording.srv import StopRecording, StopRecordingResponse, StopRecordingRequest
 
 
@@ -55,7 +59,11 @@ class RosbagRecordCoordinator(object):
             request.yaml_file = self.default_yaml
         else:
             if not os.path.isabs(request.yaml_file):
-                request.yaml_file = join(str(self.rp.get_path("box_recording")), "cfg", request.yaml_file + ".yaml")
+                request.yaml_file = join(
+                    str(self.rp.get_path("box_recording")),
+                    "cfg",
+                    request.yaml_file + ".yaml",
+                )
 
         if not os.path.exists(request.yaml_file):
             rospy.loginfo("[RosbagRecordCoordinator] Failed to start recording given that yaml cannot be found!")
@@ -68,7 +76,6 @@ class RosbagRecordCoordinator(object):
             response.message = "Recording process already runs."
             rospy.logwarn("[RosbagRecordCoordinator] Recording process already runs.")
         else:
-            # response.message = "Failed to start recording process on:"
             self.cfg = load_yaml(request.yaml_file)
 
             # Go through all the nodes (PCs) and start recording
@@ -88,19 +95,19 @@ class RosbagRecordCoordinator(object):
                             topic_cfgs += f"{bag_name}----{topic} "
                         int_request.topics = topic_cfgs[:-1]
                         int_request.timestamp = timestamp
-                        response.message += f" {node}-{bag_name}"
-
+                        response.message += f"{node}-{bag_name} [SUC], "
                         start_recording_srv(int_request)
                         rospy.loginfo("[RosbagRecordCoordinator] Starting rosbag recording process on " + node)
                     self.bag_running = True
 
                 except rospy.ROSException as exception:
                     response.suc = False
-                    response.message = response.message + " " + node
+                    response.message += f"{node} [FAILED] Exception: " + str(exception) + ", "
                     print("Service did not process request: " + str(exception))
                     rospy.logerr("Failed to start rosbag recording process on " + node)
+            
             if response.suc:
-                response.message += " Successfully started all nodes"
+                response.message += " - All nodes started recording."
                 rospy.loginfo("[RosbagRecordCoordinator] Successfully started rosbag recording process on all nodes")
         return response
 
@@ -134,7 +141,7 @@ class RosbagRecordCoordinator(object):
 
             if response.suc:
                 self.bag_running = False
-                response.message = "Successfully stop all nodes"
+                response.message = "Successfully stoped all nodes"
             rospy.loginfo("[RosbagRecordCoordinator] Sent STOP to all nodes.")
         else:
             response.suc = False
@@ -144,17 +151,17 @@ class RosbagRecordCoordinator(object):
         pretty = ""
         for k, v in pretty_ls.items():
             length = 82
-            pretty += "-" * 82
+            pretty += "-" * length
             pretty += k
-            print("-" * 82)
+            print("-" * length)
             print(k)
             v = v.replace(" \\ ", "")
             for a in v.split("\\n"):
                 print(a)
                 pretty += a
-            print("-" * 82)
+            print("-" * length)
             print("\n")
-            pretty += "-" * 82
+            pretty += "-" * length
             pretty += ""
 
         response.result = pretty

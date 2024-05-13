@@ -4,7 +4,9 @@
   <version>0.0.0</version>
   <description>The box_model package</description>
 
-  <maintainer email="schmirob@ethz.ch">Robin Schmid</maintainer>
+  <author email="jonfrey@ethz.ch">Jonas Frey</author>
+  <author email="schmirob@ethz.ch">Robin Schmid</author>
+  <maintainer email="jonfrey@ethz.ch">Jonas Frey</maintainer>
 
   <license>Proprietary</license>
 

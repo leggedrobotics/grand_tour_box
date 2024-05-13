@@ -1,0 +1,10 @@
+<launch>
+  <arg name="box_namespace" default="gt_box"/>
+
+  <group ns="$(arg box_namespace)">
+    <node name="zed2i_recording_driver" pkg="zed2i_recording_driver_ros" type="zed2i_recording_driver_ros_node" respawn="true" output="screen">
+      <param name="capability_group" value="Driver"/>
+      <rosparam file="$(find zed2i_recording_driver_ros)/config/config.yaml" command="load" />
+    </node>
+  </group>
+</launch>

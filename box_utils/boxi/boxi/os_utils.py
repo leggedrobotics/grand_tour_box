@@ -1,8 +1,7 @@
 import copy
 import os
-import shlex
 import subprocess
-import time
+
 
 def shell_run(cmd, cwd=None, env={}, time=True, continue_on_error=True):
     """Execute shell command."""

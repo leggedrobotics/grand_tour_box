@@ -1,12 +1,12 @@
 """
-Standalone script that loads calibration output data from Frank Fu (fu@oxfordrobotics.institute) and saves 
+Standalone script that loads calibration output data from Frank Fu (fu@oxfordrobotics.institute) and saves
 it in a format usable by our .xacro files.
 
 This script relies on the presence of default_calibration.yaml, and will overwrite individual calibrations that it
 can compute, such that the output always contains all necessary calibrations.
 
 Example Usage:
-python box_utils/box_calibration/calib_importer.py test_calib.yaml box_model/box_model/urdf 
+python box_utils/box_calibration/calib_importer.py test_calib.yaml box_model/box_model/urdf
 """
 
 import os
@@ -32,8 +32,8 @@ class TopicMap:
     ALPHASENSE_FRONT_LEFT_TO_ALPHASENSE_FRONT_MIDDLE = "/gt_box/alphasense_driver_node/cam2/color/image"
     ALPHASENSE_FRONT_LEFT_TO_ALPHASENSE_LEFT = "/gt_box/alphasense_driver_node/cam3/color/image"
     ALPHASENSE_FRONT_LEFT_TO_ALPHASENSE_RIGHT = "/gt_box/alphasense_driver_node/cam4/color/image"
-    ALPHASENSE_FRONT_LEFT_TO_ZED_LEFT = "/gt_box/zed2i/zed_node/left_raw/image_raw_color"
-    ALPHASENSE_FRONT_LEFT_TO_ZED_RIGHT = "/gt_box/zed2i/zed_node/right_raw/image_raw_color"
+    ALPHASENSE_FRONT_LEFT_TO_ZED_LEFT = "/gt_box/zed2i_driver_node/zed_node/left_raw/image_raw_color"
+    ALPHASENSE_FRONT_LEFT_TO_ZED_RIGHT = "/gt_box/zed2i_driver_node/zed_node/right_raw/image_raw_color"
 
 
 def inverse_transform(T):
@@ -79,7 +79,10 @@ def process_zed2i(raw_calibrations: Dict[str, Calibration], manager: CalibFileMa
     box_base_to_alphasense = inverse_transform(raw_calibrations[TopicMap.ALPHASENSE_FRONT_LEFT_TO_STIM_320].se3)
     box_base_to_zed_base = box_base_to_alphasense @ alphasense_to_zed_left @ zed_left_to_zed_base
 
-    manager.update_calibration(f"box_base_to_zed_base", **CalibParser.row_major_se3_to_xyz_rpy(box_base_to_zed_base))
+    manager.update_calibration(
+        "box_base_to_zed_base",
+        **CalibParser.row_major_se3_to_xyz_rpy(box_base_to_zed_base),
+    )
 
 
 def process_hdr(raw_calibrations: Dict[str, Calibration], manager: CalibFileManager):
@@ -94,7 +97,10 @@ def process_stim320(raw_calibrations: Dict[str, Calibration], manager: CalibFile
     )
 
     # Set the box_base frame to be coincident with the Stim320 IMU
-    manager.update_calibration("box_base_to_imu_stim320", **CalibParser.row_major_se3_to_xyz_rpy(np.identity(4)))
+    manager.update_calibration(
+        "box_base_to_imu_stim320",
+        **CalibParser.row_major_se3_to_xyz_rpy(np.identity(4)),
+    )
 
 
 def process_calibrations(raw_calibrations: Dict[str, Calibration], manager: CalibFileManager):
@@ -106,7 +112,8 @@ def process_calibrations(raw_calibrations: Dict[str, Calibration], manager: Cali
         sys.exit(
             f">>> FAILED! : \n"
             f"{TopicMap.ALPHASENSE_FRONT_LEFT_TO_STIM_320} not found in calibration data. "
-            f"box_base cannot be established.",
+            f"box_base cannot be established - error: .",
+            e,
         )
 
     process_alphasense(raw_calibrations, manager)
@@ -139,7 +146,7 @@ def main(args):
         all_calibrations.update(calibrations)
 
     # Tool to manage safely saving calibrations for our .xacro files.
-    print(f"Loading .xacro files to register valid calibrations...")
+    print("Loading .xacro files to register valid calibrations...")
     manager = CalibFileManager(
         os.path.join(script_dir, DEFAULT_CALIBRATION_FILE),
         args.calib_output_file,
@@ -150,7 +157,15 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Update .xacro calibration files from calibration data.")
-    parser.add_argument("calib_output_file", type=str, help="The relative output file path for calibration data.")
-    parser.add_argument("box_model_dir", type=str, help="Relative directory path for the box model URDF files.")
+    parser.add_argument(
+        "calib_output_file",
+        type=str,
+        help="The relative output file path for calibration data.",
+    )
+    parser.add_argument(
+        "box_model_dir",
+        type=str,
+        help="Relative directory path for the box model URDF files.",
+    )
     args = parser.parse_args()
     main(args)

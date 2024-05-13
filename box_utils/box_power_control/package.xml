@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+
+<package format="2">
+
+  <name>box_power_control</name>
+  <version>0.1.0</version>
+  <description>Power conrol package for Grand Tour box. Currently, only for LiDARs</description>
+
+  <license>Proprietary</license>
+
+  <author email="tutuna@ethz.ch">Turcan Tuna</author>
+  <maintainer email="tutuna@ethz.ch">Turcan Tuna</maintainer>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>message_runtime</depend>
+  <depend>std_msgs</depend>
+  <depend>std_srvs</depend>
+  
+</package>
