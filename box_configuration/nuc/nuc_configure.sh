@@ -27,3 +27,7 @@ sudo systemctl enable ptp4l_enp46s0
 cp /home/rsl/git/grand_tour_box/box_configuration/nuc/99-GMSL-kit.rules /etc/udev/rules.d/
 cp /home/rsl/git/grand_tour_box/box_configuration/nuc/99-hdr-camera.rules /etc/udev/rules.d/
  udevadm control --reload && udevadm trigger
+
+
+cd git; git clone git@github.com:mmattamala/pybind11_catkin.git
+ ln -s ~/git/pybind11_catkin ~/catkin_ws/src/
