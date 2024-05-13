@@ -1,12 +1,25 @@
 # NR 1 configure correctly the interfaces: /etc/network/interfaces 
 # We had some problems with ip route show: sudo ip route del default via 192.168.2.151 dev eth0 -> the upper command fixed it
+ssh-add /home/rsl/.ssh/id_rsa
 sudo ip route add default via 192.168.2.51 dev eth0 onlink
+
+echo "dtoverlay=pps-gpio,gpiopin=18" >> /boot/firmware/config.txt
+echo "dtoverlay=i2c-rtc,pcf85063a,i2c_csi_dsi" >> /boot/firmware/config.txt
+echo "dtoverlay=i2c-fan,emc2301,i2c_csi_dsi" >> /boot/firmware/config.txt
+echo "dtoverlay=disable-bt" >> /boot/firmware/config.txt
+
+sudo systemctl disable hciuart
+sudo dpkg-reconfigure tzdata
+
+ethtool -T eth0
+sudo hwclock --show
+
 
 # Disable DHCP suggestion (not tested)
 # https://superuser.com/questions/547114/all-statically-assigned-addresses-but-dhcpcd-still-runs
-sudo update-rc.d -f dhcpd remove
+# sudo update-rc.d -f dhcpd remove
 # Reenable DHCP
-sudo update-rc.d dhcpd defaults
+# sudo update-rc.d dhcpd defaults
 ###################
 
 sudo vi /etc/locale.gen
@@ -53,7 +66,7 @@ sudo apt install tmux tmuxp -y
 
 # Install pigpio
 cd ~/git
-sudo apt install python-setuptools python3-setuptools
+sudo apt install python-setuptools python3-setuptools -y
 wget https://github.com/joan2937/pigpio/archive/master.zip
 unzip master.zip
 cd pigpio-master
@@ -90,17 +103,17 @@ sudo usermod -aG docker $USER
 ####
 
 
-# Run docker container -> change inside to: 
-
-# Run this
-~/git/grand_tour_box/box_configuration/pi/run.sh --image=ros:noetic-ros-base-focal --no-rm
-# Do changes inside the container
-/home/git/grand_tour_box/box_configuration/pi/install_inside_container.sh
-
-# Commit to image from outside
-docker commit xxx ros-pi:noetic-ros-base-focal
 
 # Install Boxi
 cd ~/git/grand_tour_box/box_utils/boxi
 sudo apt install python3-pip -y
 pip3 install -e ./
+
+
+
+cd /home/rsl/git/grand_tour_box/box_configuration/pi/docker
+./build.sh
+~/git/grand_tour_box/box_configuration/pi/docker/run.sh
+# /home/rsl/git/grand_tour_box/box_configuration/pi/docker/install_manually.sh
+# docker commit 12312312 leggedrobotics:noetic-pi-focal
+# Done

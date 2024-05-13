@@ -8,12 +8,13 @@ def add_arguments(parser):
     parser.add_argument("--jetson", action="store_true", help="Sync to Jetson")
     parser.add_argument("--nuc", action="store_true", help="Sync to Nuc")
     parser.add_argument("--pi", action="store_true", help="Sync to Pi")
+    parser.add_argument("--pi2", action="store_true", help="Sync to Pi")
     parser.add_argument("--all", action="store_true", help="Sync to All")
     return parser
 
 
 def main(args):
-    rsync = "rsync -a --delete -z -h -r -v --exclude '*.git/*' --exclude '__pycache__' --exclude '*.pyc' --exclude '*.bag' --out-format=\"[%t]:%o:%f:Last Modified %M\""
+    rsync = "rsync -a --delete -z -h -r -v --exclude '*.git/*' --exclude '__pycache__' --exclude '*.pyc' --exclude '*box_drivers/adis16475_driver/adis16475_driver/build/*'  --exclude '*.bag' --out-format=\"[%t]:%o:%f:Last Modified %M\""
     hosts = []
     if args.jetson:
         hosts.append("jetson")
@@ -21,6 +22,8 @@ def main(args):
         hosts.append("nuc")
     if args.pi:
         hosts.append("pi")
+    if args.pi2:
+        hosts.append("pi2")
     if args.all:
         hosts = ["jetson", "nuc", "pi"]
 
