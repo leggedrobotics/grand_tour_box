@@ -7,7 +7,7 @@ After=ptp4l_eth0.service
 
 [Service]
 Type=simple
-ExecStart=/usr/sbin/phc2sys -s eth0 -c CLOCK_REALTIME -O 0 -S 1.0
+ExecStart=sudo /usr/sbin/phc2sys -s eth0 -c CLOCK_REALTIME -O 0 -S 1.0
 
 [Install]
 WantedBy=multi-user.target
