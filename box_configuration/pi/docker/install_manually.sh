@@ -23,6 +23,6 @@ echo "source /opt/ros/noetic/setup.bash " >> /etc/bash.bashrc
 echo "source /home/rsl/catkin_ws/devel/setup.bash " >> /etc/bash.bashrc 
 echo "export HOSTNAME=pi" >> /etc/bash.bashrc 
 echo "export DISPLAY=:0.0" >> /etc/bash.bashrc 
-echo "export ROS_MASTER_URI=http://192.168.2.58:11311" >> /etc/bash.bashrc 
-echo "export ROS_IP=192.168.2.58" >> /etc/bash.bashrc 
+echo "export ROS_MASTER_URI=http://192.168.2.57:11311" >> /etc/bash.bashrc 
+echo "export ROS_IP=192.168.2.57" >> /etc/bash.bashrc 
 echo 'export PS1="\[\033[1;34m\](docker) \[\033[1;32m\]\u@\h \[\033[1;34m\]\w \$\[\033[0m\] "' >> /etc/bash.bashrc
