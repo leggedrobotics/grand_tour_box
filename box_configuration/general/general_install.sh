@@ -1,6 +1,5 @@
 # Install vim
-sudo apt-get install vim
-sudo apt-get install tmux
+sudo apt-get install vim tmux -y
 
 
 if [ -f ~/.vimrc ]; then

@@ -1,7 +1,13 @@
 # NR 1 configure correctly the interfaces: /etc/network/interfaces 
 # We had some problems with ip route show: sudo ip route del default via 192.168.2.151 dev eth0 -> the upper command fixed it
 ssh-add /home/rsl/.ssh/id_rsa
-sudo ip route add default via 192.168.2.51 dev eth0 onlink
+# sudo ip route add default via 192.168.2.51 dev eth0 onlink
+sudo apt install netplan.io -y
+
+sudo cp ~/git/grand_tour_box/box_configuration/pi/50-cloud-init.yaml /etc/netplan/50-cloud-init.yaml
+sudo netplan generate
+sudo netplan apply
+
 
 echo "dtoverlay=pps-gpio,gpiopin=18" >> /boot/firmware/config.txt
 echo "dtoverlay=i2c-rtc,pcf85063a,i2c_csi_dsi" >> /boot/firmware/config.txt
