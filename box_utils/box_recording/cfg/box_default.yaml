@@ -41,7 +41,3 @@ nuc:
     - /gt_box/alphasense_driver_node/cam3/color/camera_info
     - /gt_box/alphasense_driver_node/cam4/color/image/compressed
     - /gt_box/alphasense_driver_node/cam4/color/camera_info
-opc:
-  utils:
-    - /gt_box/health_status/opc
-    - /gt_box/health_status/merged

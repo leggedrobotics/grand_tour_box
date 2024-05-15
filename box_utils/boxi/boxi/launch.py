@@ -1,22 +1,22 @@
 from boxi import shell_run
 import socket
-
+import time
 
 def add_arguments(parser):
     modes = [
         "recording",
-        "autonomy",
-        "replay",
-        "calib_camera",
-        "calib_lidar",
-        "calib_imu",
+        # "autonomy",
+        # "replay",
+        # "calib_camera",
+        # "calib_lidar",
+        # "calib_imu",
     ]
     parser.set_defaults(main=main)
     parser.add_argument(
         "-m",
         "--mode",
         choices=modes,
-        help="calibration mode of the box",
+        help="Mode of the box",
         default="recording",
     )
     parser.add_argument("--all", action="store_true", help="Launch on all PCs")
@@ -50,7 +50,7 @@ def main(args):
             cmd = (
                 f"ssh -o ConnectTimeout=4 rsl@{host} -t /home/rsl/.local/bin/boxi launch_on_host -c {host}_{args.mode}"
             )
-
+        
         try:
             shell_run(cmd)
         except:

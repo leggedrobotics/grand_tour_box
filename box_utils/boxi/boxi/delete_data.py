@@ -17,10 +17,11 @@ def main(args):
     if len(hosts) == 0:
         print("No host specified. Specify host with --hostname")
         exit()
+    
     for host in hosts:
         cmd1 = (
             f"ssh -o ConnectTimeout=4 {USERNAME}@{host}"
-            + " rm -f /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_recording/data/*"
+            + " rm -f /data/*"
         )
         print(cmd1)
         cmd2 = f"ssh -o ConnectTimeout=4 {USERNAME}@{host} rm -rf ~/.ros"

@@ -18,9 +18,9 @@ killall rosmaster
 pid=$(pgrep rosmaster)
 if [ -z "$pid" ]
 then
-    echo "ROS was not running."
-fi
+   echo "ROS was not running."
 else
+echo $pid
     killall rosmaster
     kill -9 $pid
     tail --pid=$pid -f /dev/null # wait untill the process finishes / is fully killed
@@ -33,3 +33,7 @@ then
 fi
 
 echo "Cleaned Up Session"
+
+if ps aux | grep '[f]kie' > /dev/null; then
+  ps aux | grep '[f]kie' | awk '{print $2}' | xargs kill
+fi

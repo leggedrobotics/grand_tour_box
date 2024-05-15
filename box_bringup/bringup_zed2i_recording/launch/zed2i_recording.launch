@@ -5,7 +5,7 @@
   <group ns="$(arg box_namespace)">
     <node pkg="zed2i_recording_driver_node" type="zed2i_recording_driver_node" name="zed2i_recording_driver" output="screen">
       <param name="capability_group" value="Driver"/>
-      <rosparam file="$(find zed2i_recording_driver_node)/config/params.yaml" command="load" />
+      <rosparam file="$(find zed2i_recording_driver_node)/config/config.yaml" command="load" />
     </node>
 
   </group> 
