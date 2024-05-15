@@ -16,7 +16,7 @@ from box_recording.srv import (
     StartRecordingRequest,
 )
 from box_recording.srv import StopRecording, StopRecordingResponse, StopRecordingRequest
-
+from pathlib import Path
 
 def load_yaml(path: str) -> dict:
     """Loads yaml file
@@ -69,6 +69,10 @@ class RosbagRecordCoordinator(object):
             rospy.loginfo("[RosbagRecordCoordinator] Failed to start recording given that yaml cannot be found!")
             response.suc = False
             response.message = "Failed to start recording given that yaml cannot be found!"
+            p = join(str(self.rp.get_path("box_recording")), "cfg/")
+            options = [str(s)[:-5].split("/")[-1] for s in Path(p).rglob("*.yaml")]
+            options = ", ".join(options)
+            response.message = f"Available options [{options}]"
             return response
 
         if self.bag_running:
@@ -144,6 +148,7 @@ class RosbagRecordCoordinator(object):
                 response.message = "Successfully stoped all nodes"
             rospy.loginfo("[RosbagRecordCoordinator] Sent STOP to all nodes.")
         else:
+            self.bag_running = False
             response.suc = False
             response.message = "No recording process running yet."
             rospy.logwarn("[RosbagRecordCoordinator] No recording process running yet.")

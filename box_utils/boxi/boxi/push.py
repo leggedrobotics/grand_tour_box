@@ -14,7 +14,7 @@ def add_arguments(parser):
 
 
 def main(args):
-    rsync = "rsync -a --delete -z -h -r -v --exclude '*.git/*' --exclude '__pycache__' --exclude '*.pyc' --exclude '*boxi.egg-info*' --exclude '*box_drivers/adis16475_driver/adis16475_driver/build/*'  --exclude '*.bag' --out-format=\"[%t]:%o:%f:Last Modified %M\""
+    rsync = "rsync -a --delete -z -h -r -v --exclude '*.git/*' --exclude '__pycache__' --exclude '*.pyc' --exclude '*boxi.egg-info*' --exclude '*box_drivers/adis16475_driver/adis16475_driver/build/*' --exclude '*box_utils/box_recording/data*'  --exclude '*.bag' --out-format=\"[%t]:%o:%f:Last Modified %M\""
     hosts = []
     if args.jetson:
         hosts.append("jetson")

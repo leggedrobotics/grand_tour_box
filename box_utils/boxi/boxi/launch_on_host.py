@@ -12,7 +12,6 @@ def add_arguments(parser):
         "-c",
         choices=yamls,
         help="tmux configuration file name",
-        default="opc_recording",
     )
     return parser
 

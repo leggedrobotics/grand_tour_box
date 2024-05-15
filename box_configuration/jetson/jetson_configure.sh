@@ -5,6 +5,7 @@ sudo apt install netplan.io linuxptp tmux tmuxp
 
 /home/rsl/git/grand_tour_box/box_configuration/general/general_install.sh
 
+
 # add hosts
 sudo echo "192.168.2.51	jetson" >> /etc/hosts
 sudo echo "192.168.2.56	nuc" >> /etc/hosts
@@ -78,6 +79,9 @@ sudo apt install python3-rosdep -y
 sudo rosdep init
 rosdep update
 sudo apt install python3-grpc-tools -y
+
+# once copy over the .git folder for the fkie multi master
+scp -r /home/rsl/git/grand_tour_box/box_drivers/multimaster_fkie jetson:/home/rsl/git/grand_tour_box/box_drivers/
 cd ~/catkin_ws/src/grand_tour_box/box_drivers; rosdep install -i --as-root pip:false --reinstall --from-paths multimaster_fkie
 cd ~/catkin_ws; catkin build fkie_multimaster
 
@@ -119,6 +123,7 @@ sudo systemctl enable ptp4l_mgbe0
 sudo systemctl enable ptp4l_mgbe1
 sudo systemctl enable phc2sys_mgbe0
 sudo systemctl enable phc2sys_mgbe1
+
 
 # max power mode
 sudo nvpmodel -m 0
