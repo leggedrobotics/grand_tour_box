@@ -17,7 +17,7 @@ def main(args):
     shell_run("rosservice call /gt_box/rosbag_record_coordinator/start_recording \"yaml_file: \'box_default\'\" ")
     
     time.sleep(30)
-    shell_run("rosservice call /gt_box/rosbag_record_coordinator/stop_recording \"verbose: \'False\'\" ")
+    shell_run("rosservice call /gt_box/rosbag_record_coordinator/stop_recording \"verbose: false \" ")
 
     for host in ["jetson", 'nuc']:
         cmd = (
