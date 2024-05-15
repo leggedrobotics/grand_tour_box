@@ -13,7 +13,6 @@ def main(args):
     shell_run("boxi push --jetson --nuc")
     shell_run("boxi launch -m=recording --restart --all")
     
-    
     time.sleep(20)
     shell_run("rosservice call /gt_box/rosbag_record_coordinator/start_recording \"yaml_file: \'box_default\'\" ")
     
