@@ -17,20 +17,33 @@ sudo netplan apply
 
 sudo cp ~/catkin_ws/src/grand_tour_box/box_configuration/jetson/10-network-bridge.yaml /etc/netplan/10-network-bridge.yaml
 netplan generate
+sudo netplan apply
 
-# Magic commands to allow to forward the internet connection to other PCs
-iptables -A FORWARD -i mgbe0 -j ACCEPT
-iptables -A FORWARD -i mgbe1 -j ACCEPT
-iptables -A FORWARD -i wlan0 -j ACCEPT
-
-iptables -t nat -A POSTROUTING -o mgbe0 -j MASQUERADE
-iptables -t nat -A POSTROUTING -o mgbe1 -j MASQUERADE
-iptables -t nat -A POSTROUTING -o wlan0 -j MASQUERADE
-
+# (only one of the three things is actually doing the intended presistent modification no clue which one)
+# modified here and commented in the line  net.ipv4.ip_forward=1
+/etc/sysctl.conf
+# Create file /etc/sysctl.d/99-forward.conf with not sure if this actually works
+net.ipv4.ip_forward=1
+# Allow to forward the internet connection to other PCs - this is lost after reboot
 echo 1| sudo tee /proc/sys/net/ipv4/ip_forward
 
+
+# Set IP tables temproarley
+sudo iptables -A FORWARD -i mgbe0 -j ACCEPT
+sudo iptables -A FORWARD -i mgbe1 -j ACCEPT
+sudo iptables -A FORWARD -i wlan0 -j ACCEPT
+
+sudo iptables -t nat -A POSTROUTING -o mgbe0 -j MASQUERADE
+sudo iptables -t nat -A POSTROUTING -o mgbe1 -j MASQUERADE
+sudo iptables -t nat -A POSTROUTING -o wlan0 -j MASQUERADE
+
+
+sudo apt install iptables-persistent -y
+# here store it ip tables only for ipv4
+
+
 # Install ssh server
-sudo apt-get install openssh-server -y
+sudo apt install openssh-server -y
 sudo ssh-keygen -A
 sudo systemctl restart systemd-network
 
@@ -68,6 +81,18 @@ sudo apt install python3-grpc-tools -y
 cd ~/catkin_ws/src/grand_tour_box/box_drivers; rosdep install -i --as-root pip:false --reinstall --from-paths multimaster_fkie
 cd ~/catkin_ws; catkin build fkie_multimaster
 
+# Instal CUDA
+wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-keyring_1.1-1_all.deb
+sudo dpkg -i cuda-keyring_1.1-1_all.deb
+sudo apt update
+sudo apt -y install cuda
+
+# Install Zed SDK
+wget -O ~/Downloads/ZED_SDK_Tegra_L4T35.4_v4.1.1.zstd.run https://download.stereolabs.com/zedsdk/4.1/l4t35.4/jetsons
+cd ~/Downloads
+sudo apt install zstd -y
+chmod +x ZED_SDK_Tegra_L4T35.4_v4.1.1.zstd.run
+./ZED_SDK_Tegra_L4T35.4_v4.1.1.zstd.run
 
 # .bashrc
 echo '' >> ~/.bashrc
