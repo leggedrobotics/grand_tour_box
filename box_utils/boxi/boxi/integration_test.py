@@ -14,11 +14,11 @@ def main(args):
     shell_run("boxi launch -m=recording --restart --all")
     
     
-    time.sleep(10)
+    time.sleep(20)
     shell_run("rosservice call /gt_box/rosbag_record_coordinator/start_recording \"yaml_file: \'box_default\'\" ")
     
     time.sleep(30)
-    shell_run("rosservice call /gt_box/rosbag_record_coordinator/stop_recording \"verbose: \'true\'\" ")
+    shell_run("rosservice call /gt_box/rosbag_record_coordinator/stop_recording \"verbose: \'False\'\" ")
 
     for host in ["jetson", 'nuc']:
         cmd = (

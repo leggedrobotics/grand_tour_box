@@ -5,3 +5,4 @@
 *__pycache__
 wifi_config.ini
 .DS_Store
+box_utils/box_recording/data

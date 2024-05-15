@@ -10,7 +10,7 @@ def add_arguments(parser):
 
 def main(args):
     rsync_part1 = "rsync -r --progress " + USERNAME + "@"
-    rsync_part2 = ":~/git/grand_tour_box/box_utils/box_recording/data/* ."
+    rsync_part2 = ":/data/* ."
     hosts = []
     if args.jetson:
         hosts.append("jetson")

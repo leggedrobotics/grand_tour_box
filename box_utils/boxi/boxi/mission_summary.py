@@ -28,7 +28,7 @@ def get_latest_modified_folder(directory):
 
 def main(args):
     if args.latest:
-        args.folder = get_latest_modified_folder("/home/rsl/git/grand_tour_box/box_utils/box_recording/data")
+        args.folder = get_latest_modified_folder("/data")
    
     bag_files = [str(s) for s in Path(args.folder).rglob("*.bag")]
     print("Found bags: ")
