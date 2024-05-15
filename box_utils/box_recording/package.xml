@@ -13,9 +13,10 @@
   <maintainer email="jonfrey@ethz.ch">Jonas Frey</maintainer>
   
   <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>zed2i_recording_driver_msgs</build_depend>
+  <exec_depend>zed2i_recording_driver_msgs</exec_depend>
   <depend>message_generation</depend>
   <depend>message_runtime</depend>
   <depend>std_msgs</depend>
-  <depend>zed2i_recording_driver_ros</depend>
   
 </package>

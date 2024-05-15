@@ -1,11 +1,9 @@
 <launch>
   <arg name="calibration" default="no"/>
-  <include file="$(find box_health)/launch/box_health_client.launch"> <arg name="calibration" value="$(arg calibration)"/> </include>
-  <include file="$(find bringup_zed2i_recording)/launch/zed2i_recording.launch"> <arg name="calibration" value="$(arg calibration)"/> </include>
-  <include file="$(find bringup_alphasense)/launch/alphasense.launch"> <arg name="calibration" value="$(arg calibration)"/> </include>
-  <!-- <include file="$(find bringup_ap20)/launch/ap20.launch"> <arg name="calibration" value="$(arg calibration)"/> </include> -->
-  <include file="$(find box_recording)/launch/rosbag_record_coordinator.launch"> <arg name="calibration" value="$(arg calibration)"/> </include>
-  <include file="$(find box_recording)/launch/rosbag_record_node.launch"> <arg name="calibration" value="$(arg calibration)"/> </include>
-  <include file="$(find box_throttling)/launch/throttle_jetson.launch"> <arg name="calibration" value="$(arg calibration)"/> </include>
-
+  <include file="$(find box_health)/launch/box_health_client.launch"> </include>
+  <include file="$(find bringup_ap20)/launch/ap20.launch"> </include>
+  <include file="$(find box_recording)/launch/rosbag_record_coordinator.launch"> </include>
+  <include file="$(find box_recording)/launch/rosbag_record_node.launch">  </include>
+  <include file="$(find bringup_zed2i_recording)/launch/zed2i_recording.launch"> </include>
+  <include file="$(find box_throttling)/launch/throttle_jetson.launch">  </include>
 </launch>

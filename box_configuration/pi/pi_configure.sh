@@ -1,7 +1,25 @@
-# NR 1 configure correctly the interfaces: /etc/network/interfaces 
-# We had some problems with ip route show: sudo ip route del default via 192.168.2.151 dev eth0 -> the upper command fixed it
-ssh-add /home/rsl/.ssh/id_rsa
+
+# Before executing:
+# SSH keys are setup
+# Correct interfaces: /etc/network/interfaces 
+# You can ping google.de
+# if not most likely add: sudo ip route add default via 192.168.2.51 dev eth0 onlink
+
+/home/rsl/git/grand_tour_box/box_configuration/general/general_install.sh
+
+sudo apt install netplan.io -y
+
+sudo cp ~/git/grand_tour_box/box_configuration/pi/50-cloud-init.yaml /etc/netplan/50-cloud-init.yaml
+sudo netplan generate
+sudo netplan try
+# ACTION hit enter if good
+
+# Set the correct iptables and store it presistently 
+# tried to edit sudo vi /etc/rc.local
 sudo ip route add default via 192.168.2.51 dev eth0 onlink
+sudo apt install iptables-persistent -y
+# ACTION ipv4 yes ipv6 no
+
 
 echo "dtoverlay=pps-gpio,gpiopin=18" >> /boot/firmware/config.txt
 echo "dtoverlay=i2c-rtc,pcf85063a,i2c_csi_dsi" >> /boot/firmware/config.txt
@@ -15,21 +33,15 @@ ethtool -T eth0
 sudo hwclock --show
 
 
-# Disable DHCP suggestion (not tested)
-# https://superuser.com/questions/547114/all-statically-assigned-addresses-but-dhcpcd-still-runs
-# sudo update-rc.d -f dhcpd remove
-# Reenable DHCP
-# sudo update-rc.d dhcpd defaults
-###################
-
 sudo vi /etc/locale.gen
-# uncomment correct languages
+# ACTION Uncomment correct languages -> Select Europe Zurich
 sudo locale-gen
+# ACTION Comment in de_CH de_DE en_US en_GB all in UTF standard
 sudo update-locale
 
 
 # Installing PTP and other system services
-sudo apt-get -y install linuxptp
+sudo apt -y install linuxptp
 
 # Disable time sync to internet
 sudo timedatectl set-ntp no
@@ -65,31 +77,36 @@ sudo apt install tmux tmuxp -y
 
 
 # Install pigpio
-cd ~/git
+
 sudo apt install python-setuptools python3-setuptools -y
-wget https://github.com/joan2937/pigpio/archive/master.zip
-unzip master.zip
+
+cd ~/git; wget https://github.com/joan2937/pigpio/archive/master.zip
+cd ~/git; unzip master.zip
 cd pigpio-master
 make
 sudo make install -j3
 sudo ./x_pigpio
 sudo pigpiod 
+# ACTION check if all pass work
+
+
 
 # These will be added by default when installing pigpio
 sudo systemctl enable pigpiod
 sudo systemctl start pigpiod
 
 
-# Installing ADIS timestamping
+# Installing ADIS timestamping - kernel modules add persistent
 sudo apt install -y raspberrypi-kernel-headers
 cd /home/rsl/git/grand_tour_box/box_drivers/adis16475_driver/adis16475_kernel_module
 make
+cd /home/rsl/git/grand_tour_box/box_drivers/adis16475_driver/adis16475_kernel_module
 sudo insmod time_stamper_adis.ko
 
 
 # Installing docker
-sudo apt-get -y update
-sudo apt-get -y install ca-certificates curl
+sudo apt -y update
+sudo apt -y install ca-certificates curl
 sudo install -m 0755 -d /etc/apt/keyrings
 sudo curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
 sudo chmod a+r /etc/apt/keyrings/docker.asc
@@ -97,8 +114,8 @@ echo \
   "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian \
   $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
   sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-sudo apt-get -y update
-sudo apt-get -y install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+sudo apt -y update
+sudo apt -y install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 sudo usermod -aG docker $USER
 ####
 
@@ -106,6 +123,7 @@ sudo usermod -aG docker $USER
 
 # Install Boxi
 cd ~/git/grand_tour_box/box_utils/boxi
+sudo apt -y update
 sudo apt install python3-pip -y
 pip3 install -e ./
 
@@ -114,6 +132,6 @@ pip3 install -e ./
 cd /home/rsl/git/grand_tour_box/box_configuration/pi/docker
 ./build.sh
 ~/git/grand_tour_box/box_configuration/pi/docker/run.sh
-# /home/rsl/git/grand_tour_box/box_configuration/pi/docker/install_manually.sh
-# docker commit 12312312 leggedrobotics:noetic-pi-focal
+# ACTION /home/rsl/git/grand_tour_box/box_configuration/pi/docker/install_manually.sh
+# ACTION - open new terminal and do the following - docker commit 12312312 leggedrobotics:noetic-pi-focal
 # Done

@@ -76,6 +76,29 @@ The project is organized into the following directories:
 Getting Started
 </h2>
 
+
+> [!CAUTION]
+> THE README IS DISCONTINUED EVERYTHING IS MOVED TO THE WIKI
+
+
+> [!CAUTION]
+> THE README IS DISCONTINUED EVERYTHING IS MOVED TO THE WIKI
+
+
+> [!CAUTION]
+> THE README IS DISCONTINUED EVERYTHING IS MOVED TO THE WIKI
+
+
+
+
+
+
+
+
+
+
+
+
 ### Most important workflows:
 ###### Start the box
 - Simply power on the box -> On the jetson, the nuc and the pi a detached tmux session starts, all the drivers are started and the topics start publishing.

@@ -1,4 +1,0 @@
-<launch>
-  <arg name="calibration" default="camera"/>
-  <include file="$(find launch_nuc)/launch/nuc_recording.launch"> <arg name="calibration" value="$(arg calibration)"/> </include>
-</launch>

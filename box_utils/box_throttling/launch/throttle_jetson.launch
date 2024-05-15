@@ -4,28 +4,9 @@
   <arg name="box_namespace" default="gt_box"/>
 
   <rosparam command="load" file="$(find box_throttling)/cfg/frequencies.yaml" />
-  <arg name="alphasense_cam_frequency" default="5.0"/>
   <arg name="zed2i_frequency" default="5.0"/>
 
   <group ns="$(arg box_namespace)">
-    <node name="alphasense_cam0_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/alphasense_driver_node/cam0/color/image/compressed $(arg alphasense_cam_frequency) /gt_box/throttled/alphasense_driver_node/cam0/compressed">
-      <param name="capability_group" value="Throttling"/>
-    </node>
-    <node name="alphasense_cam1_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/alphasense_driver_node/cam1/color/image/compressed $(arg alphasense_cam_frequency) /gt_box/throttled/alphasense_driver_node/cam1/compressed">
-      <param name="capability_group" value="Throttling"/>
-    </node>
-
-    <node name="alphasense_cam2_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/alphasense_driver_node/cam2/color/image/compressed $(arg alphasense_cam_frequency) /gt_box/throttled/alphasense_driver_node/cam2/compressed">
-      <param name="capability_group" value="Throttling"/>
-    </node>
-    
-    <node name="alphasense_cam3_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/alphasense_driver_node/cam3/color/image/compressed $(arg alphasense_cam_frequency) /gt_box/throttled/alphasense_driver_node/cam3/compressed">
-      <param name="capability_group" value="Throttling"/>
-    </node>
-    
-    <node name="alphasense_cam4_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/alphasense_driver_node/cam4/color/image/compressed $(arg alphasense_cam_frequency) /gt_box/throttled/alphasense_driver_node/cam4/compressed">
-      <param name="capability_group" value="Throttling"/>
-    </node>
     
     <node name="zed_left_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/zed2i_driver_node/left/image_rect_color/compressed $(arg zed2i_frequency) /gt_box/throttled/gt_box/zed2i_driver_node/left/image_rect_color/compressed"> 
       <param name="capability_group" value="Throttling"/>

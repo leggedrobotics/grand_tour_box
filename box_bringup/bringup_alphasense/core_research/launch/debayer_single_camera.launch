@@ -11,7 +11,7 @@
   
   <arg name="output_encoding"                      default="BGR"/>   <!-- Format of the published image BGR and RGB supported-->
   <arg name="skip_number_of_images_for_slow_topic" default="5"/>     <!-- To publish images at a slower rate -->
-  <arg name="use_gpu"                              default="true"/>     <!-- To publish images at a slower rate -->
+  <arg name="use_gpu"                              default="false"/>     <!-- To publish images at a slower rate -->
   <arg name="debug"                                default="false"/> <!-- to export debug data to /tmp -->
 
   <arg name="disable_compression_plugins"          default="true"/>     <!-- To avoid publication of theora or compressedDepth topics -->

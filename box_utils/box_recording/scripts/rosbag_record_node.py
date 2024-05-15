@@ -16,7 +16,7 @@ from std_msgs.msg import Bool
 from std_msgs.msg import Float32
 from box_recording.srv import StartRecordingInternalResponse, StartRecordingInternal
 from box_recording.srv import StopRecordingInternalResponse, StopRecordingInternal, StopRecordingInternalRequest
-from zed2i_recording_driver_ros.srv import StartRecordingSVO, StartRecordingSVORequest
+from zed2i_recording_driver_msgs.srv import StartRecordingSVO, StartRecordingSVORequest
 import time
 
 
@@ -94,7 +94,13 @@ class RosbagRecordNode(object):
     def toggle_zed_recording(self, start, response):
         service_name = self.namespace + '/zed2i_recording_driver/start_recording_svo'
         rospy.loginfo(f"[RosbagRecordNode({self.node} zed2i)] Trying to start svo recording process on zed2i")
-        rospy.wait_for_service(service_name, timeout=2.0)
+        try:
+            rospy.wait_for_service(service_name, timeout=2.0)
+        except rospy.ROSException as e:
+            response.message += f"zed2i [FAILED] service not found, "
+            response.suc = False
+            return response
+        
         try:
             start_recording_svo_srv = rospy.ServiceProxy(service_name, StartRecordingSVO)
             req = StartRecordingSVORequest()
@@ -136,6 +142,9 @@ class RosbagRecordNode(object):
             bag_configs[bag_name] += topic_name + " "
 
         self.bag_configs = bag_configs
+        response.suc = True
+        response.message = f"Starting rosbag recording process."
+        
         for bag_name, topics in bag_configs.items():
             if bag_name == "zed2i" and "svo" in topics:
                 # If we are recording svo files instead of rosbags for the zed, we need to call the svo recording service.
@@ -148,9 +157,9 @@ class RosbagRecordNode(object):
 
             self.processes.append(subprocess.Popen(bash_command, shell=True, stderr=subprocess.PIPE))
             self.bag_running = True
-
-            response.suc = True
-            response.message = "Starting rosbag recording process."
+            
+            response.message += f"{bag_name} [SUC], "
+            
             rospy.loginfo(f"[RosbagRecordNode({self.node} {bag_name})] Starting rosbag recording process.")
 
         return response
