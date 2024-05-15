@@ -15,7 +15,11 @@ catkin init
 catkin config --extend /opt/ros/noetic
 catkin config --cmake-args -DCMAKE_BUILD_TYPE=RelWithDebInfo
 catkin build fkie_multimaster
-catkin build launch_pi
+
+cd /home/rsl/git/grand_tour_box/box_drivers/adis16475_driver/adis16475_driver
+mkdir build && cd cmake .. ; sudo make install
+
+cd /home/rsl/catkin_ws; catkin build launch_pi
 
 # Also ensure to add the correct source script to /etc/bash.bashrc
 sudo su

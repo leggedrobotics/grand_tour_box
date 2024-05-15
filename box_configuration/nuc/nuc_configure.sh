@@ -48,3 +48,5 @@ sudo apt install alphasense-driver-core alphasense-viewer alphasense-firmware ro
 
 # Set the maximum socket buffer size
 sudo sysctl -w net.core.rmem_max=11145728
+echo -e "net.core.rmem_max=11145728" | sudo tee /etc/sysctl.d/90-increase-network-buffers.conf
+
