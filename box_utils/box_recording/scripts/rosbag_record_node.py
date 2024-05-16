@@ -91,7 +91,7 @@ class RosbagRecordNode(object):
             sub_process.send_signal(signal.SIGINT)
         p.wait()
         
-    def toggle_zed_recording(self, start, response):
+    def toggle_zed_recording(self, start, timestamp, response):
         service_name = self.namespace + '/zed2i_recording_driver/start_recording_svo'
         rospy.loginfo(f"[RosbagRecordNode({self.node} zed2i)] Trying to start svo recording process on zed2i")
         try:
@@ -105,7 +105,7 @@ class RosbagRecordNode(object):
             start_recording_svo_srv = rospy.ServiceProxy(service_name, StartRecordingSVO)
             req = StartRecordingSVORequest()
             req.start_recording = start
-            req.video_filename = self.bag_base_path + "_zed2i.svo2"
+            req.video_filename = self.bag_base_path + f"/{timestamp}_{self.node}_zed2i.svo2"
 
             start_recording_svo_srv(req)
             response.message += f"zed2i [SUC], "
@@ -148,7 +148,7 @@ class RosbagRecordNode(object):
         for bag_name, topics in bag_configs.items():
             if bag_name == "zed2i" and "svo" in topics:
                 # If we are recording svo files instead of rosbags for the zed, we need to call the svo recording service.
-                response = self.toggle_zed_recording(True, response)
+                response = self.toggle_zed_recording(True, timestamp, response)
                 continue
             bag_path = os.path.join(self.bag_base_path, timestamp + "_" + self.node + "_" + bag_name)
             bash_command = (
@@ -183,7 +183,7 @@ class RosbagRecordNode(object):
         self.processes = []
         
         if self.recording_zed:
-            response = self.toggle_zed_recording(False, response)
+            response = self.toggle_zed_recording(False, "", response)
 
         if request.verbose:
             # output = subprocess.check_output([f"rosbag info --freq {self.bag_path}*.bag"], shell=True)

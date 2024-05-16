@@ -1,6 +1,8 @@
-from boxi import shell_run
+from boxi import shell_run, LOCAL_HOSTNAME
 from pathlib import Path
 import os
+
+SVO_CHECKER_SCRIPT = "/home/rsl/git/grand_tour_box/box_utils/box_recording/scripts/check_svo_file.py"
 
 def add_arguments(parser):
     parser.set_defaults(main=main)
@@ -37,7 +39,16 @@ def main(args):
     for bag in bag_files:
         shell_run(f"rosbag info --freq {bag}")
         print("\n\n")
+        
+    if LOCAL_HOSTNAME == "jetson":
+        svo_files = [str(s) for s in Path(args.folder).rglob("*.svo2")]
+        print("Found svo (Zed2i) files: ")
+        for svo_file in svo_files:
+            print(f"    --{svo_file}")
+        for svo_file in svo_files:
+            shell_run(f"python {SVO_CHECKER_SCRIPT} --input_svo_file {svo_file}")
+            print("\n\n")
 
     
     if args.latest:
-        print(f"Latest found mission {args.folder}")
+        print(f"\nLatest found mission {args.folder}\n")
