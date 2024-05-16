@@ -24,5 +24,5 @@ def main(args):
             cmd = f"ssh -o ConnectTimeout=2 rsl@{host} -t tmux kill-server"
         try:
             shell_run(cmd)
-        except:
-            print("ROS wasn't running on", host)
+        except Exception as e:
+            print(f"Unable to kill tmux server on {host}: {e}")
