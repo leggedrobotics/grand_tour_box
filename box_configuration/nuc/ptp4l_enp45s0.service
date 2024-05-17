@@ -1,12 +1,10 @@
 [Unit]
-Description=Precision Time Protocol (PTP) service
+Description=Precision Time Protocol (PTP) service - enp45s0 waits for master in network
 Documentation=man:ptp4l
 After=network-online.target
 
 [Service]
 Type=simple
-# sleep 10 sec before starting
-ExecStartPre=/bin/sleep 10
 ExecStart=/usr/sbin/ptp4l -f /etc/linuxptp/ptp4l.conf -i enp45s0 -H -s
 
 [Install]

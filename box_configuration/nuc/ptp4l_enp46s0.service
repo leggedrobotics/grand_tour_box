@@ -1,5 +1,5 @@
 [Unit]
-Description=Precision Time Protocol (PTP) service
+Description=Precision Time Protocol (PTP) service - enp46s0 assumes master role in network
 Documentation=man:ptp4l
 After=network-online.target
 
