@@ -107,23 +107,27 @@ echo 'source /home/rsl/catkin_ws/devel/setup.bash' | cat - ~/.bashrc > temp && m
 echo 'source /home/rsl/git/grand_tour_box/box_configuration/alias.sh' | cat - ~/.bashrc > temp && mv temp ~/.bashrc
 
 # autostart tmux
-sudo cp ~/catkin_ws/src/grand_tour_box/box_configuration/jetson/autostart_tmux.service /etc/systemd/system/autostart_tmux.service
+sudo cp ~/git/grand_tour_box/box_configuration/jetson/autostart_tmux.service /etc/systemd/system/autostart_tmux.service
 sudo systemctl daemon-reload
 sudo systemctl enable autostart_tmux
 
-# autostart ptp
-sudo cp ~/catkin_ws/src/grand_tour_box/box_configuration/jetson/sync_time_once.service /etc/systemd/system/sync_time_once.service
-sudo cp ~/catkin_ws/src/grand_tour_box/box_configuration/jetson/jetson_clocks_once.service /etc/systemd/system/jetson_clocks_once.service
-sudo cp ~/catkin_ws/src/grand_tour_box/box_configuration/jetson/ptp4l_mgbe0.service /lib/systemd/system/ptp4l_mgbe0.service
-sudo cp ~/catkin_ws/src/grand_tour_box/box_configuration/jetson/ptp4l_mgbe1.service /lib/systemd/system/ptp4l_mgbe1.service
-sudo cp ~/catkin_ws/src/grand_tour_box/box_configuration/jetson/phc2sys_mgbe0.service /lib/systemd/system/phc2sys_mgbe0.service
-sudo cp ~/catkin_ws/src/grand_tour_box/box_configuration/jetson/phc2sys_mgbe1.service /lib/systemd/system/phc2sys_mgbe1.service
+# autostart ptp and set per default to jetson to grandmaster
+sudo cp ~/git/grand_tour_box/box_configuration/jetson/sync_time_once.service /etc/systemd/system/sync_time_once.service
+sudo cp ~/git/grand_tour_box/box_configuration/jetson/jetson_clocks_once.service /etc/systemd/system/jetson_clocks_once.service
+sudo cp ~/git/grand_tour_box/box_configuration/jetson/ptp4l_mgbe0.service /lib/systemd/system/ptp4l_mgbe0.service
+sudo cp ~/git/grand_tour_box/box_configuration/jetson/ptp4l_mgbe0_grandmaster.service /lib/systemd/system/ptp4l_mgbe0_grandmaster.service
+sudo cp ~/git/grand_tour_box/box_configuration/jetson/ptp4l_mgbe1.service /lib/systemd/system/ptp4l_mgbe1.service
+sudo cp ~/git/grand_tour_box/box_configuration/jetson/phc2sys_mgbe0.service /lib/systemd/system/phc2sys_mgbe0.service
+sudo cp ~/git/grand_tour_box/box_configuration/jetson/phc2sys_mgbe0_grandmaster.service /lib/systemd/system/phc2sys_mgbe0_grandmaster.service
+sudo cp ~/git/grand_tour_box/box_configuration/jetson/phc2sys_mgbe1.service /lib/systemd/system/phc2sys_mgbe1.service
 sudo systemctl daemon-reload
 sudo systemctl enable sync_time_once
 sudo systemctl enable jetson_clocks_once
-sudo systemctl enable ptp4l_mgbe0
+sudo systemctl enable ptp4l_mgbe0_grandmaster
+sudo systemctl disable ptp4l_mgbe0
 sudo systemctl enable ptp4l_mgbe1
-sudo systemctl enable phc2sys_mgbe0
+sudo systemctl enable phc2sys_mgbe0_grandmaster
+sudo systemctl disable phc2sys_mgbe0
 sudo systemctl enable phc2sys_mgbe1
 
 

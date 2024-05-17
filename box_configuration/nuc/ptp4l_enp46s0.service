@@ -5,7 +5,7 @@ After=network-online.target
 
 [Service]
 Type=simple
-ExecStart=/usr/sbin/ptp4l -f /etc/linuxptp/ptp4l.conf -i enp46s0 -H
+ExecStart=/usr/sbin/ptp4l -f /etc/linuxptp/ptp4l.conf -i enp46s0 -H -s
 
 [Install]
 WantedBy=multi-user.target
