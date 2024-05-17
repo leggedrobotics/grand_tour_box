@@ -2,7 +2,7 @@
 
     <!-- ICOM connection to the receiver; you need to determine receiver's IP address -->
 	<arg name="oem7_if"        default="Oem7ReceiverTcp" />
-	<arg name="oem7_ip_addr"   default="192.168.2.223" /> <!--  E.g. "10.128.224.1"  -->
+	<arg name="oem7_ip_addr"   default="192.168.2.98" /> <!--  E.g. "10.128.224.1"  -->
 	<arg name="oem7_port"      default="3001"            />
 
        <arg name="oem7_receiver_log" default="cpt7.gps"/> <!--  E.g. "oem7.gps" -->
