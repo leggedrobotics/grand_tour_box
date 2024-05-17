@@ -1,12 +1,12 @@
 [Unit]
-Description=Synchronize system clock or PTP hardware clock (PHC)
+Description=Synchronize system clock or PTP hardware clock (PHC) - set system clock from enp45s0 clock
 Documentation=man:phc2sys
-Requires=ptp4l.service
-After=ptp4l.service
+Requires=ptp4l_enp45s0.service
+After=ptp4l_enp45s0.service
 
 [Service]
 Type=simple
-ExecStart=/usr/sbin/phc2sys -s enp45s0 -c CLOCK_REALTIME -O 0 -S 1.0
+ExecStart=/usr/sbin/phc2sys -s enp45s0 -c CLOCK_REALTIME -w
 
 [Install]
 WantedBy=multi-user.target
