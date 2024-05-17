@@ -34,6 +34,7 @@ def main(args):
             shell_run("boxi kill --all")
         else:
             shell_run("boxi kill")
+        time.sleep(5.0)
 
     if args.all:
         hosts = ["opc", "jetson", "nuc", "pi"]

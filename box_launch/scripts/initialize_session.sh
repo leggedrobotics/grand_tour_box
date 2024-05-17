@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Kill previous process
-rosrun launch_scripts cleanup_session.sh
+/home/rsl/git/grand_tour_box/box_launch/scripts/cleanup_session.sh
 
 # run cleanup script on exit
-tmux set-hook -g 'session-closed' 'run "rosrun launch_scripts cleanup_session.sh"'
+tmux set-hook -g 'session-closed' 'run "/home/rsl/git/grand_tour_box/box_launch/scripts/cleanup_session.sh"'

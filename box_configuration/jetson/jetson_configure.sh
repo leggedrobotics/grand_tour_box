@@ -100,9 +100,10 @@ chmod +x ZED_SDK_Tegra_L4T35.4_v4.1.1.zstd.run
 
 # .bashrc
 echo '' >> ~/.bashrc
-echo 'source /opt/ros/noetic/setup.bash' >> ~/.bashrc
-echo 'source /home/rsl/catkin_ws/devel/setup.bash' >> ~/.bashrc
-echo 'source /home/rsl/git/grand_tour_box/box_configuration/alias.sh' >> ~/.bashrc
+# Prepend to .bashrc so that they still run when we are ssh'd into the PCs (when the interactive session is not started)
+echo 'source /opt/ros/noetic/setup.bash' | cat - ~/.bashrc > temp && mv temp ~/.bashrc
+echo 'source /home/rsl/catkin_ws/devel/setup.bash' | cat - ~/.bashrc > temp && mv temp ~/.bashrc
+echo 'source /home/rsl/git/grand_tour_box/box_configuration/alias.sh' | cat - ~/.bashrc > temp && mv temp ~/.bashrc
 
 # autostart tmux
 sudo cp ~/catkin_ws/src/grand_tour_box/box_configuration/jetson/autostart_tmux.service /etc/systemd/system/autostart_tmux.service

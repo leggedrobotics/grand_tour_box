@@ -15,7 +15,7 @@ def shell_run(cmd, cwd=None, env={}, time=True, continue_on_error=True):
 
     # Execute command
     try:
-        p = subprocess.Popen(cmd, cwd=cwd, env=env_variables, shell=True)
+        p = subprocess.Popen(cmd, cwd=cwd, env=env_variables, shell=True, executable="/bin/bash")
     except Exception as e:
         raise RuntimeError(f"{e} --- while executing {cmd}")
 
