@@ -16,9 +16,10 @@ sudo cp ~/catkin_ws/src/grand_tour_box/box_configuration/jetson/01-network-manag
 sudo netplan generate
 sudo netplan apply
 
-sudo cp ~/catkin_ws/src/grand_tour_box/box_configuration/jetson/10-network-bridge.yaml /etc/netplan/10-network-bridge.yaml
-netplan generate
-sudo netplan apply
+# with the network bridge ptp as a slave fails
+#sudo cp ~/catkin_ws/src/grand_tour_box/box_configuration/jetson/10-network-bridge.yaml /etc/netplan/10-network-bridge.yaml
+#netplan generate
+#sudo netplan apply
 
 # (only one of the three things is actually doing the intended presistent modification no clue which one)
 # modified here and commented in the line  net.ipv4.ip_forward=1

@@ -1,9 +1,7 @@
-# Copy to /lib/systemd/system/
 [Unit]
-Description=Precision Time Protocol (PTP) service
+Description=Precision Time Protocol (PTP) service for eth0
 Documentation=man:ptp4l
-After=network-online.target
-
+After=sys-subsystem-net-devices-eth0.device
 
 [Service]
 Type=simple
