@@ -1,8 +1,8 @@
 [Unit]
 Description=Synchronize system clock or PTP hardware clock (PHC)
 Documentation=man:phc2sys
-Requires=ptp4l_mgbe1.service
-After=ptp4l_mgbe1.service
+Requires=ptp4l_mgbe0.service
+After=ptp4l_mgbe0.service
 
 [Service]
 Type=simple
