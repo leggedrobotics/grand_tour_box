@@ -116,12 +116,20 @@ sudo cp /home/rsl/git/grand_tour_box/box_configuration/jetson/ptp4l_mgbe1.servic
 sudo cp /home/rsl/git/grand_tour_box/box_configuration/jetson/phc2sys_mgbe0.service /lib/systemd/system/phc2sys_mgbe0.service
 sudo cp /home/rsl/git/grand_tour_box/box_configuration/jetson/phc2sys_mgbe1.service /lib/systemd/system/phc2sys_mgbe1.service
 sudo systemctl daemon-reload
-sudo systemctl enable sync_time_once
-sudo systemctl enable jetson_clocks_once
+sudo systemctl disable sync_time_once
+sudo systemctl disable jetson_clocks_once
 sudo systemctl enable ptp4l_mgbe0
 sudo systemctl enable ptp4l_mgbe1
 sudo systemctl enable phc2sys_mgbe0
 sudo systemctl enable phc2sys_mgbe1
+
+# Remove it then from boot
+sudo apt install ntp
+sudo service ntp stop
+sudo update-rc.d -f ntp remove
+sudo timedatectl set-ntp false
+sudo systemctl stop ntp
+sudo systemctl disable ntp
 
 
 # max power mode
@@ -131,3 +139,21 @@ sudo /usr/bin/jetson_clocks
 # deactivate bluetooth if the bluetooth settings are flickering (AX210)
 # cp ~/catkin_ws/src/grand_tour_box/box_configuration/jetson/81-bluetooth-hci-rules /etc/udev/rules.d/81-bluetooth-hci.rules
 # reboot -h now
+
+
+# disable systemd-timesyncd and ntpd
+
+# chrony
+sudo apt install chrony -y
+sudo vi /etc/chrony/chrony.conf
+# comment out all the pool machines
+
+# 2.2. How do I make an NTP server?
+# By default, chronyd does not operate as an NTP server. You need to add an allow directive to the chrony.conf file in order for chronyd to open the server NTP port and respond to client requests.
+
+# allow 192.168.1.0/24
+# An allow directive with no specified subnet allows access from all IPv4 and IPv6 addresses.
+
+
+chronyd -x
+ 

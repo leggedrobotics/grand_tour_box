@@ -32,20 +32,20 @@ def main(args):
         if host == LOCAL_HOSTNAME:
             cmds = []
             if host == "jetson":                
-                cmds.append("/usr/bin/systemctl restart ptp4l_mgbe0.service; sleep 1")
+                cmds.append("/usr/bin/systemctl restart ptp4l_mgbe0.service")
                 cmds.append("/usr/bin/systemctl restart phc2sys_mgbe0.service")          
                 
-                cmds.append("/usr/bin/systemctl restart ptp4l_mgbe1.service; sleep 1")
+                cmds.append("/usr/bin/systemctl restart ptp4l_mgbe1.service")
                 cmds.append("/usr/bin/systemctl restart phc2sys_mgbe1.service")
 
             if host == "nuc":
-                cmds.append("/usr/bin/systemctl restart ptp4l_enp45s0.service; sleep 1")
+                cmds.append("/usr/bin/systemctl restart ptp4l_enp45s0.service")
                 cmds.append("/usr/bin/systemctl restart phc2sys_enp45s0.service")
 
-                cmds.append("/usr/bin/systemctl restart ptp4l_enp46s0.service; sleep 1")
+                cmds.append("/usr/bin/systemctl restart ptp4l_enp46s0.service")
                 cmds.append("/usr/bin/systemctl restart phc2sys_enp46s0.service")
             if host == "pi":
-                cmds.append("/usr/bin/systemctl restart ptp4l_eth0.service; sleep 1")
+                cmds.append("/usr/bin/systemctl restart ptp4l_eth0.service")
                 cmds.append("/usr/bin/systemctl restart phc2sys_eth0.service")
             
 
@@ -59,7 +59,7 @@ def main(args):
                 time.sleep(10)
                 
         else:
-            cmd = f"ssh -o ConnectTimeout=4 -t rsl@{host} /home/rsl/.local/bin/boxi ptp_restart --{host} --grandmaster={args.grandmaster} "
+            cmd = f"ssh -o ConnectTimeout=4 -t rsl@{host} /home/rsl/.local/bin/boxi ptp_restart --{host} "
             print(cmd)
             shell_run(cmd)
             
