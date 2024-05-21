@@ -46,3 +46,7 @@
 	path = box_drivers/Livox-LiDAR-SDK2
 	url = git@github.com:leggedrobotics/Livox-LiDAR-SDK2.git
 	branch = master
+[submodule "box_drivers/novatel_oem7_driver"]
+	path = box_drivers/novatel_oem7_driver
+	url = git@github.com:leggedrobotics/novatel_oem7_driver.git
+	branch = ros1

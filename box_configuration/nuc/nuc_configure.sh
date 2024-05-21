@@ -51,3 +51,7 @@ sudo apt install alphasense-driver-core alphasense-viewer alphasense-firmware ro
 sudo sysctl -w net.core.rmem_max=11145728
 echo -e "net.core.rmem_max=11145728" | sudo tee /etc/sysctl.d/90-increase-network-buffers.conf
 
+# CPT7 installation
+cd /home/rsl/git/grand_tour_box/box_drivers/novatel_oem7_driver
+rosdep install --from-paths src --ignore-src -r -y --reinstall
+./build.sh -f

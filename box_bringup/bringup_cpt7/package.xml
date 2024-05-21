@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>bringup_cpt7</name>
+  <version>0.0.0</version>
+  <description>The bringup_cpt7 package</description>
+  <maintainer email="jonfrey@ethz.ch">Jonas Frey</maintainer>
+  <license>MIT</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>novatel_oem7_driver</depend>
+  <export>
+  </export>
+</package>
