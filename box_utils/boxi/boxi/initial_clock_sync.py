@@ -9,22 +9,21 @@ def add_arguments(parser):
 def main(args):
     # set jetson time to opc time
     print("set jetson time to opc time")
-    cmd = "ssh -t rsl@jetson /home/rsl/.local/bin/boxi set_time_to_opc"
+    cmd = "ssh -t rsl@jetson /home/rsl/.local/bin/boxi set_time_from_opc"
     shell_run(cmd)
-
     # restart jetson ptp & phc2sys
     print("restart jetson ptp & phc2sys")
-    cmd = "ssh -t rsl@jetson /home/rsl/.local/bin/boxi restart_ptp"
+    cmd = "ssh -t rsl@jetson /home/rsl/.local/bin/boxi ptp_restart"
     shell_run(cmd)
 
     # restart nuc ptp & phc2sys
     print("restart nuc ptp & phc2sys")
-    cmd = "ssh -t rsl@nuc /home/rsl/.local/bin/boxi restart_ptp"
+    cmd = "ssh -t rsl@nuc /home/rsl/.local/bin/boxi ptp_restart"
     shell_run(cmd)
 
     # restart pi ptp & phc2sys
     print("restart pi ptp & phc2sys")
-    cmd = "ssh -t rsl@pi /home/rsl/.local/bin/boxi restart_ptp"
+    cmd = "ssh -t rsl@pi /home/rsl/.local/bin/boxi ptp_restart"
     shell_run(cmd)
 
     # restart jetson chrony

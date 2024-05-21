@@ -6,11 +6,8 @@ sudo apt install netplan.io linuxptp tmux tmuxp
 /home/rsl/git/grand_tour_box/box_configuration/general/general_install.sh
 
 
-# add hosts
-sudo echo "192.168.2.51	jetson" >> /etc/hosts
-sudo echo "192.168.2.56	nuc" >> /etc/hosts
-sudo echo "192.168.2.57	pi" >> /etc/hosts
-sudo echo "192.168.2.154 opc" >> /etc/hosts
+
+
 
 sudo cp ~/catkin_ws/src/grand_tour_box/box_configuration/jetson/01-network-manager-all.yaml /etc/netplan/01-network-manager-all.yaml
 sudo netplan generate
