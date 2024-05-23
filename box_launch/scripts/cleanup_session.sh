@@ -29,7 +29,7 @@ fi
 
 if [ $(hostname) == "jetson" ]
 then
-   ~git/grand_tour_box/box_drivers/ap20_driver/ap20_driver_ros/script/ap20_stop_sending_data.sh
+   ~git/grand_tour_box/box_drivers/ap20_driver/ap20_driver_ros/script/ap20_stop_rosrover.sh
 fi
 
 echo "Cleaned Up Session"
