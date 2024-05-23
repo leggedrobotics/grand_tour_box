@@ -31,8 +31,6 @@ nuc:
     - /gt_box/livox/imu
     - /gt_box/livox/lidar
   alphasense:
-    - /gt_box/alphasense_driver_node/cam0/color/image/compressed
-    - /gt_box/alphasense_driver_node/cam0/color/camera_info
     - /gt_box/alphasense_driver_node/cam1/color/image/compressed
     - /gt_box/alphasense_driver_node/cam1/color/camera_info
     - /gt_box/alphasense_driver_node/cam2/color/image/compressed
@@ -41,3 +39,5 @@ nuc:
     - /gt_box/alphasense_driver_node/cam3/color/camera_info
     - /gt_box/alphasense_driver_node/cam4/color/image/compressed
     - /gt_box/alphasense_driver_node/cam4/color/camera_info
+    - /gt_box/alphasense_driver_node/cam5/color/image/compressed
+    - /gt_box/alphasense_driver_node/cam5/color/camera_info
