@@ -7,6 +7,8 @@ jetson:
   ap20:
     - /gt_box/ap20/ap20_imu
     - /gt_box/ap20/prism_position
+    - /ap20/tps
+    - /ap20/imu
   tf:
     - /tf_static
     - /tf
