@@ -11,6 +11,8 @@ import signal
 import os
 import rosparam
 import shutil
+import subprocess
+import time
 from pathlib import Path
 from std_msgs.msg import Bool
 from std_msgs.msg import Float32
@@ -36,6 +38,7 @@ class RosbagRecordNode(object):
 
         self.bag_running = False
         self.recording_zed = False
+        self.recording_hdr_ros2 = False
         default_path = rospkg.RosPack().get_path("box_recording") + "/data"
         self.data_path = rospy.get_param("~data_path", default_path)
 
@@ -90,6 +93,28 @@ class RosbagRecordNode(object):
         for sub_process in process.children(recursive=True):
             sub_process.send_signal(signal.SIGINT)
         p.wait()
+
+    def start_ros2_bag_record(self, run_name):
+        """
+        Attaches to a Docker container and starts recording ROS2 bag files.
+        
+        Args:
+        run_name (str): The name to be used for the ROS2 bag recording.
+        """
+        container_name = "isaac_ros_dev-aarch64-container"
+        command = f"docker exec -d {container_name} /bin/bash -c 'source install/setup.bash; ros2 bag record -s mcap /gt_box/hdr_left/image_raw/compressed /gt_box/hdr_right/image_raw/compressed /gt_box/hdr_center/image_raw/compressed -o ./{run_name}'"
+        subprocess.run(command, shell=True)
+        print(f"Started recording ROS2 bag with run name: {run_name}")
+
+    def stop_ros2_bag_record(self):
+        """
+        Attaches to the Docker container and gracefully stops the ROS2 bag recording process.
+        """
+        container_name = "isaac_ros_dev-aarch64-container"
+        command = f"docker exec {container_name} /bin/bash -c 'pkill -f \"ros2 bag record\"'"
+        subprocess.run(command, shell=True)
+        print("Stopped recording ROS2 bag")
+    
         
     def toggle_zed_recording(self, start, timestamp, response):
         service_name = self.namespace + '/zed2i_recording_driver/start_recording_svo'
@@ -146,6 +171,12 @@ class RosbagRecordNode(object):
         response.message = f"Starting rosbag recording process."
         
         for bag_name, topics in bag_configs.items():
+            # TODO: Replace with proper system after testing
+            if bag_name == "hdr":
+                self.start_ros2_bag_record(self.bag_base_path)
+                self.recording_zed = True
+                response.message += "HDR on Ros2 Start Signal Sent, "
+                continue
             if bag_name == "zed2i" and "svo" in topics:
                 # If we are recording svo files instead of rosbags for the zed, we need to call the svo recording service.
                 response = self.toggle_zed_recording(True, timestamp, response)
@@ -184,6 +215,9 @@ class RosbagRecordNode(object):
         
         if self.recording_zed:
             response = self.toggle_zed_recording(False, "", response)
+
+        if self.recording_hdr_ros2:
+            self.stop_ros2_bag_record()
 
         if request.verbose:
             # output = subprocess.check_output([f"rosbag info --freq {self.bag_path}*.bag"], shell=True)
