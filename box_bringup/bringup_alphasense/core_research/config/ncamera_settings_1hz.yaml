@@ -65,12 +65,11 @@ ncamera:
   max_ptp_sync_lost_time_s: 3600
 
   # Number of enabled cameras and individual camera configuration.
-  num_cams: 5                     # 1 - 8
+  num_cams: 6                     # 1 - 8
   cams:
-    0: *standard_camera_config      # Front left
-    1: *camera_1_config             # Front right
-    2: *standard_camera_config      # Front middle
-    3: *standard_camera_config      # Left
-    4: *standard_camera_config      # Right
-#    5: *standard_camera_config
-#    6: *standard_camera_config
+#   0: *standard_camera_config      # Port broken?
+    1: *standard_camera_config      # Front middle
+    2: *standard_camera_config      # Front right
+    3: *standard_camera_config      # Front left
+    4: *standard_camera_config      # Left 
+    5: *standard_camera_config      # Right
