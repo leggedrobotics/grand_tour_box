@@ -18,8 +18,6 @@
     args="compressed in:=/gt_box/hdr_camera_front/image_raw raw out:=/gt_box/hdr_camera_front/image_raw"> </node>
   <node name="uncompress_hdr_right" pkg="image_transport" type="republish" 
     args="compressed in:=/gt_box/hdr_camera_right/image_raw raw out:=/gt_box/hdr_camera_right/image_raw"> </node>
-  <node name="uncompress_alpahsense_cam0" pkg="image_transport" type="republish" 
-    args="compressed in:=/gt_box/alphasense_driver_node/cam0 raw out:=/gt_box/alphasense_driver_node/cam0"> </node>
   <node name="uncompress_alpahsense_cam1" pkg="image_transport" type="republish" 
     args="compressed in:=/gt_box/alphasense_driver_node/cam1 raw out:=/gt_box/alphasense_driver_node/cam1"> </node>
   <node name="uncompress_alpahsense_cam2" pkg="image_transport" type="republish" 
@@ -28,4 +26,6 @@
     args="compressed in:=/gt_box/alphasense_driver_node/cam3 raw out:=/gt_box/alphasense_driver_node/cam3"> </node>
   <node name="uncompress_alpahsense_cam4" pkg="image_transport" type="republish" 
     args="compressed in:=/gt_box/alphasense_driver_node/cam4 raw out:=/gt_box/alphasense_driver_node/cam4"> </node>
+  <node name="uncompress_alpahsense_cam5" pkg="image_transport" type="republish" 
+    args="compressed in:=/gt_box/alphasense_driver_node/cam5 raw out:=/gt_box/alphasense_driver_node/cam5"> </node>
 </launch>

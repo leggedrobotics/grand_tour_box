@@ -17,9 +17,6 @@
       <param name="capability_group" value="Throttling"/>
     </node>
 
-    <node name="alphasense_cam0_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/alphasense_driver_node/cam0/color/image/compressed $(arg alphasense_cam_frequency) /gt_box/throttled/alphasense_driver_node/cam0/compressed">
-      <param name="capability_group" value="Throttling"/>
-    </node>
     <node name="alphasense_cam1_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/alphasense_driver_node/cam1/color/image/compressed $(arg alphasense_cam_frequency) /gt_box/throttled/alphasense_driver_node/cam1/compressed">
       <param name="capability_group" value="Throttling"/>
     </node>
@@ -33,6 +30,10 @@
     </node>
     
     <node name="alphasense_cam4_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/alphasense_driver_node/cam4/color/image/compressed $(arg alphasense_cam_frequency) /gt_box/throttled/alphasense_driver_node/cam4/compressed">
+      <param name="capability_group" value="Throttling"/>
+    </node>
+
+    <node name="alphasense_cam5_throttler" type="throttle" pkg="topic_tools" args="messages /gt_box/alphasense_driver_node/cam5/color/image/compressed $(arg alphasense_cam_frequency) /gt_box/throttled/alphasense_driver_node/cam5/compressed">
       <param name="capability_group" value="Throttling"/>
     </node>
   </group>
