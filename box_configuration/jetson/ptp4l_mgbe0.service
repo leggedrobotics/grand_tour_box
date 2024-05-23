@@ -2,8 +2,6 @@
 Description=Precision Time Protocol (PTP) service
 Documentation=man:ptp4l
 After=network-online.target
-After=sync_time_once.service
-Requires=sync_time_once.service
 
 [Service]
 Type=simple

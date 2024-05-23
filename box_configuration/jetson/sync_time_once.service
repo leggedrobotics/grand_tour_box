@@ -4,7 +4,7 @@ After=network-online.target
 
 [Service]
 Type=oneshot
-ExecStart=/usr/sbin/hwclock -s
+ExecStart=/usr/sbin/hwclock --hctosys
 
 [Install]
 WantedBy=multi-user.target
