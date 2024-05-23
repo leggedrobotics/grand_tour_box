@@ -1,4 +1,4 @@
 <launch>
-    <node pkg="ap20_driver_ros" type="ap20_driver_ros" name="ap20_timestamp_merger" output="screen" />
     <node pkg="ap20_driver_ros" type="ap20_start_rosrover.sh" name="ap20_start_rosrover" output="screen" />
+    <node pkg="ap20_driver_ros" type="ap20_driver_ros" name="ap20_timestamp_merger" output="screen" />
 </launch>

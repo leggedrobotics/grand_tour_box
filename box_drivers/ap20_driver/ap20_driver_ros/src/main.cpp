@@ -1,5 +1,5 @@
 #include <fstream>
-
+#include <unistd.h>  
 #include <signal.h>
 #include <queue>
 #include <ros/ros.h>
@@ -74,14 +74,15 @@ int main(int argc, char **argv)
   ros::init(argc, argv, "ap20_timecorrection");
   ros::NodeHandle n;
 
-  ros::Publisher ap20_imu_pub = n.advertise<sensor_msgs::Imu>("~imu", 1000);
-  ros::Publisher ap20_position_pub = n.advertise<geometry_msgs::PointStamped>("~prism_position", 100);
+  ros::Publisher ap20_imu_pub = n.advertise<sensor_msgs::Imu>("/gt_box/ap20/imu", 1000);
+  ros::Publisher ap20_position_pub = n.advertise<geometry_msgs::PointStamped>("/gt_box/ap20/prism_position", 100);
 
   ros::Subscriber imu_sub = n.subscribe("/ap20/imu", 1000, imu_callback);
   ros::Subscriber position_sub = n.subscribe("/ap20/tps", 100, position_callback);
   ros::Rate loop_rate(200);
 
   // Call service to start AP20 IMU
+  sleep(5.0); // Sleep that the command in 'ap20_start_rosrover.sh' finishes
   std::string start_imu_command = "rosservice call /ap20/enable_streaming \"{data: true}\"";
   int result = system(start_imu_command.c_str());
   if (result == 0) {
