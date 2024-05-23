@@ -71,15 +71,25 @@ int main(int argc, char **argv)
   // empty old timestamps from previous measurements
   while(!read_timestamps().empty()) {}
 
-  ros::init(argc, argv, "ap20_trigger");
+  ros::init(argc, argv, "ap20_timecorrection");
   ros::NodeHandle n;
 
   ros::Publisher ap20_imu_pub = n.advertise<sensor_msgs::Imu>("~imu", 1000);
   ros::Publisher ap20_position_pub = n.advertise<geometry_msgs::PointStamped>("~prism_position", 100);
 
-  ros::Subscriber imu_sub = n.subscribe("/box_gt/ap20/imu/data_raw", 1000, imu_callback);
-  ros::Subscriber position_sub = n.subscribe("/box_gt/ap20/leica/position", 1000, position_callback);
+  ros::Subscriber imu_sub = n.subscribe("/ap20/imu", 1000, imu_callback);
+  ros::Subscriber position_sub = n.subscribe("/ap20/tps", 100, position_callback);
   ros::Rate loop_rate(200);
+
+  // Call service to start AP20 IMU
+  std::string start_imu_command = "rosservice call /ap20/enable_streaming \"{data: true}\"";
+  int result = system(start_imu_command.c_str());
+  if (result == 0) {
+    std::cout << "IMU started successfully." << std::endl;
+  } else {
+    std::cerr << "Startung IMU failed, execution failed with code " << result << std::endl;
+    return result;
+  }
 
   while (ros::ok())
   {
@@ -135,6 +145,16 @@ int main(int argc, char **argv)
     }
     ros::spinOnce();
     loop_rate.sleep();
+  }
+  
+  // Call service to stop AP20 IMU
+  std::string stop_imu_command = "rosservice call /ap20/enable_streaming \"{data: false}\"";
+  result = system(stop_imu_command.c_str());
+  if (result == 0) {
+    std::cout << "IMU stopped successfully." << std::endl;
+  } else {
+    std::cerr << "Stopping IMU failed, execution failed with code " << result << std::endl;
+    return result;
   }
   return 0;
 }
