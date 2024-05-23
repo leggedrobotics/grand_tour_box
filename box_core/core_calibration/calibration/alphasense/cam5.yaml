@@ -1,6 +1,6 @@
 image_width: 1440
 image_height: 1080
-camera_name: alphasense_cam0
+camera_name: alphasense_cam5
 camera_matrix:
   rows: 3
   cols: 3
