@@ -47,7 +47,7 @@ camera_config: &camera_1_config
   rotate_image: false               # true/false
 
   # Force exposure parameters of stereo-pairs to be equal.
-  autoexp_master_camera_index: 0
+  autoexp_master_camera_index: 3
 
 ncamera:
   # Measurement rates.
@@ -69,7 +69,7 @@ ncamera:
   cams:
 #   0: *standard_camera_config      # Port broken?
     1: *standard_camera_config      # Front middle
-    2: *standard_camera_config      # Front right
+    2: *camera_1_config      # Front right
     3: *standard_camera_config      # Front left
     4: *standard_camera_config      # Left 
     5: *standard_camera_config      # Right

@@ -1,14 +1,16 @@
 jetson:
   utils:
-    - /gt_box/alphasense_driver_node/imu
     - /gt_box/health_status/jetson
   zed2i:
     - svo # SVO recording, not rosbag. Mutually exclusive: won't record zed ros topics if svo is set here.
   ap20:
-    - /gt_box/ap20/ap20_imu
-    - /gt_box/ap20/prism_position
-    - /ap20/tps
+    - /ap20/data/imu
+    - /ap20/data/tps
     - /ap20/imu
+    - /ap20/mag
+    - /ap20/tps
+    - /gt_box/ap20/imu
+    - /gt_box/ap20/prism_position
   tf:
     - /tf_static
     - /tf
@@ -24,7 +26,6 @@ nuc:
   utils:
     - /gt_box/stim320/imu
     - /gt_box/adis16475/imu
-    - /gt_box/livox/imu
     - /gt_box/health_status/nuc
   hesai:
     - /gt_box/hesai/packets

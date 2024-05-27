@@ -9,16 +9,24 @@ def add_arguments(parser):
 
 
 def main(args):
-    rsync_part1 = "rsync -r --progress " + USERNAME + "@"
-    rsync_part2 = ":/data/* ."
-    hosts = []
-    if args.jetson:
-        hosts.append("jetson")
-    if args.nuc:
-        hosts.append("nuc")
-    if len(hosts) == 0:
-        print("No host specified. Specify host with --hostname")
-    for host in hosts:
-        cmd = f"{rsync_part1}{host}{rsync_part2}"
-        print(cmd)
-        shell_run(cmd)
+    for d in ["1980", "2024"]:
+        rsync_part1 = "rsync -r --progress " + USERNAME + "@"
+        rsync_part2 = f":/data/{d}* ."
+        hosts = []
+        if args.jetson:
+            hosts.append("jetson")
+        if args.nuc:
+            hosts.append("nuc")
+        if len(hosts) == 0:
+            print("No host specified. Specify host with --hostname")
+        for host in hosts:
+            cmd = f"{rsync_part1}{host}{rsync_part2}"
+            print(cmd)
+            shell_run(cmd)
+            
+            if host == "jetson":
+                rsync_part1 = "rsync -r --progress " + USERNAME + "@"
+                rsync_part2 = f":/data/workspaces/isaac_ros-dev/mission_data/{d}**.mcap ."
+                cmd = f"{rsync_part1}jetson{rsync_part2}"
+                print(cmd)
+                shell_run(cmd)
