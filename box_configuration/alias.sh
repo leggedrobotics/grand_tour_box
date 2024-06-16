@@ -8,6 +8,9 @@ alias l-pi='tmuxp load /home/rsl/git/grand_tour_box/box_launch/tmux/pi_recording
 alias l-jetson='tmuxp load $(rospack find box_launch)/../tmux/jetson_recording.yaml'
 alias l-opc='tmuxp load $(rospack find box_launch)/../tmux/opc_recording.yaml'
 alias l-replay='tmuxp load $(rospack find box_launch)/../tmux/opc_replay.yaml'
+# Launch modes that don't allow for recording
+alias l-jetson-viz='tmuxp load $(rospack find box_launch)/../tmux/jetson_visualization.yaml'
+
 alias attach-nuc='tmux attach-session -t nuc'
 alias attach-jetson='tmux attach-session -t jetson'
 alias attach-pi='tmux attach-session -t pi'

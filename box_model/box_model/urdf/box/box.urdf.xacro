@@ -85,7 +85,7 @@
   </link>
   <joint name="prism_to_prism_model" type="fixed">
     <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
-    <parent link="box_base" />
+    <parent link="prism" />
     <child link="prism_model" />    
   </joint>
 
