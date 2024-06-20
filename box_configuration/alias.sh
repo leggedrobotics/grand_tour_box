@@ -15,6 +15,7 @@ alias attach-nuc='tmux attach-session -t nuc'
 alias attach-jetson='tmux attach-session -t jetson'
 alias attach-pi='tmux attach-session -t pi'
 alias l-docker='/home/rsl/git/grand_tour_box/box_configuration/pi/docker/run.sh'
+alias l-docker-jetson='/data/workspaces/isaac_ros-dev/src/isaac_ros_common/scripts/run_recording.sh'
 alias silence='systemctl start pigpiod.service; systemctl start autostart_set_fan_speed.service'
 
 start-recording(){

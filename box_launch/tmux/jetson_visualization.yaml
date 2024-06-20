@@ -24,12 +24,10 @@ windows:
           use_gui:=false
     - shell_command:
       - sleep 1
-      - l-docker
-      - hdr_start
+      - /data/workspaces/isaac_ros-dev/src/isaac_ros_common/scripts/run_recording.sh -c hdr_start
     - shell_command:
       - sleep 5
-      - l-docker
-      - ros1_bridge_start
+      - /data/workspaces/isaac_ros-dev/src/isaac_ros_common/scripts/run_recording.sh -c ros1_bridge_start
     - shell_command:
       - source /opt/ros/noetic/setup.bash
       - source ~/catkin_ws/devel/setup.bash
