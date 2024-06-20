@@ -19,7 +19,7 @@ jetson:
     - /gt_box/hdr_camera_front/image_raw/compressed
     - /gt_box/hdr_camera_right/camera_info
     - /gt_box/hdr_camera_right/image_raw/compressed
-    
+  
 nuc:
   utils:
     - /gt_box/stim320/imu
@@ -43,3 +43,35 @@ nuc:
     - /gt_box/alphasense_driver_node/cam4/color/camera_info
     - /gt_box/alphasense_driver_node/cam5/color/image/compressed
     - /gt_box/alphasense_driver_node/cam5/color/camera_info
+    - /gt_box/alphasense_driver_node/debug_info
+    - /gt_box/alphasense_driver_node/imu
+    - /gt_box/alphasense_driver_node/ncamera_is_standby
+    - /gt_box/alphasense_driver_node/serial_number
+
+  cpt7:
+    - /gt_box/cpt7/bestgnsspos
+    - /gt_box/cpt7/bestpos
+    - /gt_box/cpt7/bestutm
+    - /gt_box/cpt7/bestvel
+    - /gt_box/cpt7/corrimu
+    - /gt_box/cpt7/gps/fix
+    - /gt_box/cpt7/gps/gps
+    - /gt_box/cpt7/gps/imu
+    - /gt_box/cpt7/heading2
+    - /gt_box/cpt7/imu/data_raw
+    - /gt_box/cpt7/insconfig
+    - /gt_box/cpt7/inspva
+    - /gt_box/cpt7/inspvax
+    - /gt_box/cpt7/insstdev
+    - /gt_box/cpt7/odom
+    - /gt_box/cpt7/oem7raw
+    - /gt_box/cpt7/ppppos
+    - /gt_box/cpt7/rxstatus
+    - /gt_box/cpt7/terrastarinfo
+    - /gt_box/cpt7/terrastarstatus
+    - /gt_box/cpt7/time
+  clock:
+    - /clock
+  tf:
+    - /tf
+    - /tf_static
