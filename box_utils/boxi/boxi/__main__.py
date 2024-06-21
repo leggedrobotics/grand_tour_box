@@ -15,7 +15,6 @@ command_register = [
     "launch_on_host",
     "push",
     "ptp_restart",
-    "set_gps_time",
     "set_time_from_opc",
     "git_set_user",
     "shutdown",
