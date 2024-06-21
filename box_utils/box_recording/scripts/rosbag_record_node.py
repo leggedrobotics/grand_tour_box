@@ -183,7 +183,7 @@ class RosbagRecordNode(object):
             # TODO: Replace with proper system after testing
             if bag_name == "hdr":
                 docker_script_path = "/data/workspaces/isaac_ros-dev/src/isaac_ros_common/scripts/run_recording.sh"
-                bash_command = f"{docker_script_path} -c start_recording {timestamp}"
+                bash_command = f"{docker_script_path} -c \"start_recording {timestamp} {topics}\""
 
             self.processes.append(subprocess.Popen(bash_command, shell=True, stderr=subprocess.PIPE))
             self.bag_running = True

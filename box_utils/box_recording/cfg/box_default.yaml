@@ -13,7 +13,12 @@ jetson:
     - /tf_static
     - /tf
   hdr:
-    - /test # These are done by ros2 now. TODO: Map the topics here to ROS2.
+    - /gt_box/hdr_center/image_compressed
+    - /gt_box/hdr_center/camera_info
+    - /gt_box/hdr_left/image_compressed
+    - /gt_box/hdr_left/camera_info
+    - /gt_box/hdr_right/image_compressed
+    - /gt_box/hdr_right/camera_info
   
 nuc:
   utils:

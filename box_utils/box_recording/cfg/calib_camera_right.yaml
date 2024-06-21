@@ -7,7 +7,8 @@ nuc:
   utils:
     - /gt_box/health_status/nuc
   hdr:
-    - /gt_box/hdr_camera_right/image_raw/compressed
+    - /gt_box/hdr_right/image_compressed
+    - /gt_box/hdr_right/camera_info
 opc:
   utils:
     - /gt_box/health_status/opc
