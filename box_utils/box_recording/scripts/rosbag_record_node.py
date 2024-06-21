@@ -38,7 +38,6 @@ class RosbagRecordNode(object):
 
         self.bag_running = False
         self.recording_zed = False
-        self.recording_hdr_ros2 = False
         default_path = rospkg.RosPack().get_path("box_recording") + "/data"
         self.data_path = rospy.get_param("~data_path", default_path)
 
@@ -67,7 +66,7 @@ class RosbagRecordNode(object):
             if self.bag_running:
                 p = self.bag_base_path
             else:
-                p = os.path.expanduser("~")
+                p = self.data_path
 
             if os.path.exists(p):
                 free_disk_space_in_gb = shutil.disk_usage(p)[2] / 1000000000
@@ -81,7 +80,7 @@ class RosbagRecordNode(object):
                 time.sleep(30)
                 exit - 1
             else:
-                rospy.loginfo(f"[RosbagRecordNode({self.node})] Free disk space: " + str(free_disk_space_in_gb) + " GB")
+                rospy.loginfo(f"[RosbagRecordNode({self.node})] Free disk space: " + str(free_disk_space_in_gb) + " GB in " + p + ".")
 
             self.pub_disk_space_free_in_gb.publish(free_disk_space_in_gb)
             self.pub_recording_status.publish(self.bag_running)
@@ -93,28 +92,30 @@ class RosbagRecordNode(object):
         for sub_process in process.children(recursive=True):
             sub_process.send_signal(signal.SIGINT)
         p.wait()
-
-    def start_ros2_bag_record(self, run_name):
-        """
-        Attaches to a Docker container and starts recording ROS2 bag files.
         
-        Args:
-        run_name (str): The name to be used for the ROS2 bag recording.
-        """
-        container_name = "isaac_ros_dev-aarch64-container"
-        command = f"docker exec -d {container_name} /bin/bash -c 'source install/setup.bash; ros2 bag record -s mcap /gt_box/hdr_left/image_raw/compressed /gt_box/hdr_right/image_raw/compressed /gt_box/hdr_center/image_raw/compressed -o ./{run_name}'"
-        subprocess.run(command, shell=True)
-        print(f"Started recording ROS2 bag with run name: {run_name}")
+    def terminate_process_inside_docker(self, process_name="ros2 bag"):
+        docker_container_name = "isaac_ros_dev-aarch64-container-recording"
+        # Command to find the PID of the "ros2 bag" process within the Docker container
+        command_find_pid = f"docker exec {docker_container_name} bash -c 'ps aux | grep \"{process_name}\" | grep -v grep | awk \"{{print \\$2}}\"'"
+        # Execute the command to find the PID
+        proc = subprocess.Popen(command_find_pid, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, stderr = proc.communicate()
+        pid = stdout.decode().strip()
 
-    def stop_ros2_bag_record(self):
-        """
-        Attaches to the Docker container and gracefully stops the ROS2 bag recording process.
-        """
-        container_name = "isaac_ros_dev-aarch64-container"
-        command = f"docker exec {container_name} /bin/bash -c 'pkill -f \"ros2 bag record\"'"
-        subprocess.run(command, shell=True)
-        print("Stopped recording ROS2 bag")
-    
+        if pid:
+            # Command to kill the process with the found PID in the Docker container
+            command_kill_pid = f"docker exec {docker_container_name} bash -c 'kill {pid}'"
+
+            # Execute the kill command
+            kill_proc = subprocess.Popen(command_kill_pid, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            _, kill_stderr = kill_proc.communicate()
+
+            if kill_proc.returncode == 0:
+                rospy.loginfo(f"[RosbagRecordNode({self.node})] {process_name} Docker process killed successfully.")
+            else:
+                rospy.logerr(f"[RosbagRecordNode({self.node})] Failed to kill process {process_name}. Error: {kill_stderr.decode()}")
+        else:
+            rospy.loginfo(f"[RosbagRecordNode({self.node})] No PID found for process {process_name}. Error: {stderr.decode()}")
         
     def toggle_zed_recording(self, start, timestamp, response):
         service_name = self.namespace + '/zed2i_recording_driver/start_recording_svo'
@@ -171,12 +172,6 @@ class RosbagRecordNode(object):
         response.message = f"Starting rosbag recording process."
         
         for bag_name, topics in bag_configs.items():
-            # TODO: Replace with proper system after testing
-            if bag_name == "hdr":
-                self.start_ros2_bag_record(self.bag_base_path)
-                self.recording_zed = True
-                response.message += "HDR on Ros2 Start Signal Sent, "
-                continue
             if bag_name == "zed2i" and "svo" in topics:
                 # If we are recording svo files instead of rosbags for the zed, we need to call the svo recording service.
                 response = self.toggle_zed_recording(True, timestamp, response)
@@ -185,6 +180,10 @@ class RosbagRecordNode(object):
             bash_command = (
                 f"rosrun box_recording record_bag.sh {bag_path} {topics} __name:=record_{self.node}_{bag_name}"
             )
+            # TODO: Replace with proper system after testing
+            if bag_name == "hdr":
+                docker_script_path = "/data/workspaces/isaac_ros-dev/src/isaac_ros_common/scripts/run_recording.sh"
+                bash_command = f"{docker_script_path} -c start_recording {timestamp}"
 
             self.processes.append(subprocess.Popen(bash_command, shell=True, stderr=subprocess.PIPE))
             self.bag_running = True
@@ -208,6 +207,9 @@ class RosbagRecordNode(object):
             response.suc = False
             response.message = "No recording process running yet."
             rospy.logwarn("[RosbagRecordNode(" + self.node + ")] No recording process running yet.")
+            
+        # First kill the recording process inside Docker. This ugliness is required due to https://github.com/moby/moby/issues/9098
+        self.terminate_process_inside_docker()
 
         for p in self.processes:
             self.terminate_process_and_children(p)
@@ -215,9 +217,6 @@ class RosbagRecordNode(object):
         
         if self.recording_zed:
             response = self.toggle_zed_recording(False, "", response)
-
-        if self.recording_hdr_ros2:
-            self.stop_ros2_bag_record()
 
         if request.verbose:
             # output = subprocess.check_output([f"rosbag info --freq {self.bag_path}*.bag"], shell=True)
