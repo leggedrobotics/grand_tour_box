@@ -22,6 +22,30 @@ camera_config: &standard_camera_config
   # Extra configuration.
   rotate_image: false               # true/false
 
+camera_config: &standard_camera_config_rotated
+  # Exposure control.
+  manual_exp_time_us: 10000         # 10 - 65000
+  auto_exposure_enabled: true       # true/false
+  min_exp_time_us: 50               # 10 - 65000
+  max_exp_time_us: 10000            # 10 - 65000
+  autoexp_speed: 10                 # 1 - 10
+  autoexp_target_median: 70         # 0 - 255
+
+  # Gain control.
+  auto_gain_enabled: false          # true/false
+  autoexp_max_gain : 255            # 0 - 255
+  manual_gain: 1                    # 0 - 255
+
+  # Auto exposure ROI control.
+  auto_exposure_roi_enabled: false  # true/false
+  autoexp_start_row: 0              # 0 - 539/1079
+  autoexp_end_row: -1               # -1 - 539/1079
+  autoexp_start_col: 0              # 0 - 719/1439
+  autoexp_end_col: -1               # -1 - 719/1439
+
+  # Extra configuration.
+  rotate_image: true               # true/false
+
 camera_config: &camera_1_config
   # Exposure control.
   manual_exp_time_us: 10000         # 10 - 65000
@@ -71,5 +95,5 @@ ncamera:
     1: *standard_camera_config      # Front middle
     2: *standard_camera_config      # Front right
     3: *standard_camera_config      # Front left
-    4: *standard_camera_config      # Left 
-    5: *standard_camera_config      # Right
+    4: *standard_camera_config_rotated      # Left 
+    5: *standard_camera_config_rotated      # Right

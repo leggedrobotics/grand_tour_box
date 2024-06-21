@@ -59,11 +59,46 @@ private:
         }
     }
 
+    bool validateFramerateForResolution(const std::string& resolution, const int fps){
+        if (resolution == "VGA") {
+            if (fps == 15 || fps == 30 || fps == 60 || fps == 100) {
+                return true;
+            }
+            return false;
+        } else if (resolution == "HD720") {
+            if (fps == 15 || fps == 30 || fps == 60) {
+                return true;
+            }
+            return false;
+        } else if (resolution == "HD1080") {
+            if (fps == 15 || fps == 30) {
+                return true;
+            }
+            return false;
+        } else if (resolution == "HD2K") {
+            if (fps == 15) {
+                return true;
+            }
+            return false;
+        } else {
+            ROS_WARN("Unknown resolution setting '%s'. Defaulting to HD1080.", resolution.c_str());
+            if (fps == 15 || fps == 30) {
+                return true;
+            }
+            return false;
+        }
+    }
+
     void openCamera() {
         std::string camera_resolution;
         nh_.param<std::string>("camera_resolution", camera_resolution, "HD1080");
         int camera_fps;
         nh_.param<int>("camera_fps", camera_fps, 30);
+        if (!validateFramerateForResolution(camera_resolution, camera_fps)) {
+            ROS_FATAL("Invalid framerate for resolution. Shutting down the node.");
+            ros::shutdown();
+            return;
+        }
 
         sl::InitParameters init_params;
         init_params.camera_resolution = getResolutionFromString(camera_resolution);
