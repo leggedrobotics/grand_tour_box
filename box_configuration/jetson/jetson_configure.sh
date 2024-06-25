@@ -117,7 +117,7 @@ sudo cp /home/rsl/git/grand_tour_box/box_configuration/jetson/phc2sys_mgbe0.serv
 sudo cp /home/rsl/git/grand_tour_box/box_configuration/jetson/phc2sys_mgbe1.service /lib/systemd/system/phc2sys_mgbe1.service
 sudo systemctl daemon-reload
 sudo systemctl disable sync_time_once
-sudo systemctl disable jetson_clocks_once
+sudo systemctl enable jetson_clocks_once
 sudo systemctl enable ptp4l_mgbe0
 sudo systemctl enable ptp4l_mgbe1
 sudo systemctl enable phc2sys_mgbe0

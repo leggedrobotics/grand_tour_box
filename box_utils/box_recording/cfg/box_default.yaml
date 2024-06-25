@@ -13,11 +13,11 @@ jetson:
     - /tf_static
     - /tf
   hdr:
-    - /gt_box/hdr_center/image_compressed
+    - /gt_box/hdr_center/image_raw/compressed
     - /gt_box/hdr_center/camera_info
-    - /gt_box/hdr_left/image_compressed
+    - /gt_box/hdr_left/image_raw/compressed
     - /gt_box/hdr_left/camera_info
-    - /gt_box/hdr_right/image_compressed
+    - /gt_box/hdr_right/image_raw/compressed
     - /gt_box/hdr_right/camera_info
   
 nuc:
