@@ -7,4 +7,5 @@
   <include file="$(find box_recording)/launch/rosbag_record_node.launch">  </include>
   <include file="$(find bringup_zed2i_visualization)/launch/zed2i_visualization.launch"> </include>
   <include file="$(find box_throttling)/launch/throttle_jetson.launch">  </include>
+  <include file="$(find box_relaying)/launch/relay_jetson.launch">  </include>
 </launch>
