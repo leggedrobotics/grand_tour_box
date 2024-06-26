@@ -20,7 +20,8 @@ command_register = [
     "shutdown",
     "load_calib",
     "mission_summary",
-    "integration_test"
+    "integration_test",
+    "set_cpt7_time",
 ]
 
 
