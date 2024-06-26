@@ -98,10 +98,19 @@ sudo systemctl start pigpiod
 
 # Installing ADIS timestamping - kernel modules add persistent
 sudo apt install -y raspberrypi-kernel-headers
-cd /home/rsl/git/grand_tour_box/box_drivers/adis16475_driver/adis16475_kernel_module
 make
 cd /home/rsl/git/grand_tour_box/box_drivers/adis16475_driver/adis16475_kernel_module
-sudo insmod time_stamper_adis.ko
+sudo insmod time_stamper_gpio27.ko
+# To make the kernel module persistent over reboots:
+# copy kernel module to kernel 
+sudo cp time_stamper_gpio27.ko /lib/modules/$(uname -r)/
+#  re-create the module dependency list 
+sudo depmod
+# add to modules to load at boot time 
+echo 'time_stamper_gpio27' | sudo tee -a /etc/modules
+#load kernel module 
+modprobe time_stamper_gpio27
+
 
 
 # Installing docker
