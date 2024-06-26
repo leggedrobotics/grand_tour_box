@@ -44,8 +44,9 @@ def main(args):
                 # Receive response (if any)
                 response = s.recv(1024)        
                 # Try to decode the response as UTF-8
-                print(response)
+                print(response[:7].decode('utf-8'))
         except Exception as e:
             print(f"An error occurred: {e}")
 
     send_cmd(command)
+    send_cmd("LOG TIME")
