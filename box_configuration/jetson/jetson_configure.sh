@@ -101,7 +101,7 @@ echo '' >> ~/.bashrc
 # Prepend to .bashrc so that they still run when we are ssh'd into the PCs (when the interactive session is not started)
 echo 'source /opt/ros/noetic/setup.bash' | cat - ~/.bashrc > temp && mv temp ~/.bashrc
 echo 'source /home/rsl/catkin_ws/devel/setup.bash' | cat - ~/.bashrc > temp && mv temp ~/.bashrc
-echo 'source /home/rsl/git/grand_tour_box/box_configuration/alias.sh' | cat - ~/.bashrc > temp && mv temp ~/.bashrc
+echo 'source /home/rsl/git/grand_tour_box/box_configuration/jetson/alias.sh' | cat - ~/.bashrc > temp && mv temp ~/.bashrc
 
 # autostart tmux
 sudo cp ~/git/grand_tour_box/box_configuration/jetson/autostart_tmux.service /etc/systemd/system/autostart_tmux.service
@@ -122,6 +122,10 @@ sudo systemctl enable ptp4l_mgbe0
 sudo systemctl enable ptp4l_mgbe1
 sudo systemctl enable phc2sys_mgbe0
 sudo systemctl enable phc2sys_mgbe1
+
+# sync clocks script
+sudo cp /home/rsl/git/grand_tour_box/box_configuration/jetson/sync_clocks_jetson.sh /usr/local/bin/
+sudo chmod +x /usr/local/bin/sync_clocks_jetson.sh
 
 # Remove it then from boot
 sudo apt install ntp

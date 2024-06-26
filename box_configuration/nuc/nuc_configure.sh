@@ -5,7 +5,7 @@ echo '' >> ~/.bashrc
 # Prepend to bashrc so that they still run when we are ssh'd into the PCs (when the interactive session is not started).
 echo 'source /opt/ros/noetic/setup.bash' | cat - ~/.bashrc > temp && mv temp ~/.bashrc
 echo 'source /home/rsl/catkin_ws/devel/setup.bash' | cat - ~/.bashrc > temp && mv temp ~/.bashrc
-echo 'source /home/rsl/git/grand_tour_box/box_configuration/alias.sh' | cat - ~/.bashrc > temp && mv temp ~/.bashrc
+echo 'source /home/rsl/git/grand_tour_box/box_configuration/nuc/alias.sh' | cat - ~/.bashrc > temp && mv temp ~/.bashrc
 
 # netplan
 cp /home/rsl/git/grand_tour_box/box_configuration/nuc/01-network-manager-all.yaml /etc/netplan/01-network-manager-all.yaml
@@ -24,6 +24,10 @@ sudo systemctl enable phc2sys_enp45s0
 sudo systemctl enable phc2sys_enp46s0
 sudo systemctl enable ptp4l_enp45s0
 sudo systemctl enable ptp4l_enp46s0
+
+# sync clocks script
+sudo cp /home/rsl/git/grand_tour_box/box_configuration/nuc/sync_clocks_nuc.sh /usr/local/bin/
+sudo chmod +x /usr/local/bin/sync_clocks_nuc.sh
 
 cp /home/rsl/git/grand_tour_box/box_configuration/nuc/99-GMSL-kit.rules /etc/udev/rules.d/
 cp /home/rsl/git/grand_tour_box/box_configuration/nuc/99-hdr-camera.rules /etc/udev/rules.d/

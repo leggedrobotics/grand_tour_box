@@ -138,7 +138,7 @@ Getting Started
 - restart chrony `systemctl restart chrony.service `
 
 ##### Few pointers:
-- many useful aliases are defined in grand_tour_box/box_configuration/alias.sh
+- many useful aliases are defined in grand_tour_box/box_configuration/<PC>/alias.sh
 - clock problems? restart with `restart-clocks-box`, `restart-clocks-jetson` or `restart-clocks-nuc` from opc
 
 ### Using boxi
