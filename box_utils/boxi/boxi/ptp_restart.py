@@ -1,5 +1,6 @@
 from boxi import LOCAL_HOSTNAME, shell_run
-import subprocess
+import socket
+import time
 
 def add_arguments(parser):
     parser.set_defaults(main=main)
@@ -22,15 +23,14 @@ def main(args):
             hosts.append(LOCAL_HOSTNAME)
 
     for host in  hosts:   
-        print("Restarting PTP and phc2sys on", host)
+        print("Restarting PTP and phc2sys on ", host)
         if host == LOCAL_HOSTNAME:
             cmd = "sync-clocks"
             print(cmd)
             shell_run(cmd)
                 
         else:
-            cmd = f"ssh -o ConnectTimeout=4 rsl@{host} -t bash -ci 'sync-clocks; sleep 1'"
-            proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, text=True)
-            output, errors = proc.communicate(input='rsl\n')
-            print(output)
+            cmd = f"ssh -o ConnectTimeout=4 rsl@{host} -t bash -ci sync-clocks"
+            print(cmd)
+            shell_run(cmd)
             
