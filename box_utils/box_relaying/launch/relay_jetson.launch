@@ -1,0 +1,28 @@
+<launch>
+  <param name="capability_group" value="Visualization"/>
+  <arg name="calibration" default="no"/>
+  <arg name="box_namespace" default="gt_box"/>
+
+  <group ns="$(arg box_namespace)">
+
+    <!-- <node name="hdr_left_relayer" type="relay" pkg="topic_tools" args="/gt_box/hdr_left/image_raw /gt_box/hdr_left/image_raw/opc" > 
+      <param name="capability_group" value="Relaying"/>
+    </node>
+    <node name="hdr_right_relayer" type="relay" pkg="topic_tools" args="/gt_box/hdr_right/image_raw /gt_box/hdr_right/image_raw/opc" > 
+      <param name="capability_group" value="Relaying"/>
+    </node>
+    <node name="hdr_center_relayer" type="relay" pkg="topic_tools" args="/gt_box/hdr_center/image_raw /gt_box/hdr_center/image_raw/opc" > 
+      <param name="capability_group" value="Relaying"/>
+    </node> -->
+    <node name="hdr_left_compressed_relayer" type="relay" pkg="topic_tools" args="/gt_box/hdr_left/image_raw/compressed /gt_box/hdr_opc/left/image_raw/compressed" > 
+      <param name="capability_group" value="Relaying"/>
+    </node>
+    <node name="hdr_right_compressed_relayer" type="relay" pkg="topic_tools" args="/gt_box/hdr_right/image_raw/compressed /gt_box/hdr_opc/right/image_raw/compressed" > 
+      <param name="capability_group" value="Relaying"/>
+    </node>
+    <node name="hdr_center_compressed_relayer" type="relay" pkg="topic_tools" args="/gt_box/hdr_center/image_raw/compressed /gt_box/hdr_opc/center/image_raw/compressed" > 
+      <param name="capability_group" value="Relaying"/>
+    </node>
+    
+  </group>
+</launch>
