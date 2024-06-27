@@ -11,6 +11,9 @@ def add_arguments(parser):
 
 
 def main(args):
+    if LOCAL_HOSTNAME is not "opc":
+        print("This script should be run on the opc")
+        return
     if args.all:
         hosts = ["jetson", "nuc"]
     else:
@@ -19,8 +22,6 @@ def main(args):
             hosts.append("jetson")
         if args.nuc:
             hosts.append("nuc")
-        if len(hosts) == 0:
-            hosts.append(LOCAL_HOSTNAME)
 
     for host in  hosts:   
         print("Restarting PTP and phc2sys on ", host)
@@ -33,4 +34,7 @@ def main(args):
             cmd = f"ssh -o ConnectTimeout=4 rsl@{host} -t bash -ci sync-clocks"
             print(cmd)
             shell_run(cmd)
+            
+    chrony_restart = "sudo systemctl restart chrony.service"
+    shell_run(chrony_restart)
             
