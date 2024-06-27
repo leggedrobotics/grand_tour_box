@@ -22,6 +22,7 @@ command_register = [
     "mission_summary",
     "integration_test",
     "set_cpt7_time",
+    "convert_mcap",
 ]
 
 

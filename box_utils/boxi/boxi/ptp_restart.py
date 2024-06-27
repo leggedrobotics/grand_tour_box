@@ -32,6 +32,7 @@ def main(args):
             print(cmd)
             shell_run(cmd)
             
+    print("Restarting chrony on OPC")
     if LOCAL_HOSTNAME == "opc":
         chrony_restart = "sudo systemctl restart chrony.service"
         shell_run(chrony_restart)
