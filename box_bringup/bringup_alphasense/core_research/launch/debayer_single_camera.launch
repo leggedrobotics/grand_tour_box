@@ -19,12 +19,12 @@
   <!-- Modules -->
   <arg name="debayer/enabled"                      default="true"/>
   <arg name="flip/enabled"                         default="false"/>
-  <arg name="white_balance/enabled"                default="true"/>
+  <arg name="white_balance/enabled"                default="false"/>
   <arg name="color_calibration/enabled"            default="false"/>
   <arg name="gamma_correction/enabled"             default="false"/>
   <arg name="vignetting_correction/enabled"        default="false"/>
   <arg name="color_enhancer/enabled"               default="false"/>
-  <arg name="undistortion/enabled"                 default="true"/>
+  <arg name="undistortion/enabled"                 default="false"/>
 
   <!-- Camera -->
   <!-- Debayer  -->
