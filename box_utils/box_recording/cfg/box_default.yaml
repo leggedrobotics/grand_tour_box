@@ -28,7 +28,6 @@ nuc:
     - /gt_box/health_status/nuc
   hesai:
     - /gt_box/hesai/packets
-    - /gt_box/hesai/points
   livox:
     - /gt_box/livox/imu
     - /gt_box/livox/lidar
