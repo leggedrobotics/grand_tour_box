@@ -19,8 +19,6 @@ def main(args):
             hosts.append("jetson")
         if args.nuc:
             hosts.append("nuc")
-        if len(hosts) == 0:
-            hosts.append(LOCAL_HOSTNAME)
 
     for host in  hosts:   
         print("Restarting PTP and phc2sys on ", host)
@@ -34,3 +32,9 @@ def main(args):
             print(cmd)
             shell_run(cmd)
             
+    if LOCAL_HOSTNAME == "opc":
+        chrony_restart = "sudo systemctl restart chrony.service"
+        shell_run(chrony_restart)
+    else:
+        chrony_restart = f"ssh -o ConnectTimeout=4 rsl@opc -t bash -ci 'sudo systemctl restart chrony.service'"
+        shell_run(chrony_restart)            
