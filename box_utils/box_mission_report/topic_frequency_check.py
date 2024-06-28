@@ -2,6 +2,9 @@ import rosbag
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+import pathlib
+import argparse
+
 
 def read_rosbag_and_generate_histograms(rosbag_path, output_dir, name, skip_same_timestamps=True):
     # Ensure the output directory exists
@@ -98,11 +101,18 @@ def read_rosbag_and_generate_histograms(rosbag_path, output_dir, name, skip_same
 
     print(f"   Histograms saved to {output_file}")
 
-import pathlib
-# Example usage
-rosbag_paths = [str(s) for s in pathlib.Path("/Data/GrandTour/shakedown_27_06_2024/2024-06-27-12-54-04/").rglob('*.bag')]
-output_dir = 'output_histograms'
+# Function to parse command-line arguments
+def parse_arguments():
+    parser = argparse.ArgumentParser(description="Generate histograms from rosbag files.")
+    parser.add_argument('--folder', type=str, help="Directory containing rosbag files.")
+    return parser.parse_args()
 
-for rosbag_path in rosbag_paths:
-    name = rosbag_path.split('/')[-1].split('.')[0]
-    read_rosbag_and_generate_histograms(rosbag_path, output_dir, name)
+if __name__ == '__main__':
+    # Example usage
+    args = parse_arguments()
+    rosbag_paths = [str(s) for s in pathlib.Path(args.folder).rglob('*.bag')]
+    output_dir = 'reports'
+
+    for rosbag_path in rosbag_paths:
+        name = rosbag_path.split('/')[-1].split('.')[0]
+        read_rosbag_and_generate_histograms(rosbag_path, output_dir, name)

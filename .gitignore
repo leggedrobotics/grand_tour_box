@@ -6,3 +6,4 @@
 wifi_config.ini
 .DS_Store
 box_utils/box_recording/data
+box_utils/box_mission_report/reports*
