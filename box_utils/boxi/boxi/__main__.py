@@ -21,7 +21,8 @@ command_register = [
     "load_calib",
     "mission_summary",
     "integration_test",
-    "repair_bags"
+    "repair_bags",
+    "set_cpt7_time",
 ]
 
 

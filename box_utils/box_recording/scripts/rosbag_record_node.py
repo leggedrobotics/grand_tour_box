@@ -11,6 +11,8 @@ import signal
 import os
 import rosparam
 import shutil
+import subprocess
+import time
 from pathlib import Path
 from std_msgs.msg import Bool
 from std_msgs.msg import Float32
@@ -64,7 +66,7 @@ class RosbagRecordNode(object):
             if self.bag_running:
                 p = self.bag_base_path
             else:
-                p = os.path.expanduser("~")
+                p = self.data_path
 
             if os.path.exists(p):
                 free_disk_space_in_gb = shutil.disk_usage(p)[2] / 1000000000
@@ -78,7 +80,7 @@ class RosbagRecordNode(object):
                 time.sleep(30)
                 exit - 1
             else:
-                rospy.loginfo(f"[RosbagRecordNode({self.node})] Free disk space: " + str(free_disk_space_in_gb) + " GB")
+                rospy.loginfo(f"[RosbagRecordNode({self.node})] Free disk space: " + str(free_disk_space_in_gb) + " GB in " + p + ".")
 
             self.pub_disk_space_free_in_gb.publish(free_disk_space_in_gb)
             self.pub_recording_status.publish(self.bag_running)
@@ -90,6 +92,30 @@ class RosbagRecordNode(object):
         for sub_process in process.children(recursive=True):
             sub_process.send_signal(signal.SIGINT)
         p.wait()
+        
+    def terminate_process_inside_docker(self, process_name="ros2 bag"):
+        docker_container_name = "isaac_ros_dev-aarch64-container-recording"
+        # Command to find the PID of the "ros2 bag" process within the Docker container
+        command_find_pid = f"docker exec {docker_container_name} bash -c 'ps aux | grep \"{process_name}\" | grep -v grep | awk \"{{print \\$2}}\"'"
+        # Execute the command to find the PID
+        proc = subprocess.Popen(command_find_pid, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, stderr = proc.communicate()
+        pid = stdout.decode().strip()
+
+        if pid:
+            # Command to kill the process with the found PID in the Docker container
+            command_kill_pid = f"docker exec {docker_container_name} bash -c 'kill {pid}'"
+
+            # Execute the kill command
+            kill_proc = subprocess.Popen(command_kill_pid, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            _, kill_stderr = kill_proc.communicate()
+
+            if kill_proc.returncode == 0:
+                rospy.loginfo(f"[RosbagRecordNode({self.node})] {process_name} Docker process killed successfully.")
+            else:
+                rospy.logerr(f"[RosbagRecordNode({self.node})] Failed to kill process {process_name}. Error: {kill_stderr.decode()}")
+        else:
+            rospy.loginfo(f"[RosbagRecordNode({self.node})] No PID found for process {process_name}. Error: {stderr.decode()}")
         
     def toggle_zed_recording(self, start, timestamp, response):
         service_name = self.namespace + '/zed2i_recording_driver/start_recording_svo'
@@ -154,6 +180,10 @@ class RosbagRecordNode(object):
             bash_command = (
                 f"rosrun box_recording record_bag.sh {bag_path} {topics} __name:=record_{self.node}_{bag_name}"
             )
+            # TODO: Replace with proper system after testing
+            if bag_name == "hdr":
+                docker_script_path = "/data/workspaces/isaac_ros-dev/src/isaac_ros_common/scripts/run_recording.sh"
+                bash_command = f"{docker_script_path} -c \"start_recording {timestamp} {topics}\""
 
             self.processes.append(subprocess.Popen(bash_command, shell=True, stderr=subprocess.PIPE))
             self.bag_running = True
@@ -177,6 +207,9 @@ class RosbagRecordNode(object):
             response.suc = False
             response.message = "No recording process running yet."
             rospy.logwarn("[RosbagRecordNode(" + self.node + ")] No recording process running yet.")
+            
+        # First kill the recording process inside Docker. This ugliness is required due to https://github.com/moby/moby/issues/9098
+        self.terminate_process_inside_docker()
 
         for p in self.processes:
             self.terminate_process_and_children(p)

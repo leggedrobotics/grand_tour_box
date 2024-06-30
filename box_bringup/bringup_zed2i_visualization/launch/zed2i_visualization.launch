@@ -75,10 +75,9 @@ This is based on box_drivers/zed-ros-wrapper/zed_wrapper/launch/include/zed_came
 
         <node name="$(arg node_name)" pkg="zed_wrapper" type="zed_wrapper_node" output="screen" required="true"><!-- launch-prefix="valgrind" -->
             <param name="capability_group" value="Driver"/>
-            <rosparam file="$(find bringup_zed2i)/config/config.yaml" command="load" />
+            <rosparam file="$(find bringup_zed2i_visualization)/config/params.yaml" command="load" />
         
         </node>
-
       
     </group>
 </launch>

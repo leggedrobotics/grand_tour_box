@@ -48,6 +48,8 @@ def main(filepath):
     runtime = sl.RuntimeParameters()
     while cam.grab(runtime) == sl.ERROR_CODE.SUCCESS:
         svo_position = cam.get_svo_position()
+        if svo_position % nb_frames//10 == 0:
+            print(f"Progress: {(svo_position/nb_frames)*100}%")
         if svo_position >= nb_frames - 1:
             break
         timestamp = cam.get_timestamp(sl.TIME_REFERENCE.IMAGE).get_nanoseconds()

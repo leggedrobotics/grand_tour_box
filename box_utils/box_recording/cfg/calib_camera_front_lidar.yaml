@@ -17,7 +17,8 @@ nuc:
   livox:
     - /gt_box/livox/lidar
   hdr:
-    - /gt_box/hdr_camera_front/image_raw/compressed
+    - /gt_box/hdr_center/image_compressed
+    - /gt_box/hdr_center/camera_info
 opc:
   utils:
     - /gt_box/health_status/opc

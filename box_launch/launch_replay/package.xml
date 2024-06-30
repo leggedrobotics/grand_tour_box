@@ -16,6 +16,7 @@
   <depend>box_health</depend>
   <depend>box_model</depend>
   <depend>box_throttling</depend>
+  <depend>box_relaying</depend>
   <depend>box_launch</depend>
 
 </package>

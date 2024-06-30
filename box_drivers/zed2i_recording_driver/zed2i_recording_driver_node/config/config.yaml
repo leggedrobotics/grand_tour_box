@@ -1,3 +1,3 @@
 # zed2i_config.yaml. See https://www.stereolabs.com/docs/video/camera-controls for valid camera settings.
 camera_resolution: "HD1080"  # HD2K, HD1080, HD720, VGA
-camera_fps: 30               # Frames per second (valid options depend on camera_resolution)
+camera_fps: 30               # Frames per second (valid options depend on camera_resolution) For 1080 it's 15 or 30.

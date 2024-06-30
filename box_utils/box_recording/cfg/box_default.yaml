@@ -13,12 +13,12 @@ jetson:
     - /tf_static
     - /tf
   hdr:
-    - /gt_box/hdr_camera_left/camera_info
-    - /gt_box/hdr_camera_left/image_raw/compressed
-    - /gt_box/hdr_camera_front/camera_info
-    - /gt_box/hdr_camera_front/image_raw/compressed
-    - /gt_box/hdr_camera_right/camera_info
-    - /gt_box/hdr_camera_right/image_raw/compressed
+    - /gt_box/hdr_center/image_raw/compressed
+    - /gt_box/hdr_center/camera_info
+    - /gt_box/hdr_left/image_raw/compressed
+    - /gt_box/hdr_left/camera_info
+    - /gt_box/hdr_right/image_raw/compressed
+    - /gt_box/hdr_right/camera_info
   
 nuc:
   utils:
@@ -28,7 +28,6 @@ nuc:
     - /gt_box/health_status/nuc
   hesai:
     - /gt_box/hesai/packets
-    - /gt_box/hesai/points
   livox:
     - /gt_box/livox/imu
     - /gt_box/livox/lidar
