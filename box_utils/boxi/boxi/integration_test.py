@@ -12,17 +12,15 @@ def add_arguments(parser):
 def main(args):
     shell_run("boxi push --jetson --nuc")
     shell_run("boxi launch -m=recording --restart --all")
-    
-    time.sleep(20)
-    shell_run("rosservice call /gt_box/rosbag_record_coordinator/start_recording \"yaml_file: \'box_default\'\" ")
-    
-    time.sleep(30)
-    shell_run("rosservice call /gt_box/rosbag_record_coordinator/stop_recording \"verbose: false \" ")
 
-    for host in ["jetson", 'nuc']:
-        cmd = (
-                f"ssh -o ConnectTimeout=4 rsl@{host} -t /home/rsl/.local/bin/boxi mission_summary --latest"
-            )
+    time.sleep(20)
+    shell_run("rosservice call /gt_box/rosbag_record_coordinator/start_recording \"yaml_file: 'box_default'\" ")
+
+    time.sleep(30)
+    shell_run('rosservice call /gt_box/rosbag_record_coordinator/stop_recording "verbose: false " ')
+
+    for host in ["jetson", "nuc"]:
+        cmd = f"ssh -o ConnectTimeout=4 rsl@{host} -t /home/rsl/.local/bin/boxi mission_summary --latest"
         try:
             shell_run(cmd)
         except:

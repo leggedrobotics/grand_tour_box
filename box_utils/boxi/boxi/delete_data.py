@@ -17,12 +17,9 @@ def main(args):
     if len(hosts) == 0:
         print("No host specified. Specify host with --hostname")
         exit()
-    
+
     for host in hosts:
-        cmd1 = (
-            f"ssh -o ConnectTimeout=4 {USERNAME}@{host}"
-            + " rm -f /data/*"
-        )
+        cmd1 = f"ssh -o ConnectTimeout=4 {USERNAME}@{host}" + " rm -f /data/*"
         print(cmd1)
         cmd2 = f"ssh -o ConnectTimeout=4 {USERNAME}@{host} rm -rf ~/.ros"
         print(cmd2)

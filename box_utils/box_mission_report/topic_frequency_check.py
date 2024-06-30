@@ -11,7 +11,7 @@ def read_rosbag_and_generate_histograms(rosbag_path, output_dir, name, skip_same
     os.makedirs(output_dir, exist_ok=True)
 
     # Open the ROS bag file
-    bag = rosbag.Bag(rosbag_path, 'r')
+    bag = rosbag.Bag(rosbag_path, "r")
 
     # Dictionary to hold timestamps for each topic
     topic_timestamps = {}
@@ -32,13 +32,12 @@ def read_rosbag_and_generate_histograms(rosbag_path, output_dir, name, skip_same
 
             if skip_same_timestamps:
                 if len(topic_timestamps[topic]) > 0 and topic_timestamps[topic][-1] == time_in_sec:
-                    topic_number_stame_timestamps[topic] += 1   
+                    topic_number_stame_timestamps[topic] += 1
                     continue
             topic_timestamps[topic].append(time_in_sec)
         except AttributeError:
             # If the message does not have a header with a timestamp, skip it
             continue
-    
 
     # Close the bag file
     bag.close()
@@ -50,8 +49,7 @@ def read_rosbag_and_generate_histograms(rosbag_path, output_dir, name, skip_same
         print("   No topics with valid timestamps found.")
         return
 
-
-    for k,v in topic_number_stame_timestamps.items():
+    for k, v in topic_number_stame_timestamps.items():
         if v > 0:
             print(f"   Topic: {k} has {v} same timestamps")
 
@@ -61,20 +59,20 @@ def read_rosbag_and_generate_histograms(rosbag_path, output_dir, name, skip_same
 
     fig, axs = plt.subplots(rows, cols, figsize=(20, 5 * rows))
     axs = axs.flatten()  # Flatten the array of subplots for easy iteration
-    
+
     # This is  the colormap I'd like to use.
-    cm = plt.cm.get_cmap('inferno_r')
+    cm = plt.cm.get_cmap("inferno_r")
 
     for i, (topic, timestamps) in enumerate(topic_timestamps.items()):
         if len(timestamps) < 2:
             print(f"   Topic: {topic} has not enough data points a histogram.")
             continue
-        
+
         # Compute deltas between consecutive timestamps
         deltas = np.diff(timestamps).clip(min=0.001)[1:-1]  # Clip to prevent division by zero
 
         # Plot histogram of time deltas in the appropriate subplot
-        n, bins, patches = axs[i].hist(1/deltas, bins=100, alpha=0.9, color='blue')
+        n, bins, patches = axs[i].hist(1 / deltas, bins=100, alpha=0.9, color="blue")
         bin_centers = 0.5 * (bins[:-1] + bins[1:])
 
         # scale values to interval [0,1]
@@ -82,11 +80,11 @@ def read_rosbag_and_generate_histograms(rosbag_path, output_dir, name, skip_same
         col /= max(col)
 
         for c, p in zip(col, patches):
-            plt.setp(p, 'facecolor', cm(c*0.6+0.2))
-            
-        axs[i].set_title(f'Histogram for Topic: {topic}')
-        axs[i].set_xlabel('Delta Time (Hz)')
-        axs[i].set_ylabel('Frequency')
+            plt.setp(p, "facecolor", cm(c * 0.6 + 0.2))
+
+        axs[i].set_title(f"Histogram for Topic: {topic}")
+        axs[i].set_xlabel("Delta Time (Hz)")
+        axs[i].set_ylabel("Frequency")
         axs[i].grid(True)
 
     # Remove any empty subplots (if there are fewer topics than subplots)
@@ -95,24 +93,26 @@ def read_rosbag_and_generate_histograms(rosbag_path, output_dir, name, skip_same
 
     # Plot histogram.
     plt.tight_layout()  # Adjust layout to prevent overlap
-    output_file = os.path.join(output_dir, f'{name}.png')
+    output_file = os.path.join(output_dir, f"{name}.png")
     plt.savefig(output_file)
     plt.close()
 
     print(f"   Histograms saved to {output_file}")
 
+
 # Function to parse command-line arguments
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Generate histograms from rosbag files.")
-    parser.add_argument('--folder', type=str, help="Directory containing rosbag files.")
+    parser.add_argument("--folder", type=str, help="Directory containing rosbag files.")
     return parser.parse_args()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     # Example usage
     args = parse_arguments()
-    rosbag_paths = [str(s) for s in pathlib.Path(args.folder).rglob('*.bag')]
-    output_dir = 'reports'
+    rosbag_paths = [str(s) for s in pathlib.Path(args.folder).rglob("*.bag")]
+    output_dir = "reports"
 
     for rosbag_path in rosbag_paths:
-        name = rosbag_path.split('/')[-1].split('.')[0]
+        name = rosbag_path.split("/")[-1].split(".")[0]
         read_rosbag_and_generate_histograms(rosbag_path, output_dir, name)
