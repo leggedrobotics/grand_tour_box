@@ -1,26 +1,49 @@
-# topics listed here also have to be in msg/healthStatus_{jetson, nuc}.msg
 jetson:
-  - /gt_box/alphasense_driver_node/cam0
-  - /gt_box/alphasense_driver_node/cam1
-  - /gt_box/alphasense_driver_node/cam2
-  - /gt_box/alphasense_driver_node/cam3
-  - /gt_box/alphasense_driver_node/cam4
-  - /gt_box/hesai/packets
-  - /gt_box/hesai/points
-  - /gt_box/livox/lidar
-  - /gt_box/livox/imu
-  - /gt_box/alphasense_driver_node/imu
-  - /gt_box/rover/piksi/position_receiver_0/ros/pos_enu
-  - /gt_box/zed2i_driver_node/zed_node/point_cloud/cloud_registered
-  - /gt_box/zed2i_driver_node/zed_node/left_raw/image_raw_color
-  - /gt_box/zed2i_driver_node/zed_node/right_raw/image_raw_color
-  - /gt_box/zed2i_driver_node/zed_node/depth/depth_registered
-  - /gt_box/ap20_imu
-  - /gt_box/ap20_prism_position
+  topics:
+    - /gt_box/hdr_camera_left/image_raw
+    - /gt_box/hdr_camera_front/image_raw
+    - /gt_box/hdr_camera_right/image_raw
+    - /gt_box/zed2i_driver_node/zed_node/point_cloud/cloud_registered
+    - /gt_box/zed2i_driver_node/zed_node/left_raw/image_raw_color
+    - /gt_box/zed2i_driver_node/zed_node/right_raw/image_raw_color
+    - /gt_box/zed2i_driver_node/zed_node/depth/depth_registered
+    - /gt_box/ap20_imu
+    - /gt_box/ap20_prism_position
+  ptp4l:
+    - ptp4l_mgbe0
+  phc2sys:
+    - phc2sys_mgbe0
+  memory: /data
+  cpu: True
+
 nuc:
-  - /gt_box/hdr_camera_left/image_raw
-  - /gt_box/hdr_camera_front/image_raw
-  - /gt_box/hdr_camera_right/image_raw
-  - /gt_box/adis16475
-opc:
-  - /gt_box/leica/position
+  topics:
+    - /gt_box/alphasense_driver_node/imu
+    - /gt_box/alphasense_driver_node/cam0
+    - /gt_box/alphasense_driver_node/cam1
+    - /gt_box/alphasense_driver_node/cam2
+    - /gt_box/alphasense_driver_node/cam3
+    - /gt_box/alphasense_driver_node/cam4
+    - /gt_box/hesai/packets
+    - /gt_box/hesai/points
+    - /gt_box/livox/lidar
+    - /gt_box/livox/imu
+  ptp4l:
+    - ptp4l_enp45s0
+    - ptp4l_enp46s0
+  phc2sys:
+    - phc2sys_enp45s0
+    - phc2sys_enp46s0
+  memory: /data
+  cpu: True
+
+pi:
+  topics:
+    - /gt_box/adis16470/imu
+    - /gt_box/stim320/imu
+  ptp4l:
+    - ptp4l_eth0
+  phc2sys:
+    - phc2sys_eth0
+  memory: /data
+  cpu: True

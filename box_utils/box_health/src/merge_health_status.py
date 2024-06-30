@@ -6,11 +6,10 @@ from threading import Lock
 import numpy as np
 
 from box_health.msg import (
-    healthStatus,
-    healthStatus_jetson,
-    healthStatus_nuc,
-    healthStatus_opc,
-    healthStatus_pi,
+    health_status,
+    health_status_jetson,
+    health_status_nuc,
+    health_status_pi,
 )
 from std_msgs.msg import Float32, Bool, ColorRGBA
 from jsk_rviz_plugins.msg import OverlayText
@@ -109,23 +108,16 @@ class BoxStatusMerger:
         self.recording_status = {
             "jetson": False,
             "nuc": False,
-            "opc": False,
         }
 
         self.subscriber_jetson = rospy.Subscriber(
             self.namespace + "health_status/jetson",
-            healthStatus_jetson,
+            health_status_jetson,
             self.callback,
             "jetson",
         )
         self.subscriber_nuc = rospy.Subscriber(
-            self.namespace + "health_status/nuc", healthStatus_nuc, self.callback, "nuc"
-        )
-        self.subscriber_opc = rospy.Subscriber(
-            self.namespace + "health_status/opc", healthStatus_opc, self.callback, "opc"
-        )
-        self.subscriber_opc = rospy.Subscriber(
-            self.namespace + "health_status/pi", healthStatus_pi, self.callback, "pi"
+            self.namespace + "health_status/nuc", health_status_nuc, self.callback, "nuc"
         )
         self.recording_jetson = rospy.Subscriber(
             self.namespace + "health_status/recording_jetson",
@@ -139,17 +131,10 @@ class BoxStatusMerger:
             self.recording_callback,
             "nuc",
         )
-        self.recording_opc = rospy.Subscriber(
-            self.namespace + "health_status/recording_opc",
-            Bool,
-            self.recording_callback,
-            "opc",
-        )
 
         self.message_fields = {
             "jetson": [],
             "nuc": [],
-            "opc": [],
             "pi": [],
         }
 
@@ -218,10 +203,6 @@ class BoxStatusMerger:
             p2s eth0->pi sys: %sns
             chrony jetson->opc: %sns
             alphasense_frames_no_ptp: %s
-
-            RTK mode fix: %s
-            GPS fix mode: %s
-            Num sat: %s
 
             Jetson avail memory: %s
             Jetson CPU usage: %s%%
@@ -300,9 +281,6 @@ class BoxStatusMerger:
                 3,
                 False,
             ),
-            color_wrapper(getattr(self.complete_health_msg, "gps_rtk_mode_fix"), 1, 0, 0, True),
-            getattr(self.complete_health_msg, "gps_fix_mode"),
-            color_wrapper(getattr(self.complete_health_msg, "gps_num_sat"), 10, 5, 0, True),
             getattr(self.complete_health_msg, "avail_memory_jetson"),
             color_wrapper(
                 "{:.2f}".format(getattr(self.complete_health_msg, "cpu_usage_jetson")),
