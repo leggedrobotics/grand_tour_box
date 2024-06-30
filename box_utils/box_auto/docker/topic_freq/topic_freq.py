@@ -4,6 +4,30 @@ import numpy as np
 import os
 import pathlib
 import argparse
+from pathlib import Path
+import subprocess
+
+
+def run_rosbag_command(bag_file, output_file):
+    # Define the command to run
+    command = ["rosbag", "info", "--freq", bag_file]
+
+    try:
+        # Run the command and capture the output
+        result = subprocess.run(command, capture_output=True, text=True, check=True)
+
+        with open(output_file, "a") as file:
+            file.write(result.stdout)
+
+        print(f"Output successfully written to {output_file}")
+
+    except subprocess.CalledProcessError as e:
+        # Handle error if the command fails
+        print(f"Error running command: {e}")
+        print(f"Error output: {e.stderr}")
+
+
+MISSION_FOLDER = os.environ.get("MISSION_FOLDER", "/mission_data")
 
 
 def read_rosbag_and_generate_histograms(rosbag_path, output_dir, name, skip_same_timestamps=True):
@@ -99,11 +123,13 @@ def read_rosbag_and_generate_histograms(rosbag_path, output_dir, name, skip_same
 
     print(f"   Histograms saved to {output_file}")
 
+    run_rosbag_command(rosbag_path, os.path.join(output_dir, "freq.txt"))
+
 
 # Function to parse command-line arguments
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Generate histograms from rosbag files.")
-    parser.add_argument("--folder", type=str, help="Directory containing rosbag files.")
+    parser.add_argument("--folder", type=str, default=MISSION_FOLDER, help="Directory containing rosbag files.")
     return parser.parse_args()
 
 
@@ -111,8 +137,11 @@ if __name__ == "__main__":
     # Example usage
     args = parse_arguments()
     rosbag_paths = [str(s) for s in pathlib.Path(args.folder).rglob("*.bag")]
-    output_dir = "reports"
+    output_dir = "topic_freq"
 
     for rosbag_path in rosbag_paths:
+        output_dir = Path(rosbag_path).parent.joinpath(output_dir)
+        output_dir.mkdir(exist_ok=True)
+
         name = rosbag_path.split("/")[-1].split(".")[0]
-        read_rosbag_and_generate_histograms(rosbag_path, output_dir, name)
+        read_rosbag_and_generate_histograms(rosbag_path, str(output_dir), name)

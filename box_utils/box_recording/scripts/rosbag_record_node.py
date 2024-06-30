@@ -80,7 +80,13 @@ class RosbagRecordNode(object):
                 time.sleep(30)
                 exit - 1
             else:
-                rospy.loginfo(f"[RosbagRecordNode({self.node})] Free disk space: " + str(free_disk_space_in_gb) + " GB in " + p + ".")
+                rospy.loginfo(
+                    f"[RosbagRecordNode({self.node})] Free disk space: "
+                    + str(free_disk_space_in_gb)
+                    + " GB in "
+                    + p
+                    + "."
+                )
 
             self.pub_disk_space_free_in_gb.publish(free_disk_space_in_gb)
             self.pub_recording_status.publish(self.bag_running)
@@ -92,11 +98,11 @@ class RosbagRecordNode(object):
         for sub_process in process.children(recursive=True):
             sub_process.send_signal(signal.SIGINT)
         p.wait()
-        
+
     def terminate_process_inside_docker(self, process_name="ros2 bag"):
         docker_container_name = "isaac_ros_dev-aarch64-container-recording"
         # Command to find the PID of the "ros2 bag" process within the Docker container
-        command_find_pid = f"docker exec {docker_container_name} bash -c 'ps aux | grep \"{process_name}\" | grep -v grep | awk \"{{print \\$2}}\"'"
+        command_find_pid = f'docker exec {docker_container_name} bash -c \'ps aux | grep "{process_name}" | grep -v grep | awk "{{print \\$2}}"\''
         # Execute the command to find the PID
         proc = subprocess.Popen(command_find_pid, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = proc.communicate()
@@ -113,12 +119,16 @@ class RosbagRecordNode(object):
             if kill_proc.returncode == 0:
                 rospy.loginfo(f"[RosbagRecordNode({self.node})] {process_name} Docker process killed successfully.")
             else:
-                rospy.logerr(f"[RosbagRecordNode({self.node})] Failed to kill process {process_name}. Error: {kill_stderr.decode()}")
+                rospy.logerr(
+                    f"[RosbagRecordNode({self.node})] Failed to kill process {process_name}. Error: {kill_stderr.decode()}"
+                )
         else:
-            rospy.loginfo(f"[RosbagRecordNode({self.node})] No PID found for process {process_name}. Error: {stderr.decode()}")
-        
+            rospy.loginfo(
+                f"[RosbagRecordNode({self.node})] No PID found for process {process_name}. Error: {stderr.decode()}"
+            )
+
     def toggle_zed_recording(self, start, timestamp, response):
-        service_name = self.namespace + '/zed2i_recording_driver/start_recording_svo'
+        service_name = self.namespace + "/zed2i_recording_driver/start_recording_svo"
         rospy.loginfo(f"[RosbagRecordNode({self.node} zed2i)] Trying to start svo recording process on zed2i")
         try:
             rospy.wait_for_service(service_name, timeout=2.0)
@@ -126,7 +136,7 @@ class RosbagRecordNode(object):
             response.message += f"zed2i [FAILED] service not found, "
             response.suc = False
             return response
-        
+
         try:
             start_recording_svo_srv = rospy.ServiceProxy(service_name, StartRecordingSVO)
             req = StartRecordingSVORequest()
@@ -136,7 +146,9 @@ class RosbagRecordNode(object):
             start_recording_svo_srv(req)
             response.message += f"zed2i [SUC], "
             self.recording_zed = start
-            rospy.loginfo(f"[RosbagRecordNode({self.node} zed2i)] {'Started' if start else 'Stopped'} svo recording process on zed2i")
+            rospy.loginfo(
+                f"[RosbagRecordNode({self.node} zed2i)] {'Started' if start else 'Stopped'} svo recording process on zed2i"
+            )
         except rospy.ServiceException as e:
             response.suc = False
             response.message += f"zed2i [FAILED] Exception: " + str(e) + ", "
@@ -170,7 +182,7 @@ class RosbagRecordNode(object):
         self.bag_configs = bag_configs
         response.suc = True
         response.message = f"Starting rosbag recording process."
-        
+
         for bag_name, topics in bag_configs.items():
             if bag_name == "zed2i" and "svo" in topics:
                 # If we are recording svo files instead of rosbags for the zed, we need to call the svo recording service.
@@ -183,13 +195,13 @@ class RosbagRecordNode(object):
             # TODO: Replace with proper system after testing
             if bag_name == "hdr":
                 docker_script_path = "/data/workspaces/isaac_ros-dev/src/isaac_ros_common/scripts/run_recording.sh"
-                bash_command = f"{docker_script_path} -c \"start_recording {timestamp} {topics}\""
+                bash_command = f'{docker_script_path} -c "start_recording {timestamp} {topics}"'
 
             self.processes.append(subprocess.Popen(bash_command, shell=True, stderr=subprocess.PIPE))
             self.bag_running = True
-            
+
             response.message += f"{bag_name} [SUC], "
-            
+
             rospy.loginfo(f"[RosbagRecordNode({self.node} {bag_name})] Starting rosbag recording process.")
 
         return response
@@ -207,14 +219,14 @@ class RosbagRecordNode(object):
             response.suc = False
             response.message = "No recording process running yet."
             rospy.logwarn("[RosbagRecordNode(" + self.node + ")] No recording process running yet.")
-            
+
         # First kill the recording process inside Docker. This ugliness is required due to https://github.com/moby/moby/issues/9098
         self.terminate_process_inside_docker()
 
         for p in self.processes:
             self.terminate_process_and_children(p)
         self.processes = []
-        
+
         if self.recording_zed:
             response = self.toggle_zed_recording(False, "", response)
 

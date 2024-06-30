@@ -7,6 +7,7 @@ def add_arguments(parser):
     parser.add_argument("--nuc", action="store_true", help="Get data from Nuc")
     return parser
 
+
 def main(args):
     rsync_part1 = "rsync -r --progress " + USERNAME + "@"
     rsync_exclusions = ""

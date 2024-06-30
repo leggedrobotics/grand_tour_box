@@ -18,6 +18,7 @@ from box_recording.srv import (
 from box_recording.srv import StopRecording, StopRecordingResponse, StopRecordingRequest
 from pathlib import Path
 
+
 def load_yaml(path: str) -> dict:
     """Loads yaml file
 
@@ -109,7 +110,7 @@ class RosbagRecordCoordinator(object):
                     response.message += f"{node} [FAILED] Exception: " + str(exception) + ", "
                     print("Service did not process request: " + str(exception))
                     rospy.logerr("Failed to start rosbag recording process on " + node)
-            
+
             if response.suc:
                 response.message += " - All nodes started recording."
                 rospy.loginfo("[RosbagRecordCoordinator] Successfully started rosbag recording process on all nodes")
