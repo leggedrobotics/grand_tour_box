@@ -71,6 +71,3 @@ nuc:
     - /gt_box/cpt7/time
   clock:
     - /clock
-  tf:
-    - /tf
-    - /tf_static
