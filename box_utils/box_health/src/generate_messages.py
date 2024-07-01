@@ -27,7 +27,7 @@ def generate_ros_msg_definition(pc_name, info):
     msg_lines.append("")  # Blank line for readability
 
     # Process each topic to generate the frequency variables
-    topics = info["topics"]
+    topics = [k for k in info["topics"].keys()]
     for topic in topics:
         # Convert the topic name into the required frequency variable name
         frequency_var_name = topic.replace("/", "_").strip("_") + "_hz"
@@ -36,8 +36,8 @@ def generate_ros_msg_definition(pc_name, info):
     msg_lines.append("")  # Blank line for readability
 
     # Add CPU and memory definitions
-    msg_lines.append(f"float32 cpu_usage_{pc_name}")
-    msg_lines.append(f"string avail_memory_{pc_name}")
+    msg_lines.append("float32 cpu_usage")
+    msg_lines.append("string avail_memory")
 
     # Join all lines into a single string
     ros_msg_definition = "\n".join(msg_lines)
@@ -50,6 +50,7 @@ for pc_name, info in yaml_data.items():
     print(ros_msg_content)
 
     # Write the ROS message definition to a file
-    file_path = os.path.join(msg_file_path, f"health_status_{pc_name}.msg")
+    pretty = pc_name.capitalize()
+    file_path = os.path.join(msg_file_path, f"HealthStatus{pretty}.msg")
     with open(file_path, "w") as file:
         file.write(ros_msg_content)

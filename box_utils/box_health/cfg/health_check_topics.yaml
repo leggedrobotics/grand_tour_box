@@ -1,34 +1,60 @@
 jetson:
   topics:
-    - /gt_box/hdr_camera_left/image_raw
-    - /gt_box/hdr_camera_front/image_raw
-    - /gt_box/hdr_camera_right/image_raw
-    - /gt_box/zed2i_driver_node/zed_node/point_cloud/cloud_registered
-    - /gt_box/zed2i_driver_node/zed_node/left_raw/image_raw_color
-    - /gt_box/zed2i_driver_node/zed_node/right_raw/image_raw_color
-    - /gt_box/zed2i_driver_node/zed_node/depth/depth_registered
-    - /gt_box/ap20_imu
-    - /gt_box/ap20_prism_position
+    /gt_box/hdr_camera_left/image_raw:
+      rate: 10
+    /gt_box/hdr_camera_front/image_raw:
+      rate: 10
+    /gt_box/hdr_camera_right/image_raw:
+      rate: 10
+    /gt_box/zed2i_driver_node/zed_node/point_cloud/cloud_registered:
+      rate: 10
+    /gt_box/zed2i_driver_node/zed_node/left_raw/image_raw_color:
+      rate: 10
+    /gt_box/zed2i_driver_node/zed_node/right_raw/image_raw_color:
+      rate: 10
+    /gt_box/zed2i_driver_node/zed_node/depth/depth_registered:
+      rate: 10
+    /gt_box/ap20_imu:
+      rate: 400
+    /gt_box/ap20_prism_position:
+      rate: 20
   ptp4l:
     - ptp4l_mgbe0
   phc2sys:
     - phc2sys_mgbe0
   memory: /data
   cpu: True
+  fsk:
+    text:
+      width: 1500
+      height: 300
+      left: 10
+      top: 40
+      text_size: 11
 
 nuc:
   topics:
-    - /gt_box/alphasense_driver_node/imu
-    - /gt_box/alphasense_driver_node/cam0
-    - /gt_box/alphasense_driver_node/cam1
-    - /gt_box/alphasense_driver_node/cam2
-    - /gt_box/alphasense_driver_node/cam3
-    - /gt_box/alphasense_driver_node/cam4
-    - /gt_box/hesai/packets
-    - /gt_box/hesai/points
-    - /gt_box/livox/lidar
-    - /gt_box/livox/imu
-  ptp4l:
+    /gt_box/alphasense_driver_node/imu:
+      rate: 400
+    /gt_box/alphasense_driver_node/cam0:
+      rate: 10
+    /gt_box/alphasense_driver_node/cam1:
+      rate: 10
+    /gt_box/alphasense_driver_node/cam2:
+      rate: 10
+    /gt_box/alphasense_driver_node/cam3:
+      rate: 10
+    /gt_box/alphasense_driver_node/cam4:
+      rate: 10
+    /gt_box/hesai/packets:
+      rate: 10
+    /gt_box/hesai/points:
+      rate: 10
+    /gt_box/livox/lidar:
+      rate: 10
+    /gt_box/livox/imu:
+      rate: 400
+  p4l:
     - ptp4l_enp45s0
     - ptp4l_enp46s0
   phc2sys:
@@ -36,14 +62,30 @@ nuc:
     - phc2sys_enp46s0
   memory: /data
   cpu: True
+  fsk:
+    text:
+      width: 700
+      height: 500
+      left: 10
+      top: 400
+      text_size: 11
 
 pi:
   topics:
-    - /gt_box/adis16470/imu
-    - /gt_box/stim320/imu
+    /gt_box/adis16470/imu:
+      rate: 400
+    /gt_box/stim320/imu:
+      rate: 400
   ptp4l:
     - ptp4l_eth0
   phc2sys:
     - phc2sys_eth0
   memory: /data
   cpu: True
+  fsk:
+    text:
+      width: 700
+      height: 500
+      left: 10
+      top: 40
+      text_size: 10

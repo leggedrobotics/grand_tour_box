@@ -9,7 +9,9 @@ import re
 
 import rospy
 import rostopic
-from std_msgs.msg import String
+import box_health.msg as box_health_msg
+from jsk_rviz_plugins.msg import OverlayText
+from std_msgs.msg import ColorRGBA
 
 
 def load_yaml(path: str) -> dict:
@@ -41,7 +43,7 @@ def offset_from_status(line: str) -> str:
         return str(offset)
     else:
         rospy.logerr("[BoxStatus] Error reading offset from line: " + line)
-        return "error reading offset"
+        return "error_reading_offset"
 
 
 class FrequencyFinder:
@@ -60,9 +62,6 @@ class FrequencyFinder:
             return 0.0
 
 
-import box_health.msg as health_msg
-
-
 class BoxStatus:
     def __init__(self):
         self.hostname = socket.gethostname()
@@ -73,17 +72,23 @@ class BoxStatus:
         rp = rospkg.RosPack()
         cfg_file = join(str(rp.get_path("box_health")), "cfg/health_check_topics.yaml")
 
-        self.msg = getattr(health_msg, f"health_status_{self.hostname}")
+        pretty = self.hostname.capitalize()
+        self.msg = getattr(box_health_msg, f"HealthStatus{pretty}")
         self.cfg = load_yaml(cfg_file)[self.hostname]
 
         self.finders = {}
-        for topic in self.cfg["topics"]:
+        for topic in [k for k in self.cfg["topics"].keys()]:
             finder = FrequencyFinder(topic)
             self.finders[topic] = finder
 
         self.health_status_publisher = rospy.Publisher(
-            self.namespace + "health_status/" + self.hostname,
+            self.namespace + "health_status/" + self.hostname + "/status",
             self.msg,
+            queue_size=2,
+        )
+        self.overlay_text_publisher = rospy.Publisher(
+            self.namespace + "health_status/" + self.hostname + "/overlay_text",
+            OverlayText,
             queue_size=2,
         )
         self.rate = rospy.Rate(1.2)
@@ -147,12 +152,11 @@ class BoxStatus:
                 f"offset_{ptp4l_service}",
                 self.check_clock_offset(self.read_clock_status(f"{ptp4l_service}.service")),
             )
-
         for phy2sys_service in self.cfg.get("phy2sys", []):
             setattr(
                 health_msg,
                 f"offset_{phy2sys_service}",
-                self.check_clock_offset(self.read_clock_status(f"{ptp4l_service}.service")),
+                self.check_clock_offset(self.read_clock_status(f"{phy2sys_service}.service")),
             )
         return health_msg
 
@@ -185,14 +189,14 @@ class BoxStatus:
             if stdout:
                 setattr(
                     health_msg,
-                    "cpu_usage_" + self.hostname,
+                    "cpu_usage",
                     float(stdout.decode().replace(",", ".")),
                 )
             else:
-                setattr(health_msg, "cpu_usage_" + self.hostname, -1.0)
+                setattr(health_msg, "cpu_usage", -1.0)
                 rospy.logerr("[BoxStatus] CPU usage could not be determined. ")
         except:
-            setattr(health_msg, "cpu_usage_" + self.hostname, -1.0)
+            setattr(health_msg, "cpu_usage", -1.0)
             rospy.logerr("[BoxStatus] CPU usage could not be determined. ")
             rospy.logerr(stdout.decode())
 
@@ -209,14 +213,51 @@ class BoxStatus:
                 rospy.logerr(stderr)
             if stdout:
                 avail_memory = stdout.decode("utf-8").strip()
-                setattr(health_msg, "avail_memory_" + self.hostname, avail_memory)
+                setattr(health_msg, "avail_memory", avail_memory)
             else:
-                setattr(health_msg, "avail_memory_" + self.hostname, "unknown")
+                setattr(health_msg, "avail_memory", "unknown")
                 rospy.logerr("[BoxStatus] Available memory could not be determined. ")
         except:
-            setattr(health_msg, "avail_memory_" + self.hostname, "unknown")
+            setattr(health_msg, "avail_memory", "unknown")
             rospy.logerr("[BoxStatus] Available memory could not be determined. ")
         return health_msg
+
+    def publish_overlay_text(self, health_msg):
+        text = OverlayText()
+        fsk = self.cfg["fsk"]["text"]
+        text.width = fsk["width"]
+        text.height = fsk["height"]
+        text.left = fsk["left"]
+        text.top = fsk["top"]
+        text.text_size = fsk["text_size"]
+        text.line_width = 1
+        text.font = "FreeMono"
+        text.fg_color = ColorRGBA(25.0 / 255, 1.0, 240.0 / 255, 0.9)
+        text.bg_color = ColorRGBA(0.0, 0.0, 0.0, 0.1)
+        text.text = f"""{self.hostname.capitalize()}\n
+            CPU: {health_msg.cpu_usage}
+            Storage: {health_msg.avail_memory}
+            """
+        sync_ele = self.cfg.get("ptp4l", []) + self.cfg.get("phc2sys", [])
+        for service in sync_ele:
+            val = getattr(health_msg, f"offset_{service}")
+            text.text += f"{service}:" + f"{val}\n"
+        offset = fsk["height"]
+
+        for k, v in self.cfg["topics"].items():
+
+            val = getattr(health_msg, k[1:].replace("/", "_") + "_hz")
+            if abs(val - v["rate"]) > 0.1:
+                if offset == fsk["height"]:
+                    text.text += "\nTopics:\n"
+
+                t = f"{k}: {val}Hz != {v['rate']}Hz\n"
+                t = '<span style="color: rgb(209,134,0);">' + str(t) + "</span>"
+                text.text += t
+            offset += fsk["text_size"] * 3 + 3
+        text.height = offset
+
+        self.overlay_text_publisher.publish(text)
 
     def publish_health_status(self):
         while not rospy.is_shutdown():
@@ -226,6 +267,7 @@ class BoxStatus:
             health_msg = self.get_topic_frequencies(health_msg)
             health_msg = self.get_pc_status(health_msg)
             self.health_status_publisher.publish(health_msg)
+            self.publish_overlay_text(health_msg)
             self.rate.sleep()
 
 

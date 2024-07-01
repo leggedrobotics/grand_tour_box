@@ -25,9 +25,9 @@ find_package(catkin REQUIRED COMPONENTS
 
 add_message_files(
   FILES
-  health_status_jetson.msg
-  health_status_nuc.msg
-  health_status_pi.msg
+  HealthStatusJetson.msg
+  HealthStatusNuc.msg
+  HealthStatusPi.msg
 )
 
 catkin_install_python(

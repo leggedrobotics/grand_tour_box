@@ -11,5 +11,5 @@ float64 gt_box_zed2i_driver_node_zed_node_depth_depth_registered_hz
 float64 gt_box_ap20_imu_hz
 float64 gt_box_ap20_prism_position_hz
 
-float32 cpu_usage_jetson
-string avail_memory_jetson
+float32 cpu_usage
+string avail_memory
