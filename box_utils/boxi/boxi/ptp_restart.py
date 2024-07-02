@@ -35,4 +35,5 @@ def main(args):
         chrony_restart = "sudo systemctl restart chrony.service"
         shell_run(chrony_restart)
     else:
+        chrony_restart = "ssh -o ConnectTimeout=4 rsl@opc -t bash -ci 'sudo systemctl restart chrony.service'"
         shell_run(chrony_restart)
