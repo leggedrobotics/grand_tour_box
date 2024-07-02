@@ -5,27 +5,8 @@ import rosbag
 import rospy
 from rosbags.highlevel.anyreader import AnyReader
 from rosbags.rosbag1 import Writer
-from rosbags.typesys import Stores, get_types_from_msg, get_typestore
+from rosbags.typesys import Stores, get_typestore
 from pathlib import Path
-from typing import TYPE_CHECKING, cast
-
-if TYPE_CHECKING:
-    from rosbags.interfaces import ConnectionExtRosbag1
-
-# Camera info message definition for ROS Noetic
-CAMERAINFO_DEFINITION = """
-std_msgs/Header header
-uint32 height
-uint32 width
-string distortion_model
-float64[] D
-float64[9] K
-float64[9] R
-float64[12] P
-uint32 binning_x
-uint32 binning_y
-sensor_msgs/RegionOfInterest roi
-"""
 
 
 def add_arguments(parser):
@@ -37,18 +18,12 @@ def add_arguments(parser):
 
 
 def downgrade_camerainfo_to_rosbag1(src: Path, dst: Path):
-    """Edit message definitions in a rosbag1."""
     typename = "sensor_msgs/msg/CameraInfo"
-    typestore = get_typestore(Stores.EMPTY)
-    typestore.register(
-        get_types_from_msg(CAMERAINFO_DEFINITION, typename),
-    )
-    CameraInfo = typestore.types[typename]  # noqa: N806
+    typestore = get_typestore(Stores.ROS1_NOETIC)
 
     with AnyReader([src]) as reader, Writer(dst) as writer:
         conn_map = {}
         for conn in reader.connections:
-            ext = cast("ConnectionExtRosbag1", conn.ext)
             if conn.msgtype == "sensor_msgs/msg/CameraInfo":
                 from_typestore = typestore
             else:
@@ -58,15 +33,15 @@ def downgrade_camerainfo_to_rosbag1(src: Path, dst: Path):
                 conn.topic,
                 conn.msgtype,
                 typestore=from_typestore,
-                callerid=ext.callerid,
-                latching=ext.latching,
+                callerid=conn.ext.callerid,
+                latching=conn.ext.latching,
             )
 
         for conn, timestamp, data in reader.messages():
             wconn = conn_map[conn.id]
             if conn.msgtype == "sensor_msgs/msg/CameraInfo":
                 msg = reader.deserialize(data, conn.msgtype)
-                converted_msg = CameraInfo(
+                converted_msg = typestore.types[typename](
                     header=msg.header,
                     height=msg.height,
                     width=msg.width,
@@ -79,14 +54,14 @@ def downgrade_camerainfo_to_rosbag1(src: Path, dst: Path):
                     binning_y=msg.binning_y,
                     roi=msg.roi,
                 )
-                outdata = typestore.serialize_ros1(converted_msg, wconn.msgtype)
+                outdata = typestore.serialize_ros1(converted_msg, conn.msgtype)
             else:
                 outdata = data
 
             writer.write(wconn, timestamp, outdata)
 
 
-def split_rosbags(input_bag_path, output_dir, output_run_id, duration_minutes=5):
+def split_rosbags(input_bag_path, output_run_id, duration_minutes=5):
     """Splits ROS bags into smaller chunks based on duration."""
     bag = rosbag.Bag(input_bag_path, "r")
     start_time = bag.get_start_time()
@@ -95,7 +70,7 @@ def split_rosbags(input_bag_path, output_dir, output_run_id, duration_minutes=5)
     index = 0
 
     while current_time < end_time:
-        split_filename = f"{output_dir}/{output_run_id}_jetson_hdr_{index}.bag"
+        split_filename = f"{output_run_id}/{output_run_id}_jetson_hdr_{index}.bag"
         with rosbag.Bag(split_filename, "w") as outbag:
             for topic, msg, t in bag.read_messages(
                 start_time=rospy.Time.from_sec(current_time),
@@ -118,13 +93,16 @@ def main(args):
             converted_bag_path = f"./{run_id}/{run_id}_jetson_hdr_raw.bag"
             cmd = f"rosbags-convert {run_id}/hdr/ --dst {converted_bag_path}"
             shell_run(cmd)
+            print("Converted to ROS1 raw format, types are not yet converted.")
 
             # Downgrade CameraInfo and write to a new bag
             output_path = f"./{run_id}/{run_id}_jetson_hdr_downgraded.bag"
+            print(f"Downgrading CameraInfo to ROS1 format and saving to {output_path}")
             downgrade_camerainfo_to_rosbag1(Path(converted_bag_path), Path(output_path))
 
             # Split the downgraded bag into 5-minute chunks
-            split_rosbags(output_path, f"./{run_id}/")
+            print("Splitting the downgraded bag into 5-minute chunks.")
+            split_rosbags(output_path, run_id)
 
             counter += 1
 
