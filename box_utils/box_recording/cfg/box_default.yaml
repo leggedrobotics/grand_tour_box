@@ -19,7 +19,9 @@ jetson:
     - /gt_box/hdr_left/camera_info
     - /gt_box/hdr_right/image_raw/compressed
     - /gt_box/hdr_right/camera_info
-  
+  clock:
+    - /clock
+
 nuc:
   utils:
     - /gt_box/stim320/imu
@@ -69,8 +71,3 @@ nuc:
     - /gt_box/cpt7/terrastarinfo
     - /gt_box/cpt7/terrastarstatus
     - /gt_box/cpt7/time
-  clock:
-    - /clock
-  tf:
-    - /tf
-    - /tf_static
