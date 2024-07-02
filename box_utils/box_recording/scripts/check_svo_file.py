@@ -16,6 +16,7 @@ import argparse
 import os
 import numpy as np
 
+
 def calculate_moving_average_fps(timestamps, window_size=10):
     fps_values = []
     for i in range(len(timestamps) - window_size):
@@ -26,6 +27,7 @@ def calculate_moving_average_fps(timestamps, window_size=10):
         fps = window_size / duration_s
         fps_values.append(fps)
     return fps_values
+
 
 def main(filepath):
     print("\nOpening SVO file:", filepath)
@@ -41,20 +43,20 @@ def main(filepath):
 
     nb_frames = cam.get_svo_number_of_frames()
     print("[Info] SVO contains", nb_frames, "frames")
-    
+
     timestamps = []
 
     print("Calculating FPS, can take a while (iterating through all frames)...")
     runtime = sl.RuntimeParameters()
     while cam.grab(runtime) == sl.ERROR_CODE.SUCCESS:
         svo_position = cam.get_svo_position()
-        if svo_position % nb_frames//10 == 0:
+        if svo_position % nb_frames // 10 == 0:
             print(f"Progress: {(svo_position/nb_frames)*100}%")
         if svo_position >= nb_frames - 1:
             break
         timestamp = cam.get_timestamp(sl.TIME_REFERENCE.IMAGE).get_nanoseconds()
         timestamps.append(timestamp)
-    
+
     if len(timestamps) > 10:
         fps_values = calculate_moving_average_fps(timestamps)
         min_fps = min(fps_values)
@@ -65,12 +67,13 @@ def main(filepath):
         print(f"Mean FPS (moving average over 10 frames): {mean_fps:.2f} Hz")
     else:
         print("Not enough frames to calculate moving average.")
-    
+
     cam.close()
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--input_svo_file', type=str, help='Path to the SVO file', required=True)
+    parser.add_argument("--input_svo_file", type=str, help="Path to the SVO file", required=True)
     args = parser.parse_args()
 
     if not args.input_svo_file.endswith(".svo") and not args.input_svo_file.endswith(".svo2"):

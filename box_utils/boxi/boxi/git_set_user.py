@@ -15,8 +15,9 @@ def main(args):
         print("Setting git for turcan")
         cmd_mail = "git config --global user.email 'tutuna@leggedrobotics.com'"
         cmd_usr_name = "git config --global user.name 'Turcan Tuna'"
-        novatel_icon = "sed -i '$ s/planet.png/novatelSuite.png/' /home/rsl/.local/share/applications/novatelSuite.desktop"
-
+        novatel_icon = (
+            "sed -i '$ s/planet.png/novatelSuite.png/' /home/rsl/.local/share/applications/novatelSuite.desktop"
+        )
 
         shell_run(cmd_mail)
         shell_run(cmd_usr_name)
@@ -35,7 +36,9 @@ def main(args):
         print("Setting git for kappi")
         cmd_mail = "git config --global user.email 'kpatterson@ethz.ch'"
         cmd_usr_name = "git config --global user.name 'kappi'"
-        novatel_icon = "sed -i '$ s/novatelSuite.png/planet.png/' /home/rsl/.local/share/applications/novatelSuite.desktop"
+        novatel_icon = (
+            "sed -i '$ s/novatelSuite.png/planet.png/' /home/rsl/.local/share/applications/novatelSuite.desktop"
+        )
         chrome_icon = "sudo sed -i 's|/05_jonas.png|/kappi.png|g' /usr/share/applications/google-chrome.desktop"
 
         shell_run(cmd_mail)

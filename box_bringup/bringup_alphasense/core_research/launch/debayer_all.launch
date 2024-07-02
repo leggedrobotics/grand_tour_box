@@ -8,7 +8,7 @@
     <arg name="output_prefix" value="alphasense_driver_node/cam1"/>
     <arg name="output_frame" value="cam1_sensor_frame_helper"/>
     <arg name="debayer/enabled" value="false"/>
-    <arg name="white_balance/enabled" value="true"/>
+    <arg name="white_balance/enabled" value="false"/>
     <arg name="undistortion/calibration_file" value="$(find core_calibration)/calibration/alphasense/cam1.yaml"/>
 </include>
 
@@ -20,7 +20,7 @@
     <arg name="output_prefix" value="alphasense_driver_node/cam2"/>
     <arg name="output_frame" value="cam2_sensor_frame_helper"/>
     <arg name="debayer/enabled" value="true"/>
-    <arg name="white_balance/enabled" value="true"/>
+    <arg name="white_balance/enabled" value="false"/>
     <arg name="undistortion/calibration_file" value="$(find core_calibration)/calibration/alphasense/cam2.yaml"/>
 </include>
 
@@ -32,7 +32,7 @@
     <arg name="output_prefix" value="alphasense_driver_node/cam3"/>
     <arg name="output_frame" value="cam3_sensor_frame_helper"/>
     <arg name="debayer/enabled" value="true"/>
-    <arg name="white_balance/enabled" value="true"/>
+    <arg name="white_balance/enabled" value="false"/>
     <arg name="undistortion/calibration_file" value="$(find core_calibration)/calibration/alphasense/cam3.yaml"/>
 </include>
 
@@ -42,7 +42,7 @@
     <arg name="output_prefix" value="alphasense_driver_node/cam4"/>
     <arg name="output_frame" value="cam4_sensor_frame_helper"/>
     <arg name="debayer/enabled" value="true"/>
-    <arg name="white_balance/enabled" value="true"/>
+    <arg name="white_balance/enabled" value="false"/>
     <arg name="undistortion/calibration_file" value="$(find core_calibration)/calibration/alphasense/cam4.yaml"/>
 </include>
 
@@ -54,7 +54,7 @@
     <arg name="output_prefix" value="alphasense_driver_node/cam5"/>
     <arg name="output_frame" value="cam5_sensor_frame_helper"/>
     <arg name="debayer/enabled" value="false"/>
-    <arg name="white_balance/enabled" value="true"/>
+    <arg name="white_balance/enabled" value="false"/>
     <arg name="undistortion/calibration_file" value="$(find core_calibration)/calibration/alphasense/cam5.yaml"/>
 </include>
 

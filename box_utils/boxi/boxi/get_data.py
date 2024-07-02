@@ -5,7 +5,9 @@ def add_arguments(parser):
     parser.set_defaults(main=main)
     parser.add_argument("--jetson", action="store_true", help="Get data from Jetson")
     parser.add_argument("--nuc", action="store_true", help="Get data from Nuc")
+    parser.add_argument("--directory", type=str, help="Specific directory inside /data to sync")
     return parser
+
 
 def main(args):
     rsync_part1 = "rsync -r --progress " + USERNAME + "@"
@@ -17,7 +19,11 @@ def main(args):
         rsync_exclusions += ' --exclude="docker"'
     if args.nuc:
         hosts.append("nuc")
-    rsync_part2 = ":/data/* . " + rsync_exclusions
+
+    if args.directory:
+        rsync_part2 = f":/data/{args.directory} . {rsync_exclusions}"
+    else:
+        rsync_part2 = ":/data/* . " + rsync_exclusions
 
     if len(hosts) == 0:
         print("No host specified. Specify host with --hostname")
