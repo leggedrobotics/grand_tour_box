@@ -1,6 +1,4 @@
 from boxi import LOCAL_HOSTNAME, shell_run
-import socket
-import time
 
 
 def add_arguments(parser):
@@ -37,5 +35,5 @@ def main(args):
         chrony_restart = "sudo systemctl restart chrony.service"
         shell_run(chrony_restart)
     else:
-        chrony_restart = f"ssh -o ConnectTimeout=4 rsl@opc -t bash -ci 'sudo systemctl restart chrony.service'"
+        chrony_restart = "ssh -o ConnectTimeout=4 rsl@opc -t bash -ci 'sudo systemctl restart chrony.service'"
         shell_run(chrony_restart)
