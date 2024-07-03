@@ -19,7 +19,13 @@ windows:
       - source ~/catkin_ws/devel/setup.bash
       - roslaunch bringup_fkie fkie.launch
           autostart_launch_files:="
-            $(rospack find launch_jetson)/launch/jetson_visualization.launch
+            $(rospack find box_health)/launch/box_health_client.launch
+            $(rospack find bringup_ap20)/launch/ap20.launch
+            $(rospack find box_recording)/launch/rosbag_record_coordinator.launch
+            $(rospack find box_recording)/launch/rosbag_record_node.launch
+            $(rospack find bringup_zed2i_visualization)/launch/zed2i_visualization.launch
+            $(rospack find box_throttling)/launch/throttle_jetson.launch
+            $(rospack find box_relaying)/launch/relay_jetson.launch
             "
           use_gui:=false
     - shell_command:

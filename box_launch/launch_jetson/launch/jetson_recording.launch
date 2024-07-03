@@ -1,9 +1,0 @@
-<launch>
-  <include file="$(find box_health)/launch/box_health.launch"> </include>
-  <include file="$(find bringup_ap20)/launch/ap20.launch"> </include>
-  <include file="$(find box_recording)/launch/rosbag_record_coordinator.launch"> </include>
-  <include file="$(find box_recording)/launch/rosbag_record_node.launch">  </include>
-  <include file="$(find bringup_zed2i_recording)/launch/zed2i_recording.launch"> </include>
-  <include file="$(find box_throttling)/launch/throttle_jetson.launch">  </include>
-  <include file="$(find box_relaying)/launch/relay_jetson.launch">  </include>
-</launch>

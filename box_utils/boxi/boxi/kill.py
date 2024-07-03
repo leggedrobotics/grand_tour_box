@@ -1,5 +1,4 @@
-from boxi import shell_run
-import socket
+from boxi import shell_run, LOCAL_HOSTNAME
 
 
 def add_arguments(parser):
@@ -13,9 +12,9 @@ def main(args):
     if args.all:
         hosts = ["opc", "jetson", "nuc", "pi"]
     else:
-        hosts = [socket.gethostname()]
+        hosts = [LOCAL_HOSTNAME]
 
-    hostname = socket.gethostname()
+    hostname = LOCAL_HOSTNAME
     for host in hosts:
         print("Killing ROS on", host)
         if host == hostname:

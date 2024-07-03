@@ -1,14 +1,13 @@
-from boxi import shell_run
-import socket
+from boxi import shell_run, LOCAL_HOSTNAME
 import time
 
 
 def add_arguments(parser):
     modes = [
         "recording",
+        "calib_camera",
         # "autonomy",
         # "replay",
-        # "calib_camera",
         # "calib_lidar",
         # "calib_imu",
     ]
@@ -40,9 +39,9 @@ def main(args):
     if args.all:
         hosts = ["opc", "jetson", "nuc", "pi"]
     else:
-        hosts = [socket.gethostname()]
+        hosts = [LOCAL_HOSTNAME]
 
-    hostname = socket.gethostname()
+    hostname = LOCAL_HOSTNAME
 
     for host in hosts:
         print(f'Start ros in calibration mode "{args.mode}" on {host}')

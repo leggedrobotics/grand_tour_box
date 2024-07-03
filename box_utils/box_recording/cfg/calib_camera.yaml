@@ -1,0 +1,69 @@
+jetson:
+  utils:
+    - /gt_box/alphasense_driver_node/imu
+  zed2i:
+    - /gt_box/zed2i_driver_node/rgb_raw/image_raw_color/compressed
+    - /gt_box/zed2i_driver_node/left_raw/image_raw_color/compressed
+    - /gt_box/zed2i_driver_node/right_raw/image_raw_color/compressed
+  ap20:
+    - /gt_box/ap20/ap20_imu
+    - /gt_box/ap20/prism_position
+    - /ap20/tps
+    - /ap20/imu
+  hdr:
+    - /gt_box/hdr_center/image_raw
+    - /gt_box/hdr_center/camera_info
+    - /gt_box/hdr_left/image_raw
+    - /gt_box/hdr_left/camera_info
+    - /gt_box/hdr_right/image_raw
+    - /gt_box/hdr_right/camera_info
+  clock:
+    - /clock
+nuc:
+  imus:
+    - /gt_box/stim320/imu
+    - /gt_box/adis16475/imu
+    - /gt_box/livox/imu
+    - /gt_box/alphasense_driver_node/imu
+    - /gt_box/livox/imu
+  hesai:
+    - /gt_box/hesai/packets
+    - /gt_box/hesai/points
+  livox:
+    - /gt_box/livox/lidar
+  alphasense:
+    - /gt_box/alphasense_driver_node/cam1/color/image
+    - /gt_box/alphasense_driver_node/cam1/color/camera_info
+    - /gt_box/alphasense_driver_node/cam2/color/image
+    - /gt_box/alphasense_driver_node/cam2/color/camera_info
+    - /gt_box/alphasense_driver_node/cam3/color/image
+    - /gt_box/alphasense_driver_node/cam3/color/camera_info
+    - /gt_box/alphasense_driver_node/cam4/color/image
+    - /gt_box/alphasense_driver_node/cam4/color/camera_info
+    - /gt_box/alphasense_driver_node/cam5/color/image
+    - /gt_box/alphasense_driver_node/cam5/color/camera_info
+  cpt7:
+    - /gt_box/cpt7/bestgnsspos
+    - /gt_box/cpt7/bestpos
+    - /gt_box/cpt7/bestutm
+    - /gt_box/cpt7/bestvel
+    - /gt_box/cpt7/corrimu
+    - /gt_box/cpt7/gps/fix
+    - /gt_box/cpt7/gps/gps
+    - /gt_box/cpt7/gps/imu
+    - /gt_box/cpt7/heading2
+    - /gt_box/cpt7/imu/data_raw
+    - /gt_box/cpt7/insconfig
+    - /gt_box/cpt7/inspva
+    - /gt_box/cpt7/inspvax
+    - /gt_box/cpt7/insstdev
+    - /gt_box/cpt7/odom
+    - /gt_box/cpt7/oem7raw
+    - /gt_box/cpt7/ppppos
+    - /gt_box/cpt7/rxstatus
+    - /gt_box/cpt7/terrastarinfo
+    - /gt_box/cpt7/terrastarstatus
+    - /gt_box/cpt7/time
+  tf:
+    - /tf
+    - /tf_static

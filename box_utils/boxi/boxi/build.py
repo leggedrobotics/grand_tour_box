@@ -1,5 +1,4 @@
-from boxi import shell_run
-import socket
+from boxi import shell_run, LOCAL_HOSTNAME
 
 
 def add_arguments(parser):
@@ -38,9 +37,9 @@ def main(args):
         if args.pi:
             hosts.append("pi")
         if len(hosts) == 0:
-            hosts.append(socket.gethostname())
+            hosts.append(LOCAL_HOSTNAME)
 
-    hostname = socket.gethostname()
+    hostname = LOCAL_HOSTNAME
     for host in hosts:
         cmd = ""
         if host == hostname:
