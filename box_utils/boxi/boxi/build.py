@@ -1,4 +1,4 @@
-from boxi import shell_run, bcolors
+from boxi import shell_run
 import socket
 
 
@@ -60,7 +60,7 @@ def main(args):
                 args.package = "launch_" + host
 
             cmd += f"ssh -o ConnectTimeout=4 rsl@{host} -t /home/rsl/.local/bin/boxi build --{host} --package {args.package}"
-
+            args.package = ""
             if args.clean:
                 cmd += " --clean"
 
