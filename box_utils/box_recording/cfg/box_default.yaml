@@ -9,9 +9,6 @@ jetson:
     - /gt_box/ap20/prism_position
     - /ap20/tps
     - /ap20/imu
-  tf:
-    - /tf_static
-    - /tf
   hdr:
     - /gt_box/hdr_center/image_raw/compressed
     - /gt_box/hdr_center/camera_info
@@ -19,6 +16,8 @@ jetson:
     - /gt_box/hdr_left/camera_info
     - /gt_box/hdr_right/image_raw/compressed
     - /gt_box/hdr_right/camera_info
+  clock:
+    - /clock
   cpt7_local:
     - cpt7_local
 nuc:
@@ -70,8 +69,6 @@ nuc:
     - /gt_box/cpt7/terrastarinfo
     - /gt_box/cpt7/terrastarstatus
     - /gt_box/cpt7/time
-  clock:
-    - /clock
   tf:
     - /tf
     - /tf_static
