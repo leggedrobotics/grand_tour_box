@@ -4,5 +4,5 @@ string offset_phc2sys_eth0
 float64 gt_box_adis16470_imu_hz
 float64 gt_box_stim320_imu_hz
 
-float32 cpu_usage_pi
-string avail_memory_pi
+float32 cpu_usage
+string avail_memory

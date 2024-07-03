@@ -247,7 +247,7 @@ class BoxStatus:
         for k, v in self.cfg["topics"].items():
 
             val = getattr(health_msg, k[1:].replace("/", "_") + "_hz")
-            if abs(val - v["rate"]) > 0.1:
+            if abs(val - v["rate"]) > 0.01 * v["rate"]:
                 if offset == fsk["height"]:
                     text.text += "\nTopics:\n"
 

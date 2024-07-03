@@ -1,7 +1,7 @@
  <!-- Mode that enables live video feed from all cameras, but can only record the zed2i at <1hz. -->
 <launch>
   <arg name="calibration" default="no"/>
-  <include file="$(find box_health)/launch/box_health_client.launch"> </include>
+  <include file="$(find box_health)/launch/box_health.launch"> </include>
   <include file="$(find bringup_ap20)/launch/ap20.launch"> </include>
   <include file="$(find box_recording)/launch/rosbag_record_coordinator.launch"> </include>
   <include file="$(find box_recording)/launch/rosbag_record_node.launch">  </include>

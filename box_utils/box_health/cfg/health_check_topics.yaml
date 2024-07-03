@@ -1,22 +1,22 @@
 jetson:
   topics:
-    /gt_box/hdr_camera_left/image_raw:
-      rate: 10
-    /gt_box/hdr_camera_front/image_raw:
-      rate: 10
-    /gt_box/hdr_camera_right/image_raw:
-      rate: 10
-    /gt_box/zed2i_driver_node/zed_node/point_cloud/cloud_registered:
-      rate: 10
-    /gt_box/zed2i_driver_node/zed_node/left_raw/image_raw_color:
-      rate: 10
-    /gt_box/zed2i_driver_node/zed_node/right_raw/image_raw_color:
-      rate: 10
-    /gt_box/zed2i_driver_node/zed_node/depth/depth_registered:
-      rate: 10
-    /gt_box/ap20_imu:
-      rate: 400
-    /gt_box/ap20_prism_position:
+   #/gt_box/hdr_camera_left/image_raw:
+   #  rate: 10
+   #/gt_box/hdr_camera_front/image_raw:
+   #  rate: 10
+   #/gt_box/hdr_camera_right/image_raw:
+   #  rate: 10
+   #/gt_box/zed2i_driver_node/zed_node/point_cloud/cloud_registered:
+   #  rate: 10
+   #/gt_box/zed2i_driver_node/zed_node/left_raw/image_raw_color:
+   #  rate: 10
+   #/gt_box/zed2i_driver_node/zed_node/right_raw/image_raw_color:
+   #  rate: 10
+   #/gt_box/zed2i_driver_node/zed_node/depth/depth_registered:
+   #  rate: 10
+    /gt_box/ap20/imu:
+      rate: 200
+    /gt_box/ap20/prism_position:
       rate: 20
   ptp4l:
     - ptp4l_mgbe0
@@ -26,18 +26,15 @@ jetson:
   cpu: True
   fsk:
     text:
-      width: 1500
+      width: 1300
       height: 300
       left: 10
       top: 40
-      text_size: 11
-
+      text_size: 9
 nuc:
   topics:
     /gt_box/alphasense_driver_node/imu:
-      rate: 400
-    /gt_box/alphasense_driver_node/cam0:
-      rate: 10
+      rate: 200
     /gt_box/alphasense_driver_node/cam1:
       rate: 10
     /gt_box/alphasense_driver_node/cam2:
@@ -46,6 +43,8 @@ nuc:
       rate: 10
     /gt_box/alphasense_driver_node/cam4:
       rate: 10
+    /gt_box/alphasense_driver_node/cam5:
+      rate: 10
     /gt_box/hesai/packets:
       rate: 10
     /gt_box/hesai/points:
@@ -53,8 +52,8 @@ nuc:
     /gt_box/livox/lidar:
       rate: 10
     /gt_box/livox/imu:
-      rate: 400
-  p4l:
+      rate: 200
+  ptp4l:
     - ptp4l_enp45s0
     - ptp4l_enp46s0
   phc2sys:
@@ -64,11 +63,11 @@ nuc:
   cpu: True
   fsk:
     text:
-      width: 700
+      width: 1300
       height: 500
       left: 10
-      top: 400
-      text_size: 11
+      top: 600
+      text_size: 9
 
 pi:
   topics:
