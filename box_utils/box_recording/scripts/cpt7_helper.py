@@ -1,0 +1,235 @@
+import socket
+
+# Define the IP address and port
+IP = "192.168.2.98"
+PORT = 3001
+uniq = {}
+
+
+def send_cmd(command):
+    suc = True
+    try:
+        # Create a socket object
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            # Connect to the server
+            s.connect((IP, PORT))
+            print(f"Connected to {IP}:{PORT}")
+            # Send the command
+            s.sendall((command).encode("utf-8"))
+            print(f"Command sent: {command}")
+            # Receive response (if any)
+            response = s.recv(1024)
+
+            if response[:6] == b"[ICOM]":
+                suc = False
+            # Try to decode the response as UTF-8
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        suc = False
+
+    return suc
+
+
+START_RECORDING = ["FILECONFIG OPEN"]
+STOP_RECORDING = ["FILECONFIG CLOSE"]
+SIGNAL_TO_RECORD = [
+    # Inertial Explorer
+    "LOG FILE BESTPOSB ONTIME 1",
+    "LOG FILE BESTGNSSPOSB ONTIME 1",
+    "LOG FILE INSPVAXB ONTIME 1",
+    "LOG FILE INSUPDATESTATUSB ONCHANGED",
+    "LOG FILE DMICONFIGB ONCHANGED",  # (if using a DMI sensor)
+    "LOG FILE RAWDMIB ONNEW",
+    "LOG FILE BESTPOSA ONTIME 1",
+    "LOG FILE VERSIONA",
+    "LOG FILE BDSEPHEMERIS",
+    "LOG FILE BESTGNSSPOS",
+    "LOG FILE BESTPOS",
+    "LOG FILE DMICONFIG",
+    "LOG FILE GALFNAVEPHEMERIS",
+    "LOG FILE GALINAVEPHEMERIS",
+    "LOG FILE GPSEPHEM",
+    "LOG FILE HEADING2",
+    "LOG FILE INSCONFIG",
+    "LOG FILE INSPVAX",
+    "LOG FILE INSUPDATESTATUS",
+    "LOG FILE QZSSEPHEMERIS",
+    "LOG FILE RANGECMP",
+    "LOG FILE RANGECMP_1",
+    "LOG FILE RAWDMI",
+    "LOG FILE RAWIMUSX",
+    "LOG FILE RXSTATUS",
+    "LOG FILE THISANTENNATYPE",
+    "LOG FILE TIME",
+    # GraphNav
+    "LOG FILE BDSEPHEMERIS",
+    "LOG FILE BESTPOS",
+    "LOG FILE GALFNAVEPHEMERIS",
+    "LOG FILE GALINAVEPHEMERIS",
+    "LOG FILE GPSEPHEM",
+    "LOG FILE QZSSEPHEMERIS",
+    "LOG FILE RANGECMP",
+    "LOG FILE RXSTATUS",
+    "LOG FILE THISANTENNATYPE",
+    # ALIGN
+    "LOG FILE ALIGNBSLNENU",
+    "LOG FILE ALIGNBSLNXYZ",
+    "LOG FILE ALIGNDOP",
+    "LOG FILE BDSEPHEMERIS",
+    "LOG FILE BESTPOS",
+    "LOG FILE DUALANTENNAHEADING",
+    "LOG FILE GALINAVRAWEPHEMERIS",
+    "LOG FILE HEADING2",
+    "LOG FILE HEADINGSATS",
+    "LOG FILE MASTERPOS",
+    "LOG FILE PASSTHROUGH",
+    "LOG FILE PORTSTATS",
+    "LOG FILE RANGE",
+    "LOG FILE RANGE_1",
+    "LOG FILE RAWEPHEM",
+    "LOG FILE ROVERPOS",
+    "LOG FILE RXSTATUS",
+    "LOG FILE TRACKSTAT_1",
+    # General
+    "LOG FILE BESTPOS",
+    "LOG FILE HWMONITOR",
+    "LOG FILE PORTSTATS",
+    "LOG FILE PROFILEINFO",
+    "LOG FILE RANGE",
+    "LOG FILE RAWEPHEM",
+    "LOG FILE RXSTATUS",
+    # Interference Detection
+    "LOG FILE BDSALMANAC",
+    "LOG FILE BDSCLOCK",
+    "LOG FILE BDSEPHEMERIS",
+    "LOG FILE BESTPOS",
+    "LOG FILE CLOCKSTEERING",
+    "LOG FILE GALALMANAC",
+    "LOG FILE GALCLOCK",
+    "LOG FILE GALINAVRAWEPHEMERIS",
+    "LOG FILE IONUTC",
+    "LOG FILE ITDETECTSTATUS",
+    "LOG FILE ITPSDDETECT",
+    "LOG FILE ITPSDFINAL",
+    "LOG FILE NAVICALMANAC",
+    "LOG FILE NAVICEPHEMERIS",
+    "LOG FILE PASSTHROUGH",
+    "LOG FILE QZSSALMANAC",
+    "LOG FILE QZSSEPHEMERIS",
+    "LOG FILE RANGE",
+    "LOG FILE RANGE_1",
+    "LOG FILE RAWALM",
+    "LOG FILE RAWEPHEM",
+    "LOG FILE RXSTATUS",
+    "LOG FILE SATVIS2",
+    "LOG FILE TRACKSTAT",
+    "LOG FILE TRACKSTAT_1",
+    # RTK ROVER
+    "LOG FILE BDSRAWNAVSUBFRAME",
+    "LOG FILE BESTPOS",
+    "LOG FILE CLOCKMODEL",
+    "LOG FILE GALFNAVRAWEPHEMERIS",
+    "LOG FILE GALINAVRAWEPHEMERIS",
+    "LOG FILE IONUTC",
+    "LOG FILE MATCHEDPOS",
+    "LOG FILE MATCHEDSATS",
+    "LOG FILE PASSTHROUGH",
+    "LOG FILE PSRPOS",
+    "LOG FILE QZSSRAWEPHEM",
+    "LOG FILE RANGE",
+    "LOG FILE RAWALM",
+    "LOG FILE RAWEPHEM",
+    "LOG FILE REFSTATION",
+    "LOG FILE RTKPOS",
+    "LOG FILE RTKSATS",
+    "LOG FILE RTKVEL",
+    "LOG FILE RXSTATUS",
+    "LOG FILE TRACKSTAT",
+    # ?
+    "LOG FILE ALMANAC",
+    "LOG FILE BDSALMANAC",
+    "LOG FILE BDSBCNAV1EPHEMERIS",
+    "LOG FILE BDSBCNAV2EPHEMERIS",
+    "LOG FILE BDSBCNAV3EPHEMERIS",
+    "LOG FILE BDSEPHEMERIS",
+    "LOG FILE BESTPOS",
+    "LOG FILE GALALMANAC",
+    "LOG FILE GALFNAVEPHEMERIS",
+    "LOG FILE GALINAVEPHEMERIS",
+    "LOG FILE GPSEPHEM",
+    "LOG FILE IONUTC",
+    "LOG FILE LBANDBEAMTABLE",
+    "LOG FILE LBANDTRACKSTAT",
+    "LOG FILE PPPPOS",
+    "LOG FILE PPPSATS",
+    "LOG FILE PSRPOS",
+    "LOG FILE QZSSALMANAC",
+    "LOG FILE QZSSEPHEMERIS",
+    "LOG FILE RANGE",
+    "LOG FILE RXSTATUS",
+    "LOG FILE TERRASTARINFO",
+    "LOG FILE TERRASTARSTATUS",
+    "LOG FILE TRACKSTAT",
+    # TERRASTAR
+    "LOG FILE ALMANAC",
+    "LOG FILE BDSALMANAC",
+    "LOG FILE BDSBCNAV1EPHEMERIS",
+    "LOG FILE BDSBCNAV2EPHEMERIS",
+    "LOG FILE BDSBCNAV3EPHEMERIS",
+    "LOG FILE BDSEPHEMERIS",
+    "LOG FILE BESTPOS",
+    "LOG FILE GALALMANAC",
+    "LOG FILE GALFNAVEPHEMERIS",
+    "LOG FILE GALINAVEPHEMERIS",
+    "LOG FILE GPSEPHEM",
+    "LOG FILE IONUTC",
+    "LOG FILE LBANDBEAMTABLE",
+    "LOG FILE LBANDTRACKSTAT",
+    "LOG FILE PPPPOS",
+    "LOG FILE PPPSATS",
+    "LOG FILE PSRPOS",
+    "LOG FILE QZSSALMANAC",
+    "LOG FILE QZSSEPHEMERIS",
+    "LOG FILE RANGE",
+    "LOG FILE RXSTATUS",
+    "LOG FILE TERRASTARINFO",
+    "LOG FILE TERRASTARSTATUS",
+    "LOG FILE TRACKSTAT",
+    # SPAN
+    "LOG FILE BDSEPHEMERIS",
+    "LOG FILE BESTGNSSPOS",
+    "LOG FILE BESTPOS",
+    "LOG FILE GALINAVRAWEPHEMERIS",
+    "LOG FILE INSCONFIG",
+    "LOG FILE INSPVAX",
+    "LOG FILE INSUPDATESTATUS",
+    "LOG FILE IONUTC",
+    "LOG FILE RANGECMP4",
+    "LOG FILE RAWEPHEM",
+    "LOG FILE RAWIMUSX",
+    "LOG FILE RXSTATUS",
+]
+import time
+
+
+def cpt7_start_recording():
+    for command in START_RECORDING:
+        send_cmd(command)
+
+    time.sleep(1)
+
+    for command in SIGNAL_TO_RECORD:
+        time.sleep(0.2)
+        send_cmd(command)
+
+
+def cpt7_stop_recording():
+    time.sleep(1.0)
+    for command in STOP_RECORDING:
+        send_cmd(command)
+
+
+if __name__ == "__main__":
+    cpt7_start_recording()
+    time.sleep(5)
+    cpt7_stop_recording()

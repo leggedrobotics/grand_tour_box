@@ -19,7 +19,8 @@ jetson:
     - /gt_box/hdr_left/camera_info
     - /gt_box/hdr_right/image_raw/compressed
     - /gt_box/hdr_right/camera_info
-  
+  cpt7_local:
+    - cpt7_local
 nuc:
   utils:
     - /gt_box/stim320/imu
