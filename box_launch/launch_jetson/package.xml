@@ -15,6 +15,7 @@
   <depend>bringup_ap20</depend>
   <depend>bringup_zed2i</depend>
   <depend>bringup_zed2i_recording</depend>
+  <depend>bringup_zed2i_visualization</depend>
   <exec_depend>bringup_fkie</exec_depend>
   <depend>box_launch</depend>
   <depend>box_recording</depend>

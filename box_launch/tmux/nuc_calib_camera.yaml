@@ -20,7 +20,7 @@ windows:
       - roslaunch bringup_fkie fkie.launch
           autostart_launch_files:="
             $(rospack find box_recording)/launch/rosbag_record_node.launch
-            $(rospack find box_health)/launch/box_health_client.launch
+            $(rospack find box_health)/launch/box_health.launch
             $(rospack find box_throttling)/launch/throttle_nuc.launch
             $(rospack find bringup_alphasense)/launch/alphasense_1hz.launch
             $(rospack find bringup_hesai)/launch/hesai_lidar.launch
