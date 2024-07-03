@@ -19,7 +19,6 @@ windows:
       - source ~/catkin_ws/devel/setup.bash
       - roslaunch bringup_fkie fkie.launch
           autostart_launch_files:="
-            $(rospack find launch_opc)/launch/opc_recording.launch
             $(rospack find box_rviz)/launch/box_rviz.launch
             $(rospack find box_recording)/launch/rosbag_record_node.launch
             $(rospack find box_health)/launch/box_health.launch

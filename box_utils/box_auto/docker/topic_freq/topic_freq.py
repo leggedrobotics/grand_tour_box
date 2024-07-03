@@ -57,6 +57,7 @@ def read_rosbag_and_generate_histograms(rosbag_path, output_dir, name, skip_same
             if skip_same_timestamps:
                 if len(topic_timestamps[topic]) > 0 and topic_timestamps[topic][-1] == time_in_sec:
                     topic_number_stame_timestamps[topic] += 1
+                    print(f"   Topic: {topic} has a repeat timestamp at {time_in_sec}")
                     continue
             topic_timestamps[topic].append(time_in_sec)
         except AttributeError:
