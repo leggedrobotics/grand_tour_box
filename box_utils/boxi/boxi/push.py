@@ -9,6 +9,8 @@ def add_arguments(parser):
     parser.add_argument("--nuc", action="store_true", help="Sync to Nuc")
     parser.add_argument("--pi", action="store_true", help="Sync to Pi")
     parser.add_argument("--pi2", action="store_true", help="Sync to Pi")
+    parser.add_argument("--lpc", action="store_true", help="Sync to ANYmal LPC")
+    parser.add_argument("--npc", action="store_true", help="Sync to ANYmal NPC")
     parser.add_argument("--all", action="store_true", help="Sync to All")
     return parser
 
@@ -24,6 +26,11 @@ def main(args):
         hosts.append("pi")
     if args.pi2:
         hosts.append("pi2")
+    if args.lpc:
+        hosts.append("integration@192.168.0.128")
+    if args.npc:
+        hosts.append("integration@192.168.0.129")
+
     if args.all:
         hosts = ["jetson", "nuc", "pi"]
 
@@ -32,5 +39,8 @@ def main(args):
         return
 
     for host in hosts:
-        cmd = f"{rsync} {BOX_ROOT_DIR} {host}:/home/rsl/git"
+        if host.find("integration") != -1:
+            cmd = f"{rsync} {BOX_ROOT_DIR} {host}:/home/integration/git"
+        else:
+            cmd = f"{rsync} {BOX_ROOT_DIR} {host}:/home/rsl/git"
         shell_run(cmd)
