@@ -104,6 +104,10 @@ def main(args):
             print("Splitting the downgraded bag into 5-minute chunks.")
             split_rosbags(output_path, run_id)
 
+            # Remove intermediate artifacts
+            os.remove(converted_bag_path)
+            os.remove(output_path)
+
             counter += 1
 
     print("All directories processed. Split bags are available in each directory.")
