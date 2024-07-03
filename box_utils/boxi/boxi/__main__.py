@@ -24,6 +24,7 @@ command_register = [
     "repair_bags",
     "set_cpt7_time",
     "convert_mcap",
+    "pre_commit",
 ]
 
 

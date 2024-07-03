@@ -1,0 +1,159 @@
+[global_config]
+  suppress_multiple_term_dialog = True
+[keybindings]
+  split_horiz = <Primary>Down
+  split_vert = <Primary>Right
+[profiles]
+  [[default]]
+    background_color = "#ffffff"
+    cursor_color = "#aaaaaa"
+    foreground_color = "#000000"
+    scrollback_infinite = True
+  [[box_nuc]]
+    background_color = "#b9d5dc"
+    cursor_color = "#aaaaaa"
+    foreground_color = "#2e3436"
+    exit_action = hold
+    login_shell = True
+    use_custom_command = True
+    custom_command = ssh rsl@nuc
+  [[box_jetson]]
+    background_color = "#a5bead"
+    cursor_color = "#aaaaaa"
+    foreground_color = "#2e3436"
+    exit_action = hold
+    login_shell = True
+    use_custom_command = True
+    custom_command = ssh rsl@jetson
+  [[box_jetson2]]
+    background_color = "#a5bead"
+    cursor_color = "#aaaaaa"
+    foreground_color = "#000000"
+    exit_action = hold
+    login_shell = True
+    use_custom_command = True
+    custom_command = "ssh rsl@jetson "
+  [[box_pi]]
+    background_color = "#d7b8b8"
+    cursor_color = "#aaaaaa"
+    foreground_color = "#000000"
+    exit_action = hold
+    login_shell = True
+    use_custom_command = True
+    custom_command = ssh rsl@pi
+  [[box_ap20]]
+    background_color = "#e9eab7"
+    cursor_color = "#aaaaaa"
+    foreground_color = "#000000"
+    exit_action = hold
+    login_shell = True
+    use_custom_command = True
+    custom_command = ssh rsl@jetson; ssh root@ap20
+  [[box_nuc2]]
+    cursor_color = "#aaaaaa"
+[layouts]
+  [[default]]
+    [[[child0]]]
+      type = Window
+      parent = ""
+      order = 0
+      position = 134:73
+      maximised = False
+      fullscreen = False
+      size = 931, 513
+      title = opc: ~
+      last_active_term = 8676dad6-3b11-40b2-9b5e-b44dd060c622
+      last_active_window = True
+    [[[terminal1]]]
+      type = Terminal
+      parent = child0
+      order = 0
+      profile = default
+      uuid = 8676dad6-3b11-40b2-9b5e-b44dd060c622
+  [[box]]
+    [[[child0]]]
+      type = Window
+      parent = ""
+      order = 0
+      position = 134:73
+      maximised = False
+      fullscreen = False
+      size = 931, 513
+      title = opc: ~
+      last_active_term = 8676dad6-3b11-40b2-9b5e-b44dd060c622
+      last_active_window = False
+    [[[terminal1]]]
+      type = Terminal
+      parent = child0
+      order = 0
+      profile = default
+      uuid = 8676dad6-3b11-40b2-9b5e-b44dd060c622
+    [[[child2]]]
+      type = Window
+      parent = ""
+      order = 0
+      position = 72:27
+      maximised = True
+      fullscreen = False
+      size = 1848, 1136
+      title = opc: ~
+      last_active_term = f60398cb-1524-4df7-b010-bb454a0e561d
+      last_active_window = True
+    [[[child3]]]
+      type = HPaned
+      parent = child2
+      order = 0
+      position = 671
+      ratio = 0.3640803038524145
+    [[[child4]]]
+      type = VPaned
+      parent = child3
+      order = 0
+      position = 568
+      ratio = 0.502210433244916
+    [[[terminal5]]]
+      type = Terminal
+      parent = child4
+      order = 0
+      profile = box_nuc
+      title = nuc1: ~ 100x27
+      uuid = c2a58c2d-4422-4871-9c8b-b8e0fcc3d24c
+    [[[child6]]]
+      type = VPaned
+      parent = child4
+      order = 1
+      position = 283
+      ratio = 0.50355871886121
+    [[[terminal7]]]
+      type = Terminal
+      parent = child6
+      order = 0
+      profile = box_pi
+      title = ap20: ~ 100x21
+      uuid = e54a8a3e-7842-49c8-ab0e-383b37e3521d
+    [[[terminal8]]]
+      type = Terminal
+      parent = child6
+      order = 1
+      profile = box_ap20
+      uuid = b2a12985-c53d-4527-bbc3-5b3c209eff77
+    [[[child9]]]
+      type = VPaned
+      parent = child3
+      order = 1
+      position = 567
+      ratio = 0.5013262599469496
+    [[[terminal10]]]
+      type = Terminal
+      parent = child9
+      order = 0
+      profile = box_jetson2
+      title = jetson2: ~ 101x27
+      uuid = c1307f31-720d-40a2-ba95-2ad0d15d454f
+    [[[terminal11]]]
+      type = Terminal
+      parent = child9
+      order = 1
+      profile = default
+      uuid = f60398cb-1524-4df7-b010-bb454a0e561d
+[plugins]
