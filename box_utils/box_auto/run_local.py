@@ -6,13 +6,16 @@ import os
 # Step 2: Build Docker images
 def build_containers(build_config):
     for dockerfile, args in build_config.items():
-        build_args = args.get("build_args", {})
+        _ = args.get("build_args", {})
         dockerfile_path = f"docker/{dockerfile}.Dockerfile"
         image_name = f"leggedrobotics/{dockerfile}"
 
         try:
+            home = os.path.expanduser("~")
             client.images.build(
-                path="/home/rsl/git/grand_tour_box/box_utils/box_auto", dockerfile=dockerfile_path, tag=image_name
+                path=os.path.join(home, "git/grand_tour_box/box_utils/box_auto"),
+                dockerfile=dockerfile_path,
+                tag=image_name,
             )
             print(f"Successfully built {image_name}")
         except docker.errors.BuildError as build_error:
@@ -42,7 +45,7 @@ def run_containers(run_config):
 
         print(f"Running container {image_name} with volumes {volumes} and command '{command}'")
         try:
-            container = client.containers.run(image=image_name, command=command, volumes=volumes, detach=False)
+            _ = client.containers.run(image=image_name, command=command, volumes=volumes, detach=False)
         except docker.errors.ContainerError as container_error:
             print(f"Error running container {image_name}: {container_error}")
         except docker.errors.ImageNotFound as image_not_found_error:
