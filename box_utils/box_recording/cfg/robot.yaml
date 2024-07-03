@@ -70,7 +70,7 @@ nuc:
     - /tf
     - /tf_static
 
-anymal-d039-lpc:
+lpc:
   locomotion:
     - /debug_info
   general:
@@ -103,7 +103,7 @@ anymal-d039-lpc:
     - /depth_camera_rear_lower/depth/camera_info
     - /depth_camera_rear_lower/depth/image_rect_raw
     - /depth_camera_rear_lower/infra1/image_rect_raw
-anymal-d039-npc:
+npc:
   general:
     - /behavior_engine/status
     - /chrony_monitor_npc/status
