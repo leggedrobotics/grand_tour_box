@@ -11,14 +11,13 @@ import signal
 import os
 import rosparam
 import shutil
-import subprocess
-import time
 from pathlib import Path
 from std_msgs.msg import Bool
 from std_msgs.msg import Float32
 from box_recording.srv import StartRecordingInternalResponse, StartRecordingInternal
 from box_recording.srv import StopRecordingInternalResponse, StopRecordingInternal, StopRecordingInternalRequest
 from zed2i_recording_driver_msgs.srv import StartRecordingSVO, StartRecordingSVORequest
+from box_recording_helper.cpt7_helper import cpt7_start_recording, cpt7_stop_recording
 import time
 
 
@@ -38,6 +37,7 @@ class RosbagRecordNode(object):
 
         self.bag_running = False
         self.recording_zed = False
+        self.recording_cpt7 = False
         default_path = rospkg.RosPack().get_path("box_recording") + "/data"
         self.data_path = rospy.get_param("~data_path", default_path)
 
@@ -133,7 +133,7 @@ class RosbagRecordNode(object):
         try:
             rospy.wait_for_service(service_name, timeout=2.0)
         except rospy.ROSException as e:
-            response.message += f"zed2i [FAILED] service not found, "
+            response.message += f"zed2i [FAILED] service not found, {e}"
             response.suc = False
             return response
 
@@ -144,14 +144,14 @@ class RosbagRecordNode(object):
             req.video_filename = self.bag_base_path + f"/{timestamp}_{self.node}_zed2i.svo2"
 
             start_recording_svo_srv(req)
-            response.message += f"zed2i [SUC], "
+            response.message += "zed2i [SUC], "
             self.recording_zed = start
             rospy.loginfo(
                 f"[RosbagRecordNode({self.node} zed2i)] {'Started' if start else 'Stopped'} svo recording process on zed2i"
             )
         except rospy.ServiceException as e:
             response.suc = False
-            response.message += f"zed2i [FAILED] Exception: " + str(e) + ", "
+            response.message += f"zed2i [FAILED] Exception: {e}, "
             rospy.logerr(f"Failed to {'start' if start else 'stop'} rosbag recording process on zed2i: {e}")
         return response
 
@@ -181,9 +181,14 @@ class RosbagRecordNode(object):
 
         self.bag_configs = bag_configs
         response.suc = True
-        response.message = f"Starting rosbag recording process."
+        response.message = "Starting rosbag recording process."
 
         for bag_name, topics in bag_configs.items():
+            if bag_name == "cpt7_local" and "cpt7_local" in topics:
+                cpt7_start_recording()
+                self.recording_cpt7 = True
+                continue
+
             if bag_name == "zed2i" and "svo" in topics:
                 # If we are recording svo files instead of rosbags for the zed, we need to call the svo recording service.
                 response = self.toggle_zed_recording(True, timestamp, response)
@@ -229,6 +234,9 @@ class RosbagRecordNode(object):
 
         if self.recording_zed:
             response = self.toggle_zed_recording(False, "", response)
+
+        if self.recording_cpt7:
+            cpt7_stop_recording()
 
         if request.verbose:
             # output = subprocess.check_output([f"rosbag info --freq {self.bag_path}*.bag"], shell=True)

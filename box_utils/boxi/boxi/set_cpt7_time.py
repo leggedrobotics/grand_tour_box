@@ -1,6 +1,7 @@
 import ntplib
 import datetime
 import socket
+import time
 
 
 def add_arguments(parser):
@@ -68,5 +69,6 @@ def main(args):
         except Exception as e:
             print(f"An error occurred: {e}")
 
+    time.sleep(0.5)
     send_cmd(command)
-    send_cmd("LOG TIME")
+    time.sleep(0.5)
