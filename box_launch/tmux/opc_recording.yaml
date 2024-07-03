@@ -22,7 +22,7 @@ windows:
             $(rospack find launch_opc)/launch/opc_recording.launch
             $(rospack find box_rviz)/launch/box_rviz.launch
             $(rospack find box_recording)/launch/rosbag_record_node.launch
-            $(rospack find box_health)/launch/box_health_client.launch
+            $(rospack find box_health)/launch/box_health.launch
             $(rospack find box_health)/launch/box_health_server.launch
             "
           use_gui:=true
