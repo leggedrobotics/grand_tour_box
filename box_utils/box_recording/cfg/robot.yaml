@@ -70,7 +70,7 @@ nuc:
     - /tf
     - /tf_static
 
-lpc:
+anymal-d039-lpc:
   locomotion:
     - /debug_info
   general:
@@ -103,7 +103,7 @@ lpc:
     - /depth_camera_rear_lower/depth/camera_info
     - /depth_camera_rear_lower/depth/image_rect_raw
     - /depth_camera_rear_lower/infra1/image_rect_raw
-npc:
+anymal-d039-npc:
   general:
     - /behavior_engine/status
     - /chrony_monitor_npc/status
@@ -133,15 +133,3 @@ npc:
     - /depth_camera_right/infra1/image_rect_raw
   velodyne:
     - /lidar/packets
-    - 
-jetson:
-  elevation_mapping:
-    - /elevation_mapping/elevation_map_recordable
-    - /elevation_mapping/statistics
-  general:
-    - /chrony_monitor_jetson/status
-    - /cpu_loupe_jetson/cpu_loupe
-    - /disk_monitor_jetson/status
-    - /gpu_monitor_jetson
-    - /memory_monitor_jetson/status
-    - /network_monitor_jetson/status
