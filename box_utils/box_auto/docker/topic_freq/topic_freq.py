@@ -73,9 +73,13 @@ def read_rosbag_and_generate_histograms(rosbag_path, output_dir, name, skip_same
         print("   No topics with valid timestamps found.")
         return
 
+    output_txt_file = os.path.join(output_dir, "freq.txt")
     for k, v in topic_number_stame_timestamps.items():
         if v > 0:
-            print(f"   Topic: {k} has {v} same timestamps")
+            msg = f"   Topic: {k} has {v} same timestamps"
+            print(msg)
+            with open(output_txt_file, "a") as file:
+                file.write(f"\n{rosbag_path}: {msg}\n")
 
     # Create subplots - determine grid size
     cols = 3  # Number of columns for subplots
@@ -106,6 +110,24 @@ def read_rosbag_and_generate_histograms(rosbag_path, output_dir, name, skip_same
         for c, p in zip(col, patches):
             plt.setp(p, "facecolor", cm(c * 0.6 + 0.2))
 
+        same_ts_msg = (
+            ""
+            if topic_number_stame_timestamps[topic] == 0
+            else f"{topic_number_stame_timestamps[topic]} frames with repeat timestamps"
+        )
+        axs[i].text(
+            0.3,
+            0.9,
+            same_ts_msg,
+            transform=axs[i].transAxes,
+            fontsize=12,
+            color="red",
+            ha="center",
+            va="center",
+            alpha=0.5,
+            bbox=dict(facecolor="white", alpha=0.8),
+        )
+
         axs[i].set_title(f"Histogram for Topic: {topic}")
         axs[i].set_xlabel("Delta Time (Hz)")
         axs[i].set_ylabel("Frequency")
@@ -123,7 +145,7 @@ def read_rosbag_and_generate_histograms(rosbag_path, output_dir, name, skip_same
 
     print(f"   Histograms saved to {output_file}")
 
-    run_rosbag_command(rosbag_path, os.path.join(output_dir, "freq.txt"))
+    run_rosbag_command(rosbag_path, output_txt_file)
 
 
 # Function to parse command-line arguments
