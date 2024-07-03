@@ -12,6 +12,7 @@ import rostopic
 import box_health.msg as box_health_msg
 from jsk_rviz_plugins.msg import OverlayText
 from std_msgs.msg import ColorRGBA
+from datetime import datetime
 
 
 def load_yaml(path: str) -> dict:
@@ -152,11 +153,12 @@ class BoxStatus:
                 f"offset_{ptp4l_service}",
                 self.check_clock_offset(self.read_clock_status(f"{ptp4l_service}.service")),
             )
-        for phy2sys_service in self.cfg.get("phy2sys", []):
+        for phc2sys_service in self.cfg.get("phc2sys", []):
+            print(self.read_clock_status(f"{phc2sys_service}.service"))
             setattr(
                 health_msg,
-                f"offset_{phy2sys_service}",
-                self.check_clock_offset(self.read_clock_status(f"{phy2sys_service}.service")),
+                f"offset_{phc2sys_service}",
+                self.check_clock_offset(self.read_clock_status(f"{phc2sys_service}.service")),
             )
         return health_msg
 
@@ -232,16 +234,22 @@ class BoxStatus:
         text.text_size = fsk["text_size"]
         text.line_width = 1
         text.font = "FreeMono"
-        text.fg_color = ColorRGBA(25.0 / 255, 1.0, 240.0 / 255, 0.9)
-        text.bg_color = ColorRGBA(0.0, 0.0, 0.0, 0.1)
-        text.text = f"""{self.hostname.capitalize()}\n
-            CPU: {health_msg.cpu_usage}
+
+        text.fg_color = ColorRGBA(1.0, 1.0, 1.0, 1.0)
+        text.bg_color = ColorRGBA(0.0, 0.0, 0.0, 0.8)
+
+        now = datetime.now()
+        dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
+
+        text.text = '<span style="color: rgb(0,255,0);">' + self.hostname.capitalize() + "</span>\n"
+        text.text += f"""Time: {dt_string}
+            CPU: {health_msg.cpu_usage} /%
             Storage: {health_msg.avail_memory}
             """
         sync_ele = self.cfg.get("ptp4l", []) + self.cfg.get("phc2sys", [])
         for service in sync_ele:
             val = getattr(health_msg, f"offset_{service}")
-            text.text += f"{service}:" + f"{val}\n"
+            text.text += f"{service}:" + f"{val}ns\n"
         offset = fsk["height"]
 
         for k, v in self.cfg["topics"].items():
@@ -249,14 +257,14 @@ class BoxStatus:
             val = getattr(health_msg, k[1:].replace("/", "_") + "_hz")
             if abs(val - v["rate"]) > 0.01 * v["rate"]:
                 if offset == fsk["height"]:
-                    text.text += "\nTopics:\n"
-
-                t = f"{k}: {val}Hz != {v['rate']}Hz\n"
+                    text.text += '\n<span style="color: rgb(0,255,0);">' + "Topics:" + "</span>\n"
+                    offset += 20
+                t = f"{k}: {round(val,2)}Hz != {v['rate']}Hz\n"
                 t = '<span style="color: rgb(209,134,0);">' + str(t) + "</span>"
                 text.text += t
-            offset += fsk["text_size"] * 3 + 3
-        text.height = offset
+                offset += 50
 
+        text.height = offset
         self.overlay_text_publisher.publish(text)
 
     def publish_health_status(self):

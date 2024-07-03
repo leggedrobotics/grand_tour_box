@@ -26,10 +26,10 @@ jetson:
   cpu: True
   fsk:
     text:
-      width: 1300
-      height: 300
+      width: 1000
+      height: 250
       left: 10
-      top: 40
+      top: 10
       text_size: 9
 nuc:
   topics:
@@ -63,10 +63,10 @@ nuc:
   cpu: True
   fsk:
     text:
-      width: 1300
-      height: 500
+      width: 1000
+      height: 250
       left: 10
-      top: 600
+      top: 400
       text_size: 9
 
 pi:
