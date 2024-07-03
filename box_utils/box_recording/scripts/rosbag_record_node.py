@@ -17,7 +17,7 @@ from std_msgs.msg import Float32
 from box_recording.srv import StartRecordingInternalResponse, StartRecordingInternal
 from box_recording.srv import StopRecordingInternalResponse, StopRecordingInternal, StopRecordingInternalRequest
 from zed2i_recording_driver_msgs.srv import StartRecordingSVO, StartRecordingSVORequest
-from .cpt7_helper import cpt7_start_recording, cpt7_stop_recording
+from box_recording_helper.cpt7_helper import cpt7_start_recording, cpt7_stop_recording
 import time
 
 
