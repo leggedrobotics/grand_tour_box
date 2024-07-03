@@ -1,9 +1,0 @@
-<launch>
-  <include file="$(find box_recording)/launch/rosbag_record_node.launch"> </include>
-  <include file="$(find box_health)/launch/box_health_client.launch"> </include>
-  <include file="$(find box_throttling)/launch/throttle_nuc.launch"> </include>
-  <include file="$(find bringup_alphasense)/launch/alphasense_default.launch"></include>
-  <include file="$(find bringup_hesai)/launch/hesai_lidar.launch"></include>
-  <include file="$(find bringup_livox)/launch/livox_lidar.launch"></include>
-  <include file="$(find bringup_cpt7)/launch/rover.launch"></include>
-</launch>
