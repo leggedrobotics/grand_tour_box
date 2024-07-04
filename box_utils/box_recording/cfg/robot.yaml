@@ -5,7 +5,7 @@ jetson:
   zed2i:
     - svo # SVO recording, not rosbag. Mutually exclusive: won't record zed ros topics if svo is set here.
   ap20:
-    - /gt_box/ap20/ap20_imu
+    - /gt_box/ap20/imu
     - /gt_box/ap20/prism_position
     - /ap20/tps
     - /ap20/imu
@@ -103,8 +103,8 @@ lpc:
     - /depth_camera_rear_lower/depth/camera_info
     - /depth_camera_rear_lower/depth/image_rect_raw
     - /depth_camera_rear_lower/infra1/image_rect_raw
-npc:
-  general:
+# npc:
+  npc_general:
     - /behavior_engine/status
     - /chrony_monitor_npc/status
     - /cpu_monitor_npc/status
@@ -113,23 +113,23 @@ npc:
     - /memory_monitor_npc/status
     - /network_monitor_npc/status
     - /pinger_npc_to_lpc/ping
-  wide_angle_cameras_front_rear:
-    - /wide_angle_camera_front/image_color_rect/compressed
-    - /wide_angle_camera_front/camera_info
-    - /wide_angle_camera_rear/image_color_rect/compressed
-    - /wide_angle_camera_rear/camera_info
-  depth_cameras:
-    - /depth_camera_front/depth/camera_info
-    - /depth_camera_front/depth/image_rect_raw
-    - /depth_camera_front/infra1/image_rect_raw
-    - /depth_camera_left/depth/camera_info
-    - /depth_camera_left/depth/image_rect_raw
-    - /depth_camera_left/infra1/image_rect_raw
-    - /depth_camera_rear/depth/camera_info
-    - /depth_camera_rear/depth/image_rect_raw
-    - /depth_camera_rear/infra1/image_rect_raw
-    - /depth_camera_right/depth/camera_info
-    - /depth_camera_right/depth/image_rect_raw
-    - /depth_camera_right/infra1/image_rect_raw
-  velodyne:
+  # npc_wide_angle_cameras_front_rear:
+  #   - /wide_angle_camera_front/image_color_rect/compressed
+  #   - /wide_angle_camera_front/camera_info
+  #   - /wide_angle_camera_rear/image_color_rect/compressed
+  #   - /wide_angle_camera_rear/camera_info
+  # npc_depth_cameras:
+  #   - /depth_camera_front/depth/camera_info
+  #   - /depth_camera_front/depth/image_rect_raw
+  #   - /depth_camera_front/infra1/image_rect_raw
+  #   - /depth_camera_left/depth/camera_info
+  #   - /depth_camera_left/depth/image_rect_raw
+  #   - /depth_camera_left/infra1/image_rect_raw
+  #   - /depth_camera_rear/depth/camera_info
+  #   - /depth_camera_rear/depth/image_rect_raw
+  #   - /depth_camera_rear/infra1/image_rect_raw
+  #   - /depth_camera_right/depth/camera_info
+  #   - /depth_camera_right/depth/image_rect_raw
+  #   - /depth_camera_right/infra1/image_rect_raw
+  npc_velodyne:
     - /lidar/packets

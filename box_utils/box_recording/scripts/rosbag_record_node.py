@@ -186,12 +186,14 @@ class RosbagRecordNode(object):
         for bag_name, topics in bag_configs.items():
             if bag_name == "cpt7_local" and "cpt7_local" in topics:
                 cpt7_start_recording()
+                response.message += "cpt7_local [SUC], "
                 self.recording_cpt7 = True
                 continue
 
             if bag_name == "zed2i" and "svo" in topics:
                 # If we are recording svo files instead of rosbags for the zed, we need to call the svo recording service.
                 response = self.toggle_zed_recording(True, timestamp, response)
+
                 continue
             bag_path = os.path.join(self.bag_base_path, timestamp + "_" + self.node + "_" + bag_name)
             bash_command = (
