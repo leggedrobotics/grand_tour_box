@@ -161,3 +161,18 @@ sudo vi /etc/chrony/chrony.conf
 
 chronyd -x
  
+
+
+
+# ADD here more complete ROS2 installation instructions
+# 1. Ideally not install the system on 64GB nvme storage instead use SSD
+# 2. install normally docker
+# 3. Change then if with the weird installation the docker to use the SSD on the /data 
+# Following this here: https://nvidia-isaac-ros.github.io/getting_started/hardware_setup/compute/index.html#jetson-platforms
+
+# It is clear what to do till creating the workspace.
+# Then clone the https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_common/tree/main into the repository
+# Follow the readme here and then install the docker container: https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_common/tree/main/scripts
+git clone git@github.com:leggedrobotics/isaac_ros_compression.git
+git clone git@github.com:leggedrobotics/isaac_ros_common.git
+/data/workspaces/isaac_ros-dev/src/isaac_ros_common/scripts/run_dev.sh /data/workspaces/isaac_ros-dev
