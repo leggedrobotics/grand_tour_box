@@ -6,6 +6,7 @@ import pathlib
 import argparse
 from pathlib import Path
 import subprocess
+from matplotlib.ticker import ScalarFormatter
 
 
 def run_rosbag_command(bag_file, output_file):
@@ -133,6 +134,9 @@ def read_rosbag_and_generate_histograms(rosbag_path, output_dir, name, skip_same
         axs[i].set_xlabel("Delta Time (Hz)")
         axs[i].set_ylabel("Frequency")
         axs[i].grid(True)
+
+        axs[i].xaxis.set_major_formatter(ScalarFormatter())
+        axs[i].ticklabel_format(useOffset=False, style="plain", axis="x")
 
     # Remove any empty subplots (if there are fewer topics than subplots)
     for j in range(i + 1, len(axs)):
