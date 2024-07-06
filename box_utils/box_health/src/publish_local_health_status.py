@@ -9,10 +9,13 @@ import re
 
 import rospy
 import rostopic
+from std_msgs.msg import String
 import box_health.msg as box_health_msg
 from jsk_rviz_plugins.msg import OverlayText
 from std_msgs.msg import ColorRGBA
 from datetime import datetime
+from pathlib import Path
+import os
 
 
 def load_yaml(path: str) -> dict:
@@ -47,6 +50,29 @@ def offset_from_status(line: str) -> str:
         return "error_reading_offset"
 
 
+def get_chronyc_tracking_info():
+    try:
+        # Run the `chronyc tracking` command and capture its output
+        result = subprocess.run(["chronyc", "tracking"], capture_output=True, text=True, check=True)
+        output = result.stdout
+
+        # Parse the output to find the status and last offset
+        tracking_successful = False
+        last_offset = None
+
+        for line in output.split("\n"):
+            if "Leap status" in line and "Normal" in line:
+                tracking_successful = True
+            if "Last offset" in line:
+                last_offset = line.split(":")[1].strip()
+
+        return tracking_successful, last_offset
+
+    except subprocess.CalledProcessError as e:
+        print(f"An error occurred while running `chronyc tracking`: {e}")
+        return None, None
+
+
 class FrequencyFinder:
     def __init__(self, topic):
         self.topic = topic
@@ -61,6 +87,25 @@ class FrequencyFinder:
         else:
             rospy.logdebug("[BoxStatus] Error reading frequency of " + self.topic)
             return 0.0
+
+
+def get_file_size(file_path):
+    """Return the size of the file at the given path."""
+    si = 0
+    n = file_path.split("/")[-1]
+    ls = [str(s) for s in Path(file_path).parent.rglob(f"{n}*.bag*")]
+
+    for p in ls:
+        si += os.path.getsize(p)
+
+    active = len([str(s) for s in Path(file_path).parent.rglob(f"{n}*.bag.active")]) != 0
+    suc = si != 0
+    return si, suc, active
+
+
+def add_color(text, rgb):
+
+    return f'<span style="color: rgb({rgb[0]},{rgb[1]},{rgb[2]});">' + text + "</span>\n"
 
 
 class BoxStatus:
@@ -92,7 +137,36 @@ class BoxStatus:
             OverlayText,
             queue_size=2,
         )
+
+        if self.cfg["recording"]:
+            self.recording_strings = ""
+            self.subs = rospy.Subscriber(
+                f"/gt_box/rosbag_record_node_{self.hostname}/recording_info", String, self.recording_info_callback
+            )
+
         self.rate = rospy.Rate(1.2)
+
+    def recording_info_callback(self, msg):
+        self.recording_strings = ""
+        for bag in msg.data.split(","):
+            o = bag.split("----")
+
+            if len(o) != 2:
+                continue
+
+            recorder_node_name = o[0]
+            recorder_path = o[1]
+            size, suc, active = get_file_size(recorder_path)
+            size_mb = size / 1e6
+            if suc:
+                if size / 1e3 < 5:
+                    self.recording_strings += add_color(
+                        f"{recorder_node_name}: {size_mb}MB - Bag Exists but very small", (255, 165, 0)
+                    )
+                else:
+                    self.recording_strings += add_color(f"{recorder_node_name}: {size_mb}MB", (0, 255, 0))
+            else:
+                self.recording_strings += add_color(f"{recorder_node_name}: Failed - File not found", (255, 0, 0))
 
     def check_clock_offset(self, recent_line):
         if "Waiting for ptp4l..." in recent_line:
@@ -253,7 +327,6 @@ class BoxStatus:
         offset = fsk["height"]
 
         for k, v in self.cfg["topics"].items():
-
             val = getattr(health_msg, k[1:].replace("/", "_") + "_hz")
             if abs(val - v["rate"]) > 0.01 * v["rate"]:
                 if offset == fsk["height"]:
@@ -264,13 +337,32 @@ class BoxStatus:
                 text.text += t
                 offset += 50
 
+        if self.cfg.get("recording", False):
+            text.text += '\n<span style="color: rgb(0,255,0);">' + "Recording:" + "</span>\n"
+            text.text += self.recording_strings
+            offset += len(self.recording_strings.splitlines()) * 20
+            offset += 50
+
+        if self.cfg.get("chrony", False):
+            text.text += '\n<span style="color: rgb(0,255,0);">' + "Recording:" + "</span>\n"
+            tracking_successful, last_offset = get_chronyc_tracking_info()
+
+            if tracking_successful is not None:
+                if tracking_successful:
+                    text.text += add_color(f"Chrony is tracking. Last offset: {last_offset}", (0, 255, 0))
+                else:
+                    text.text += add_color("Chrony is not tracking successfully.", (255, 0, 0))
+            else:
+                text.text += add_color("Failed to retrieve tracking information.", (255, 0, 0))
+
+            offset += 70
+
         text.height = offset
         self.overlay_text_publisher.publish(text)
 
     def publish_health_status(self):
         while not rospy.is_shutdown():
             health_msg = self.msg()
-
             health_msg = self.check_services(health_msg)
             health_msg = self.get_topic_frequencies(health_msg)
             health_msg = self.get_pc_status(health_msg)

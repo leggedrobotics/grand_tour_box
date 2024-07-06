@@ -1,23 +1,8 @@
-import socket
-
-# Define the IP address and port
-IP = "192.168.2.98"
-PORT = 3001
-uniq = {}
-
-
-def send_cmd(command, s):
-    suc = True
-    # Send the command
-    print(command)
-    s.sendall((command).encode("utf-8"))
-    print(f"Command sent: {command}")
-    # Receive response (if any)
-    response = s.recv(1024)
-    if response[:6] == b"[ICOM]":
-        suc = False
-    # Try to decode the response as UTF-8
-    return suc
+import rospy
+from novatel_oem7_msgs.srv import (
+    Oem7AbasciiCmd,
+    Oem7AbasciiCmdRequest,
+)  # Replace 'your_package' with the actual package name
 
 
 START_RECORDING = ["FILECONFIG OPEN"]
@@ -199,33 +184,82 @@ SIGNAL_TO_RECORD = [
     # "LOG FILE RAWIMUSX",
     # "LOG FILE RXSTATUS",
 ]
-import time
+# import time
+# import os
+# #import rospy
+#
+# #from novatel_oem7_msgs.srv import Oem7AbasciiCmd, Oem7AbasciiCmdRequest
+#
+# def cpt7_start_recording():
+#     # rospy.wait_for_service('/gt_box/cpt7/receivers/main/Oem7Cmd')
+#     # oem = rospy.ServiceProxy('/gt_box/cpt7/receivers/main/Oem7Cmd', Oem7AbasciiCmd)
+#     # oem()
+#     # stop_recording_srv = rospy.ServiceProxy(service_name, StopRecordingInternal)
+#     # req = Oem7AbasciiCmdRequest()
+#     # req.cmd = START_RECORDING[0]
+#     # response = stop_recording_srv(req)
+#
+#
+#     os.system(f"""rosservice call /gt_box/cpt7/receivers/main/Oem7Cmd \"cmd: '{START_RECORDING[0]}'\" """)
+#     for command in SIGNAL_TO_RECORD:
+#         os.system(f"""rosservice call /gt_box/cpt7/receivers/main/Oem7Cmd \"cmd: '{command}'\" """)
+#
+#
+# def cpt7_stop_recording():
+#     for command in STOP_RECORDING:
+#         os.system(f"""rosservice call /gt_box/cpt7/receivers/main/Oem7Cmd \"cmd: '{command}'\" """)
+#
+# if __name__ == "__main__":
+#     cpt7_stop_recording()
+
+# import socket
+# import os
+
+
+def call_service(cmd, max_attempts=5):
+    service_name = "/gt_box/cpt7/receivers/main/Oem7Cmd"
+    rospy.wait_for_service(service_name)
+    oem_service = rospy.ServiceProxy(service_name, Oem7AbasciiCmd)
+
+    for attempt in range(max_attempts):
+        try:
+            req = Oem7AbasciiCmdRequest()
+            req.cmd = cmd
+            response = oem_service(req)
+            if response.rsp == "Ok":
+                return True
+            rospy.loginfo(f"{cmd}: {response.rsp}")
+        except rospy.ServiceException as e:
+            rospy.logerr(f"Service call failed: {e}")
+    return False
 
 
 def cpt7_start_recording():
-    return
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:  # Connect to the server
-        s.connect((IP, PORT))
-        time.sleep(1.0)
-        send_cmd(START_RECORDING[0], s)
+    # First, stop any ongoing recording
+    cpt7_stop_recording()
 
-        for command in SIGNAL_TO_RECORD:
-            time.sleep(1.0)
-            send_cmd(command, s)
+    suc = True
+    # Start recording
+    suc = suc and call_service(START_RECORDING[0])
+
+    # Send signal to record commands
+    for command in SIGNAL_TO_RECORD:
+        suc = suc and call_service(command)
+
+    return suc
 
 
 def cpt7_stop_recording():
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.connect((IP, PORT))
-        time.sleep(1.0)
-        print(f"Connected to {IP}:{PORT}")
-
-        for command in STOP_RECORDING:
-            time.sleep(1.0)
-            send_cmd(command, s)
-        s.close()
-        time.sleep(1.0)
+    return call_service(STOP_RECORDING[0])
 
 
 if __name__ == "__main__":
-    cpt7_stop_recording()
+    rospy.init_node("cpt7_recording_node")
+
+    # Example usage
+    if cpt7_start_recording():
+        rospy.loginfo("Recording started successfully")
+    else:
+        rospy.logerr("Failed to start recording")
+
+    rospy.spin()

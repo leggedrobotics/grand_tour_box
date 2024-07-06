@@ -18,9 +18,10 @@ jetson:
     - /gt_box/hdr_right/camera_info
   clock:
     - /clock
+
+nuc:
   cpt7_local:
     - cpt7_local
-nuc:
   utils:
     - /gt_box/livox/imu
     - /gt_box/health_status/nuc/status
