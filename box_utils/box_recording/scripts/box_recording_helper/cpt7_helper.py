@@ -226,7 +226,7 @@ def call_service(cmd, max_attempts=5):
             req = Oem7AbasciiCmdRequest()
             req.cmd = cmd
             response = oem_service(req)
-            if response.rsp == "Ok":
+            if response.rsp == "OK":
                 return True
             rospy.loginfo(f"{cmd}: {response.rsp}")
         except rospy.ServiceException as e:
