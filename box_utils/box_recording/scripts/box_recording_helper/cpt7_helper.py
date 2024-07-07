@@ -1,8 +1,4 @@
 import rospy
-from novatel_oem7_msgs.srv import (
-    Oem7AbasciiCmd,
-    Oem7AbasciiCmdRequest,
-)  # Replace 'your_package' with the actual package name
 
 
 START_RECORDING = ["FILECONFIG OPEN"]
@@ -217,6 +213,11 @@ SIGNAL_TO_RECORD = [
 
 
 def call_service(cmd, max_attempts=5):
+    from novatel_oem7_msgs.srv import (
+        Oem7AbasciiCmd,
+        Oem7AbasciiCmdRequest,
+    )  # Replace 'your_package' with the actual package name
+
     service_name = "/gt_box/cpt7/receivers/main/Oem7Cmd"
     rospy.wait_for_service(service_name)
     oem_service = rospy.ServiceProxy(service_name, Oem7AbasciiCmd)

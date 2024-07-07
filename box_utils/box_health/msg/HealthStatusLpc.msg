@@ -1,0 +1,5 @@
+
+float64 state_estimator_anymal_state_hz
+
+float32 cpu_usage
+string avail_memory

@@ -111,6 +111,8 @@ def add_color(text, rgb):
 class BoxStatus:
     def __init__(self):
         self.hostname = socket.gethostname()
+
+        self.hostname = self.hostname.replace("anymal-d039-", "")
         self.namespace = rospy.get_namespace()
 
         rospy.init_node(f"health_status_publisher_{self.hostname}")
@@ -140,6 +142,7 @@ class BoxStatus:
 
         if self.cfg["recording"]:
             self.recording_strings = ""
+            self.recording_lines = 0
             self.subs = rospy.Subscriber(
                 f"/gt_box/rosbag_record_node_{self.hostname}/recording_info", String, self.recording_info_callback
             )
@@ -148,6 +151,7 @@ class BoxStatus:
 
     def recording_info_callback(self, msg):
         self.recording_strings = ""
+        self.recording_lines = 0
         for bag in msg.data.split(","):
             o = bag.split("----")
 
@@ -167,6 +171,8 @@ class BoxStatus:
                     self.recording_strings += add_color(f"{recorder_node_name}: {size_mb}MB", (0, 255, 0))
             else:
                 self.recording_strings += add_color(f"{recorder_node_name}: Failed - File not found", (255, 0, 0))
+
+            self.recording_lines += 1
 
     def check_clock_offset(self, recent_line):
         if "Waiting for ptp4l..." in recent_line:
@@ -227,6 +233,7 @@ class BoxStatus:
                 f"offset_{ptp4l_service}",
                 self.check_clock_offset(self.read_clock_status(f"{ptp4l_service}.service")),
             )
+
         for phc2sys_service in self.cfg.get("phc2sys", []):
             print(self.read_clock_status(f"{phc2sys_service}.service"))
             setattr(
@@ -308,7 +315,9 @@ class BoxStatus:
         text.text_size = fsk["text_size"]
         text.line_width = 1
         text.font = "FreeMono"
+        offset = fsk["height"]
 
+        lineheight = 14
         text.fg_color = ColorRGBA(1.0, 1.0, 1.0, 1.0)
         text.bg_color = ColorRGBA(0.0, 0.0, 0.0, 0.8)
 
@@ -320,31 +329,15 @@ class BoxStatus:
             CPU: {health_msg.cpu_usage} /%
             Storage: {health_msg.avail_memory}
             """
+        offset += lineheight * 3
+
         sync_ele = self.cfg.get("ptp4l", []) + self.cfg.get("phc2sys", [])
         for service in sync_ele:
             val = getattr(health_msg, f"offset_{service}")
             text.text += f"{service}:" + f"{val}ns\n"
-        offset = fsk["height"]
-
-        for k, v in self.cfg["topics"].items():
-            val = getattr(health_msg, k[1:].replace("/", "_") + "_hz")
-            if abs(val - v["rate"]) > 0.01 * v["rate"]:
-                if offset == fsk["height"]:
-                    text.text += '\n<span style="color: rgb(0,255,0);">' + "Topics:" + "</span>\n"
-                    offset += 20
-                t = f"{k}: {round(val,2)}Hz != {v['rate']}Hz\n"
-                t = '<span style="color: rgb(209,134,0);">' + str(t) + "</span>"
-                text.text += t
-                offset += 50
-
-        if self.cfg.get("recording", False):
-            text.text += '\n<span style="color: rgb(0,255,0);">' + "Recording:" + "</span>\n"
-            text.text += self.recording_strings
-            offset += len(self.recording_strings.splitlines()) * 20
-            offset += 50
+            offset += lineheight
 
         if self.cfg.get("chrony", False):
-            text.text += '\n<span style="color: rgb(0,255,0);">' + "Recording:" + "</span>\n"
             tracking_successful, last_offset = get_chronyc_tracking_info()
 
             if tracking_successful is not None:
@@ -354,8 +347,27 @@ class BoxStatus:
                     text.text += add_color("Chrony is not tracking successfully.", (255, 0, 0))
             else:
                 text.text += add_color("Failed to retrieve tracking information.", (255, 0, 0))
+            offset += lineheight
 
-            offset += 70
+        added = False
+        for k, v in self.cfg["topics"].items():
+            val = getattr(health_msg, k[1:].replace("/", "_") + "_hz")
+            if abs(val - v["rate"]) > 0.01 * v["rate"]:
+                if not added:
+                    added = True
+                    text.text += '\n<span style="color: rgb(0,255,0);">' + "Topics:" + "</span>\n"
+                    offset += lineheight * 2
+
+                t = f"{k}: {round(val,2)}Hz != {v['rate']}Hz\n"
+                t = '<span style="color: rgb(209,134,0);">' + str(t) + "</span>"
+                text.text += t
+                offset += lineheight
+
+        if self.cfg.get("recording", False):
+            text.text += '\n<span style="color: rgb(0,255,0);">' + "Recording:" + "</span>\n"
+            text.text += self.recording_strings
+            offset += self.recording_lines * lineheight
+            offset += lineheight * 2
 
         text.height = offset
         self.overlay_text_publisher.publish(text)

@@ -28,8 +28,8 @@ jetson:
   cpu: True
   fsk:
     text:
-      width: 1000
-      height: 250
+      width: 700
+      height: 0
       left: 10
       top: 10
       text_size: 9
@@ -68,11 +68,45 @@ nuc:
   cpu: True
   fsk:
     text:
-      width: 1000
-      height: 250
+      width: 700
+      height: 0
       left: 10
-      top: 600
+      top: 300
       text_size: 9
+
+lpc:
+  topics:
+    /state_estimator/anymal_state:
+      rate: 400
+  chrony: True
+  recording: True
+  memory: /data
+  cpu: True
+  fsk:
+    text:
+      width: 700
+      height: 0
+      left: 10
+      top: 700
+      text_size: 9
+
+npc:
+  topics:
+    /state_estimator/anymal_state:
+      rate: 400
+  chrony: True
+  recording: True
+  memory: /data
+  cpu: True
+  fsk:
+    text:
+      width: 700
+      height: 0
+      left: 10
+      top: 900
+      text_size: 9
+
+
 
 pi:
   topics:
@@ -91,7 +125,7 @@ pi:
   fsk:
     text:
       width: 700
-      height: 500
+      height: 0
       left: 10
-      top: 40
+      top: 10
       text_size: 10

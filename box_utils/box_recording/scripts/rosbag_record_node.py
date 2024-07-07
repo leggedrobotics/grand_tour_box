@@ -25,6 +25,7 @@ class RosbagRecordNode(object):
         # Get the host name of the machine
         self.node = socket.gethostname()
         self.node = self.node.replace("anymal-d039-", "")
+        self.node.replace("anymal-d039-", "")
         rospy.init_node(f"rosbag_record_node_{self.node}")
 
         # Set up services

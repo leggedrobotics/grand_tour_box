@@ -145,14 +145,14 @@ class RosbagRecordCoordinator(object):
                     rospy.logerr("Failed to stop rosbag recording process on " + node)
 
             if response.suc:
-                self.bag_running = False
                 response.message = "Successfully stoped all nodes"
             rospy.loginfo("[RosbagRecordCoordinator] Sent STOP to all nodes.")
         else:
-            self.bag_running = False
             response.suc = False
             response.message = "No recording process running yet."
             rospy.logwarn("[RosbagRecordCoordinator] No recording process running yet.")
+
+        self.bag_running = False
 
         pretty = ""
         for k, v in pretty_ls.items():
