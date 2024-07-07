@@ -63,6 +63,7 @@ def main(args):
         rospy.init_node("cpt7_recording_node")
 
         def call_service(cmd, max_attempts=5):
+            print("Calling ros service")
             service_name = "/gt_box/cpt7/receivers/main/Oem7Cmd"
             rospy.wait_for_service(service_name)
             oem_service = rospy.ServiceProxy(service_name, Oem7AbasciiCmd)
@@ -72,6 +73,7 @@ def main(args):
                     req = Oem7AbasciiCmdRequest()
                     req.cmd = cmd
                     response = oem_service(req)
+                    print("Response received: ", response.rsp)
                     if response.rsp == "OK":
                         return True
                     rospy.loginfo(f"{cmd}: {response.rsp}")
@@ -80,24 +82,25 @@ def main(args):
             return False
 
         call_service(command)
+    else:
 
-    def send_cmd(command):
-        try:
-            # Create a socket object
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                # Connect to the server
-                s.connect((IP, PORT))
-                print(f"Connected to {IP}:{PORT}")
-                # Send the command
-                s.sendall(command.encode("utf-8"))
-                print(f"Command sent: {command}")
-                # Receive response (if any)
-                response = s.recv(1024)
-                # Try to decode the response as UTF-8
-                print(response[:7].decode("utf-8"))
-        except Exception as e:
-            print(f"An error occurred: {e}")
+        def send_cmd(command):
+            try:
+                # Create a socket object
+                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                    # Connect to the server
+                    s.connect((IP, PORT))
+                    print(f"Connected to {IP}:{PORT}")
+                    # Send the command
+                    s.sendall(command.encode("utf-8"))
+                    print(f"Command sent: {command}")
+                    # Receive response (if any)
+                    response = s.recv(1024)
+                    # Try to decode the response as UTF-8
+                    print(response[:7].decode("utf-8"))
+            except Exception as e:
+                print(f"An error occurred: {e}")
 
-    time.sleep(0.5)
-    send_cmd(command)
-    time.sleep(0.5)
+        time.sleep(0.5)
+        send_cmd(command)
+        time.sleep(0.5)
