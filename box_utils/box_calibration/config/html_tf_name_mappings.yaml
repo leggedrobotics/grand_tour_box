@@ -1,0 +1,4 @@
+# The mapped names must match the expected names in the URDF files:
+# box_model/box_model/urdf/box/box.urdf.xacro
+"Basilisk IMU Frame": box_base_to_basilisk
+"Mini Prism Center on Basilisk": basilisk_to_mini_prism
