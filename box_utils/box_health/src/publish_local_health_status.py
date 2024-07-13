@@ -7,12 +7,25 @@ import yaml
 import subprocess
 import re
 
-import rospy
 import rostopic
+from std_msgs.msg import String
 import box_health.msg as box_health_msg
 from jsk_rviz_plugins.msg import OverlayText
 from std_msgs.msg import ColorRGBA
 from datetime import datetime
+from pathlib import Path
+import os
+import rospy
+import rosnode
+
+
+def is_node_alive(node_name):
+    try:
+        nodes = rosnode.get_node_names()
+        return node_name in nodes
+    except rosnode.ROSNodeIOException:
+        print("failed")
+        return False
 
 
 def load_yaml(path: str) -> dict:
@@ -47,6 +60,29 @@ def offset_from_status(line: str) -> str:
         return "error_reading_offset"
 
 
+def get_chronyc_tracking_info():
+    try:
+        # Run the `chronyc tracking` command and capture its output
+        result = subprocess.run(["chronyc", "tracking"], capture_output=True, text=True, check=True)
+        output = result.stdout
+
+        # Parse the output to find the status and last offset
+        tracking_successful = False
+        last_offset = None
+
+        for line in output.split("\n"):
+            if "Leap status" in line and "Normal" in line:
+                tracking_successful = True
+            if "Last offset" in line:
+                last_offset = line.split(":")[1].strip()
+
+        return tracking_successful, last_offset
+
+    except subprocess.CalledProcessError as e:
+        print(f"An error occurred while running `chronyc tracking`: {e}")
+        return None, None
+
+
 class FrequencyFinder:
     def __init__(self, topic):
         self.topic = topic
@@ -63,9 +99,30 @@ class FrequencyFinder:
             return 0.0
 
 
+def get_file_size(file_path):
+    """Return the size of the file at the given path."""
+    si = 0
+    n = file_path.split("/")[-1]
+    ls = [str(s) for s in Path(file_path).parent.rglob(f"{n}*.bag*")]
+
+    for p in ls:
+        si += os.path.getsize(p)
+
+    active = len([str(s) for s in Path(file_path).parent.rglob(f"{n}*.bag.active")]) != 0
+    suc = si != 0
+    return si, suc, active
+
+
+def add_color(text, rgb):
+
+    return f'<span style="color: rgb({rgb[0]},{rgb[1]},{rgb[2]});">' + text + "</span>\n"
+
+
 class BoxStatus:
     def __init__(self):
         self.hostname = socket.gethostname()
+
+        self.hostname = self.hostname.replace("anymal-d039-", "")
         self.namespace = rospy.get_namespace()
 
         rospy.init_node(f"health_status_publisher_{self.hostname}")
@@ -92,7 +149,40 @@ class BoxStatus:
             OverlayText,
             queue_size=2,
         )
+
+        if self.cfg["recording"]:
+            self.recording_strings = ""
+            self.recording_lines = 0
+            self.subs = rospy.Subscriber(
+                f"/gt_box/rosbag_record_node_{self.hostname}/recording_info", String, self.recording_info_callback
+            )
+
         self.rate = rospy.Rate(1.2)
+
+    def recording_info_callback(self, msg):
+        self.recording_strings = ""
+        self.recording_lines = 0
+        for bag in msg.data.split(","):
+            o = bag.split("----")
+
+            if len(o) != 2:
+                continue
+
+            recorder_node_name = o[0]
+            recorder_path = o[1]
+            size, suc, active = get_file_size(recorder_path)
+            size_mb = size / 1e6
+            if suc:
+                if size / 1e3 < 5:
+                    self.recording_strings += add_color(
+                        f"{recorder_node_name}: {size_mb}MB - Bag Exists but very small", (255, 165, 0)
+                    )
+                else:
+                    self.recording_strings += add_color(f"{recorder_node_name}: {size_mb}MB", (0, 255, 0))
+            else:
+                self.recording_strings += add_color(f"{recorder_node_name}: Failed - File not found", (255, 0, 0))
+
+            self.recording_lines += 1
 
     def check_clock_offset(self, recent_line):
         if "Waiting for ptp4l..." in recent_line:
@@ -153,6 +243,7 @@ class BoxStatus:
                 f"offset_{ptp4l_service}",
                 self.check_clock_offset(self.read_clock_status(f"{ptp4l_service}.service")),
             )
+
         for phc2sys_service in self.cfg.get("phc2sys", []):
             print(self.read_clock_status(f"{phc2sys_service}.service"))
             setattr(
@@ -234,10 +325,11 @@ class BoxStatus:
         text.text_size = fsk["text_size"]
         text.line_width = 1
         text.font = "FreeMono"
+        offset = fsk["height"]
 
+        lineheight = 14
         text.fg_color = ColorRGBA(1.0, 1.0, 1.0, 1.0)
         text.bg_color = ColorRGBA(0.0, 0.0, 0.0, 0.8)
-
         now = datetime.now()
         dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
 
@@ -246,23 +338,51 @@ class BoxStatus:
             CPU: {health_msg.cpu_usage} /%
             Storage: {health_msg.avail_memory}
             """
+        offset += lineheight * 3
+
         sync_ele = self.cfg.get("ptp4l", []) + self.cfg.get("phc2sys", [])
         for service in sync_ele:
             val = getattr(health_msg, f"offset_{service}")
             text.text += f"{service}:" + f"{val}ns\n"
-        offset = fsk["height"]
+            offset += lineheight
 
+        if self.cfg.get("chrony", False):
+            tracking_successful, last_offset = get_chronyc_tracking_info()
+
+            if tracking_successful is not None:
+                if tracking_successful:
+                    text.text += add_color(f"Chrony is tracking. Last offset: {last_offset}", (0, 255, 0))
+                else:
+                    text.text += add_color("Chrony is not tracking successfully.", (255, 0, 0))
+            else:
+                text.text += add_color("Failed to retrieve tracking information.", (255, 0, 0))
+            offset += lineheight
+
+        added = False
         for k, v in self.cfg["topics"].items():
-
             val = getattr(health_msg, k[1:].replace("/", "_") + "_hz")
             if abs(val - v["rate"]) > 0.01 * v["rate"]:
-                if offset == fsk["height"]:
+                if not added:
+                    added = True
                     text.text += '\n<span style="color: rgb(0,255,0);">' + "Topics:" + "</span>\n"
-                    offset += 20
+                    offset += lineheight * 2
+
                 t = f"{k}: {round(val,2)}Hz != {v['rate']}Hz\n"
                 t = '<span style="color: rgb(209,134,0);">' + str(t) + "</span>"
                 text.text += t
-                offset += 50
+                offset += lineheight
+
+        if self.cfg.get("recording", False):
+            text.text += '\n<span style="color: rgb(0,255,0);">' + "Recording:" + "</span>\n"
+            if self.hostname == "jetson":
+                for pc in ["jetson", "nuc", "lpc", "npc"]:
+                    ready = is_node_alive(f"/gt_box/rosbag_record_node_{pc}")
+                    pretty = pc.capitalize()
+                    text.text += f"{pretty} ready: {ready}\n"
+                    offset += lineheight
+            text.text += self.recording_strings
+            offset += self.recording_lines * lineheight
+            offset += lineheight * 2
 
         text.height = offset
         self.overlay_text_publisher.publish(text)
@@ -270,7 +390,6 @@ class BoxStatus:
     def publish_health_status(self):
         while not rospy.is_shutdown():
             health_msg = self.msg()
-
             health_msg = self.check_services(health_msg)
             health_msg = self.get_topic_frequencies(health_msg)
             health_msg = self.get_pc_status(health_msg)

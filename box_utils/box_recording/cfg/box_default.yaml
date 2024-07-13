@@ -5,7 +5,7 @@ jetson:
   zed2i:
     - svo # SVO recording, not rosbag. Mutually exclusive: won't record zed ros topics if svo is set here.
   ap20:
-    - /gt_box/ap20/ap20_imu
+    - /gt_box/ap20/imu
     - /gt_box/ap20/prism_position
     - /ap20/tps
     - /ap20/imu

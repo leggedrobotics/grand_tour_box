@@ -7,6 +7,7 @@ import time
 def add_arguments(parser):
     parser.set_defaults(main=main)
     parser.add_argument("--local", action="store_true", help="Use local time")
+    parser.add_argument("--ros", action="store_true", help="Use local time")
     return parser
 
 
@@ -52,23 +53,54 @@ def main(args):
     # Define the command to be sent
     command = f"SETAPPROXTIME {gps_weeks} {round(gps_seconds)}"
 
-    def send_cmd(command):
-        try:
-            # Create a socket object
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                # Connect to the server
-                s.connect((IP, PORT))
-                print(f"Connected to {IP}:{PORT}")
-                # Send the command
-                s.sendall(command.encode("utf-8"))
-                print(f"Command sent: {command}")
-                # Receive response (if any)
-                response = s.recv(1024)
-                # Try to decode the response as UTF-8
-                print(response[:7].decode("utf-8"))
-        except Exception as e:
-            print(f"An error occurred: {e}")
+    if args.ros:
+        import rospy
+        from novatel_oem7_msgs.srv import (
+            Oem7AbasciiCmd,
+            Oem7AbasciiCmdRequest,
+        )  # Replace 'your_package' with the actual package name
 
-    time.sleep(0.5)
-    send_cmd(command)
-    time.sleep(0.5)
+        rospy.init_node("cpt7_recording_node")
+
+        def call_service(cmd, max_attempts=5):
+            print("Calling ros service")
+            service_name = "/gt_box/cpt7/receivers/main/Oem7Cmd"
+            rospy.wait_for_service(service_name)
+            oem_service = rospy.ServiceProxy(service_name, Oem7AbasciiCmd)
+
+            for attempt in range(max_attempts):
+                try:
+                    req = Oem7AbasciiCmdRequest()
+                    req.cmd = cmd
+                    response = oem_service(req)
+                    print("Response received: ", response.rsp)
+                    if response.rsp == "OK":
+                        return True
+                    rospy.loginfo(f"{cmd}: {response.rsp}")
+                except rospy.ServiceException as e:
+                    rospy.logerr(f"Service call failed: {e}")
+            return False
+
+        call_service(command)
+    else:
+
+        def send_cmd(command):
+            try:
+                # Create a socket object
+                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                    # Connect to the server
+                    s.connect((IP, PORT))
+                    print(f"Connected to {IP}:{PORT}")
+                    # Send the command
+                    s.sendall(command.encode("utf-8"))
+                    print(f"Command sent: {command}")
+                    # Receive response (if any)
+                    response = s.recv(1024)
+                    # Try to decode the response as UTF-8
+                    print(response[:7].decode("utf-8"))
+            except Exception as e:
+                print(f"An error occurred: {e}")
+
+        time.sleep(0.5)
+        send_cmd(command)
+        time.sleep(0.5)

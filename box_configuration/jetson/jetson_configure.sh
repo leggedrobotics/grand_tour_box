@@ -115,13 +115,19 @@ sudo cp /home/rsl/git/grand_tour_box/box_configuration/jetson/ptp4l_mgbe0.servic
 sudo cp /home/rsl/git/grand_tour_box/box_configuration/jetson/ptp4l_mgbe1.service /lib/systemd/system/ptp4l_mgbe1.service
 sudo cp /home/rsl/git/grand_tour_box/box_configuration/jetson/phc2sys_mgbe0.service /lib/systemd/system/phc2sys_mgbe0.service
 sudo cp /home/rsl/git/grand_tour_box/box_configuration/jetson/phc2sys_mgbe1.service /lib/systemd/system/phc2sys_mgbe1.service
+sudo cp /home/rsl/git/grand_tour_box/box_configuration/jetson/box_chrony.service /lib/systemd/system/box_chrony.service
+
 sudo systemctl daemon-reload
 sudo systemctl disable sync_time_once
-sudo systemctl enable jetson_clocks_once
+
 sudo systemctl enable ptp4l_mgbe0
 sudo systemctl enable ptp4l_mgbe1
 sudo systemctl enable phc2sys_mgbe0
 sudo systemctl enable phc2sys_mgbe1
+sudo systemctl enable phc2sys_mgbe1
+sudo systemctl enable box_chrony
+sudo systemctl disable chrony
+
 
 # sync clocks script
 sudo cp /home/rsl/git/grand_tour_box/box_configuration/jetson/sync_clocks_jetson.sh /usr/local/bin/

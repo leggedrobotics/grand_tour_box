@@ -12,8 +12,7 @@ import os
 import rosparam
 import shutil
 from pathlib import Path
-from std_msgs.msg import Bool
-from std_msgs.msg import Float32
+from std_msgs.msg import Float32, String, Bool
 from box_recording.srv import StartRecordingInternalResponse, StartRecordingInternal
 from box_recording.srv import StopRecordingInternalResponse, StopRecordingInternal, StopRecordingInternalRequest
 from zed2i_recording_driver_msgs.srv import StartRecordingSVO, StartRecordingSVORequest
@@ -25,6 +24,8 @@ class RosbagRecordNode(object):
     def __init__(self):
         # Get the host name of the machine
         self.node = socket.gethostname()
+        self.node = self.node.replace("anymal-d039-", "")
+        self.node.replace("anymal-d039-", "")
         rospy.init_node(f"rosbag_record_node_{self.node}")
 
         # Set up services
@@ -42,6 +43,10 @@ class RosbagRecordNode(object):
         self.data_path = rospy.get_param("~data_path", default_path)
 
         self.pub_recording_status = rospy.Publisher("~recording_status", Bool, queue_size=3)
+
+        self.info_string = ""
+        self.pub_recording_info = rospy.Publisher("~recording_info", String, queue_size=3)
+
         self.pub_disk_space_free_in_gb = rospy.Publisher("~disk_space_free_in_gb", Float32, queue_size=3)
 
         if not os.path.exists(self.data_path):
@@ -61,6 +66,7 @@ class RosbagRecordNode(object):
 
         rate = rospy.Rate(1)
         free_disk_space_in_gb = 0
+        msg = String()
 
         while rospy.is_shutdown() is False:
             if self.bag_running:
@@ -90,6 +96,9 @@ class RosbagRecordNode(object):
 
             self.pub_disk_space_free_in_gb.publish(free_disk_space_in_gb)
             self.pub_recording_status.publish(self.bag_running)
+
+            msg.data = self.info_string
+            self.pub_recording_info.publish(msg)
 
             rate.sleep()
 
@@ -164,7 +173,7 @@ class RosbagRecordNode(object):
         Path(self.bag_base_path).mkdir(parents=True, exist_ok=True)
 
         # Check if we're on lpc. If so, dump rosparams to yaml file.
-        if self.node == "jetson":
+        if self.node == "jetson" or self.node.find("lpc") != -1:
             yaml_file_path = os.path.join(self.bag_base_path, f"{timestamp}_{self.node}.yaml")
             rosparam.dump_params(yaml_file_path, "/")
 
@@ -186,17 +195,21 @@ class RosbagRecordNode(object):
         for bag_name, topics in bag_configs.items():
             if bag_name == "cpt7_local" and "cpt7_local" in topics:
                 cpt7_start_recording()
+                response.message += "cpt7_local [SUC], "
                 self.recording_cpt7 = True
                 continue
 
             if bag_name == "zed2i" and "svo" in topics:
                 # If we are recording svo files instead of rosbags for the zed, we need to call the svo recording service.
                 response = self.toggle_zed_recording(True, timestamp, response)
+
                 continue
             bag_path = os.path.join(self.bag_base_path, timestamp + "_" + self.node + "_" + bag_name)
             bash_command = (
                 f"rosrun box_recording record_bag.sh {bag_path} {topics} __name:=record_{self.node}_{bag_name}"
             )
+
+            self.info_string += f"record_{self.node}_{bag_name}----{bag_path},"
             # TODO: Replace with proper system after testing
             if bag_name == "hdr":
                 docker_script_path = "/data/workspaces/isaac_ros-dev/src/isaac_ros_common/scripts/run_recording.sh"
@@ -213,6 +226,7 @@ class RosbagRecordNode(object):
 
     def stop_recording(self, request):
         rospy.loginfo("[RosbagRecordNode(" + self.node + ")] Trying to send SIGINT to recording process.")
+        self.info_string = ""
         response = StopRecordingInternalResponse()
         response.result = ""
 

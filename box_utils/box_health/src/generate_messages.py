@@ -21,17 +21,23 @@ def generate_ros_msg_definition(pc_name, info):
     msg_lines = []
 
     # Adding string definitions for offsets
-    for t in info.get("ptp4l", []) + info.get("phc2sys", []):
-        msg_lines.append(f"string offset_{t}")
+    try:
+        for t in info.get("ptp4l", []) + info.get("phc2sys", []):
+            msg_lines.append(f"string offset_{t}")
+    except:
+        pass
 
     msg_lines.append("")  # Blank line for readability
 
-    # Process each topic to generate the frequency variables
-    topics = [k for k in info["topics"].keys()]
-    for topic in topics:
-        # Convert the topic name into the required frequency variable name
-        frequency_var_name = topic.replace("/", "_").strip("_") + "_hz"
-        msg_lines.append(f"float64 {frequency_var_name}")
+    try:
+        # Process each topic to generate the frequency variables
+        topics = [k for k in info["topics"].keys()]
+        for topic in topics:
+            # Convert the topic name into the required frequency variable name
+            frequency_var_name = topic.replace("/", "_").strip("_") + "_hz"
+            msg_lines.append(f"float64 {frequency_var_name}")
+    except:
+        pass
 
     msg_lines.append("")  # Blank line for readability
 
@@ -54,3 +60,6 @@ for pc_name, info in yaml_data.items():
     file_path = os.path.join(msg_file_path, f"HealthStatus{pretty}.msg")
     with open(file_path, "w") as file:
         file.write(ros_msg_content)
+
+
+print("If you add a new message to the package, update the CMakeLists.txt")

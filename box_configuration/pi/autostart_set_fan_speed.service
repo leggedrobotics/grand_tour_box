@@ -1,11 +1,11 @@
 [Unit]
 Description=Set fan speed
 After=network-online.target
+After=pigpiod.target
 
 [Service]
 Type=forking
-ExecStartPre=/bin/sleep 5
-ExecStart=/usr/bin/python3 /home/rsl/git/grand_tour_box/box_utils/box_fan_control/scripts/set_fan_speed.py
+ExecStart=/bin/sh -c 'while ! pgrep -x pigpiod > /dev/null; do sleep 0.1; done; sleep 0.1; pigs p 18 120'
 User=rsl
 
 [Install]

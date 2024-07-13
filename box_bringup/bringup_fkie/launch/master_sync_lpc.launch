@@ -19,7 +19,7 @@
     <!-- This list with names of ROS master to ignore -->
     <rosparam param="ignore_hosts">[]</rosparam>
 
-    <!-- This list with names of ROS master to synchronize. Only this ROS master in this list will be synchronized. The ~ignore_hosts list is processed first. -->
+    <!-- This list with names of ROS master to synchronize. Only this ROS master in this list will be synchronized. The ~ignore_hosts list is processed first. anymal-d039-lpc,anymal-d039-npc-->
     <rosparam param="sync_hosts">[]</rosparam>
 
     <!-- The list of nodes, which are to be ignored while a synchroniation. All their topics and services are ignored!
@@ -27,7 +27,7 @@
     <rosparam param="ignore_nodes">[]</rosparam>
 
     <!-- The list of nodes to synchronize. Only topics of this nodes are synchronized. The ~ignore_nodes, ~ignore_topics and ~ignore_services lists are processed first. -->
-    <rosparam param="sync_nodes">[]</rosparam>
+    <rosparam param="sync_nodes">["/gt_box/box_health_lpc", "/gt_box/box_health_npc", "/gt_box/rosbag_record_node_lpc", "/gt_box/rosbag_record_node_npc"]</rosparam>
 
     <!-- The list of topics, which are to be ignored while a synchroniation. The ~ignore_nodes list is processed first.
     These are defaults and cannot be removed: ['/rosout', '/rosout_agg'] -->
@@ -46,14 +46,14 @@
     <rosparam param="sync_services">[]</rosparam>
 
     <!-- This parameter is only regarded, if sync_nodes or sync_topics are set. In this case the subscribed and published topics are synchronized even if they are not in the sync_* list -->
-    <param name="sync_topics_on_demand" value="False" />
+    <param name="sync_topics_on_demand" value="True" />
 
     <!-- The list of types to ignore.
     These are defaults and cannot be removed: ['bond/Status'] -->
     <rosparam param="ignore_type">[]</rosparam>
 
     <!-- The nodes which are running not at the same host as the ROS master are not synchronized by default. Use sync_remote_nodes to sync these nodes also. -->
-    <param name="sync_remote_nodes" value="False" />
+    <param name="sync_remote_nodes" value="True" />
 
     <!-- checks for eqaul hostname of topic provider and master uri. Usefull on warning "Wait for topic with type..." still if master_discovery is running. -->
     <param name="check_host" value="False" />

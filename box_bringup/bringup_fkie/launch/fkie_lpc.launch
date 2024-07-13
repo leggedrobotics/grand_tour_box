@@ -58,5 +58,5 @@
     <!-- fkie_master_discovery -->
     <include file="$(find bringup_fkie)/launch/master_discovery.launch" />
     <!-- fkie_master_sync -->
-    <include file="$(find bringup_fkie)/launch/master_sync.launch" />
+    <include file="$(find bringup_fkie)/launch/master_sync_lpc.launch" />
 </launch>

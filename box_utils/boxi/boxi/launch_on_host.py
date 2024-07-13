@@ -1,4 +1,4 @@
-from boxi import BOX_ROOT_DIR, shell_run
+from boxi import BOX_ROOT_DIR, shell_run, LOCAL_HOSTNAME
 import configparser
 import os
 import subprocess
@@ -45,4 +45,5 @@ def main(args):
         if ssid and password:
             connect_to_wifi(ssid, password)
     cfg = os.path.join(BOX_ROOT_DIR, "box_launch/tmux", args.c + ".yaml")
+    print(f"Started on {LOCAL_HOSTNAME} with configu {cfg}")
     shell_run(f"tmuxp load  {cfg} -d")
