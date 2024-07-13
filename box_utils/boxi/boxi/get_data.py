@@ -7,12 +7,12 @@ def add_arguments(parser):
     parser.add_argument("--nuc", action="store_true", help="Get data from Nuc")
     parser.add_argument("--lpc", action="store_true", help="Get data from Nuc")
     parser.add_argument("--npc", action="store_true", help="Get data from Nuc")
+    parser.add_argument("--check", action="store_true", help="Get data from Nuc")
     parser.add_argument("--directory", type=str, help="Specific directory inside /data to sync")
     return parser
 
 
 def main(args):
-
     rsync_exclusions = ""
     hosts = []
     users = []
@@ -39,7 +39,12 @@ def main(args):
     if len(hosts) == 0:
         print("No host specified. Specify host with --hostname")
     for host, user in zip(hosts, users):
-        rsync_part1 = "rsync -r --progress " + user + "@"
+
+        if args.check:
+            rsync_part1 = "rsync -r --progress -Pv --size-only -n" + user + "@"
+        else:
+            rsync_part1 = "rsync -r --progress -Pv --size-only" + user + "@"
+
         cmd = f"{rsync_part1}{host}{rsync_part2}"
         print(cmd)
         shell_run(cmd)
