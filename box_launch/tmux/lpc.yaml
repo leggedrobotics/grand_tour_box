@@ -8,7 +8,7 @@ windows:
     - export HOSTNAME=anymal-d039-lpc
     - export DISPLAY=:0.0
     - export ROS_MASTER_URI=http://anymal-d039-lpc:11311
-    - export ROS_IP=192.168.0.128
+    - export ROS_IP=192.168.0.141
 
   options:
     pane-border-status: top
