@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package recording_status;
+
+service RecordingStatus {
+    rpc SendMessage (RecordingStatusRequest) returns (RecordingStatusResponse) {}
+}
+
+message RecordingStatusRequest {
+    string debug_info = 1;
+}
+
+message RecordingStatusResponse {
+    bool stop_recording = 1;
+}

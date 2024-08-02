@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package stop_recording;
+
+service StopRecording {
+    rpc SendMessage (StopRecordingRequest) returns (StopRecordingResponse) {}
+}
+
+message StopRecordingRequest {
+    string debug_info = 1;
+}
+
+message StopRecordingResponse {
+    string response = 1;
+}

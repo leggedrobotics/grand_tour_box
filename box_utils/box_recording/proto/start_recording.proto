@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package start_recording;
+
+service StartRecording {
+    rpc SendMessage (StartRecordingRequest) returns (StartRecordingResponse) {}
+}
+
+message StartRecordingRequest {
+    string topics = 1;
+    string timestamp = 2;
+}
+
+message StartRecordingResponse {
+    string response = 1;
+}
