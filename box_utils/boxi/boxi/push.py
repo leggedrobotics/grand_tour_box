@@ -39,8 +39,5 @@ def main(args):
         return
 
     for host in hosts:
-        if host.find("integration") != -1:
-            cmd = f"{rsync} {BOX_ROOT_DIR} {host}:/home/integration/git"
-        else:
-            cmd = f"{rsync} {BOX_ROOT_DIR} {host}:/home/rsl/git"
+        cmd = f"{rsync} {BOX_ROOT_DIR} {host}:/home/rsl/git"
         shell_run(cmd)
