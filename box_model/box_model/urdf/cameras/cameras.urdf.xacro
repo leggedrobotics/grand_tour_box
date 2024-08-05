@@ -6,10 +6,10 @@
 
   <!-- Alphasense base (coincides with alphasense Cam0/ front left) -->
   <link name="alphasense_base" />
-  <joint name="box_base_to_alphasense_base" type="fixed">   
+  <joint name="box_base_to_alphasense_base" type="fixed">
     <origin xyz=" ${calib['box_base_to_alphasense_base']['x']}
                   ${calib['box_base_to_alphasense_base']['y']}
-                  ${calib['box_base_to_alphasense_base']['z']}" 
+                  ${calib['box_base_to_alphasense_base']['z']}"
             rpy=" ${calib['box_base_to_alphasense_base']['roll']}
                   ${calib['box_base_to_alphasense_base']['pitch']}
                   ${calib['box_base_to_alphasense_base']['yaw']}" />
@@ -17,79 +17,79 @@
     <child link="alphasense_base" />
   </joint>
 
-  <!-- Alphasense Cam0/ front left (should be identity)-->
-  <link name="alphasense_front_left" />
-  <joint name="alphasense_base_to_alphasense_front_left" type="fixed">   
+  <!-- Alphasense Cam1/ front left (should be identity)-->
+  <link name="cam1_sensor_frame" />
+  <joint name="alphasense_base_to_alphasense_front_left" type="fixed">
     <origin xyz=" ${calib['alphasense_base_to_alphasense_front_left']['x']}
                   ${calib['alphasense_base_to_alphasense_front_left']['y']}
-                  ${calib['alphasense_base_to_alphasense_front_left']['z']}" 
+                  ${calib['alphasense_base_to_alphasense_front_left']['z']}"
             rpy=" ${calib['alphasense_base_to_alphasense_front_left']['roll']}
                   ${calib['alphasense_base_to_alphasense_front_left']['pitch']}
                   ${calib['alphasense_base_to_alphasense_front_left']['yaw']}" />
     <parent link="alphasense_base" />
-    <child link="alphasense_front_left" />
+    <child link="cam1_sensor_frame" />
   </joint>
 
-  <!-- Alphasense Cam1/ front right -->
-  <link name="alphasense_front_right" />
-  <joint name="alphasense_base_to_alphasense_front_right" type="fixed">   
+  <!-- Alphasense Cam2/ front right -->
+  <link name="cam2_sensor_frame" />
+  <joint name="alphasense_base_to_alphasense_front_right" type="fixed">
     <origin xyz=" ${calib['alphasense_base_to_alphasense_front_right']['x']}
                   ${calib['alphasense_base_to_alphasense_front_right']['y']}
-                  ${calib['alphasense_base_to_alphasense_front_right']['z']}" 
+                  ${calib['alphasense_base_to_alphasense_front_right']['z']}"
             rpy=" ${calib['alphasense_base_to_alphasense_front_right']['roll']}
                   ${calib['alphasense_base_to_alphasense_front_right']['pitch']}
                   ${calib['alphasense_base_to_alphasense_front_right']['yaw']}" />
     <parent link="alphasense_base" />
-    <child link="alphasense_front_right" />
+    <child link="cam2_sensor_frame" />
   </joint>
 
-  <!-- Alphasense Cam2/ front middle -->
-  <link name="alphasense_front_middle" />
-  <joint name="alphasense_base_to_alphasense_front_middle" type="fixed">   
+  <!-- Alphasense Cam3/ front middle -->
+  <link name="cam3_sensor_frame" />
+  <joint name="alphasense_base_to_alphasense_front_middle" type="fixed">
     <origin xyz=" ${calib['alphasense_base_to_alphasense_front_middle']['x']}
                   ${calib['alphasense_base_to_alphasense_front_middle']['y']}
-                  ${calib['alphasense_base_to_alphasense_front_middle']['z']}" 
+                  ${calib['alphasense_base_to_alphasense_front_middle']['z']}"
             rpy=" ${calib['alphasense_base_to_alphasense_front_middle']['roll']}
                   ${calib['alphasense_base_to_alphasense_front_middle']['pitch']}
                   ${calib['alphasense_base_to_alphasense_front_middle']['yaw']}" />
     <parent link="alphasense_base" />
-    <child link="alphasense_front_middle" />
+    <child link="cam3_sensor_frame" />
   </joint>
 
-  <!-- Alphasense Cam3/ left -->
-  <link name="alphasense_left" />
-  <joint name="alphasense_base_to_alphasense_left" type="fixed">   
+  <!-- Alphasense Cam4/ left -->
+  <link name="cam4_sensor_frame" />
+  <joint name="alphasense_base_to_alphasense_left" type="fixed">
     <origin xyz=" ${calib['alphasense_base_to_alphasense_left']['x']}
                   ${calib['alphasense_base_to_alphasense_left']['y']}
-                  ${calib['alphasense_base_to_alphasense_left']['z']}" 
+                  ${calib['alphasense_base_to_alphasense_left']['z']}"
             rpy=" ${calib['alphasense_base_to_alphasense_left']['roll']}
                   ${calib['alphasense_base_to_alphasense_left']['pitch']}
                   ${calib['alphasense_base_to_alphasense_left']['yaw']}" />
     <parent link="alphasense_base" />
-    <child link="alphasense_left" />
+    <child link="cam4_sensor_frame" />
   </joint>
 
-  <!-- Alphasense Cam4/ right -->
-  <link name="alphasense_right" />
-  <joint name="alphasense_base_to_alphasense_right" type="fixed">   
+  <!-- Alphasense Cam5/ right -->
+  <link name="cam5_sensor_frame" />
+  <joint name="alphasense_base_to_alphasense_right" type="fixed">
     <origin xyz=" ${calib['alphasense_base_to_alphasense_right']['x']}
                   ${calib['alphasense_base_to_alphasense_right']['y']}
-                  ${calib['alphasense_base_to_alphasense_right']['z']}" 
+                  ${calib['alphasense_base_to_alphasense_right']['z']}"
             rpy=" ${calib['alphasense_base_to_alphasense_right']['roll']}
                   ${calib['alphasense_base_to_alphasense_right']['pitch']}
                   ${calib['alphasense_base_to_alphasense_right']['yaw']}" />
     <parent link="alphasense_base" />
-    <child link="alphasense_right" />
+    <child link="cam5_sensor_frame" />
   </joint>
 
   <!-- ////////// HDR ////////// -->
 
   <!-- HDR Base (coincides with front hdr cam) -->
   <link name="hdr_base" />
-  <joint name="box_base_to_hdr_base" type="fixed">   
+  <joint name="box_base_to_hdr_base" type="fixed">
     <origin xyz=" ${calib['box_base_to_hdr_base']['x']}
                   ${calib['box_base_to_hdr_base']['y']}
-                  ${calib['box_base_to_hdr_base']['z']}" 
+                  ${calib['box_base_to_hdr_base']['z']}"
             rpy=" ${calib['box_base_to_hdr_base']['roll']}
                   ${calib['box_base_to_hdr_base']['pitch']}
                   ${calib['box_base_to_hdr_base']['yaw']}" />
@@ -99,10 +99,10 @@
 
   <!-- HDR camera front (should be identity) -->
   <link name="hdr_front" />
-  <joint name="hdr_base_to_hdr_front" type="fixed">   
+  <joint name="hdr_base_to_hdr_front" type="fixed">
     <origin xyz=" ${calib['hdr_base_to_hdr_front']['x']}
                   ${calib['hdr_base_to_hdr_front']['y']}
-                  ${calib['hdr_base_to_hdr_front']['z']}" 
+                  ${calib['hdr_base_to_hdr_front']['z']}"
             rpy=" ${calib['hdr_base_to_hdr_front']['roll']}
                   ${calib['hdr_base_to_hdr_front']['pitch']}
                   ${calib['hdr_base_to_hdr_front']['yaw']}" />
@@ -112,10 +112,10 @@
 
   <!-- HDR camera left -->
   <link name="hdr_left" />
-  <joint name="hdr_base_to_hdr_left" type="fixed">   
+  <joint name="hdr_base_to_hdr_left" type="fixed">
     <origin xyz=" ${calib['hdr_base_to_hdr_left']['x']}
                   ${calib['hdr_base_to_hdr_left']['y']}
-                  ${calib['hdr_base_to_hdr_left']['z']}" 
+                  ${calib['hdr_base_to_hdr_left']['z']}"
             rpy=" ${calib['hdr_base_to_hdr_left']['roll']}
                   ${calib['hdr_base_to_hdr_left']['pitch']}
                   ${calib['hdr_base_to_hdr_left']['yaw']}" />
@@ -125,10 +125,10 @@
 
   <!-- HDR camera right -->
   <link name="hdr_right" />
-  <joint name="hdr_base_to_hdr_right" type="fixed">   
+  <joint name="hdr_base_to_hdr_right" type="fixed">
     <origin xyz=" ${calib['hdr_base_to_hdr_right']['x']}
                   ${calib['hdr_base_to_hdr_right']['y']}
-                  ${calib['hdr_base_to_hdr_right']['z']}" 
+                  ${calib['hdr_base_to_hdr_right']['z']}"
             rpy=" ${calib['hdr_base_to_hdr_right']['roll']}
                   ${calib['hdr_base_to_hdr_right']['pitch']}
                   ${calib['hdr_base_to_hdr_right']['yaw']}" />
@@ -140,10 +140,10 @@
 
   <!-- ZED Base -->
   <link name="zed_base" />
-  <joint name="box_base_to_zed_base" type="fixed">   
+  <joint name="box_base_to_zed_base" type="fixed">
     <origin xyz=" ${calib['box_base_to_zed_base']['x']}
                   ${calib['box_base_to_zed_base']['y']}
-                  ${calib['box_base_to_zed_base']['z']}" 
+                  ${calib['box_base_to_zed_base']['z']}"
             rpy=" ${calib['box_base_to_zed_base']['roll']}
                   ${calib['box_base_to_zed_base']['pitch']}
                   ${calib['box_base_to_zed_base']['yaw']}" />
