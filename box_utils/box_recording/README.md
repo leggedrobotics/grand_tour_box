@@ -5,9 +5,6 @@ cd /home/jonfrey/git/grand_tour_box/box_utils/box_recording; python -m grpc_tool
 ```
 cd /home/jonfrey/git/grand_tour_box/box_utils/box_recording; python -m grpc_tools.protoc -I=proto --python_out=./scripts --grpc_python_out=./scripts proto/stop_recording.proto
 ```
-```
-cd /home/jonfrey/git/grand_tour_box/box_utils/box_recording; python -m grpc_tools.protoc -I=proto --python_out=./scripts --grpc_python_out=./scripts proto/recording_status.proto
-```
 
 
 ## Development
