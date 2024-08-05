@@ -5,13 +5,16 @@ def add_arguments(parser):
     parser.set_defaults(main=main)
     parser.add_argument("--jetson", action="store_true", help="Restart PTP and phc2sys on Jetson")
     parser.add_argument("--nuc", action="store_true", help="Restart PTP and phc2sys on Nuc")
+    parser.add_argument("--anymal", action="store_true", help="Restart Chrony on ANYmal")
     parser.add_argument("--all", action="store_true", help="Build All")
     return parser
 
 
 def main(args):
+    anymal = args.anymal
     if args.all:
         hosts = ["jetson", "nuc"]
+        anymal = True
     else:
         hosts = []
         if args.jetson:
@@ -35,5 +38,10 @@ def main(args):
         chrony_restart = "sudo systemctl restart chrony.service"
         shell_run(chrony_restart)
     else:
-        chrony_restart = "ssh -o ConnectTimeout=4 rsl@opc -t bash -ci 'sudo systemctl restart chrony.service'"
+        raise ValueError("OPC not reset correctly")
+
+    if anymal:
+        chrony_restart = "ssh -o ConnectTimeout=4 rsl@lpc -t bash -ci sync-clocks"
+        shell_run(chrony_restart)
+        chrony_restart = "ssh -o ConnectTimeout=4 rsl@npc -t bash -ci sync-clocks"
         shell_run(chrony_restart)

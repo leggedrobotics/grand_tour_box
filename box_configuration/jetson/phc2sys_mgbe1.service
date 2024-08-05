@@ -6,7 +6,7 @@ After=ptp4l_mgbe0.service
 
 [Service]
 Type=simple
-ExecStart=/usr/sbin/phc2sys -s mgbe0 -c mgbe1 -w
+ExecStart=/usr/sbin/phc2sys -s mgbe0 -c mgbe1 -w  -S 1.0
 
 [Install]
 WantedBy=multi-user.target

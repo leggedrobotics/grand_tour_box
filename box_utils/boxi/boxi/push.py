@@ -27,9 +27,9 @@ def main(args):
     if args.pi2:
         hosts.append("pi2")
     if args.lpc:
-        hosts.append("integration@192.168.0.141")
+        hosts.append("lpc")
     if args.npc:
-        hosts.append("integration@192.168.0.142")
+        hosts.append("npc")
 
     if args.all:
         hosts = ["jetson", "nuc", "pi"]

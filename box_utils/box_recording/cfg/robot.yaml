@@ -76,7 +76,7 @@ nuc:
 
 lpc:
   grpc_cfg:
-    adress: 192.168.0.141
+    address: 192.168.0.141
     port: 50051
   bags:
     locomotion:
@@ -109,7 +109,7 @@ lpc:
       - /depth_camera_rear_upper/depth/image_rect_raw
 npc:
   grpc_cfg:
-    adress: 192.168.0.142
+    address: 192.168.0.142
     port: 50052
   bags:
     general:

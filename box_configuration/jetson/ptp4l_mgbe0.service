@@ -5,7 +5,7 @@ After=network-online.target
 
 [Service]
 Type=simple
-ExecStart=/usr/sbin/ptp4l -f /etc/linuxptp/ptp4l.conf -i mgbe0 -H -s
+ExecStart=/usr/sbin/ptp4l -f /etc/linuxptp/ptp4l.conf -i mgbe0 -H -s -f /home/rsl/git/grand_tour_box/box_configuration/jetson/ptp4l.conf
 
 [Install]
 WantedBy=multi-user.target
