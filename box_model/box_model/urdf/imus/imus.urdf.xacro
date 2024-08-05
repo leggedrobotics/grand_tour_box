@@ -4,10 +4,10 @@
 
   <!-- IMU STIM320 -->
   <link name="imu_stim320" />
-  <joint name="box_base_to_imu_stim320" type="fixed">   
+  <joint name="box_base_to_imu_stim320" type="fixed">
     <origin xyz=" ${calib['box_base_to_imu_stim320']['x']}
                   ${calib['box_base_to_imu_stim320']['y']}
-                  ${calib['box_base_to_imu_stim320']['z']}" 
+                  ${calib['box_base_to_imu_stim320']['z']}"
             rpy=" ${calib['box_base_to_imu_stim320']['roll']}
                   ${calib['box_base_to_imu_stim320']['pitch']}
                   ${calib['box_base_to_imu_stim320']['yaw']}" />
@@ -17,10 +17,10 @@
 
   <!-- IMU ADIS16475 -->
   <link name="imu_adis16475" />
-  <joint name="box_base_to_imu_adis16475" type="fixed">   
+  <joint name="box_base_to_imu_adis16475" type="fixed">
     <origin xyz=" ${calib['box_base_to_imu_adis16475']['x']}
                   ${calib['box_base_to_imu_adis16475']['y']}
-                  ${calib['box_base_to_imu_adis16475']['z']}" 
+                  ${calib['box_base_to_imu_adis16475']['z']}"
             rpy=" ${calib['box_base_to_imu_adis16475']['roll']}
                   ${calib['box_base_to_imu_adis16475']['pitch']}
                   ${calib['box_base_to_imu_adis16475']['yaw']}" />
@@ -29,15 +29,15 @@
   </joint>
 
   <!-- IMU alphasesnse -->
-  <link name="imu_alphasense" />
-  <joint name="box_base_to_imu_alphasense" type="fixed">   
+  <link name="imu_sensor_frame" />
+  <joint name="box_base_to_imu_alphasense" type="fixed">
     <origin xyz=" ${calib['box_base_to_imu_alphasense']['x']}
                   ${calib['box_base_to_imu_alphasense']['y']}
-                  ${calib['box_base_to_imu_alphasense']['z']}" 
+                  ${calib['box_base_to_imu_alphasense']['z']}"
             rpy=" ${calib['box_base_to_imu_alphasense']['roll']}
                   ${calib['box_base_to_imu_alphasense']['pitch']}
                   ${calib['box_base_to_imu_alphasense']['yaw']}" />
     <parent link="box_base" />
-    <child link="imu_alphasense" />
+    <child link="imu_sensor_frame" />
   </joint>
 </robot>
