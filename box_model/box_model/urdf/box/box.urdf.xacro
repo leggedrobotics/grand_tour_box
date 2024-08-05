@@ -7,19 +7,19 @@
 
 <!-- load the YAML calibration file into a property -->
 <xacro:property name="calib" value="${xacro.load_yaml(calib_file)}"/>
-   
-  <!-- Origin -->
-  <link name="leica_world"/> 
 
-  <!-- Totalstation base position --> 
+  <!-- Origin -->
+  <link name="leica_world"/>
+
+  <!-- Totalstation base position -->
   <link name="leica_base"/>
-  <joint name="leica_world_to_leica_base" type="fixed">   
+  <joint name="leica_world_to_leica_base" type="fixed">
     <origin xyz="1.0 1.0 1.0" rpy="0.0 0.0 0.0" />
     <parent link="leica_world" />
     <child link="leica_base" />
   </joint>
 
-  <!-- Totalstation model --> 
+  <!-- Totalstation model -->
   <link name="leica_base_model">
     <visual>
       <geometry>
@@ -27,13 +27,13 @@
       </geometry>
     </visual>
   </link>
-  <joint name="leica_base_to_leica_base_model" type="fixed">   
+  <joint name="leica_base_to_leica_base_model" type="fixed">
     <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
     <parent link="leica_base" />
     <child link="leica_base_model" />
   </joint>
 
-  <!-- Measured prism position, changes when totalstation is tracking --> 
+  <!-- Measured prism position, changes when totalstation is tracking -->
   <link name="leica_pos"/>
   <joint name="leica_world_to_leica_pos" type="fixed">
     <origin xyz="0.15 0.0 -0.3" rpy="0.0 0.0 0.0" />
@@ -43,7 +43,7 @@
 
   <!-- Prism -->
   <link name="prism"/>
-  <joint name="leica_pos_to_prism" type="fixed">   
+  <joint name="leica_pos_to_prism" type="fixed">
     <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
     <parent link="leica_pos" />
     <child link="prism" />
@@ -51,10 +51,10 @@
 
   <!-- Box base -->
   <link name="box_base"/>
-  <joint name="prism_to_box_base" type="fixed">   
+  <joint name="prism_to_box_base" type="fixed">
     <origin xyz=" ${calib['prism_to_box_base']['x']}
                   ${calib['prism_to_box_base']['y']}
-                  ${calib['prism_to_box_base']['z']}" 
+                  ${calib['prism_to_box_base']['z']}"
             rpy=" ${calib['prism_to_box_base']['roll']}
                   ${calib['prism_to_box_base']['pitch']}
                   ${calib['prism_to_box_base']['yaw']}" />
@@ -73,7 +73,7 @@
   <joint name="box_base_to_box_base_model" type="fixed">
     <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
     <parent link="box_base" />
-    <child link="box_base_model" />    
+    <child link="box_base_model" />
   </joint>
 
   <link name="prism_model">
@@ -86,7 +86,24 @@
   <joint name="prism_to_prism_model" type="fixed">
     <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
     <parent link="prism" />
-    <child link="prism_model" />    
+    <child link="prism_model" />
+  </joint>
+
+
+  <link name="cpt7_imu"/>
+  <!-- CPT7 Coordinate System -->
+  <joint name="base_to_cpt7_imu_frame" type="fixed">
+    <origin xyz="-0.294 -0.058 0.164" rpy="3.142 0.0 0.0" />
+    <parent link="box_base" />
+    <child link="cpt7_imu" />
+  </joint>
+
+  <link name="State"/>
+  <!-- Basilisk IMU Frame -->
+  <joint name="base_to_basilisk_imu_frame" type="fixed">
+    <origin xyz="-0.293 0.034 0.155" rpy="1.571 0.0 0.0" />
+    <parent link="box_base" />
+    <child link="State" />
   </joint>
 
   <xacro:include filename="$(find box_model)/urdf/cameras/cameras.urdf.xacro" />
