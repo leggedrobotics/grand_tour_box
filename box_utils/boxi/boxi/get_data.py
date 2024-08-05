@@ -26,10 +26,10 @@ def main(args):
         users.append("rsl")
     if args.lpc:
         hosts.append("lpc")
-        users.append("integration")
+        users.append("rsl")
     if args.npc:
         hosts.append("npc")
-        users.append("integration")
+        users.append("rsl")
 
     if args.directory:
         rsync_part2 = f":/data/{args.directory} . {rsync_exclusions}"
@@ -41,9 +41,9 @@ def main(args):
     for host, user in zip(hosts, users):
 
         if args.check:
-            rsync_part1 = "rsync -r --progress -Pv --size-only -n" + user + "@"
+            rsync_part1 = "rsync -r --progress -Pv --size-only -n " + user + "@"
         else:
-            rsync_part1 = "rsync -r --progress -Pv --size-only" + user + "@"
+            rsync_part1 = "rsync -r --progress -Pv --size-only " + user + "@"
 
         cmd = f"{rsync_part1}{host}{rsync_part2}"
         print(cmd)

@@ -88,8 +88,8 @@ class RosbagRecordCoordinator(object):
 
         # Go through all the nodes (PCs) and start recording
         for node, node_cfg in self.cfg.items():
+            topic_cfgs = ""
             for bag_name, topics in node_cfg["bags"].items():
-                topic_cfgs = ""
                 for topic in topics:
                     topic_cfgs += f"{bag_name}----{topic} "
                 topic_cfgs = topic_cfgs[:-1]
