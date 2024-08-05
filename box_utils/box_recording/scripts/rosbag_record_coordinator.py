@@ -47,8 +47,8 @@ class RosbagRecordCoordinator(object):
 
         self.rp = rospkg.RosPack()
         self.default_yaml = join(str(self.rp.get_path("box_recording")), "cfg/box_default.yaml")
-        self.bag_running = False
         rospy.loginfo("[RosbagRecordCoordinator] Setup.")
+        self.cfg = {}
 
     def start_recording(self, request: StartRecordingRequest):
         rospy.loginfo("[RosbagRecordCoordinator] Trying to start rosbag recording process.")
@@ -77,64 +77,100 @@ class RosbagRecordCoordinator(object):
             response.message = f"Available options [{options}]"
             return response
 
-        if self.bag_running:
-            response.suc = False
-            response.message = "Recording process already runs."
-            rospy.logwarn("[RosbagRecordCoordinator] Recording process already runs.")
-        else:
-            self.cfg = load_yaml(request.yaml_file)
+        self.cfg = load_yaml(request.yaml_file)
 
-            # Go through all the nodes (PCs) and start recording
-            for node, bag_dict in self.cfg.items():
-                print(bag_dict)
-                service_name = self.namespace + "rosbag_record_node_" + node + "/start_recording"
+        # Copy yaml file to data folder
+        default_path = rospkg.RosPack().get_path("box_recording") + "/data"
+        data_path = rospy.get_param("~data_path", default_path)
+        bag_base_path = os.path.join(data_path, timestamp)
+        Path(bag_base_path).mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(request.yaml_file, os.path.join(bag_base_path, request.yaml_file.split("/")[-1]))
 
-                rospy.loginfo("[RosbagRecordCoordinator] Trying to start rosbag recording process on " + node)
-                try:
-                    # Evaluate if service is offered
-                    rospy.wait_for_service(service_name, 2.0)
-                    for bag_name, topics in bag_dict.items():
-                        start_recording_srv = rospy.ServiceProxy(service_name, StartRecordingInternal)
-                        int_request = StartRecordingInternalRequest()
-                        topic_cfgs = ""
-                        for topic in topics:
-                            topic_cfgs += f"{bag_name}----{topic} "
-                        int_request.topics = topic_cfgs[:-1]
-                        int_request.timestamp = timestamp
+        # Go through all the nodes (PCs) and start recording
+        for node, node_cfg in self.cfg.items():
+            topic_cfgs = ""
+            for bag_name, topics in node_cfg["bags"].items():
+                for topic in topics:
+                    topic_cfgs += f"{bag_name}----{topic} "
+                topic_cfgs = topic_cfgs[:-1]
 
-                        default_path = rospkg.RosPack().get_path("box_recording") + "/data"
-                        self.data_path = rospy.get_param("~data_path", default_path)
-                        bag_base_path = os.path.join(self.data_path, timestamp)
-                        Path(bag_base_path).mkdir(parents=True, exist_ok=True)
-                        shutil.copyfile(
-                            request.yaml_file, os.path.join(bag_base_path, request.yaml_file.split("/")[-1])
-                        )
+            if node_cfg.get("grpc_cfg", None) is not None:
+                self.send_request_grpc(node, topic_cfgs, node_cfg["grpc_cfg"], timestamp, response)
+            else:
+                self.send_request_ros(node, topic_cfgs, timestamp, response)
 
-                        response.message += f"{node}-{bag_name} [SUC], "
-                        start_recording_srv(int_request)
-                        rospy.loginfo("[RosbagRecordCoordinator] Starting rosbag recording process on " + node)
-                    self.bag_running = True
-
-                except rospy.ROSException as exception:
-                    response.suc = False
-                    response.message += f"{node} [FAILED] Exception: " + str(exception) + ", "
-                    print("Service did not process request: " + str(exception))
-                    rospy.logerr("Failed to start rosbag recording process on " + node)
-
-            if response.suc:
-                response.message += " - All nodes started recording."
-                rospy.loginfo("[RosbagRecordCoordinator] Successfully started rosbag recording process on all nodes")
+        if response.suc:
+            response.message += " - All nodes started recording."
+            rospy.loginfo("[RosbagRecordCoordinator] Successfully started rosbag recording process on all nodes")
         return response
+
+    def send_request_grpc(self, node, topic_cfgs, grpc_cfg, timestamp, response):
+        import grpc
+        import start_recording_pb2
+        import start_recording_pb2_grpc
+
+        try:
+            with grpc.insecure_channel(f'{grpc_cfg["address"]}:{grpc_cfg["port"]}') as channel:
+                stub = start_recording_pb2_grpc.StartRecordingStub(channel)
+                req = start_recording_pb2.StartRecordingRequest(topics=topic_cfgs, timestamp=timestamp)
+                grpc_response = stub.SendMessage(req)
+                print(f"Server response: {grpc_response.response}")
+                response.message += f"{node}-[SUC], "
+        except Exception as e:
+            response.suc = False
+            response.message += f"{node} [FAILED] Exception: " + str(e) + ", "
+            print("Service did not process request: " + str(e))
+            rospy.logerr("Failed to start rosbag recording process on " + node)
+
+    def send_request_ros(self, node, topic_cfgs, timestamp, response):
+        service_name = self.namespace + "rosbag_record_node_" + node + "/start_recording"
+        rospy.loginfo("[RosbagRecordCoordinator] Trying to start rosbag recording process on " + node)
+        try:
+            # Evaluate if service is offered
+            rospy.wait_for_service(service_name, 2.0)
+            start_recording_srv = rospy.ServiceProxy(service_name, StartRecordingInternal)
+            int_request = StartRecordingInternalRequest()
+            int_request.topics = topic_cfgs
+            int_request.timestamp = timestamp
+            start_recording_srv(int_request)
+            rospy.loginfo("[RosbagRecordCoordinator] Starting rosbag recording process on " + node)
+            response.message += f"{node}-[SUC], "
+
+        except rospy.ROSException as exception:
+            response.suc = False
+            response.message += f"{node} [FAILED] Exception: " + str(exception) + ", "
+            print("Service did not process request: " + str(exception))
+            rospy.logerr("Failed to start rosbag recording process on " + node)
 
     def stop_recording(self, request: StopRecordingRequest):
         rospy.loginfo("[RosbagRecordCoordinator] Trying to stop rosbag recording for all nodes.")
         response = StopRecordingResponse()
 
         pretty_ls = {}
-        if self.bag_running:
-            response.suc = True
-            response.message = "Failed to stop recording process on:"
-            for node, topics in self.cfg.items():
+
+        response.suc = True
+        response.message = "Failed to stop recording process on:"
+        for node, node_cfg in self.cfg.items():
+            if node_cfg.get("grpc_cfg", None) is not None:
+                import grpc
+                import stop_recording_pb2
+                import stop_recording_pb2_grpc
+
+                try:
+                    grpc_cfg = node_cfg["grpc_cfg"]
+                    with grpc.insecure_channel(f'{grpc_cfg["address"]}:{grpc_cfg["port"]}') as channel:
+                        stub = stop_recording_pb2_grpc.StopRecordingStub(channel)
+                        req = stop_recording_pb2.StopRecordingRequest(debug_info="")
+                        grpc_response = stub.SendMessage(req)
+                        print(f"Server response: {grpc_response.response}")
+                        response.message += f"{node}-[SUC], "
+                except Exception as e:
+                    response.suc = False
+                    response.message += f"{node} [FAILED] Exception: " + str(e) + ", "
+                    print("Service did not process request: " + str(e))
+                    rospy.logerr("Failed to start rosbag recording process on " + node)
+                continue
+            else:
                 service_name = self.namespace + "/rosbag_record_node_" + node + "/stop_recording"
                 try:
                     rospy.wait_for_service(service_name, 2.0)
@@ -154,15 +190,9 @@ class RosbagRecordCoordinator(object):
                     print("Service did not process request: " + str(exception))
                     rospy.logerr("Failed to stop rosbag recording process on " + node)
 
-            if response.suc:
-                response.message = "Successfully stoped all nodes"
-            rospy.loginfo("[RosbagRecordCoordinator] Sent STOP to all nodes.")
-        else:
-            response.suc = False
-            response.message = "No recording process running yet."
-            rospy.logwarn("[RosbagRecordCoordinator] No recording process running yet.")
-
-        self.bag_running = False
+        if response.suc:
+            response.message = "Successfully stoped all nodes"
+        rospy.loginfo("[RosbagRecordCoordinator] Sent STOP to all nodes.")
 
         pretty = ""
         for k, v in pretty_ls.items():

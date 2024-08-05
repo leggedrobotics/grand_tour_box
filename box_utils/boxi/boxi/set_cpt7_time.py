@@ -8,6 +8,10 @@ def add_arguments(parser):
     parser.set_defaults(main=main)
     parser.add_argument("--local", action="store_true", help="Use local time")
     parser.add_argument("--ros", action="store_true", help="Use local time")
+
+    parser.add_argument("--manual", action="store_true", help="Do not use internet time")
+    parser.add_argument("--year", default=1996, help="Year to set")
+
     return parser
 
 
@@ -41,10 +45,12 @@ def set_local_pc_time():
 
 
 def main(args):
-    if not args.local:
-        gps_weeks, gps_seconds = set_internet_time()
-    else:
+    if args.local:
         gps_weeks, gps_seconds = set_local_pc_time()
+    elif args.manual:
+        gps_weeks, gps_seconds = (int(args.year) - 1980) * 52 + 26, 0
+    else:
+        gps_weeks, gps_seconds = set_internet_time()
 
     # Define the IP address and port
     IP = "192.168.2.98"

@@ -27,9 +27,9 @@ def main(args):
     if args.pi2:
         hosts.append("pi2")
     if args.lpc:
-        hosts.append("integration@192.168.0.128")
+        hosts.append("lpc")
     if args.npc:
-        hosts.append("integration@192.168.0.129")
+        hosts.append("npc")
 
     if args.all:
         hosts = ["jetson", "nuc", "pi"]
@@ -39,8 +39,5 @@ def main(args):
         return
 
     for host in hosts:
-        if host.find("integration") != -1:
-            cmd = f"{rsync} {BOX_ROOT_DIR} {host}:/home/integration/git"
-        else:
-            cmd = f"{rsync} {BOX_ROOT_DIR} {host}:/home/rsl/git"
+        cmd = f"{rsync} {BOX_ROOT_DIR} {host}:/home/rsl/git"
         shell_run(cmd)

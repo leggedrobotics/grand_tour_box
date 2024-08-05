@@ -8,7 +8,6 @@ sudo apt install netplan.io linuxptp tmux tmuxp
 
 
 
-
 sudo cp ~/catkin_ws/src/grand_tour_box/box_configuration/jetson/01-network-manager-all.yaml /etc/netplan/01-network-manager-all.yaml
 sudo netplan generate
 sudo netplan apply
@@ -96,12 +95,15 @@ sudo apt install zstd -y
 chmod +x ZED_SDK_Tegra_L4T35.4_v4.1.1.zstd.run
 ./ZED_SDK_Tegra_L4T35.4_v4.1.1.zstd.run
 
+
+rm ~/.bashrc; ln -s /home/rsl/git/grand_tour_box/box_configuration/jetson/.bashrc ~/
+
 # .bashrc
-echo '' >> ~/.bashrc
+# echo '' >> ~/.bashrc
 # Prepend to .bashrc so that they still run when we are ssh'd into the PCs (when the interactive session is not started)
-echo 'source /opt/ros/noetic/setup.bash' | cat - ~/.bashrc > temp && mv temp ~/.bashrc
-echo 'source /home/rsl/catkin_ws/devel/setup.bash' | cat - ~/.bashrc > temp && mv temp ~/.bashrc
-echo 'source /home/rsl/git/grand_tour_box/box_configuration/jetson/alias.sh' | cat - ~/.bashrc > temp && mv temp ~/.bashrc
+# echo 'source /opt/ros/noetic/setup.bash' | cat - ~/.bashrc > temp && mv temp ~/.bashrc
+# echo 'source /home/rsl/catkin_ws/devel/setup.bash' | cat - ~/.bashrc > temp && mv temp ~/.bashrc
+# echo 'source /home/rsl/git/grand_tour_box/box_configuration/jetson/alias.sh' | cat - ~/.bashrc > temp && mv temp ~/.bashrc
 
 # autostart tmux
 sudo cp ~/git/grand_tour_box/box_configuration/jetson/autostart_tmux.service /etc/systemd/system/autostart_tmux.service
@@ -124,7 +126,7 @@ sudo systemctl enable ptp4l_mgbe0
 sudo systemctl enable ptp4l_mgbe1
 sudo systemctl enable phc2sys_mgbe0
 sudo systemctl enable phc2sys_mgbe1
-sudo systemctl enable phc2sys_mgbe1
+
 sudo systemctl enable box_chrony
 sudo systemctl disable chrony
 

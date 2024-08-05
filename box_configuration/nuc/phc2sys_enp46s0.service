@@ -6,7 +6,8 @@ After=ptp4l_enp45s0.service
 
 [Service]
 Type=simple
-ExecStart=/usr/sbin/phc2sys -s enp45s0 -c enp46s0 -w
+ExecStart=/usr/sbin/phc2sys -s enp45s0 -c enp46s0 -w -S 1.0
+Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target

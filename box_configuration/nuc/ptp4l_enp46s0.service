@@ -5,7 +5,8 @@ After=network-online.target
 
 [Service]
 Type=simple
-ExecStart=/usr/sbin/ptp4l -f /etc/linuxptp/ptp4l.conf -i enp46s0 -H
+ExecStart=/usr/sbin/ptp4l -i enp46s0 -H -f /home/rsl/git/grand_tour_box/box_configuration/nuc/ptp4l.conf
+Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target

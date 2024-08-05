@@ -1,11 +1,13 @@
 #!/bin/bash
 
+rm ~/.bashrc; ln -s /home/rsl/git/grand_tour_box/box_configuration/nuc/.bashrc ~/
+
 # .bashrc
-echo '' >> ~/.bashrc
+#echo '' >> ~/.bashrc
 # Prepend to bashrc so that they still run when we are ssh'd into the PCs (when the interactive session is not started).
-echo 'source /opt/ros/noetic/setup.bash' | cat - ~/.bashrc > temp && mv temp ~/.bashrc
-echo 'source /home/rsl/catkin_ws/devel/setup.bash' | cat - ~/.bashrc > temp && mv temp ~/.bashrc
-echo 'source /home/rsl/git/grand_tour_box/box_configuration/nuc/alias.sh' | cat - ~/.bashrc > temp && mv temp ~/.bashrc
+#echo 'source /opt/ros/noetic/setup.bash' | cat - ~/.bashrc > temp && mv temp ~/.bashrc
+#echo 'source /home/rsl/catkin_ws/devel/setup.bash' | cat - ~/.bashrc > temp && mv temp ~/.bashrc
+#echo 'source /home/rsl/git/grand_tour_box/box_configuration/nuc/alias.sh' | cat - ~/.bashrc > temp && mv temp ~/.bashrc
 
 # netplan
 cp /home/rsl/git/grand_tour_box/box_configuration/nuc/01-network-manager-all.yaml /etc/netplan/01-network-manager-all.yaml

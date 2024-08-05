@@ -20,6 +20,7 @@ find_package(catkin REQUIRED COMPONENTS
             zed2i_recording_driver_msgs
 )
 
+
 add_service_files(
     DIRECTORY srv
     FILES
@@ -28,6 +29,7 @@ add_service_files(
     StopRecording.srv
     StopRecordingInternal.srv
 )
+catkin_python_setup()
 
 generate_messages(
   DEPENDENCIES
@@ -42,6 +44,8 @@ generate_messages(
 catkin_package(
     CATKIN_DEPENDS std_msgs
 )
+
+
 
 #==
 # Package installation
