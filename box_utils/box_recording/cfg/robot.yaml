@@ -47,7 +47,6 @@ nuc:
       - /gt_box/alphasense_driver_node/imu
       - /gt_box/alphasense_driver_node/ncamera_is_standby
       - /gt_box/alphasense_driver_node/serial_number
-
     cpt7:
       - /gt_box/cpt7/bestgnsspos
       - /gt_box/cpt7/bestpos
