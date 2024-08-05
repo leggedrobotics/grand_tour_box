@@ -4,10 +4,10 @@
 
   <!-- hesaiXT32 -->
   <link name="hesaiXT32" />
-  <joint name="box_base_to_hesai" type="fixed">   
+  <joint name="box_base_to_hesai" type="fixed">
     <origin xyz=" ${calib['box_base_to_hesai']['x']}
                   ${calib['box_base_to_hesai']['y']}
-                  ${calib['box_base_to_hesai']['z']}" 
+                  ${calib['box_base_to_hesai']['z']}"
             rpy=" ${calib['box_base_to_hesai']['roll']}
                   ${calib['box_base_to_hesai']['pitch']}
                   ${calib['box_base_to_hesai']['yaw']}" />
@@ -25,15 +25,15 @@
   <joint name="hesaiXT32_to_hesaiXT32_model" type="fixed">
     <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
     <parent link="hesaiXT32" />
-    <child link="hesaiXT32_model" />    
+    <child link="hesaiXT32_model" />
   </joint>
 
   <!-- Livox -->
   <link name="livox" />
-  <joint name="box_base_to_livox" type="fixed">   
+  <joint name="box_base_to_livox" type="fixed">
     <origin xyz=" ${calib['box_base_to_livox']['x']}
                   ${calib['box_base_to_livox']['y']}
-                  ${calib['box_base_to_livox']['z']}" 
+                  ${calib['box_base_to_livox']['z']}"
             rpy=" ${calib['box_base_to_livox']['roll']}
                   ${calib['box_base_to_livox']['pitch']}
                   ${calib['box_base_to_livox']['yaw']}" />
@@ -51,7 +51,15 @@
   <joint name="livox_to_livox_model" type="fixed">
     <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
     <parent link="livox" />
-    <child link="livox_model" />    
+    <child link="livox_model" />
+  </joint>
+
+  <link name="livox_frame">
+  <!-- From page 15 https://terra-1-g.djicdn.com/851d20f7b9f64838a34cd02351370894/Livox/Livox_Mid-360_User_Manual_EN.pdf -->
+  <joint name="livox_to_livox_imu_frame" type="fixed">
+    <origin xyz="0.011 0.02329 -0.04412" rpy="0.0 0.0 0.0" />
+    <parent link="livox" />
+    <child link="livox_frame" />
   </joint>
 
 </robot>
