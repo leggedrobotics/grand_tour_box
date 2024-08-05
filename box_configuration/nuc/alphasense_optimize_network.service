@@ -1,0 +1,10 @@
+[Unit]
+Description= Optimize Network Settings for Alphasense
+After=ptp4l.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash -c "ethtool -G enp46s0 rx 4096; ip link set enp46s0 mtu 7260"
+
+[Install]
+WantedBy=multi-user.target
