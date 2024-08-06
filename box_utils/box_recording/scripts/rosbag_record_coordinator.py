@@ -92,7 +92,7 @@ class RosbagRecordCoordinator(object):
             for bag_name, topics in node_cfg["bags"].items():
                 for topic in topics:
                     topic_cfgs += f"{bag_name}----{topic} "
-                topic_cfgs = topic_cfgs[:-1]
+            topic_cfgs = topic_cfgs[:-1]
 
             if node_cfg.get("grpc_cfg", None) is not None:
                 self.send_request_grpc(node, topic_cfgs, node_cfg["grpc_cfg"], timestamp, response)
