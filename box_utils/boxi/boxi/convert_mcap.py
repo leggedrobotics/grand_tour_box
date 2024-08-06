@@ -12,7 +12,7 @@ from pathlib import Path
 def add_arguments(parser):
     parser.set_defaults(main=main)
     parser.add_argument(
-        "--pattern", type=str, required=True, help="Glob pattern to match run directories, eg '2024-06-27*'"
+        "--pattern", type=str, required=True, help="Glob pattern to match run directories, eg '/data/2024-06-27"
     )
     return parser
 
@@ -61,7 +61,7 @@ def downgrade_camerainfo_to_rosbag1(src: Path, dst: Path):
             writer.write(wconn, timestamp, outdata)
 
 
-def split_rosbags(input_bag_path, output_run_id, duration_minutes=5):
+def split_rosbags(input_bag_path, duration_minutes=5):
     """Splits ROS bags into smaller chunks based on duration."""
     bag = rosbag.Bag(input_bag_path, "r")
     start_time = bag.get_start_time()
@@ -70,7 +70,7 @@ def split_rosbags(input_bag_path, output_run_id, duration_minutes=5):
     index = 0
 
     while current_time < end_time:
-        split_filename = f"{output_run_id}/{output_run_id}_jetson_hdr_{index}.bag"
+        split_filename = input_bag_path.replace("jetson_hdr_downgraded.bag", f"jetson_hdr_{index}.bag")
         with rosbag.Bag(split_filename, "w") as outbag:
             for topic, msg, t in bag.read_messages(
                 start_time=rospy.Time.from_sec(current_time),
@@ -81,33 +81,47 @@ def split_rosbags(input_bag_path, output_run_id, duration_minutes=5):
         index += 1
 
 
-def main(args):
-    dirs = glob.glob(args.pattern)
-    total_dirs = len(dirs)
-    counter = 1
+import numpy as np
 
-    for dir in dirs:
-        if os.path.isdir(dir):
-            run_id = os.path.basename(dir)
-            print(f"Processing directory {counter} of {total_dirs}: {run_id}")
-            converted_bag_path = f"./{run_id}/{run_id}_jetson_hdr_raw.bag"
-            cmd = f"rosbags-convert {run_id}/hdr/ --dst {converted_bag_path}"
+
+def main(args):
+    mcaps = [str(Path(p).parent) for p in glob.glob(args.pattern + "*/*/*.mcap", recursive=True)]
+    mcaps = np.unique(np.array(mcaps)).tolist()
+    print(f"Found {len(mcaps)} directories to process: \n {mcaps}")
+    for i, mcap in enumerate(mcaps):
+
+        # We at first convert all missions to ROS1 - we have to merge the bags into a single mission for the hdr cameras given the metdata.yaml
+        timestamp = Path(mcap).parent.name.split("_")[0]
+        converted_bag_path = Path(mcap).parent.joinpath(f"{timestamp}_jetson_hdr_raw.bag")
+        if not converted_bag_path.exists():
+            cmd = f"rosbags-convert {mcap} --dst {str(converted_bag_path)}"
             shell_run(cmd)
             print("Converted to ROS1 raw format, types are not yet converted.")
+        else:
+            print(f"Skipping {mcap} conversion.")
 
+        downgraded_bag_path = str(converted_bag_path).replace("raw", "downgraded")
+        if not Path(downgraded_bag_path).exists():
             # Downgrade CameraInfo and write to a new bag
-            output_path = f"./{run_id}/{run_id}_jetson_hdr_downgraded.bag"
-            print(f"Downgrading CameraInfo to ROS1 format and saving to {output_path}")
-            downgrade_camerainfo_to_rosbag1(Path(converted_bag_path), Path(output_path))
+            print("Downgrading CameraInfo to ROS1 format and saving")
+            downgrade_camerainfo_to_rosbag1(converted_bag_path, Path(downgraded_bag_path))
+        else:
+            print(f"Skipping {mcap} downgraded.")
 
-            # Split the downgraded bag into 5-minute chunks
-            print("Splitting the downgraded bag into 5-minute chunks.")
-            split_rosbags(output_path, run_id)
-
-            # Remove intermediate artifacts
-            os.remove(converted_bag_path)
-            os.remove(output_path)
-
-            counter += 1
+        # Split the downgraded bag into 5-minute chunks
+        print("Splitting the downgraded bag into 5-minute chunks.")
+        split_rosbags(downgraded_bag_path)
+        # Remove intermediate artifacts
+        os.remove(converted_bag_path)
+        os.remove(downgraded_bag_path)
 
     print("All directories processed. Split bags are available in each directory.")
+
+
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    add_arguments(parser)
+    args = parser.parse_args()
+    args.main(args)

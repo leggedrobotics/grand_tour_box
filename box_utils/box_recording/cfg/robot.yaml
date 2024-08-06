@@ -12,8 +12,8 @@ jetson:
       - /ap20/tps
       - /ap20/imu
     hdr:
-      - /gt_box/hdr_center/image_raw/compressed
-      - /gt_box/hdr_center/camera_info
+      - /gt_box/hdr_front/image_raw/compressed
+      - /gt_box/hdr_front/camera_info
       - /gt_box/hdr_left/image_raw/compressed
       - /gt_box/hdr_left/camera_info
       - /gt_box/hdr_right/image_raw/compressed
