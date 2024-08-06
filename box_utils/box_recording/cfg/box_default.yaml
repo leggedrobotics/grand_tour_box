@@ -1,71 +1,73 @@
-jetson:
-  utils:
-    - /gt_box/alphasense_driver_node/imu
-    - /gt_box/health_status/jetson/status
-  zed2i:
-    - svo # SVO recording, not rosbag. Mutually exclusive: won't record zed ros topics if svo is set here.
-  ap20:
-    - /gt_box/ap20/imu
-    - /gt_box/ap20/prism_position
-    - /ap20/tps
-    - /ap20/imu
-  hdr:
-    - /gt_box/hdr_center/image_raw/compressed
-    - /gt_box/hdr_center/camera_info
-    - /gt_box/hdr_left/image_raw/compressed
-    - /gt_box/hdr_left/camera_info
-    - /gt_box/hdr_right/image_raw/compressed
-    - /gt_box/hdr_right/camera_info
-  clock:
-    - /clock
-  cpt7_local:
-    - cpt7_local
-nuc:
-  utils:
-    - /gt_box/livox/imu
-    - /gt_box/health_status/nuc/status
-  hesai:
-    - /gt_box/hesai/packets
-  livox:
-    - /gt_box/livox/lidar
-  alphasense:
-    - /gt_box/alphasense_driver_node/cam1/color/image/compressed
-    - /gt_box/alphasense_driver_node/cam1/color/camera_info
-    - /gt_box/alphasense_driver_node/cam2/color/image/compressed
-    - /gt_box/alphasense_driver_node/cam2/color/camera_info
-    - /gt_box/alphasense_driver_node/cam3/color/image/compressed
-    - /gt_box/alphasense_driver_node/cam3/color/camera_info
-    - /gt_box/alphasense_driver_node/cam4/color/image/compressed
-    - /gt_box/alphasense_driver_node/cam4/color/camera_info
-    - /gt_box/alphasense_driver_node/cam5/color/image/compressed
-    - /gt_box/alphasense_driver_node/cam5/color/camera_info
-    - /gt_box/alphasense_driver_node/debug_info
-    - /gt_box/alphasense_driver_node/imu
-    - /gt_box/alphasense_driver_node/ncamera_is_standby
-    - /gt_box/alphasense_driver_node/serial_number
 
-  cpt7:
-    - /gt_box/cpt7/bestgnsspos
-    - /gt_box/cpt7/bestpos
-    - /gt_box/cpt7/bestutm
-    - /gt_box/cpt7/bestvel
-    - /gt_box/cpt7/corrimu
-    - /gt_box/cpt7/gps/fix
-    - /gt_box/cpt7/gps/gps
-    - /gt_box/cpt7/gps/imu
-    - /gt_box/cpt7/heading2
-    - /gt_box/cpt7/imu/data_raw
-    - /gt_box/cpt7/insconfig
-    - /gt_box/cpt7/inspva
-    - /gt_box/cpt7/inspvax
-    - /gt_box/cpt7/insstdev
-    - /gt_box/cpt7/odom
-    - /gt_box/cpt7/oem7raw
-    - /gt_box/cpt7/ppppos
-    - /gt_box/cpt7/rxstatus
-    - /gt_box/cpt7/terrastarinfo
-    - /gt_box/cpt7/terrastarstatus
-    - /gt_box/cpt7/time
-  tf:
-    - /tf
-    - /tf_static
+jetson:
+  bags:
+    utils:
+      - /gt_box/alphasense_driver_node/imu
+      - /gt_box/health_status/jetson/status
+    zed2i:
+      - svo # SVO recording, not rosbag. Mutually exclusive: won't record zed ros topics if svo is set here.
+    ap20:
+      - /gt_box/ap20/imu
+      - /gt_box/ap20/prism_position
+      - /ap20/tps
+      - /ap20/imu
+    hdr:
+      - /gt_box/hdr_front/image_raw/compressed
+      - /gt_box/hdr_front/camera_info
+      - /gt_box/hdr_left/image_raw/compressed
+      - /gt_box/hdr_left/camera_info
+      - /gt_box/hdr_right/image_raw/compressed
+      - /gt_box/hdr_right/camera_info
+    clock:
+      - /clock
+nuc:
+  bags:
+    cpt7_local:
+      - cpt7_local
+    utils:
+      - /gt_box/livox/imu
+      - /gt_box/health_status/nuc/status
+    hesai:
+      - /gt_box/hesai/packets
+    livox:
+      - /gt_box/livox/lidar
+    alphasense:
+      - /gt_box/alphasense_driver_node/cam1/color/image/compressed
+      - /gt_box/alphasense_driver_node/cam1/color/camera_info
+      - /gt_box/alphasense_driver_node/cam2/color/image/compressed
+      - /gt_box/alphasense_driver_node/cam2/color/camera_info
+      - /gt_box/alphasense_driver_node/cam3/color/image/compressed
+      - /gt_box/alphasense_driver_node/cam3/color/camera_info
+      - /gt_box/alphasense_driver_node/cam4/color/image/compressed
+      - /gt_box/alphasense_driver_node/cam4/color/camera_info
+      - /gt_box/alphasense_driver_node/cam5/color/image/compressed
+      - /gt_box/alphasense_driver_node/cam5/color/camera_info
+      - /gt_box/alphasense_driver_node/debug_info
+      - /gt_box/alphasense_driver_node/imu
+      - /gt_box/alphasense_driver_node/ncamera_is_standby
+      - /gt_box/alphasense_driver_node/serial_number
+    cpt7:
+      - /gt_box/cpt7/bestgnsspos
+      - /gt_box/cpt7/bestpos
+      - /gt_box/cpt7/bestutm
+      - /gt_box/cpt7/bestvel
+      - /gt_box/cpt7/corrimu
+      - /gt_box/cpt7/gps/fix
+      - /gt_box/cpt7/gps/gps
+      - /gt_box/cpt7/gps/imu
+      - /gt_box/cpt7/heading2
+      - /gt_box/cpt7/imu/data_raw
+      - /gt_box/cpt7/insconfig
+      - /gt_box/cpt7/inspva
+      - /gt_box/cpt7/inspvax
+      - /gt_box/cpt7/insstdev
+      - /gt_box/cpt7/odom
+      - /gt_box/cpt7/oem7raw
+      - /gt_box/cpt7/ppppos
+      - /gt_box/cpt7/rxstatus
+      - /gt_box/cpt7/terrastarinfo
+      - /gt_box/cpt7/terrastarstatus
+      - /gt_box/cpt7/time
+    tf:
+      - /tf
+      - /tf_static

@@ -20,12 +20,15 @@ sudo cp /home/rsl/git/grand_tour_box/box_configuration/nuc/phc2sys_enp45s0.servi
 sudo cp /home/rsl/git/grand_tour_box/box_configuration/nuc/phc2sys_enp46s0.service /lib/systemd/system/phc2sys_enp46s0.service
 sudo cp /home/rsl/git/grand_tour_box/box_configuration/nuc/ptp4l_enp45s0.service /lib/systemd/system/ptp4l_enp45s0.service
 sudo cp /home/rsl/git/grand_tour_box/box_configuration/nuc/ptp4l_enp46s0.service /lib/systemd/system/ptp4l_enp46s0.service
+sudo cp /home/rsl/git/grand_tour_box/box_configuration/nuc/alphasense_optimize_network.service /lib/systemd/system/alphasense_optimize_network.service
+
 sudo systemctl daemon-reload
 sudo systemctl enable autostart_tmux
 sudo systemctl enable phc2sys_enp45s0
 sudo systemctl enable phc2sys_enp46s0
 sudo systemctl enable ptp4l_enp45s0
 sudo systemctl enable ptp4l_enp46s0
+sudo systemctl enable alphasense_optimize_network
 
 # sync clocks script
 sudo cp /home/rsl/git/grand_tour_box/box_configuration/nuc/sync_clocks_nuc.sh /usr/local/bin/

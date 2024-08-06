@@ -19,8 +19,8 @@ run:
       - -V /home/rsl/shakedown_27_06_2024/2024-06-27-12-54-04:/mission_data
     command_args:
       - "*_hdr*"
-      - "/gt_box/hdr_center/image_raw/compressed,/gt_box/hdr_left/image_raw/compressed,/gt_box/hdr_right/image_raw/compressed"
-      - "/gt_box/hdr_center/camera_info,/gt_box/hdr_left/camera_info,/gt_box/hdr_right/camera_info"
+      - "/gt_box/hdr_front/image_raw/compressed,/gt_box/hdr_left/image_raw/compressed,/gt_box/hdr_right/image_raw/compressed"
+      - "/gt_box/hdr_front/camera_info,/gt_box/hdr_left/camera_info,/gt_box/hdr_right/camera_info"
     container: rectify
 
   topic_freq:
