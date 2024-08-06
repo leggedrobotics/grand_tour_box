@@ -122,7 +122,7 @@ box_base_to_imu_alphasense:
   x: 0.0
   y: 0.0
   z: 0.0
-  roll: 0.0
+  roll: 3.14159265
   pitch: 0.0
   yaw: 0.0
 
