@@ -90,7 +90,13 @@ Getting Started
 
 
 
+List of deprecated packages
+Totalstation driver:
+- leica_totalstation_interface
 
+ROS1 HDR Drivers
+- hdr_camera_driver
+- hdr_camera_time_stamper
 
 
 
