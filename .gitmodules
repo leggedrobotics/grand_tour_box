@@ -50,3 +50,13 @@
 	path = box_drivers/novatel_oem7_driver
 	url = git@github.com:leggedrobotics/novatel_oem7_driver.git
 	branch = ros1
+[submodule "box_drivers_ros2/rosbag2_composable_recorder"]
+	path = box_drivers/rosbag2_composable_recorder
+	url = git@github.com:leggedrobotics/rosbag2_composable_recorder.git
+	branch = dev/grand_tour
+[submodule "box_driver_ros2/-b"]
+	path = box_driver_ros2/-b
+	url = git@github.com:leggedrobotics/rosbag2_composable_recorder.git
+[submodule "box_driver_ros2/rosbag2_composable_recorder"]
+	path = box_driver_ros2/rosbag2_composable_recorder
+	url = git@github.com:leggedrobotics/rosbag2_composable_recorder.git
