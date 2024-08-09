@@ -15,7 +15,9 @@ include_directories(
     ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(ap20_driver_ros src/main.cpp)
+add_executable(ap20_driver_ros 
+  src/main.cpp
+)
 
 target_link_libraries(ap20_driver_ros
   ${catkin_LIBRARIES}
