@@ -14,14 +14,6 @@
 	path = box_drivers/stim320_driver
 	url = git@github.com:leggedrobotics/stim320_driver
 	branch = master
-[submodule "box_drivers/hdr_camera_driver"]
-	path = box_drivers/hdr_camera_driver
-	url = git@github.com:leggedrobotics/hdr_camera_driver.git
-	branch = galactic
-[submodule "box_drivers/hdr_camera_time_stamper"]
-	path = box_drivers/hdr_camera_time_stamper
-	url = git@github.com:leggedrobotics/hdr_camera_time_stamper.git
-	branch = master
 [submodule "box_drivers/zed-ros-wrapper"]
 	path = box_drivers/zed-ros-wrapper
 	url = git@github.com:leggedrobotics/zed-ros-wrapper.git
@@ -50,3 +42,15 @@
 	path = box_drivers/novatel_oem7_driver
 	url = git@github.com:leggedrobotics/novatel_oem7_driver.git
 	branch = ros1
+[submodule "box_driver_ros2/rosbag2_composable_recorder"]
+	path = box_driver_ros2/rosbag2_composable_recorder
+	url = git@github.com:leggedrobotics/rosbag2_composable_recorder.git
+	branch = dev/grand_tour
+[submodule "box_driver_ros2/hdr_camera_driver"]
+	path = box_driver_ros2/hdr_camera_driver
+	url = git@github.com:leggedrobotics/hdr_camera_driver.git
+	branch = dev/ros2_grand_tour
+[submodule "box_driver_ros2/isaac_ros_common"]
+	path = box_driver_ros2/isaac_ros_common
+	url = git@github.com:leggedrobotics/isaac_ros_common.git
+	branch = main
