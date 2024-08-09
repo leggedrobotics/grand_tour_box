@@ -30,6 +30,8 @@ nuc:
       - /gt_box/health_status/nuc/status
     hesai:
       - /gt_box/hesai/packets
+      - /gt_box/hesai/lidar_ptp
+      - /gt_box/hesai/lidar_packets_loss
     livox:
       - /gt_box/livox/lidar
     alphasense:
