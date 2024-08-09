@@ -24,14 +24,14 @@ nuc:
     imus:
       - /gt_box/stim320/imu
       - /gt_box/adis16475/imu
-      - /gt_box/livox/imu
       - /gt_box/alphasense_driver_node/imu
-      - /gt_box/livox/imu
     hesai:
       - /gt_box/hesai/packets
       - /gt_box/hesai/points
     livox:
       - /gt_box/livox/lidar
+      - /gt_box/livox/imu
+      - /gt_box/livox/imu_SI
     alphasense:
       - /gt_box/alphasense_driver_node/cam1
       - /gt_box/alphasense_driver_node/cam2

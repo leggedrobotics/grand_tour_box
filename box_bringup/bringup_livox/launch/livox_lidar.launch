@@ -6,6 +6,7 @@
 	<!--user configure parameters for ros start-->
 	<arg name="lvx_file_path" default="livox_test.lvx"/>
 	<arg name="bd_list" default="100000000000000"/>
+	<!-- Use xfer format 1 for livoxcustommsgs but we dont need it -->
 	<arg name="xfer_format" default="0"/>
 	<arg name="multi_topic" default="0"/>
 	<arg name="data_src" default="0"/>
@@ -15,8 +16,8 @@
 	<arg name="rosbag_enable" default="false"/>
 	<arg name="cmdline_arg" default="$(arg bd_list)"/>
 	<arg name="msg_frame_id" default="livox"/>
-	<arg name="lidar_bag" default="true"/>
-	<arg name="imu_bag" default="true"/>
+	<arg name="lidar_bag" default="false"/>
+	<arg name="imu_bag" default="false"/>
 	<!--user configure parameters for ros end--> 
 
 	<param name="xfer_format" value="$(arg xfer_format)"/>
