@@ -5,10 +5,24 @@ find_package(catkin REQUIRED COMPONENTS
     std_msgs
     geometry_msgs
     sensor_msgs
+    message_generation
+)
+
+# Add message files
+add_message_files(
+  FILES
+  DebugInfo.msg
+)
+
+# Generate messages
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+  geometry_msgs
 )
 
 catkin_package(
-    CATKIN_DEPENDS roscpp std_msgs geometry_msgs sensor_msgs
+    CATKIN_DEPENDS roscpp std_msgs geometry_msgs sensor_msgs message_runtime
 )
 
 include_directories(
@@ -19,6 +33,7 @@ add_executable(ap20_driver_ros
   src/main.cpp
 )
 
+
 target_link_libraries(ap20_driver_ros
   ${catkin_LIBRARIES}
 )
@@ -26,3 +41,10 @@ target_link_libraries(ap20_driver_ros
 install(TARGETS ap20_driver_ros
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
+
+
+find_package(catkin REQUIRED COMPONENTS
+  message_generation
+)
+
+

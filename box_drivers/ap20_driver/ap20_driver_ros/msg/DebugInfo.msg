@@ -1,0 +1,10 @@
+# DebugInfo.msg
+time[] timestamp_arrival_times
+int32[] timestamp_arrival_counters
+time[] timestamps
+time[] position_arrival_times
+int32[] position_arrival_counters
+time[] position_timestamps
+time[] imu_arrival_times
+int32[] imu_arrival_counters
+time[] imu_timestamps

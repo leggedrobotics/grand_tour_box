@@ -9,8 +9,10 @@ jetson:
     ap20:
       - /gt_box/ap20/imu
       - /gt_box/ap20/prism_position
+    ap20_aux:
       - /ap20/tps
       - /ap20/imu
+      - /gt_box/ap20/debug
     hdr:
       - /gt_box/hdr_front/image_raw/compressed
       - /gt_box/hdr_front/camera_info
