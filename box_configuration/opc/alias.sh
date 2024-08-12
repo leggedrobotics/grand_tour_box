@@ -14,3 +14,6 @@ alias stop_recording='rosservice call /gt_box/rosbag_record_coordinator/stop_rec
 alias chrony_set_box="sudo killall chronyd; sudo rm -f /etc/chrony/chrony.conf; sudo cp /home/rsl/git/grand_tour_box/box_configuration/opc/chrony.conf /etc/chrony/chrony.conf; sudo chronyd"
 alias chrony_set_default="sudo killall chronyd; sudo rm -f /etc/chrony/chrony.conf; sudo ln -s /etc/chrony/chrony_internet.conf /etc/chrony/chrony.conf; sudo chronyd"
 alias sync-clocks="chrony_set_box; sudo killall chronyd; sudo chronyd"
+
+
+alias terminator_pid='ps axo pid,wchan:32,cmd | grep terminator'

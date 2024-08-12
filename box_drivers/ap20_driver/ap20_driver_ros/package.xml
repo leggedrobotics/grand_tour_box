@@ -3,7 +3,9 @@
   <name>ap20_driver_ros</name>
   <version>0.0.0</version>
   <description>The ap20_driver_ros package</description>
-  <maintainer email="bkrumme@student.ethz.ch">Benjamin Krummenacher</maintainer>
+  <maintainer email="jonfrey@ethz.ch">Jonas Frey</maintainer>
+  <author email="bkrumme@student.ethz.ch">Benjamin Krummenacher</author>
+  <author email="jonfrey@ethz.ch">Jonas Frey</author>
   <license>MIT</license>
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>roscpp</build_depend>
@@ -18,6 +20,9 @@
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
+
+  <build_depend>message_generation</build_depend>
+  <exec_depend>message_runtime</exec_depend>
 
   <export>
   </export>

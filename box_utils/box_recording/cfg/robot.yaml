@@ -9,8 +9,10 @@ jetson:
     ap20:
       - /gt_box/ap20/imu
       - /gt_box/ap20/prism_position
+    ap20_aux:
       - /ap20/tps
       - /ap20/imu
+      - /gt_box/ap20/debug
     hdr:
       - /gt_box/hdr_front/image_raw/compressed
       - /gt_box/hdr_front/camera_info
@@ -94,6 +96,8 @@ lpc:
       - /twist_mux/twist
       - /rsl_joystick_driver/twist
       - /rsl_joystick_module/twist
+      - /foot_scan
+      - /joy_manager/twist
     anymal_imu:
       - /sensors/imu
     state_estimator:
@@ -106,6 +110,9 @@ lpc:
       - /depth_camera_front_upper/depth/image_rect_raw
       - /depth_camera_rear_upper/depth/camera_info
       - /depth_camera_rear_upper/depth/image_rect_raw
+    tf:
+      - /tf
+      - /tf_static
 npc:
   grpc_cfg:
     address: 192.168.0.142
@@ -129,3 +136,9 @@ npc:
       - /lidar/packets
       - /lidar/point_cloud
       - /lidar/time_sync_status
+      - /point_cloud_filter/lidar/point_cloud_filtered
+    # wide_angle_cameras:
+    #   - /wide_angle_camera_front/image_color/compressed
+    #   - /wide_angle_camera_front/camera_info
+    #   - /wide_angle_camera_rear/image_color/compressed
+    #   - /wide_angle_camera_rear/camera_info
