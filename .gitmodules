@@ -2,10 +2,6 @@
 	path = box_drivers/livox_ros_driver2
 	url = git@github.com:leggedrobotics/livox_ros_driver2.git
 	branch = grandTour
-[submodule "box_drivers/leica_totalstation_interface"]
-	path = box_drivers/leica_totalstation_interface
-	url = git@github.com:leggedrobotics/leica_totalstation_interface.git
-	branch = master
 [submodule "box_drivers/multimaster_fkie"]
 	path = box_drivers/multimaster_fkie
 	url = git@github.com:leggedrobotics/multimaster_fkie.git
@@ -53,4 +49,4 @@
 [submodule "box_drivers_ros2/isaac_ros_common"]
 	path = box_drivers_ros2/isaac_ros_common
 	url = git@github.com:leggedrobotics/isaac_ros_common.git
-	branch = main
+	branch = dev/grand_tour
