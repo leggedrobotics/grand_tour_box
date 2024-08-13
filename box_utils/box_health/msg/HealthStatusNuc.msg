@@ -1,7 +1,5 @@
 string offset_ptp4l_enp45s0
-string offset_ptp4l_enp46s0
 string offset_phc2sys_enp45s0
-string offset_phc2sys_enp46s0
 
 float64 gt_box_alphasense_driver_node_imu_hz
 float64 gt_box_alphasense_driver_node_cam1_hz

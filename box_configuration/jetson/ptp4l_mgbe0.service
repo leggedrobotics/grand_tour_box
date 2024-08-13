@@ -7,6 +7,5 @@ After=network-online.target
 Type=simple
 ExecStart=/usr/sbin/ptp4l -i mgbe0 -H -s -f /home/rsl/git/grand_tour_box/box_configuration/jetson/ptp4l.conf
 Restart=on-failure
-
 [Install]
 WantedBy=multi-user.target
