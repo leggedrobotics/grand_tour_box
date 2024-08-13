@@ -85,8 +85,8 @@ ncamera:
   image_socket_receive_buffer_size_mb: 10.0 # 1 - 100
 
   # PTP time synchronization parameters.
-  expect_ptp_time_synchronization: false
-  max_ptp_sync_lost_time_s: 3600
+  expect_ptp_time_synchronization: true
+  max_ptp_sync_lost_time_s: 0
 
   # Number of enabled cameras and individual camera configuration.
   num_cams: 6                     # 1 - 8
