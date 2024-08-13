@@ -58,8 +58,10 @@ nuc:
       rate: 200
   ptp4l:
     - ptp4l_enp45s0
+    - ptp4l_enp46s0
   phc2sys:
     - phc2sys_enp45s0
+    - phc2sys_enp46s0
   chrony: False
   recording: True
   memory: /data

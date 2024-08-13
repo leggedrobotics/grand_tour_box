@@ -3,6 +3,7 @@ Description=Synchronize system clock or PTP hardware clock (PHC) - set system cl
 Documentation=man:phc2sys
 Requires=ptp4l_enp45s0.service
 After=ptp4l_enp45s0.service
+After=ptp4l_enp46s0.service
 
 [Service]
 Type=simple
