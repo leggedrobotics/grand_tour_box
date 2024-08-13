@@ -27,12 +27,13 @@ nuc:
     cpt7_local:
       - cpt7_local
     utils:
-      - /gt_box/livox/imu
       - /gt_box/health_status/nuc/status
     hesai:
       - /gt_box/hesai/packets
     livox:
       - /gt_box/livox/lidar
+      - /gt_box/livox/imu
+      - /gt_box/livox/imu_SI
     alphasense:
       - /gt_box/alphasense_driver_node/cam1/color/image/compressed
       - /gt_box/alphasense_driver_node/cam1/color/camera_info
