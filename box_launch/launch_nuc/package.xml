@@ -9,7 +9,6 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <depend>launch_scripts</depend>
-  <depend>bringup_hdr</depend>
   <depend>bringup_livox</depend>
   <depend>bringup_alphasense</depend>
   <depend>bringup_hesai</depend>

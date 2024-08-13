@@ -117,6 +117,7 @@ sudo systemctl enable autostart_tmux
 #sudo systemctl disable ptp4l_mgbe1
 #sudo systemctl disable phc2sys_mgbe1
 
+
 sudo cp /home/rsl/git/grand_tour_box/box_configuration/jetson/sync_time_once.service /etc/systemd/system/sync_time_once.service
 sudo cp /home/rsl/git/grand_tour_box/box_configuration/jetson/jetson_clocks_once.service /etc/systemd/system/jetson_clocks_once.service
 sudo cp /home/rsl/git/grand_tour_box/box_configuration/jetson/ptp4l_mgbe0.service /lib/systemd/system/ptp4l_mgbe0.service
