@@ -6,7 +6,7 @@ After=ptp4l_enp45s0.service
 
 [Service]
 Type=simple
-ExecStart=/usr/sbin/phc2sys -s enp45s0 -c CLOCK_REALTIME -w -S 10.0
+ExecStart=/usr/sbin/phc2sys -s enp45s0 -c CLOCK_REALTIME -w -S 1.0
 Restart=on-failure
 
 [Install]
