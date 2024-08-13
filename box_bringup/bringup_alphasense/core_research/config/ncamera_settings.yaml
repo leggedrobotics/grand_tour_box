@@ -3,7 +3,7 @@ camera_config: &standard_camera_config
   manual_exp_time_us: 10000         # 10 - 65000
   auto_exposure_enabled: true       # true/false
   min_exp_time_us: 50               # 10 - 65000
-  max_exp_time_us: 10000            # 10 - 65000
+  max_exp_time_us: 30000            # 10 - 65000
   autoexp_speed: 10                 # 1 - 10
   autoexp_target_median: 70         # 0 - 255
 
@@ -27,7 +27,7 @@ camera_config: &standard_camera_config_rotated
   manual_exp_time_us: 10000         # 10 - 65000
   auto_exposure_enabled: true       # true/false
   min_exp_time_us: 50               # 10 - 65000
-  max_exp_time_us: 10000            # 10 - 65000
+  max_exp_time_us: 30000            # 10 - 65000
   autoexp_speed: 10                 # 1 - 10
   autoexp_target_median: 70         # 0 - 255
 
