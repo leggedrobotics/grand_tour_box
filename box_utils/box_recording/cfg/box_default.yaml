@@ -20,7 +20,7 @@ jetson:
       - /gt_box/hdr_left/camera_info
       - /gt_box/hdr_right/image_raw/compressed
       - /gt_box/hdr_right/camera_info
-    clock:
+    clock_jetson:
       - /clock
 nuc:
   bags:
