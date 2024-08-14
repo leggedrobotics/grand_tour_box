@@ -1,7 +1,0 @@
-GE76:
-  grpc_cfg:
-    address: localhost
-    port: 50051
-  bags:
-    locomotion:
-      - /debug_info
