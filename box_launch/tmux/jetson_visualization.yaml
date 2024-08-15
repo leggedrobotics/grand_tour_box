@@ -30,7 +30,7 @@ windows:
           use_gui:=false
     - shell_command:
       - sleep 1
-      - /data/workspaces/isaac_ros-dev/src/isaac_ros_common/scripts/run_recording.sh -c hdr_start
+      - l-docker hdr_start
     - shell_command:
       - source /opt/ros/noetic/setup.bash
       - source ~/catkin_ws/devel/setup.bash
