@@ -194,6 +194,8 @@ class RosbagRecordNode(object):
         response.message = "Starting rosbag recording process."
 
         for bag_name, topics in bag_configs.items():
+            self.bag_running = True
+
             if bag_name == "cpt7_local" and "cpt7_local" in topics:
                 cpt7_start_recording()
                 response.message += "cpt7_local [SUC], "
@@ -203,23 +205,26 @@ class RosbagRecordNode(object):
             if bag_name == "zed2i" and "svo" in topics:
                 # If we are recording svo files instead of rosbags for the zed, we need to call the svo recording service.
                 response = self.toggle_zed_recording(True, timestamp, response)
-
                 continue
+
+            # TODO: Replace with proper system after testing
+            if bag_name == "hdr":
+                docker_script_path = "/data/workspaces/isaac_ros-dev/src/isaac_ros_common/scripts/run_recording.sh"
+                bash_command_hdr = docker_script_path + f" start_recording {timestamp} {topics}"
+                self.recording_hdr = True
+                rospy.loginfo(f"[RosbagRecordNode({self.node} HDR" + bash_command_hdr)
+                subprocess.Popen(bash_command_hdr, shell=True, stderr=subprocess.PIPE)
+                response.message += "hdr_ros2_started [SUC], "
+                continue
+
             bag_path = os.path.join(self.bag_base_path, timestamp + "_" + self.node + "_" + bag_name)
             bash_command = (
                 f"rosrun box_recording record_bag.sh {bag_path} {topics} __name:=record_{self.node}_{bag_name}"
             )
 
             self.info_string += f"record_{self.node}_{bag_name}----{bag_path},"
-            # TODO: Replace with proper system after testing
-            if bag_name == "hdr":
-                docker_script_path = "/data/workspaces/isaac_ros-dev/src/isaac_ros_common/scripts/run_recording.sh"
-                bash_command_hdr = f'{docker_script_path} -c "start_recording {timestamp}"'
-                self.recording_hdr = True
-                subprocess.Popen(bash_command_hdr, shell=True, stderr=subprocess.PIPE)
 
             self.processes.append(subprocess.Popen(bash_command, shell=True, stderr=subprocess.PIPE))
-            self.bag_running = True
 
             response.message += f"{bag_name} [SUC], "
 
@@ -254,7 +259,7 @@ class RosbagRecordNode(object):
 
         if self.recording_hdr:
             docker_script_path = "/data/workspaces/isaac_ros-dev/src/isaac_ros_common/scripts/run_recording.sh"
-            bash_command_hdr = f'{docker_script_path} -c "stop_recording"'
+            bash_command_hdr = docker_script_path + " stop_recording"
             self.recording_hdr = False
             subprocess.Popen(bash_command_hdr, shell=True, stderr=subprocess.PIPE)
 

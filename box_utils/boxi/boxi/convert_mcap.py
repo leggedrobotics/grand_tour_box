@@ -61,7 +61,7 @@ def downgrade_camerainfo_to_rosbag1(src: Path, dst: Path):
             writer.write(wconn, timestamp, outdata)
 
 
-def split_rosbags(input_bag_path, duration_minutes=5):
+def split_rosbags(input_bag_path, camera_direction, duration_minutes=5):
     """Splits ROS bags into smaller chunks based on duration."""
     bag = rosbag.Bag(input_bag_path, "r")
     start_time = bag.get_start_time()
@@ -70,7 +70,9 @@ def split_rosbags(input_bag_path, duration_minutes=5):
     index = 0
 
     while current_time < end_time:
-        split_filename = input_bag_path.replace("jetson_hdr_downgraded.bag", f"jetson_hdr_{index}.bag")
+        split_filename = input_bag_path.replace(
+            f"jetson_hdr_{camera_direction}_downgraded.bag", f"jetson_hdr_{camera_direction}_{index}.bag"
+        )
         with rosbag.Bag(split_filename, "w") as outbag:
             for topic, msg, t in bag.read_messages(
                 start_time=rospy.Time.from_sec(current_time),
@@ -92,7 +94,8 @@ def main(args):
 
         # We at first convert all missions to ROS1 - we have to merge the bags into a single mission for the hdr cameras given the metdata.yaml
         timestamp = Path(mcap).parent.name.split("_")[0]
-        converted_bag_path = Path(mcap).parent.joinpath(f"{timestamp}_jetson_hdr_raw.bag")
+        camera_direction = mcap.split("_")[-1]
+        converted_bag_path = Path(mcap).parent.joinpath(f"{timestamp}_jetson_hdr_{camera_direction}_raw.bag")
         if not converted_bag_path.exists():
             cmd = f"rosbags-convert {mcap} --dst {str(converted_bag_path)}"
             shell_run(cmd)
@@ -110,7 +113,7 @@ def main(args):
 
         # Split the downgraded bag into 5-minute chunks
         print("Splitting the downgraded bag into 5-minute chunks.")
-        split_rosbags(downgraded_bag_path)
+        split_rosbags(downgraded_bag_path, camera_direction=camera_direction)
         # Remove intermediate artifacts
         os.remove(converted_bag_path)
         os.remove(downgraded_bag_path)
