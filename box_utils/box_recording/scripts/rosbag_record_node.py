@@ -212,7 +212,7 @@ class RosbagRecordNode(object):
                 docker_script_path = "/data/workspaces/isaac_ros-dev/src/isaac_ros_common/scripts/run_recording.sh"
                 bash_command_hdr = docker_script_path + f" start_recording {timestamp} {topics}"
                 self.recording_hdr = True
-                rospy.loginfo(f"[RosbagRecordNode({self.node} HDR", bash_command_hdr)
+                rospy.loginfo(f"[RosbagRecordNode({self.node} HDR" + bash_command_hdr)
                 subprocess.Popen(bash_command_hdr, shell=True, stderr=subprocess.PIPE)
                 response.message += "hdr_ros2_started [SUC], "
                 continue
