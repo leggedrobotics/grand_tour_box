@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<launch>
+
+  <!-- Arguments -->
+  
+  <!-- Replay Options -->
+       <arg name="use_sim_time" default="true"/>
+  <arg name="rosbag_filepath" default="/home/tutuna/box_ws/src/grand_tour_box/box_drivers/novatel_oem7_driver/src/novatel_oem7_driver/data/compare_hesai/combined2/tf_sandbox/test/merged_tf.bag"/> <!-- /home/tutuna/Downloads/mergedBag.bag -->
+  <arg name="map_saving_folder" default="/$(find box_post_processor)/data"/> <!-- /home/tutuna/Downloads/mergedBag.bag -->
+
+  <!-- ROS Param -->
+  <param name="/use_sim_time" value="$(arg use_sim_time)"/>
+
+  <!-- Main Node -->
+  <node name="box_post_processor" pkg="box_post_processor"
+        type="post_processor_node" output="screen">
+    <param name="rosbag_filepath" value="$(arg rosbag_filepath)"/>
+    <param name="map_saving_folder" value="$(arg map_saving_folder)"/>
+  </node>
+
+</launch>
