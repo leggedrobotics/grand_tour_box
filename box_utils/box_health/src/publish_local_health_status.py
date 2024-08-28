@@ -56,8 +56,14 @@ def offset_from_status(line: str) -> str:
         offset = numbers_in_line[0]
         return str(offset)
     else:
-        rospy.logerr("[BoxStatus] Error reading offset from line: " + line)
-        return "error_reading_offset"
+        idx = line.find("rms")
+        numbers_in_line = [int(d) for d in re.findall(r"-?\d+", line[idx:])]
+        if numbers_in_line:
+            offset = numbers_in_line[0]
+            return str(offset)
+
+    rospy.logerr("[BoxStatus] Error reading offset from line: " + line)
+    return "error_reading_offset"
 
 
 def get_chronyc_tracking_info():
@@ -375,7 +381,7 @@ class BoxStatus:
         if self.cfg.get("recording", False):
             text.text += '\n<span style="color: rgb(0,255,0);">' + "Recording:" + "</span>\n"
             if self.hostname == "jetson":
-                for pc in ["jetson", "nuc", "lpc", "npc"]:
+                for pc in ["jetson", "nuc"]:
                     ready = is_node_alive(f"/gt_box/rosbag_record_node_{pc}")
                     pretty = pc.capitalize()
                     text.text += f"{pretty} ready: {ready}\n"

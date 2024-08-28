@@ -1,5 +1,4 @@
 string offset_ptp4l_enp45s0
-string offset_ptp4l_enp46s0
 string offset_phc2sys_enp45s0
 string offset_phc2sys_enp46s0
 

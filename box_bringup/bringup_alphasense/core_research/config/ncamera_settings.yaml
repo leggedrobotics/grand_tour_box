@@ -3,7 +3,7 @@ camera_config: &standard_camera_config
   manual_exp_time_us: 10000         # 10 - 65000
   auto_exposure_enabled: true       # true/false
   min_exp_time_us: 50               # 10 - 65000
-  max_exp_time_us: 10000            # 10 - 65000
+  max_exp_time_us: 30000            # 10 - 65000
   autoexp_speed: 10                 # 1 - 10
   autoexp_target_median: 70         # 0 - 255
 
@@ -27,7 +27,7 @@ camera_config: &standard_camera_config_rotated
   manual_exp_time_us: 10000         # 10 - 65000
   auto_exposure_enabled: true       # true/false
   min_exp_time_us: 50               # 10 - 65000
-  max_exp_time_us: 10000            # 10 - 65000
+  max_exp_time_us: 30000            # 10 - 65000
   autoexp_speed: 10                 # 1 - 10
   autoexp_target_median: 70         # 0 - 255
 
@@ -85,8 +85,8 @@ ncamera:
   image_socket_receive_buffer_size_mb: 10.0 # 1 - 100
 
   # PTP time synchronization parameters.
-  expect_ptp_time_synchronization: false
-  max_ptp_sync_lost_time_s: 3600
+  expect_ptp_time_synchronization: true
+  max_ptp_sync_lost_time_s: 0
 
   # Number of enabled cameras and individual camera configuration.
   num_cams: 6                     # 1 - 8

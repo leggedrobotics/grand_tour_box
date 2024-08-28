@@ -1,12 +1,14 @@
 [Unit]
 Description=Synchronize system clock or PTP hardware clock (PHC) - set enp46s0 clock from enp45s0 clock
 Documentation=man:phc2sys
+Requires=ptp4l_enp46s0.service
 Requires=ptp4l_enp45s0.service
+After=ptp4l_enp46s0.service
 After=ptp4l_enp45s0.service
 
 [Service]
 Type=simple
-ExecStart=/usr/sbin/phc2sys -s enp45s0 -c enp46s0 -w -S 1.0
+ExecStart=/usr/sbin/phc2sys -s enp45s0 -c enp46s0 -u 1 -O 0 -S 1.0
 Restart=on-failure
 
 [Install]

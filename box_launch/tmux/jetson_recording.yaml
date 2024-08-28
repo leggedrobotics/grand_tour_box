@@ -36,4 +36,4 @@ windows:
       focus: true
     - shell_command:
       - sleep 1
-      - l-docker-jetson -c "hdr_start"
+      - l-docker hdr_start

@@ -111,25 +111,26 @@ sudo systemctl daemon-reload
 sudo systemctl enable autostart_tmux
 
 # autostart ptp and set per default to jetson to grandmaster
+# Maybe needed before CPT7 installation
+#sudo cp /home/rsl/git/grand_tour_box/box_configuration/jetson/ptp4l_mgbe1.service /lib/systemd/system/ptp4l_mgbe1.service
+#sudo cp /home/rsl/git/grand_tour_box/box_configuration/jetson/phc2sys_mgbe1.service /lib/systemd/system/phc2sys_mgbe1.service
+#sudo systemctl disable ptp4l_mgbe1
+#sudo systemctl disable phc2sys_mgbe1
+
+
 sudo cp /home/rsl/git/grand_tour_box/box_configuration/jetson/sync_time_once.service /etc/systemd/system/sync_time_once.service
 sudo cp /home/rsl/git/grand_tour_box/box_configuration/jetson/jetson_clocks_once.service /etc/systemd/system/jetson_clocks_once.service
 sudo cp /home/rsl/git/grand_tour_box/box_configuration/jetson/ptp4l_mgbe0.service /lib/systemd/system/ptp4l_mgbe0.service
-sudo cp /home/rsl/git/grand_tour_box/box_configuration/jetson/ptp4l_mgbe1.service /lib/systemd/system/ptp4l_mgbe1.service
 sudo cp /home/rsl/git/grand_tour_box/box_configuration/jetson/phc2sys_mgbe0.service /lib/systemd/system/phc2sys_mgbe0.service
-sudo cp /home/rsl/git/grand_tour_box/box_configuration/jetson/phc2sys_mgbe1.service /lib/systemd/system/phc2sys_mgbe1.service
 sudo cp /home/rsl/git/grand_tour_box/box_configuration/jetson/box_chrony.service /lib/systemd/system/box_chrony.service
 
 sudo systemctl daemon-reload
 sudo systemctl disable sync_time_once
-
 sudo systemctl enable ptp4l_mgbe0
-sudo systemctl enable ptp4l_mgbe1
 sudo systemctl enable phc2sys_mgbe0
-sudo systemctl enable phc2sys_mgbe1
-
 sudo systemctl enable box_chrony
 sudo systemctl disable chrony
-
+sync-clocks
 
 # sync clocks script
 sudo cp /home/rsl/git/grand_tour_box/box_configuration/jetson/sync_clocks_jetson.sh /usr/local/bin/
