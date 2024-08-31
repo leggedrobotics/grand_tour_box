@@ -1,6 +1,5 @@
-from boxi import shell_run, LOCAL_HOSTNAME
+from boxi import shell_run
 from pathlib import Path
-import os
 
 
 def add_arguments(parser):

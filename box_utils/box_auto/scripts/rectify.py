@@ -1,8 +1,7 @@
-import rospy
 import rosbag
 import cv2
 from cv_bridge import CvBridge
-from sensor_msgs.msg import Image, CompressedImage, CameraInfo
+from sensor_msgs.msg import CameraInfo
 import numpy as np
 import sys
 from pathlib import Path
@@ -62,7 +61,7 @@ def process_rosbag(input_bag, image_topics, camera_info_topics):
             bag.close()
             return
 
-    print(f"Camera info obtained for all topics. Starting image undistortion...")
+    print("Camera info obtained for all topics. Starting image undistortion...")
 
     out_bag = rosbag.Bag(output_bag, "w")
     try:
@@ -101,9 +100,9 @@ def process_rosbag(input_bag, image_topics, camera_info_topics):
                 camera_info_topic.insert(len(camera_info_topic) - 1, "rectified")
                 camera_info_topic = "/".join(camera_info_topic)
 
-                out_bag.write(rectified_image_topic, rectified_image_msg, t)
+                out_bag.write(rectified_image_topic, rectified_image_msg)
                 new_camera_info.header = camera_info.header
-                out_bag.write(camera_info_topic, new_camera_info, t)
+                out_bag.write(camera_info_topic, new_camera_info)
     finally:
         bag.close()
         out_bag.close()
