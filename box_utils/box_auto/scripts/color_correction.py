@@ -6,10 +6,9 @@ import os
 import yaml
 from tqdm import tqdm
 from py_raw_image_pipeline import RawImagePipeline
-from pytictac import CpuTimer
+import time
 
 MISSION_FOLDER = os.environ.get("MISSION_FOLDER", "/mission_data")
-MISSION_FOLDER = "/media/jonfrey/T7/2024_05_24_dodo_basel_construction_site/gt_box/1980-01-06-01-40-00"
 
 
 def dump_camera_info(camera_info_msg, filename):
@@ -46,9 +45,7 @@ def process_rosbag(input_bag, image_topics, camera_info_topics, config_file, use
             camera_info_dict[camera_info_topic] = msg
             calib_file = camera_info_topic.replace("/", "_") + ".yaml"
             dump_camera_info(msg, calib_file)
-
             proc[camera_info_topic] = RawImagePipeline(use_gpu, config_file, calib_file)
-
             break  # We only need the first camera_info message
 
     out_bag = rosbag.Bag(output_bag, "w")
@@ -64,13 +61,11 @@ def process_rosbag(input_bag, image_topics, camera_info_topics, config_file, use
                 else:
                     cv_image = bridge.compressed_imgmsg_to_cv2(msg, desired_encoding="passthrough")
 
-                with CpuTimer("test"):
-                    # Apply color correction using RawImagePipeline
-                    camera_info_topic = camera_info_topics[image_topics.index(topic)]
-                    corrected_image = proc[camera_info_topic].process(
-                        cv_image, msg.encoding if not compressed else "bgr8"
-                    )
-
+                st = time.time()
+                # Apply color correction using RawImagePipeline
+                camera_info_topic = camera_info_topics[image_topics.index(topic)]
+                corrected_image = proc[camera_info_topic].process(cv_image, msg.encoding if not compressed else "bgr8")
+                print(f"Time: {time.time() - st}")
                 # # Display the processed image in a window
                 # cv2.imshow("Processed Image", corrected_image)
                 # # Wait for a short period to display the image, 1 ms is enough
