@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>box_post_processor</name>
+  <version>0.0.0</version>
+  <description>Perception Box Processing Package</description>
+
+  <maintainer email="tutuna@ethz.ch">Turcan Tuna</maintainer>
+
+  <license>TODO</license>
+
+  <author email="tutuna@ethz.ch">Turcan Tuna</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>cmake_clang_tools</build_depend>
+
+  <depend>roscpp</depend>
+  <depend>roslib</depend>
+  <depend>eigen_conversions</depend>
+  <depend>tf2</depend>
+  <depend>rosgraph_msgs</depend>
+  <depend>tf2_ros</depend>
+  <depend>tf2_geometry_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>interactive_markers</depend>
+  <depend>rosbag</depend>
+  <depend>nav_msgs</depend>
+
+</package>

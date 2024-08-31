@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<launch>
+
+  <!-- Arguments -->
+  
+  <!-- Replay Options -->
+  <arg name="use_sim_time" default="true"/>
+  <arg name="input_filepath" default="/home/tutuna/Music/celeri/merge_zed_sensor_data/merged_tf_with_zed.bag"/> <!-- /home/tutuna/Downloads/mergedBag.bag -->
+  <arg name="map_saving_folder" default="/$(find box_post_processor)/data"/> <!-- /home/tutuna/Downloads/mergedBag.bag -->
+
+  <!-- ROS Param -->
+  <param name="/use_sim_time" value="$(arg use_sim_time)"/>
+
+  <!-- Main Node -->
+  <node name="box_post_processor" pkg="box_post_processor"
+        type="post_processor_node" output="screen" required="True">
+    <param name="input_filepath" value="$(arg input_filepath)"/>
+    <param name="map_saving_folder" value="$(arg map_saving_folder)"/>
+  </node>
+
+</launch>
