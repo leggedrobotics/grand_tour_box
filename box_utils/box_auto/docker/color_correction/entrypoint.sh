@@ -2,4 +2,4 @@
 
 source /opt/ros/noetic/setup.bash
 echo $@
-python3 /topic_freq.py $@
+python3 /color_correction.py $@

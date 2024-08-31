@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+
+<package format="2">
+
+  <name>box_auto</name>
+  <version>0.1.0</version>
+  <description>Automated post-processing package for Grand Tour box.</description>
+
+  <license>Proprietary</license>
+
+  <author email="jonfrey@ethz.ch">Jonas Frey</author>
+  <maintainer email="jonfrey@ethz.ch">Jonas Frey</maintainer>  
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>python3</build_depend>
+  
+</package>
