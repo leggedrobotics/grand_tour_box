@@ -1,4 +1,4 @@
-#include "box_post_processor/BoxPostProcessor.hpp"
+#include "box_post_processor/box_post_processor.hpp"
 #include <ros/ros.h>
 #include <rosbag/view.h>
 #include <sensor_msgs/Imu.h>
@@ -13,7 +13,7 @@ BoxPostProcessor::BoxPostProcessor(ros::NodeHandlePtr nh) : nh_(nh) {}
 
 void BoxPostProcessor::initialize() {
   rosbagFilename_ = nh_->param<std::string>("rosbag_filename", "");
-  outputBagFolder_ = nh_->param<std::string>("map_saving_folder", "");
+  outputBagFolder_ = nh_->param<std::string>("output_folder", "");
   ROS_INFO_STREAM("Reading from rosbag: " << rosbagFilename_);
 
   rosbagFullname_ = rosbagFilename_;

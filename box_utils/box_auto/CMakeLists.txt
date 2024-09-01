@@ -10,9 +10,8 @@ add_compile_options(-O3)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(SRC_FILES
-  src/BoxPostProcessor.cpp
-  # src/Color.cpp
-  )
+  src/box_post_processor.cpp
+)
 
 set(CATKIN_PACKAGE_DEPENDENCIES
   roscpp

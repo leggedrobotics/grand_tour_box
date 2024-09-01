@@ -7,7 +7,7 @@
   <!-- Replay Options -->
   <arg name="use_sim_time" default="true"/>
   <arg name="input_filepath" default="/mission_data/tf.bag"/> 
-  <arg name="map_saving_folder" default="/mission_data"/>
+  <arg name="output_folder" default="/mission_data"/>
 
   <!-- ROS Param -->
   <param name="/use_sim_time" value="$(arg use_sim_time)"/>
@@ -16,7 +16,7 @@
   <node name="box_post_processor" pkg="box_post_processor"
         type="post_processor_node" output="screen" required="True">
     <param name="input_filepath" value="$(arg input_filepath)"/>
-    <param name="map_saving_folder" value="$(arg map_saving_folder)"/>
+    <param name="output_folder" value="$(arg output_folder)"/>
   </node>
 
 </launch>
