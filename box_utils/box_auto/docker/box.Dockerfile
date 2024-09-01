@@ -22,12 +22,15 @@ COPY dependencies/ros.sh /ros.sh
 RUN sh -c "chmod +x /ros.sh"
 RUN /bin/bash -c '/ros.sh'
 
+COPY dependencies/open_cv.sh /open_cv.sh
+RUN sh -c "chmod +x /open_cv.sh"
+RUN /bin/bash -c '/open_cv.sh'
+
+RUN echo Test
 COPY dependencies/grand_tour.sh /grand_tour.sh
 RUN sh -c "chmod +x /grand_tour.sh"
-# Here explicitly forward the ssh key
 RUN --mount=type=ssh /bin/bash -c '/grand_tour.sh'
 
-RUN echo tesst
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 

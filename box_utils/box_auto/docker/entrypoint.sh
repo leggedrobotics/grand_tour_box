@@ -1,6 +1,6 @@
 #!/bin/bash
 
-figlet Welcome Docker - Box Auto
+figlet Welcome GrandTour Docker
 
 
 export HOME=/home/$HOST_USERNAME
@@ -21,4 +21,4 @@ custom_ps1="\[\e[0;34m\](box_auto) \[\e[0;32m\]\u@\h:\[\e[0;34m\]\W\$ \[\e[0m\]"
 bash --rcfile <(echo "PS1='$custom_ps1'")
 
 
-figlet Exit Docker - Box Auto
+figlet Exit GrandTour Docker
