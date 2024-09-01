@@ -8,3 +8,5 @@ catkin config --cmake-args -DCMAKE_BUILD_TYPE=RelWithDebInfo
 cd /home/opencv_ws/src; git clone https://github.com/ori-drs/opencv_catkin.git
 cd /home/opencv_ws/src; git clone https://github.com/catkin/catkin_simple.git
 catkin build opencv_catkin --cmake-args -DCUDA_ARCH_BIN=8.6
+
+echo "source /home/opencv_ws/devel/setup.bash" >> /root/.bashrc

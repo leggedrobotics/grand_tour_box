@@ -32,6 +32,7 @@ class BoxPostProcessor {
  private:
   std::string rosbagFullname_;
   std::string rosbagFilename_;
+  std::string inputFolder_;
   std::string outputBagFolder_;
   std::chrono::time_point<std::chrono::steady_clock> startTime_;
   std::chrono::time_point<std::chrono::steady_clock> endTime_;

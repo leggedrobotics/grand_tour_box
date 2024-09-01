@@ -12,7 +12,19 @@ namespace box_post_processor {
 BoxPostProcessor::BoxPostProcessor(ros::NodeHandlePtr nh) : nh_(nh) {}
 
 void BoxPostProcessor::initialize() {
-  rosbagFilename_ = nh_->param<std::string>("input_filepath", "");
+  inputFolder_ = nh_->param<std::string>("input_folder", "");
+
+  namespace fs = std::filesystem;
+  for (const auto& entry : fs::directory_iterator(inputFolder_)) {
+    if (entry.path().extension() == ".bag" && entry.path().filename().string().find("_zed") != std::string::npos) {
+      rosbagFilename_ = entry.path().string();
+      break;
+    }
+  }
+  if (rosbagFilename_.empty()) {
+    ROS_ERROR("No matching *_zed.bag file found in the input folder.");
+  }
+
   outputBagFolder_ = nh_->param<std::string>("map_saving_folder", "");
   ROS_INFO_STREAM("Reading from rosbag: " << rosbagFilename_);
 
