@@ -6,13 +6,29 @@ ENV DEBIAN_frontend=noninteractive
 
 # nvidia-container-runtime
 ENV NVIDIA_VISIBLE_DEVICES=${NVIDIA_VISIBLE_DEVICES:-all}
-ENV NVIDIA_DRIVER_CAPABILITIES=${NVIDIA_DRIVER_CAPABILITIES:+$NVIDIA_DRIVER_CAPABILITIES,}graphics
+ENV NVIDIA_DRIVER_CAPABILITIES=${NVIDIA_DRIVER_CAPABILITIES:+$NVIDIA_DRIVER_CAPABILITIES,}graphics,compute,video,utility
 
+RUN echo "Europe/Zurich" > /etc/localtime ; echo "CUDA Version 12.5.1" > /usr/local/cuda/version.txt
 
-COPY install_inside_container.sh /install_inside_container.sh 
+COPY dependencies/zed.sh /zed.sh
+RUN sh -c "chmod +x /zed.sh"
+RUN /bin/bash -c '/zed.sh'
+
+COPY dependencies/general.sh /general.sh
+RUN sh -c "chmod +x /general.sh"
+RUN /bin/bash -c '/general.sh'
+
+COPY dependencies/ros.sh /ros.sh
+RUN sh -c "chmod +x /ros.sh"
+RUN /bin/bash -c '/ros.sh'
+
+COPY dependencies/grand_tour.sh /grand_tour.sh
+RUN sh -c "chmod +x /grand_tour.sh"
+# Here explicitly forward the ssh key
+RUN --mount=type=ssh /bin/bash -c '/grand_tour.sh'
+
+RUN echo tesst
 COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
-#RUN sh -c "chmod +x /install_inside_container.sh"
-#RUN /bin/bash -c '/install_inside_container.sh'
-
-#RUN chmod +x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]

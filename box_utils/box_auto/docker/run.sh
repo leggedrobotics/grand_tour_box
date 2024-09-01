@@ -12,7 +12,7 @@ Usage: $(basename $0) [OPTIONS]
 # Default target
 REMOVE_FLAG="--rm"
 INTERACTIVE_FLAG="-it"
-IMAGE="leggedrobotics:color_correction"
+IMAGE="leggedrobotics/box"
 
 COMMAND=""
 # Read arguments
@@ -52,17 +52,10 @@ if [ ! -f $XAUTH ]; then
 fi
 
 
-mkdir -p .etc && cd .etc
-ln -sf /etc/passwd .
-ln -sf /etc/shadow .
-ln -sf /etc/group .
-cd ..
-
-
-# Run docker
+# Run docker #/bin/bash \
+   #-eHOST_USERNAME=rsl \
 docker run --net=host \
    --privileged \
-   -eHOST_USERNAME=rsl \
     $INTERACTIVE_FLAG \
     $REMOVE_FLAG \
     --volume=$XSOCK:/root/.X11-unix:rw \
@@ -72,13 +65,6 @@ docker run --net=host \
     --env="DISPLAY=$DISPLAY" \
     --ulimit rtprio=99 \
     --cap-add=sys_nice \
-    -v$HOME:$HOME \
-    -v /sys:/sys \
-    -v$(pwd)/.etc/shadow:/etc/shadow \
-    -v$(pwd)/.etc/passwd:/etc/passwd \
-    -v$(pwd)/.etc/group:/etc/group \
-    --entrypoint=/bin/bash \
-    -v /home/jonfrey/git/grand_tour_box/box_utils/box_auto/docker/color_correction/color_correction.py:/color_correction.py \
-    -v /media/jonfrey/BoxiS1-1TB/2024-07-03-12-59-44:/mission_data \
+    -v /Data/GrandTour/shakedown_27_06_2024/2024-06-27-12-54-04:/mission_data \
     $IMAGE \
     $COMMAND

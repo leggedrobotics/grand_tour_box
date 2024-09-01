@@ -25,5 +25,6 @@
   <depend>interactive_markers</depend>
   <depend>rosbag</depend>
   <depend>nav_msgs</depend>
-
+  <depend>raw_image_pipeline_python</depend>
+  <depend>raw_image_pipeline_ros</depend>
 </package>
