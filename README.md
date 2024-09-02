@@ -67,7 +67,7 @@ The project is organized into the following directories:
 
   - **core_mapping**: Contains the core algorithms for mapping.
 
-  - **core_calibration**: Get and store calibrations from all the calibration software. 
+  - **box_calibration**: Get and store calibrations from all the calibration software. 
 
 - **box_documentation**: Documentation
 

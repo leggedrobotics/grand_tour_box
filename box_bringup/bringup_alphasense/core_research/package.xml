@@ -8,7 +8,7 @@
   <buildtool_depend>catkin</buildtool_depend>
   <depend>alphasense_driver_ros</depend>
   <depend>raw_image_pipeline_ros</depend>
-  <depend>core_calibration</depend>
+  <depend>box_calibration</depend>
   <export>
   </export>
 </package>
