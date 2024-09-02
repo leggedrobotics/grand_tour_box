@@ -9,7 +9,7 @@
     <arg name="output_frame" value="cam1_sensor_frame_helper"/>
     <arg name="debayer/enabled" value="false"/>
     <arg name="white_balance/enabled" value="false"/>
-    <arg name="undistortion/calibration_file" value="$(find core_calibration)/calibration/alphasense/cam1.yaml"/>
+    <arg name="undistortion/calibration_file" value="$(find box_calibration)/calibration/alphasense/cam1.yaml"/>
 </include>
 
 <include file="$(find bringup_alphasense)/launch/debayer_single_camera.launch">
@@ -21,7 +21,7 @@
     <arg name="output_frame" value="cam2_sensor_frame_helper"/>
     <arg name="debayer/enabled" value="true"/>
     <arg name="white_balance/enabled" value="false"/>
-    <arg name="undistortion/calibration_file" value="$(find core_calibration)/calibration/alphasense/cam2.yaml"/>
+    <arg name="undistortion/calibration_file" value="$(find box_calibration)/calibration/alphasense/cam2.yaml"/>
 </include>
 
 <include file="$(find bringup_alphasense)/launch/debayer_single_camera.launch">
@@ -33,7 +33,7 @@
     <arg name="output_frame" value="cam3_sensor_frame_helper"/>
     <arg name="debayer/enabled" value="true"/>
     <arg name="white_balance/enabled" value="false"/>
-    <arg name="undistortion/calibration_file" value="$(find core_calibration)/calibration/alphasense/cam3.yaml"/>
+    <arg name="undistortion/calibration_file" value="$(find box_calibration)/calibration/alphasense/cam3.yaml"/>
 </include>
 
 <include file="$(find bringup_alphasense)/launch/debayer_single_camera.launch">
@@ -43,7 +43,7 @@
     <arg name="output_frame" value="cam4_sensor_frame_helper"/>
     <arg name="debayer/enabled" value="true"/>
     <arg name="white_balance/enabled" value="false"/>
-    <arg name="undistortion/calibration_file" value="$(find core_calibration)/calibration/alphasense/cam4.yaml"/>
+    <arg name="undistortion/calibration_file" value="$(find box_calibration)/calibration/alphasense/cam4.yaml"/>
 </include>
 
 <include file="$(find bringup_alphasense)/launch/debayer_single_camera.launch">
@@ -55,7 +55,7 @@
     <arg name="output_frame" value="cam5_sensor_frame_helper"/>
     <arg name="debayer/enabled" value="false"/>
     <arg name="white_balance/enabled" value="false"/>
-    <arg name="undistortion/calibration_file" value="$(find core_calibration)/calibration/alphasense/cam5.yaml"/>
+    <arg name="undistortion/calibration_file" value="$(find box_calibration)/calibration/alphasense/cam5.yaml"/>
 </include>
 
 </launch>

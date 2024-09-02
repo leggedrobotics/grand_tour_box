@@ -2,7 +2,7 @@
 <package format="2">
   <name>box_calibration</name>
   <version>0.0.0</version>
-  <description>The core_calibration package</description>
+  <description>The box_calibration package</description>
   <maintainer email="jonfrey@ethz.ch">Jonas Frey</maintainer>
   <license>TODO</license>
   <buildtool_depend>catkin</buildtool_depend>
