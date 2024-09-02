@@ -1,20 +1,23 @@
-image_width: 1920
-image_height: 1080
-camera_name: zed_left
+# Created using
 camera_matrix:
-  rows: 3
   cols: 3
-  data: [699.3179471959317, 0.0, 960, 0.0, 697.5709250111197, 540, 0.0, 0.0, 1.0]
-distortion_model: equidistant
-distortion_coefficients:
-  rows: 1
-  cols: 4
-  data: [-0.0480472823273197, 0.012474686401591797, -0.01018792844315705, 0.002133696989290615]
-rectification_matrix:
+  data: [1061.740573234219, 0.0, 953.9096380470181, 0.0, 1062.408051107584, 554.1277931949547,
+    0.0, 0.0, 1.0]
   rows: 3
+camera_name: zed2i_left_camera_optical_frame
+distortion_coefficients:
+  cols: 4
+  data: [-0.05181857036158625, 0.01837924564205111, 0.000560171411067156, -0.0001044606074266749]
+  rows: 1
+distortion_model: radtan
+image_height: 1080
+image_width: 1920
+projection_matrix:
+  cols: 4
+  data: [1061.740573234219, 0.0, 953.9096380470181, 0.0, 0.0, 1062.408051107584, 554.1277931949547,
+    0.0, 0.0, 0.0, 1.0, 0.0]
+  rows: 3
+rectification_matrix:
   cols: 3
   data: [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
-projection_matrix:
   rows: 3
-  cols: 4
-  data: [699.3179471959317, 0.0, 960, 0.0, 0.0, 697.5709250111197, 540, 0.0, 0.0, 1.0, 0.0]
