@@ -59,6 +59,29 @@
     <child link="cpt7_imu" />
   </joint>
 
+  <link name="base"/>
+  <joint name="cpt7_to_robot_base" type="fixed">
+    <origin xyz="-0.0764038 -0.0361 0.2802790" rpy="3.1415126 0.0 0.0" />
+    <parent link="cpt7_imu" />
+    <child link="base" />
+  </joint>
+
+  <link name="cpt7_front_antenna"/>
+  <!-- CPT7 Coordinate System -->
+  <joint name="cpt7_to_front_antenna" type="fixed">
+    <origin xyz="0.13924890003 -0.0361 -0.1712000" rpy="0.0 0.0 0.0" />
+    <parent link="cpt7_imu" />
+    <child link="cpt7_front_antenna" />
+  </joint>
+
+  <link name="cpt7_back_antenna"/>
+  <!-- CPT7 Coordinate System -->
+  <joint name="cpt7_to_back_antenna" type="fixed">
+    <origin xyz="-0.4404038 -0.0361 -0.0267714" rpy="0.0 0.0 0.0" />
+    <parent link="cpt7_imu" />
+    <child link="cpt7_back_antenna" />
+  </joint>
+
   <link name="State"/>
   <!-- Basilisk IMU Frame -->
   <joint name="base_to_basilisk_imu_frame" type="fixed">
