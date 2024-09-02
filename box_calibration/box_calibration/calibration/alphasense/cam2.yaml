@@ -1,20 +1,23 @@
-image_width: 1440
-image_height: 1080
-camera_name: alphasense_cam2
+# Created using 
 camera_matrix:
-  rows: 3
   cols: 3
-  data: [699.3179471959317, 0.0, 732.8151915838271, 0.0, 697.5709250111197, 553.954788294587, 0.0, 0.0, 1.0]
-distortion_model: equidistant
-distortion_coefficients:
-  rows: 1
-  cols: 4
-  data: [-0.0480472823273197, 0.012474686401591797, -0.01018792844315705, 0.002133696989290615]
-rectification_matrix:
+  data: [702.4755857158741, 0.0, 763.1743144498663, 0.0, 701.6270253125284, 544.3852457555274,
+    0.0, 0.0, 1.0]
   rows: 3
+camera_name: cam2_sensor_frame
+distortion_coefficients:
+  cols: 4
+  data: [-0.04510436708921242, 0.01475074178331407, -0.01535909618142446, 0.004554297236190726]
+  rows: 1
+distortion_model: equidistant
+image_height: 1080
+image_width: 1440
+projection_matrix:
+  cols: 4
+  data: [702.4755857158741, 0.0, 763.1743144498663, 0.0, 0.0, 701.6270253125284, 544.3852457555274,
+    0.0, 0.0, 0.0, 1.0, 0.0]
+  rows: 3
+rectification_matrix:
   cols: 3
   data: [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
-projection_matrix:
   rows: 3
-  cols: 4
-  data: [699.3179471959317, 0.0, 732.8151915838271, 0.0, 0.0, 697.5709250111197, 553.954788294587, 0.0, 0.0, 1.0, 0.0]
