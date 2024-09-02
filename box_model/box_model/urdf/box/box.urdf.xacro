@@ -3,7 +3,7 @@
 <robot name="box" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
 <!-- YAML file containing the default values from CAD -->
-<xacro:property name="calib_file" value="$(find box_model)/urdf/box/calibrations/calibration.yaml" />
+<xacro:property name="calib_file" value="$(find box_calibration)/calibration/tf/calibration_latest.yaml" />
 
 <!-- load the YAML calibration file into a property -->
 <xacro:property name="calib" value="${xacro.load_yaml(calib_file)}"/>
