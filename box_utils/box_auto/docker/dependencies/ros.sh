@@ -11,5 +11,9 @@ source /opt/ros/noetic/setup.bash
 apt install -y python3-rosbag
 apt install -y ros-noetic-cv-bridge
 apt install -y python3-catkin-tools
+apt install -y python3-rosdep
 
 echo "source /opt/ros/noetic/setup.bash" >> /root/.bashrc
+
+rosdep init
+rosdep update
