@@ -1,20 +1,23 @@
-image_width: 1920
-image_height: 1080
-camera_name: hdr_right
+# Created using 
 camera_matrix:
-  rows: 3
   cols: 3
-  data: [699.3179471959317, 0.0, 960, 0.0, 697.5709250111197, 540, 0.0, 0.0, 1.0]
-distortion_model: equidistant
-distortion_coefficients:
-  rows: 1
-  cols: 4
-  data: [-0.0480472823273197, 0.012474686401591797, -0.01018792844315705, 0.002133696989290615]
-rectification_matrix:
+  data: [984.8090864251797, 0.0, 948.0326079931228, 0.0, 984.5533102739237, 636.7121181864717,
+    0.0, 0.0, 1.0]
   rows: 3
+camera_name: hdr_right
+distortion_coefficients:
+  cols: 4
+  data: [-0.05944588809639628, 0.002099898204538727, -0.001404527973232062, 0.000335312479820808]
+  rows: 1
+distortion_model: equidistant
+image_height: 1280
+image_width: 1920
+projection_matrix:
+  cols: 4
+  data: [984.8090864251797, 0.0, 948.0326079931228, 0.0, 0.0, 984.5533102739237, 636.7121181864717,
+    0.0, 0.0, 0.0, 1.0, 0.0]
+  rows: 3
+rectification_matrix:
   cols: 3
   data: [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
-projection_matrix:
   rows: 3
-  cols: 4
-  data: [699.3179471959317, 0.0, 960, 0.0, 0.0, 697.5709250111197, 540, 0.0, 0.0, 1.0, 0.0]
