@@ -26,6 +26,7 @@ COPY dependencies/open_cv.sh /open_cv.sh
 RUN sh -c "chmod +x /open_cv.sh"
 RUN /bin/bash -c '/open_cv.sh'
 
+RUN pwd
 COPY dependencies/grand_tour.sh /grand_tour.sh
 RUN sh -c "chmod +x /grand_tour.sh"
 RUN --mount=type=ssh /bin/bash -c '/grand_tour.sh'

@@ -17,6 +17,10 @@ cd /home/catkin_ws/src; git clone https://github.com/leggedrobotics/pybind11_cat
 cd /home/catkin_ws/src; git clone https://github.com/catkin/catkin_simple.git
 cd /home/catkin_ws/src; git clone https://github.com/ethz-asl/glog_catkin.git
 
+# Added simlink to access the hesai files correctly
+mkdir -p /home/rsl/git/grand_tour_box/box_drivers/hesai_lidar_ros_driver/config
+ln -s /home/catkin_ws/src/grand_tour_box/box_drivers/hesai_lidar_ros_driver/config /home/rsl/git/grand_tour_box/box_drivers/hesai_lidar_ros_driver/config
+
 # Nice to have usability
 cp /home/catkin_ws/src/grand_tour_box/box_configuration/general/.vimrc ~/
 mkdir -p ~/.vim/colors
@@ -24,7 +28,7 @@ cp /home/catkin_ws/src/grand_tour_box/box_configuration/general/solarized.vim ~/
 cp /home/catkin_ws/src/grand_tour_box/box_configuration/general/.tmux.conf ~/
 
 # Install cpt7 dependencies
-cd /home/rsl/git/grand_tour_box/box_drivers/novatel_oem7_driver
+cd /home/catkin_ws/src/grand_tour_box/box_drivers/novatel_oem7_driver
 rosdep install --from-paths src --ignore-src -r -y --reinstall
 
 # Build workspace for postprocessing
