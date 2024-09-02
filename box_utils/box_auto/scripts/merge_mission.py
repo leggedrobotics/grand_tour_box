@@ -2,6 +2,8 @@ from pathlib import Path
 from fnmatch import fnmatchcase
 from rosbag import Bag
 import re
+import argparse
+
 
 def merge_bags_single(input_bag, output_bag, topics="*", verbose=False):
     # From https://www.clearpathrobotics.com/assets/downloads/support/merge_bag.py
@@ -21,17 +23,21 @@ def merge_bags_single(input_bag, output_bag, topics="*", verbose=False):
             skipped_count = 0
             if verbose:
                 print("> Reading bag file: " + ifile)
-            with Bag(ifile, "r") as ib:
-                for topic, msg, t in ib:
-                    if any(fnmatchcase(topic, pattern) for pattern in topics):
-                        if topic not in matchedtopics:
-                            matchedtopics.append(topic)
-                            if verbose:
-                                print("Including matched topic '%s'" % topic)
-                        o.write(topic, msg, t)
-                        included_count += 1
-                    else:
-                        skipped_count += 1
+            try:
+                with Bag(ifile, "r") as ib:
+                    for topic, msg, t in ib:
+                        if any(fnmatchcase(topic, pattern) for pattern in topics):
+                            if topic not in matchedtopics:
+                                matchedtopics.append(topic)
+                                if verbose:
+                                    print("Including matched topic '%s'" % topic)
+                            o.write(topic, msg, t)
+                            included_count += 1
+                        else:
+                            skipped_count += 1
+            except Exception as e:
+                print("Failed to read bag file: %s" % str(e))
+                print("Skipping this bag ")
             total_included_count += included_count
             total_skipped_count += skipped_count
             if verbose:
@@ -49,6 +55,15 @@ def merge_bags_single(input_bag, output_bag, topics="*", verbose=False):
 
 # write the following code. 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Fix, reindex, and merge ROS bag files.")
+    parser.add_argument(
+        "--overwrite",
+        type=bool,
+        default=True,
+        help="Whether to overwrite existing bag files (default: True)."
+    )
+    args = parser.parse_args()
+
     mission_folder = "/mission_data"
     bag_files =sorted( Path(mission_folder).rglob("*.bag"))
     print("Found files: ", bag_files)
@@ -67,5 +82,11 @@ if __name__ == "__main__":
     # Merge bags
     for prefix, files in grouped_files.items():
         output_bag = Path(mission_folder) / f"{prefix}.bag"
+
+        # If overwrite is False, check if the output bag already exists
+        if not args.overwrite and output_bag.exists():
+            print(f"Output file {output_bag} already exists. Skipping merge...")
+            continue
+
         print(f"Merging files: {[str(file) for file in files]} into {output_bag}")
         merge_bags_single([str(file) for file in files], str(output_bag), "*", verbose=True)

@@ -22,6 +22,9 @@ def main(mission_folder):
     os.makedirs(os.path.join(mission_folder, "combined_files"), exist_ok=True)
     os.makedirs(os.path.join(mission_folder, "log"), exist_ok=True)
 
+    run_command("python3 /home/jonfrey/git/grand_tour_box/box_utils/box_auto/scripts/repair_bags.py")
+    run_command("python3 /home/jonfrey/git/grand_tour_box/box_utils/box_auto/scripts/merge_mission.py")
+
     # Find relevant files
     cpt_bags = find_files(mission_folder, "*_nuc_cpt7.bag")
     tf_bags = find_files(mission_folder, "*_lpc_tf.bag")

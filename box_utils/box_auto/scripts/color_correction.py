@@ -102,9 +102,12 @@ if __name__ == "__main__":
     # image_topics = sys.argv[2].split(",")
     # camera_info_topics = sys.argv[3].split(",")
     # config_file = sys.argv[4]
+    
 
-    config_file = "/home/jonfrey/git/grand_tour_box/box_utils/box_auto/docker/color_correction/calib_file.yaml"
-    pattern = "*_nuc_alphasense_0*"
+    config_file = str(Path(__file__).parent / "color_calib_file.yaml")
+    pattern = "*_nuc_alphasense.bag"
+
+    
     image_topics = "/gt_box/alphasense_driver_node/cam1/color/image/compressed".split(",")
     camera_info_topics = "/gt_box/alphasense_driver_node/cam1/color/camera_info".split(",")
 

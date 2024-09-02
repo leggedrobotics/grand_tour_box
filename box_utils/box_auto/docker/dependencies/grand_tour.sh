@@ -24,7 +24,7 @@ cp /home/catkin_ws/src/grand_tour_box/box_configuration/general/solarized.vim ~/
 cp /home/catkin_ws/src/grand_tour_box/box_configuration/general/.tmux.conf ~/
 
 # Build opencv catkin
-catkin build box_auto
+# catkin build box_auto
 
 echo "source /home/catkin_ws/devel/setup.bash" >> /root/.bashrc
 
