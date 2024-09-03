@@ -18,7 +18,7 @@ export DISPLAY=:0.0
 # Proceed as host user with superuser permissions
 # Maybe add sourcing of .bashrc
 if [ $# -gt 0 ]; then
-    bash -c --rcfile /root/.bashrc "$@" 
+    source /opt/ros/noetic/setup.bash; source /home/opencv_ws/devel/setup.bash; source /home/catkin_ws/devel/setup.bash; $@
 else
     bash --rcfile /root/.bashrc
 fi

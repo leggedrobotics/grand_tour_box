@@ -1,4 +1,4 @@
-FROM nvidia/cuda:12.4.1-base-ubuntu20.04
+FROM nvidia/cuda:12.4.1-cudnn-devel-ubuntu20.04
 
 # To avoid tzdata asking for geographic location...
 ARG DEBIAN_FRONTEND=noninteractive
@@ -26,7 +26,6 @@ COPY dependencies/open_cv.sh /open_cv.sh
 RUN sh -c "chmod +x /open_cv.sh"
 RUN /bin/bash -c '/open_cv.sh'
 
-RUN pwd
 COPY dependencies/grand_tour.sh /grand_tour.sh
 RUN sh -c "chmod +x /grand_tour.sh"
 RUN --mount=type=ssh /bin/bash -c '/grand_tour.sh'
