@@ -12,7 +12,7 @@ catkin config --extend /home/opencv_ws/devel
 catkin config --cmake-args -DCMAKE_BUILD_TYPE=RelWithDebInfo
 
 
-cd /home/catkin_ws/src; git clone --recurse-submodules -b dev/box_auto_new git@github.com:leggedrobotics/grand_tour_box.git
+cd /home/catkin_ws/src; git clone --recurse-submodules git@github.com:leggedrobotics/grand_tour_box.git
 cd /home/catkin_ws/src; git clone https://github.com/leggedrobotics/pybind11_catkin.git
 cd /home/catkin_ws/src; git clone https://github.com/catkin/catkin_simple.git
 cd /home/catkin_ws/src; git clone https://github.com/ethz-asl/glog_catkin.git
