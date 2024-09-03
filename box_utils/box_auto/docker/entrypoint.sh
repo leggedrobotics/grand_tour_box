@@ -18,9 +18,9 @@ export DISPLAY=:0.0
 # Proceed as host user with superuser permissions
 # Maybe add sourcing of .bashrc
 if [ $# -gt 0 ]; then
-    bash -c "$@" 
+    bash -c --rcfile /root/.bashrc "$@" 
 else
-    bash
+    bash --rcfile /root/.bashrc
 fi
 
 

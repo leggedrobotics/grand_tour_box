@@ -77,6 +77,11 @@ Getting Started
 </h2>
 
 
+```
+git submodule update --init --recursive
+```
+
+
 > [!CAUTION]
 > THE README IS DISCONTINUED EVERYTHING IS MOVED TO THE WIKI
 
