@@ -65,6 +65,7 @@ docker run --net=host \
     --env="DISPLAY=$DISPLAY" \
     --ulimit rtprio=99 \
     --cap-add=sys_nice \
-    -v /Data/GrandTour/shakedown_27_06_2024/2024-06-27-12-54-04:/mission_data \
+    -v /mission_data:/mission_data \
+    --gpus all \
     $IMAGE \
     $COMMAND

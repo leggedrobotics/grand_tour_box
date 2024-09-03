@@ -63,7 +63,7 @@ def process_rosbag(input_bag, image_topics, camera_info_topics):
 
     print("Camera info obtained for all topics. Starting image undistortion...")
 
-    out_bag = rosbag.Bag(output_bag, "w")
+    out_bag = rosbag.Bag(output_bag, "w", compression='lz4')
     try:
         for topic, msg, t in bag.read_messages():
             if topic in image_topics:
@@ -111,22 +111,20 @@ def process_rosbag(input_bag, image_topics, camera_info_topics):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 4:
-        print(f"Usage: {sys.argv[0]} <match_args_for_rosbags> <image_topics> <camera_info_topics>")
-        print(
-            f"Example: {sys.argv[0]} _nuc_alphasense_ '/camera1/image_raw,/camera2/image_raw' '/camera1/camera_info,/camera2/camera_info'"
-        )
-        sys.exit(1)
-
-    pattern = sys.argv[1]
-    image_topics = sys.argv[2].split(",")
-    camera_info_topics = sys.argv[3].split(",")
-
-    if len(image_topics) != len(camera_info_topics):
-        print("Error: The number of image topics and camera info topics must be the same.")
-        sys.exit(1)
-
-    bags = [str(s) for s in Path(MISSION_FOLDER).rglob(pattern) if str(s).find("rectified") == -1]
-    print("Process bags:", bags)
-    for input_bag in bags:
-        process_rosbag(str(input_bag), image_topics, camera_info_topics)
+    tasks = { 
+        "hdr":{
+            "camera_info_topics": ["/camera1/camera_info", "/camera2/camera_info"],
+            "image_topics": ["/camera1/image_raw", "/camera2/image_raw"],
+            "pattern": "*_jetson_hdr.bag",
+        },
+        "alphasense":{
+            "camera_info_topics": [f"/gt_box/alphasense_driver_node/cam{n}/color_corrected/camera_info" for n in [1,2,3,4,5]],
+            "image_topics": [f"/gt_box/alphasense_driver_node/cam{n}/color_corrected/image/compressed" for n in [1,2,3,4,5]],
+            "pattern": "*_nuc_alphasense_color_corrected.bag",
+        }
+    }
+    for name, task in tasks.items():
+        bags = [str(s) for s in Path(MISSION_FOLDER).rglob(task["pattern"]) if str(s).find("rectified") == -1]
+        print(f"\nProcess for {name} the following bags: \n", bags)
+        for input_bag in bags:
+            process_rosbag(str(input_bag), task["image_topics"], task["camera_info_topics"])

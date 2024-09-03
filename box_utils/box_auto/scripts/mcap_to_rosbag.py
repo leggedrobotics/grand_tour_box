@@ -65,7 +65,7 @@ def split_rosbags(input_bag_path, camera_direction, duration_minutes=5):
         split_filename = input_bag_path.replace(
             f"jetson_hdr_{camera_direction}_downgraded.bag", f"jetson_hdr_{camera_direction}_{index}.bag"
         )
-        with rosbag.Bag(split_filename, "w") as outbag:
+        with rosbag.Bag(split_filename, "w", compression='lz4') as outbag:
             for topic, msg, t in bag.read_messages(
                 start_time=rospy.Time.from_sec(current_time),
                 end_time=rospy.Time.from_sec(min(current_time + duration_minutes * 60, end_time)),

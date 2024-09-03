@@ -15,6 +15,13 @@ export HOSTNAME
 export DISPLAY=:0.0
 
 # Start interactive shell
-bash
+# Proceed as host user with superuser permissions
+# Maybe add sourcing of .bashrc
+if [ $# -gt 0 ]; then
+    bash -c "$@" 
+else
+    bash
+fi
+
 
 figlet Exit GrandTour Docker

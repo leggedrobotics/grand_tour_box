@@ -16,7 +16,7 @@ def merge_bags_single(input_bag, output_bag, topics="*", verbose=False):
         print("Writing bag file: " + output_bag)
         print("Matching topics against patters: '%s'" % " ".join(topics))
 
-    with Bag(output_bag, "w") as o:
+    with Bag(output_bag, "w", compression='lz4') as o:
         for ifile in input_bag:
             matchedtopics = []
             included_count = 0

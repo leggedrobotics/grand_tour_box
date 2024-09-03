@@ -15,7 +15,7 @@ def main(overwrite: bool):
             continue
         
         # Execute rosbag fix and reindex commands
-        shell_run(f"rosbag fix {p} {output_file}")
+        # shell_run(f"rosbag fix {p} {output_file}")
         shell_run(f"rosbag reindex {output_file}")
 
 
