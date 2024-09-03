@@ -11,6 +11,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(SRC_FILES
   src/box_post_processor.cpp
+  src/box_tf_processor.cpp
 )
 
 set(CATKIN_PACKAGE_DEPENDENCIES
@@ -87,6 +88,8 @@ target_link_libraries(${PROJECT_NAME}
 add_executable(post_processor_node
   src/post_processor_node.cpp)
 
+add_executable(tf_processor_node
+  src/tf_processor_node.cpp)
 
 target_link_libraries(post_processor_node 
 ${catkin_LIBRARIES}
@@ -94,6 +97,14 @@ ${gflags_LIBRARIES}
 ${GLOG_LIBRARIES}
 ${PROJECT_NAME}
 )
+
+target_link_libraries(tf_processor_node 
+${catkin_LIBRARIES}
+${gflags_LIBRARIES}
+${GLOG_LIBRARIES}
+${PROJECT_NAME}
+)
+
 find_package(cmake_clang_tools QUIET)
 if(cmake_clang_tools_FOUND)
   message(STATUS "Run clang tooling for target " post_processor_node)
@@ -112,4 +123,8 @@ install(TARGETS post_processor_node
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
 
+install(TARGETS tf_processor_node
+RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
 

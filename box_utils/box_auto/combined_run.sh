@@ -8,7 +8,11 @@ mkdir -p ${INPUT_PATH}/log
 
 # Might need to automaize this part
 CPT_BAG=${INPUT_PATH}/2024-08-14-10-45-39_nuc_cpt7_0.bag
+
+# TF Replayer expects a list of files to merge. A list with 1 file is still a list.
 TF_BAG=${INPUT_PATH}/2024-08-14-10-45-39_lpc_tf_0.bag
+TF_BAG2=${INPUT_PATH}/2024-08-14-10-45-39_nuc_tf_0.bag
+#
 HESAI_BAG=${INPUT_PATH}/2024-08-14-10-45-39_nuc_hesai_0.bag
 ZED_SVO=${INPUT_PATH}/2024-08-14-10-45-39_jetson_zed2i.svo2
 HDR_BAG=
@@ -22,13 +26,13 @@ echo "Initiate Combined Replaying: ${INPUT_PATH}."
 source /opt/ros/noetic/setup.bash
 source /home/tutuna/box_ws/devel/setup.bash
 
-sleep 2s
+# sleep 2s
 
 roslaunch novatel_oem7_driver cpt7_replay.launch input_bag_path:=${CPT_BAG}
 
 sleep 2s
 
-roslaunch box_post_processor box_post_processor.launch input_filepath:=${TF_BAG}
+roslaunch box_auto box_tf_processor.launch tf_bag_paths:="[${TF_BAG}, ${TF_BAG2}]"
 
 sleep 2s
 
