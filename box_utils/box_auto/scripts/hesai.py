@@ -11,7 +11,6 @@ import glob
 
 import subprocess
 
-WS = "/home/jonfrey/workspaces/box_ws"
 WS = "/home/catkin_ws"
 PRE = f"source /opt/ros/noetic/setup.bash; source {WS}/devel/setup.bash;"
 

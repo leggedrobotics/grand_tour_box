@@ -1,4 +1,6 @@
 import rosbag
+import matplotlib
+matplotlib.use('Agg')  # Set the backend to Agg for headless environments
 import matplotlib.pyplot as plt
 import numpy as np
 import os
