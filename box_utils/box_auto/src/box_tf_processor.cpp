@@ -69,6 +69,7 @@ bool BoxTFProcessor::processRosbags(std::vector<std::string>& tfContainingBags) 
   std::vector<tf2_msgs::TFMessage> tfStaticVector_;
 
   outBag.open(rosbagFullname_, rosbag::bagmode::Write);
+  outbag.setCompression(rosbag::compression::LZ4);
 
   // Create me a high resolution clock timer from std chrono
   // Start the timer.
