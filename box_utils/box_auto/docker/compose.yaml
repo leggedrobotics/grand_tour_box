@@ -25,7 +25,7 @@ x-common-config: &common-config
               - video   # encoding 
   volumes:
     - /mission_data:/mission_data
-    - /home/jonfrey/git/grand_tour_box:/home/catkin_ws/src/grand_tour_box
+    # - /home/jonfrey/git/grand_tour_box:/home/catkin_ws/src/grand_tour_box
 
 services:
   mcap_to_rosbag:
