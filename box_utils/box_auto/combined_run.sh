@@ -28,7 +28,7 @@ source /home/tutuna/box_ws/devel/setup.bash
 
 # sleep 2s
 
-# roslaunch novatel_oem7_driver cpt7_replay.launch input_bag_path:=${CPT_BAG}
+roslaunch novatel_oem7_driver cpt7_replay.launch input_bag_path:=${CPT_BAG}
 
 sleep 2s
 
