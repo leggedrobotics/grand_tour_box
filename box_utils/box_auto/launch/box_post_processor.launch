@@ -13,7 +13,7 @@
   <param name="/use_sim_time" value="$(arg use_sim_time)"/>
 
   <!-- Main Node -->
-  <node name="box_post_processor" pkg="box_post_processor"
+  <node name="box_post_processor" pkg="box_auto"
         type="post_processor_node" output="screen" required="True">
     <param name="input_filepath" value="$(arg input_filepath)"/>
     <param name="output_folder" value="$(arg output_folder)"/>

@@ -48,7 +48,7 @@ def process_rosbag(input_bag, image_topics, camera_info_topics, config_file, use
             proc[camera_info_topic] = RawImagePipeline(use_gpu, config_file, calib_file)
             break  # We only need the first camera_info message
 
-    out_bag = rosbag.Bag(output_bag, "w")
+    out_bag = rosbag.Bag(output_bag, "w", compression='lz4')
     total_messages = bag.get_message_count()
     try:
         for topic, msg, t in tqdm(bag.read_messages(), total=total_messages, desc="Processing Messages"):
@@ -94,27 +94,12 @@ def process_rosbag(input_bag, image_topics, camera_info_topics, config_file, use
 
 
 if __name__ == "__main__":
-    # if len(sys.argv) != 6:
-    #     print(f"Usage: {sys.argv[0]} <match_args_for_rosbags> <image_topics> <camera_info_topics> <config_file>>")
-    #     print(f"Example: {sys.argv[0]} _nuc_alphasense_ '/camera1/image_raw,/camera2/image_raw' '/camera1/camera_info,/camera2/camera_info' /path/to/config.yaml")
-    #     sys.exit(1)
-    # pattern = sys.argv[1]
-    # image_topics = sys.argv[2].split(",")
-    # camera_info_topics = sys.argv[3].split(",")
-    # config_file = sys.argv[4]
-    
-
     config_file = str(Path(__file__).parent / "color_calib_file.yaml")
     pattern = "*_nuc_alphasense.bag"
+    camera_info_topics = [f"/gt_box/alphasense_driver_node/cam{n}/color/camera_info" for n in [1,2,3,4,5]]
+    image_topics = [f"/gt_box/alphasense_driver_node/cam{n}/color/image/compressed" for n in [1,2,3,4,5]]
 
     
-    image_topics = "/gt_box/alphasense_driver_node/cam1/color/image/compressed".split(",")
-    camera_info_topics = "/gt_box/alphasense_driver_node/cam1/color/camera_info".split(",")
-
-    if len(image_topics) != len(camera_info_topics):
-        print("Error: The number of image topics and camera info topics must be the same.")
-        sys.exit(1)
-
     bags = [str(s) for s in Path(MISSION_FOLDER).rglob(pattern) if str(s).find("color_corrected") == -1]
     print("Process bags:", bags)
     for input_bag in bags:

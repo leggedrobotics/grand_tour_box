@@ -1,0 +1,71 @@
+version: '3.8'
+
+x-common-config: &common-config
+  build:
+    context: "$HOME/git/grand_tour_box/box_utils/box_auto/docker"
+    dockerfile: "$HOME/git/grand_tour_box/box_utils/box_auto/docker/box.Dockerfile"
+    ssh:
+      default: "$HOME/.ssh/id_rsa_2"
+  image: leggedrobotics/box
+  runtime: nvidia
+  network_mode: host
+  privileged: true
+  environment:
+    QT_X11_NO_MITSHM: "1"
+    XAUTHORITY: "/root/.docker.xauth"
+    DISPLAY: "$DISPLAY"  
+  deploy:
+    resources:
+      reservations:
+        devices:
+          - driver: nvidia
+            count: all
+            capabilities: [gpu]
+  volumes:
+    - /mission_data:/mission_data
+
+services:
+  mcap_to_rosbag:
+    <<: *common-config
+    container_name: mcap_to_rosbag
+    entrypoint: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/mcap_to_rosbag.py"]
+
+  zed2i:
+    <<: *common-config
+    container_name: zed2i
+    entrypoint: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/zed2i.py"]
+
+  repair_bags:
+    <<: *common-config
+    container_name: repair_bags
+    entrypoint: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/repair_bags.py"]
+
+  merge_mission:
+    <<: *common-config
+    container_name: merge_mission
+    entrypoint: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/merge_mission.py"]
+
+  color_correction:
+    <<: *common-config
+    container_name: color_correction
+    entrypoint: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/color_correction.py"]
+
+  cpt7:
+    <<: *common-config
+    container_name: cpt7
+    entrypoint: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/cpt7.py"]
+
+  hesai:
+    <<: *common-config
+    container_name: hesai
+    entrypoint: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/hesai.py"]
+
+  topic_freq:
+    <<: *common-config
+    container_name: topic_freq
+    entrypoint: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/topic_freq.py"]
+
+  rectify:
+    <<: *common-config
+    container_name: rectify
+    entrypoint: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/rectify.py"]

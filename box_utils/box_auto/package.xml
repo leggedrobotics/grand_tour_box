@@ -30,6 +30,6 @@
   <depend>novatel_oem7_driver</depend>
   <depend>hesai_ros_driver</depend>
   <depend>bringup_hesai</depend>
-  
+  <depend>zed_wrapper</depend>
 
 </package>
