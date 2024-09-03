@@ -18,8 +18,9 @@ cd /home/catkin_ws/src; git clone https://github.com/catkin/catkin_simple.git
 cd /home/catkin_ws/src; git clone https://github.com/ethz-asl/glog_catkin.git
 
 # Added simlink to access the hesai files correctly
-mkdir -p /home/rsl/git/grand_tour_box/box_drivers/hesai_lidar_ros_driver/config
-ln -s /home/catkin_ws/src/grand_tour_box/box_drivers/hesai_lidar_ros_driver/config /home/rsl/git/grand_tour_box/box_drivers/hesai_lidar_ros_driver/config
+mkdir -p /home/rsl/git/grand_tour_box/box_bringup/bringup_hesai/config
+ln -s /home/catkin_ws/src/grand_tour_box/box_bringup/bringup_hesai/config/PandarXT-32_firetime_correction.csv  /home/rsl/git/grand_tour_box/box_bringup/bringup_hesai/config/PandarXT-32_firetime_correction.csv
+ln -s /home/catkin_ws/src/grand_tour_box/box_bringup/bringup_hesai/config/PandarXT-32.csv  /home/rsl/git/grand_tour_box/box_bringup/bringup_hesai/config/PandarXT-32.csv
 
 # Nice to have usability
 cp /home/catkin_ws/src/grand_tour_box/box_configuration/general/.vimrc ~/
@@ -29,6 +30,8 @@ cp /home/catkin_ws/src/grand_tour_box/box_configuration/general/.tmux.conf ~/
 
 # Install cpt7 dependencies
 cd /home/catkin_ws/src/grand_tour_box/box_drivers/novatel_oem7_driver
+
+rosdep update
 rosdep install --from-paths src --ignore-src -r -y --reinstall
 
 # Build workspace for postprocessing

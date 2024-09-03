@@ -112,11 +112,11 @@ def process_rosbag(input_bag, image_topics, camera_info_topics):
 
 if __name__ == "__main__":
     tasks = { 
-        "hdr":{
-            "camera_info_topics": ["/camera1/camera_info", "/camera2/camera_info"],
-            "image_topics": ["/camera1/image_raw", "/camera2/image_raw"],
-            "pattern": "*_jetson_hdr.bag",
-        },
+        # "hdr":{
+        #     "camera_info_topics": ["/camera1/camera_info", "/camera2/camera_info"],
+        #     "image_topics": ["/camera1/image_raw", "/camera2/image_raw"],
+        #     "pattern": "*_jetson_hdr.bag",
+        # },
         "alphasense":{
             "camera_info_topics": [f"/gt_box/alphasense_driver_node/cam{n}/color_corrected/camera_info" for n in [1,2,3,4,5]],
             "image_topics": [f"/gt_box/alphasense_driver_node/cam{n}/color_corrected/image/compressed" for n in [1,2,3,4,5]],

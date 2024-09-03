@@ -6,6 +6,10 @@ def main(overwrite: bool):
     # Get all .bag.active files
     bag_files = [str(s) for s in Path("/mission_data").rglob("*.bag.active")]
     
+    if len(bag_files) == 0:
+        print("No active bag files found. --- Finished cleanly!")
+        return
+    
     for p in bag_files:
         output_file = p.replace('.active', '')
         
