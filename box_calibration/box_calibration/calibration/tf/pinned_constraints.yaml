@@ -29,3 +29,28 @@ zed2i_camera_to_zed2i_optical:
   roll: -1.570796325
   pitch: 0.0
   yaw: -1.570796325
+
+
+hdr_base_to_hdr_front:
+  x: 0.0
+  y: 0.0
+  z: 0.0
+  roll: 0.0
+  pitch: 0.0
+  yaw: 0.0
+
+box_base_to_model_base:
+  x: 0.0
+  y: 0.0
+  z: 0.0
+  roll: 0.0
+  pitch: 0.0
+  yaw: 0.0
+
+alphasense_base_to_alphasense_front_left:
+  x: 0.0
+  y: 0.0
+  z: 0.0
+  roll: 0.0
+  pitch: 0.0
+  yaw: 0.0

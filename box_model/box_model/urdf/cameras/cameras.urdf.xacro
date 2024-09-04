@@ -20,12 +20,12 @@
     <!-- Alphasense Cam1/ front left (should be identity)-->
     <link name="cam1_sensor_frame"/>
     <joint name="alphasense_base_to_alphasense_front_left" type="fixed">
-        <origin xyz=" ${calib['alphasense_base_to_alphasense_front_left']['x']}
-                  ${calib['alphasense_base_to_alphasense_front_left']['y']}
-                  ${calib['alphasense_base_to_alphasense_front_left']['z']}"
-                rpy=" ${calib['alphasense_base_to_alphasense_front_left']['roll']}
-                  ${calib['alphasense_base_to_alphasense_front_left']['pitch']}
-                  ${calib['alphasense_base_to_alphasense_front_left']['yaw']}"/>
+        <origin xyz=" ${pinned_constraints['alphasense_base_to_alphasense_front_left']['x']}
+                  ${pinned_constraints['alphasense_base_to_alphasense_front_left']['y']}
+                  ${pinned_constraints['alphasense_base_to_alphasense_front_left']['z']}"
+                rpy=" ${pinned_constraints['alphasense_base_to_alphasense_front_left']['roll']}
+                  ${pinned_constraints['alphasense_base_to_alphasense_front_left']['pitch']}
+                  ${pinned_constraints['alphasense_base_to_alphasense_front_left']['yaw']}"/>
         <parent link="alphasense_base"/>
         <child link="cam1_sensor_frame"/>
     </joint>
@@ -100,12 +100,12 @@
     <!-- HDR camera front (should be identity) -->
     <link name="hdr_front"/>
     <joint name="hdr_base_to_hdr_front" type="fixed">
-        <origin xyz=" ${calib['hdr_base_to_hdr_front']['x']}
-                  ${calib['hdr_base_to_hdr_front']['y']}
-                  ${calib['hdr_base_to_hdr_front']['z']}"
-                rpy=" ${calib['hdr_base_to_hdr_front']['roll']}
-                  ${calib['hdr_base_to_hdr_front']['pitch']}
-                  ${calib['hdr_base_to_hdr_front']['yaw']}"/>
+        <origin xyz=" ${pinned_constraints['hdr_base_to_hdr_front']['x']}
+                  ${pinned_constraints['hdr_base_to_hdr_front']['y']}
+                  ${pinned_constraints['hdr_base_to_hdr_front']['z']}"
+                rpy=" ${pinned_constraints['hdr_base_to_hdr_front']['roll']}
+                  ${pinned_constraints['hdr_base_to_hdr_front']['pitch']}
+                  ${pinned_constraints['hdr_base_to_hdr_front']['yaw']}"/>
         <parent link="hdr_base"/>
         <child link="hdr_front"/>
     </joint>

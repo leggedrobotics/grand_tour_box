@@ -7,7 +7,7 @@
 <!-- load the YAML calibration file into a property -->
 <xacro:property name="calib" value="${xacro.load_yaml(calib_file)}"/>
 <!-- YAML file containing the default values from CAD -->
-<xacro:property name="pinned_constraints_file" value="$(find box_calibration)/calibration/tf/pinned_down_constraints.yaml" />
+<xacro:property name="pinned_constraints_file" value="$(find box_calibration)/calibration/tf/pinned_constraints.yaml" />
 <!-- load the YAML calibration file into a property -->
 <xacro:property name="pinned_constraints" value="${xacro.load_yaml(pinned_constraints_file)}"/>
 
