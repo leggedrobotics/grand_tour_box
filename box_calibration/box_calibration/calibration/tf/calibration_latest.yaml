@@ -70,25 +70,9 @@ hdr_base_to_hdr_right:
   pitch: 1.396
   yaw: 3.142
 
-box_base_to_zed_base:
-  x: 0.075
-  y: -0.022
-  z: 0.028
-  roll: 3.142
-  pitch: 0.175
-  yaw: 0.000
-
-zed_camera_center_to_zed_left:
-  x: -0.01
-  y: 0.06
-  z: 0.0
-  roll: 0.0
-  pitch: 0.0
-  yaw: 0.0
-
-zed_camera_center_to_zed_right:
-  x: -0.01
-  y: -0.06
+zed_left_optical_to_zed_right_optical:
+  x: 0.12
+  y: 0.0
   z: 0.0
   roll: 0.0
   pitch: 0.0
