@@ -12,7 +12,7 @@ Usage: $(basename $0) [OPTIONS]
 # Default target
 REMOVE_FLAG="--rm"
 INTERACTIVE_FLAG="-it"
-IMAGE="leggedrobotics/box"
+IMAGE="rslethz/gt_box"
 
 COMMAND=""
 # Read arguments

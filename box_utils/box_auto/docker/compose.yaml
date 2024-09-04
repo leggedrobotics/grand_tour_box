@@ -4,7 +4,7 @@ x-common-config: &common-config
     dockerfile: "$HOME/git/grand_tour_box/box_utils/box_auto/docker/box.Dockerfile"
     ssh:
       default: "$HOME/.ssh/id_rsa_2"
-  image: leggedrobotics/box
+  image: rslethz/gt_box
   runtime: nvidia
   # network_mode: host
   privileged: true
