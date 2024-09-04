@@ -26,11 +26,7 @@ def dump_camera_info(camera_info_msg, filename):
         yaml.dump(camera_info, file, default_flow_style=False)
 
 
-def process_rosbag(input_bag, image_topics, camera_info_topics, config_file, use_gpu=False):
-    path = Path(input_bag)
-    new_filename = f"{'_'.join(path.stem.split('_')[:-1])}_color_corrected_{path.stem.split('_')[-1]}{path.suffix}"
-    output_bag = str(path.with_name(new_filename))
-
+def process_rosbag(input_bag, output_bag, image_topics, camera_info_topics, config_file, use_gpu=False):
     # Initialize ROS bag and CvBridge
     bag = rosbag.Bag(input_bag, "r")
     bridge = CvBridge()
@@ -44,7 +40,7 @@ def process_rosbag(input_bag, image_topics, camera_info_topics, config_file, use
         for topic, msg, t in bag.read_messages(topics=[camera_info_topic]):
             camera_info_dict[camera_info_topic] = msg
             calib_file = camera_info_topic.replace("/", "_") + ".yaml"
-            dump_camera_info(msg, calib_file)
+            # dump_camera_info(msg, calib_file)
             proc[camera_info_topic] = RawImagePipeline(use_gpu, config_file, calib_file)
             break  # We only need the first camera_info message
 
@@ -80,11 +76,11 @@ def process_rosbag(input_bag, image_topics, camera_info_topics, config_file, use
 
                 corrected_image_topic = topic.replace("color", "color_corrected")
                 corrected_image_msg.header = msg.header
-                out_bag.write(corrected_image_topic, corrected_image_msg)
+                out_bag.write(corrected_image_topic, corrected_image_msg, t)
 
             elif topic in camera_info_topics:
                 # TBD write message
-                out_bag.write(topic, msg)
+                out_bag.write(topic, msg, t)
 
     finally:
         bag.close()
@@ -95,12 +91,13 @@ def process_rosbag(input_bag, image_topics, camera_info_topics, config_file, use
 
 if __name__ == "__main__":
     config_file = str(Path(__file__).parent / "color_calib_file.yaml")
-    pattern = "*_nuc_alphasense.bag"
+    pattern = "_nuc_alphasense_updated_intrinsics.bag"
     camera_info_topics = [f"/gt_box/alphasense_driver_node/cam{n}/color/camera_info" for n in [1,2,3,4,5]]
     image_topics = [f"/gt_box/alphasense_driver_node/cam{n}/color/image/compressed" for n in [1,2,3,4,5]]
 
-    
-    bags = [str(s) for s in Path(MISSION_FOLDER).rglob(pattern) if str(s).find("color_corrected") == -1]
+    output_pattern = "_nuc_alphasense_color_corrected.bag"
+    bags = [str(s) for s in Path(MISSION_FOLDER).glob("*"+pattern) if output_pattern not in str(s)]
     print("Process bags:", bags)
     for input_bag in bags:
-        process_rosbag(str(input_bag), image_topics, camera_info_topics, config_file)
+        output_bag = input_bag.replace(pattern, output_pattern)
+        process_rosbag(input_bag, output_bag, image_topics, camera_info_topics, config_file)
