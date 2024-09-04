@@ -31,6 +31,22 @@ zed2i_camera_to_zed2i_optical:
   yaw: -1.570796325
 
 
+zed2i_optical_to_zed2i_camera:
+  x: 0
+  y: 0
+  z: 0
+  roll: 1.570796325
+  pitch: -1.570796325
+  yaw: 0.0
+
+zed_camera_center_to_zed_left:
+  x: -0.01
+  y: 0.06
+  z: 0.0
+  roll: 0.0
+  pitch: 0.0
+  yaw: 0.0
+
 hdr_base_to_hdr_front:
   x: 0.0
   y: 0.0
