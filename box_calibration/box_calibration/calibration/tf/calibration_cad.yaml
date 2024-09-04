@@ -6,14 +6,6 @@ prism_to_box_base:
   pitch: 0.0
   yaw: 0.0
 
-box_base_to_model_base:
-  x: 0.0
-  y: 0.0
-  z: 0.0
-  roll: 0.0
-  pitch: 0.0
-  yaw: 0.0
-
 box_base_to_alphasense_base:
   x: 0.072
   y: 0.033
@@ -21,14 +13,6 @@ box_base_to_alphasense_base:
   roll: -1.745
   pitch: 0.000
   yaw: -1.571
-
-alphasense_base_to_alphasense_front_left:
-  x: 0.0
-  y: 0.0
-  z: 0.0
-  roll: 0.0
-  pitch: 0.0
-  yaw: 0.0
 
 alphasense_base_to_alphasense_front_right:
   x: 0.110
@@ -70,14 +54,6 @@ box_base_to_hdr_base:
   pitch: 0.000
   yaw: -1.571
 
-hdr_base_to_hdr_front:
-  x: 0.0
-  y: 0.0
-  z: 0.0
-  roll: 0.0
-  pitch: 0.0
-  yaw: 0.0
-
 hdr_base_to_hdr_left:
   x: -0.087
   y: 0.000
@@ -94,13 +70,21 @@ hdr_base_to_hdr_right:
   pitch: 1.396
   yaw: 3.142
 
-box_base_to_zed_base:
-  x: 0.075
-  y: -0.022
-  z: 0.028
-  roll: 3.142
-  pitch: 0.175
-  yaw: 0.000
+zed_left_optical_to_zed_right_optical:
+  x: 0.12
+  y: 0.0
+  z: 0.0
+  roll: 0.0
+  pitch: 0.0
+  yaw: 0.0
+
+zed_left_camera_frame_to_zed_imu_link:
+  x: -0.002000
+  y: -0.023061
+  z: 0.000217
+  roll: -0.0036674
+  pitch: 0.0004468
+  yaw: -0.0130214
 
 box_base_to_imu_stim320:
   x: 0.0
