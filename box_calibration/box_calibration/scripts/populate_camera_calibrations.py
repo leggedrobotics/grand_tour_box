@@ -245,6 +245,6 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("Populate the output of the camera bundle adjustment calibrations into"
-                                     "the designated GT Box folder files")
+                                     "the designated GT Box Camera Intrinsics and Extrinsics files")
     parser.add_argument("--input_calibration_file", "-c", help="Yaml file with the calibration output", required=True)
     main(parser.parse_args())
