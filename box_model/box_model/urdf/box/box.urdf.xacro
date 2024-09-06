@@ -3,7 +3,7 @@
 <robot name="box" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
 <!-- YAML file containing the default values from CAD -->
-<xacro:property name="calib_file" value="$(find box_calibration)/calibration/tf/calibration_latest.yaml" />
+<xacro:property name="calib_file" value="$(find box_calibration)/calibration/tf/calibration_latest_in_cpt7.yaml" />
 <!-- load the YAML calibration file into a property -->
 <xacro:property name="calib" value="${xacro.load_yaml(calib_file)}"/>
 <!-- YAML file containing the default values from CAD -->
@@ -15,15 +15,15 @@
   <link name="prism"/>
   <!-- Box base -->
   <link name="box_base"/>
-  <joint name="prism_to_box_base" type="fixed">
-    <origin xyz=" ${calib['prism_to_box_base']['x']}
-                  ${calib['prism_to_box_base']['y']}
-                  ${calib['prism_to_box_base']['z']}"
-            rpy=" ${calib['prism_to_box_base']['roll']}
-                  ${calib['prism_to_box_base']['pitch']}
-                  ${calib['prism_to_box_base']['yaw']}" />
-    <parent link="prism" />
-    <child link="box_base" />
+  <joint name="box_base_to_prism" type="fixed">
+    <origin xyz=" ${calib['box_base_to_prism']['x']}
+                  ${calib['box_base_to_prism']['y']}
+                  ${calib['box_base_to_prism']['z']}"
+            rpy=" ${calib['box_base_to_prism']['roll']}
+                  ${calib['box_base_to_prism']['pitch']}
+                  ${calib['box_base_to_prism']['yaw']}" />
+    <parent link="box_base" />
+    <child link="prism" />
   </joint>
 
   <!-- Model base -->
