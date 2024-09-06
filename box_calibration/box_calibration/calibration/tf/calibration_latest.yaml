@@ -141,3 +141,19 @@ box_base_to_livox:
   roll: 3.142
   pitch: 0.000
   yaw: 0.000
+
+box_base_to_cpt7_imu_frame:
+  x: -0.294
+  y: -0.058
+  z: 0.164
+  roll: 3.14159265
+  pitch: 0.000
+  yaw: 0.000
+
+box_base_to_basilisk_imu_frame:
+  x: -0.293
+  y: 0.034
+  z: 0.155
+  roll: 1.571
+  pitch: 0.000
+  yaw: 0.000
