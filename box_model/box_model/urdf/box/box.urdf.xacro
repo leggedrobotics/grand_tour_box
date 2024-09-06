@@ -57,7 +57,12 @@
   <link name="cpt7_imu"/>
   <!-- CPT7 Coordinate System -->
   <joint name="base_to_cpt7_imu_frame" type="fixed">
-    <origin xyz="-0.294 -0.058 0.164" rpy="3.142 0.0 0.0" />
+    <origin xyz=" ${calib['box_base_to_cpt7_imu_frame']['x']}
+                  ${calib['box_base_to_cpt7_imu_frame']['y']}
+                  ${calib['box_base_to_cpt7_imu_frame']['z']}"
+            rpy=" ${calib['box_base_to_cpt7_imu_frame']['roll']}
+                  ${calib['box_base_to_cpt7_imu_frame']['pitch']}
+                  ${calib['box_base_to_cpt7_imu_frame']['yaw']}" />
     <parent link="box_base" />
     <child link="cpt7_imu" />
   </joint>
@@ -88,7 +93,12 @@
   <link name="State"/>
   <!-- Basilisk IMU Frame -->
   <joint name="base_to_basilisk_imu_frame" type="fixed">
-    <origin xyz="-0.293 0.034 0.155" rpy="1.571 0.0 0.0" />
+    <origin xyz=" ${calib['box_base_to_basilisk_imu_frame']['x']}
+                  ${calib['box_base_to_basilisk_imu_frame']['y']}
+                  ${calib['box_base_to_basilisk_imu_frame']['z']}"
+            rpy=" ${calib['box_base_to_basilisk_imu_frame']['roll']}
+                  ${calib['box_base_to_basilisk_imu_frame']['pitch']}
+                  ${calib['box_base_to_basilisk_imu_frame']['yaw']}" />
     <parent link="box_base" />
     <child link="State" />
   </joint>
