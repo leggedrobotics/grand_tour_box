@@ -205,6 +205,18 @@
         <child link="zed2i_imu_link"/>
     </joint>
 
+    <link name="zed2i_right_camera_optical_frame"/>
+    <joint name="zed_left_optical_to_zed_right_optical" type="fixed">
+        <origin xyz=" ${calib['zed_left_optical_to_zed_right_optical']['x']}
+                  ${calib['zed_left_optical_to_zed_right_optical']['y']}
+                  ${calib['zed_left_optical_to_zed_right_optical']['z']}"
+                rpy=" ${calib['zed_left_optical_to_zed_right_optical']['roll']}
+                  ${calib['zed_left_optical_to_zed_right_optical']['pitch']}
+                  ${calib['zed_left_optical_to_zed_right_optical']['yaw']}"/>
+        <parent link="zed2i_left_camera_optical_frame"/>
+        <child link="zed2i_right_camera_optical_frame"/>
+    </joint>
+
     <link name="zed2i_right_camera_frame"/>
     <joint name="zed_camera_center_to_zed_right" type="fixed">
         <origin xyz=" ${pinned_constraints['zed2i_optical_to_zed2i_camera']['x']}
@@ -215,18 +227,6 @@
                   ${pinned_constraints['zed2i_optical_to_zed2i_camera']['yaw']}"/>
         <parent link="zed2i_right_camera_optical_frame"/>
         <child link="zed2i_right_camera_frame"/>
-    </joint>
-
-    <link name="zed2i_right_camera_optical_frame"/>
-    <joint name="zed_right_to_optical" type="fixed">
-        <origin xyz=" ${pinned_constraints['zed2i_camera_to_zed2i_optical']['x']}
-                  ${pinned_constraints['zed2i_camera_to_zed2i_optical']['y']}
-                  ${pinned_constraints['zed2i_camera_to_zed2i_optical']['z']}"
-                rpy=" ${pinned_constraints['zed2i_camera_to_zed2i_optical']['roll']}
-                  ${pinned_constraints['zed2i_camera_to_zed2i_optical']['pitch']}
-                  ${pinned_constraints['zed2i_camera_to_zed2i_optical']['yaw']}"/>
-        <parent link="zed2i_right_camera_frame"/>
-        <child link="zed2i_right_camera_optical_frame"/>
     </joint>
 
 </robot>
