@@ -1,18 +1,18 @@
-box_base_to_cpt7_imu:
-  x: -0.294
-  y: -0.058
-  z: 0.164
-  roll: 3.142
+box_base_to_cpt7_imu_frame:
+  x: -0.0
+  y: -0.0
+  z: 0.0
+  roll: 0.0
   pitch: 0.0
   yaw: 0.0
 
 box_base_to_zed_base:
-  x: 0.075
-  y: -0.022
-  z: 0.028
-  roll: 3.142
-  pitch: 0.175
-  yaw: 0.000
+  x: 0.365281493778
+  y: -0.036500000014
+  z: 0.135543522844
+  roll: 0.0004073464102066656
+  pitch: -0.17499999999999982
+  yaw: -6.881365851650507e-21
 
 zed2i_base_to_camera_center:
   x: 0
