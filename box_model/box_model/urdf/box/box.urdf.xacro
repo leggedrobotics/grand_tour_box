@@ -3,7 +3,7 @@
 <robot name="box" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
 <!-- YAML file containing the default values from CAD -->
-<xacro:property name="calib_file" value="$(find box_calibration)/calibration/tf/calibration_latest_in_cpt7.yaml" />
+<xacro:property name="calib_file" value="$(find box_calibration)/calibration/tf/calibration_latest.yaml" />
 <!-- load the YAML calibration file into a property -->
 <xacro:property name="calib" value="${xacro.load_yaml(calib_file)}"/>
 <!-- YAML file containing the default values from CAD -->
@@ -57,12 +57,12 @@
   <link name="cpt7_imu"/>
   <!-- CPT7 Coordinate System -->
   <joint name="base_to_cpt7_imu_frame" type="fixed">
-    <origin xyz=" ${calib['box_base_to_cpt7_imu_frame']['x']}
-                  ${calib['box_base_to_cpt7_imu_frame']['y']}
-                  ${calib['box_base_to_cpt7_imu_frame']['z']}"
-            rpy=" ${calib['box_base_to_cpt7_imu_frame']['roll']}
-                  ${calib['box_base_to_cpt7_imu_frame']['pitch']}
-                  ${calib['box_base_to_cpt7_imu_frame']['yaw']}" />
+    <origin xyz=" ${pinned_constraints['box_base_to_cpt7_imu_frame']['x']}
+                  ${pinned_constraints['box_base_to_cpt7_imu_frame']['y']}
+                  ${pinned_constraints['box_base_to_cpt7_imu_frame']['z']}"
+            rpy=" ${pinned_constraints['box_base_to_cpt7_imu_frame']['roll']}
+                  ${pinned_constraints['box_base_to_cpt7_imu_frame']['pitch']}
+                  ${pinned_constraints['box_base_to_cpt7_imu_frame']['yaw']}" />
     <parent link="box_base" />
     <child link="cpt7_imu" />
   </joint>
