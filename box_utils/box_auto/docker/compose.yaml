@@ -1,9 +1,9 @@
 x-common-config: &common-config
   build:
-    context: "$HOME/git/grand_tour_box/box_utils/box_auto/docker"
-    dockerfile: "$HOME/git/grand_tour_box/box_utils/box_auto/docker/box.Dockerfile"
+    context: "."
+    dockerfile: "./box.Dockerfile"
     ssh:
-      default: "$HOME/.ssh/id_rsa_2"
+      default: "$HOME/.ssh/id_ed25519"
   image: rslethz/gt_box
   runtime: nvidia
   # network_mode: host
