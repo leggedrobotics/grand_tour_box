@@ -68,16 +68,12 @@ systemctl enable pigpiod.service
 systemctl enable docker.service
 systemctl enable containerd.service
 
-
 systemctl restart ptp4l_eth0.service; sleep 3; systemctl restart phc2sys_eth0.service
-
 
 # Install for tmux
 sudo apt install tmux tmuxp -y
 
-
 # Install pigpio
-
 sudo apt install python-setuptools python3-setuptools -y
 
 cd ~/git; wget https://github.com/joan2937/pigpio/archive/master.zip
@@ -142,5 +138,5 @@ cd /home/rsl/git/grand_tour_box/box_configuration/pi/docker
 ./build.sh
 ~/git/grand_tour_box/box_configuration/pi/docker/run.sh
 # ACTION /home/rsl/git/grand_tour_box/box_configuration/pi/docker/install_manually.sh
-# ACTION - open new terminal and do the following - docker commit 12312312 leggedrobotics:noetic-pi-focal
+# ACTION - open new terminal and do the following - docker commit 12312312 rslethz:noetic-pi-focal
 # Done

@@ -7,7 +7,7 @@ Before=time-sync.target
 
 [Service]
 Type=simple
-ExecStart=/usr/sbin/phc2sys -s eth0 -c CLOCK_REALTIME -w
+ExecStart=/usr/sbin/phc2sys -s eth0 -c CLOCK_REALTIME -S 1.0 -w
 
 [Install]
 WantedBy=multi-user.target
