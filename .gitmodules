@@ -14,14 +14,6 @@
 	path = box_drivers/zed-ros-wrapper
 	url = git@github.com:leggedrobotics/zed-ros-wrapper.git
 	branch = grandTour
-[submodule "box_drivers/adis16475_driver"]
-	path = box_drivers/adis16475_driver
-	url = git@github.com:leggedrobotics/adis16475_driver.git
-	branch = main
-[submodule "box_drivers/ADIS16475-raspi"]
-	path = box_drivers/ADIS16475-raspi
-	url = git@github.com:leggedrobotics/ADIS16475-raspi.git
-	branch = main
 [submodule "box_drivers/raw_image_pipeline"]
 	path = box_drivers/raw_image_pipeline
 	url = git@github.com:leggedrobotics/raw_image_pipeline.git
@@ -53,6 +45,8 @@
 [submodule "box_drivers/iio_cpp"]
 	path = box_drivers/iio_cpp
 	url = git@github.com:leggedrobotics/iio_cpp.git
+	branch = main
 [submodule "box_drivers/adi_imu_driver"]
 	path = box_drivers/adi_imu_driver
 	url = git@github.com:leggedrobotics/adi_imu_driver.git
+	branch = main
