@@ -16,6 +16,7 @@ export DISPLAY=:0.0
 export ROS_MASTER_URI=http://192.168.2.57:11311
 export ROS_IP=192.168.2.57
 
+# TO make this work we additionally manually modified the /etc/bash.bashrc file
 export PS1="\e[0;34m(docker) \e[0;32m\u@\h:\e[0;34m\W\$ \e[0m"
 
 # Proceed as host user with superuser permissions
