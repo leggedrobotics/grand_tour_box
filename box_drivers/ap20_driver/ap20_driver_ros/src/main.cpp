@@ -385,6 +385,8 @@ int main(int argc, char **argv)
 
       updateImuTimestampMapping(imu->header.stamp, time.data);
       imu->header.stamp = time.data;
+      imu->header.frame_id = "ap20_imu";
+      
       ap20_imu_pub.publish(*imu);
     }
     ros::spinOnce();
