@@ -1,11 +1,18 @@
 
 jetson:
   bags:
+    zed2i:
+    - svo # SVO recording, not rosbag. Mutually exclusive: won't record zed ros topics if svo is set here.
+    hdr:
+    - /gt_box/hdr_front/image_raw/compressed
+    - /gt_box/hdr_front/camera_info
+    - /gt_box/hdr_left/image_raw/compressed
+    - /gt_box/hdr_left/camera_info
+    - /gt_box/hdr_right/image_raw/compressed
+    - /gt_box/hdr_right/camera_info
     utils:
       - /gt_box/alphasense_driver_node/imu
       - /gt_box/health_status/jetson/status
-    zed2i:
-      - svo # SVO recording, not rosbag. Mutually exclusive: won't record zed ros topics if svo is set here.
     ap20:
       - /gt_box/ap20/imu
       - /gt_box/ap20/prism_position
@@ -13,16 +20,10 @@ jetson:
       - /ap20/tps
       - /ap20/imu
       - /gt_box/ap20/debug
-    hdr:
-      - /gt_box/hdr_front/image_raw/compressed
-      - /gt_box/hdr_front/camera_info
-      - /gt_box/hdr_left/image_raw/compressed
-      - /gt_box/hdr_left/camera_info
-      - /gt_box/hdr_right/image_raw/compressed
-      - /gt_box/hdr_right/camera_info
     clock_jetson:
       - /clock
-
+    adis:
+      - /gt_box/adis16475_node/imu
 nuc:
   bags:
     cpt7_local:

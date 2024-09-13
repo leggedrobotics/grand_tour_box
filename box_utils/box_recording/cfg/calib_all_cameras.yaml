@@ -1,8 +1,5 @@
 jetson:
   bags:
-    zed2i:
-      - /gt_box/zed2i_driver_node/left_raw/image_raw_gray
-      - /gt_box/zed2i_driver_node/right_raw/image_raw_gray
     hdr:
       - /gt_box/hdr_front/image_raw
       - /gt_box/hdr_front/camera_info
@@ -10,9 +7,14 @@ jetson:
       - /gt_box/hdr_right/camera_info
       - /gt_box/hdr_left/image_raw
       - /gt_box/hdr_left/camera_info
+    zed2i:
+      - /gt_box/zed2i_driver_node/left_raw/image_raw_gray
+      - /gt_box/zed2i_driver_node/right_raw/image_raw_gray
     ap20:
       - /gt_box/ap20/imu
       - /gt_box/ap20/prism_position
+    adis:
+      - /gt_box/adis16475_node/imu
 nuc:
   bags:
     alphasense:
