@@ -18,6 +18,8 @@ jetson:
       rate: 200
     /gt_box/ap20/prism_position:
       rate: 20
+    /gt_box/adis16475_node/imu:
+      rate: 2000
   ptp4l:
     - ptp4l_mgbe0
   phc2sys:
