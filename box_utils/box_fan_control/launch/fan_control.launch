@@ -2,10 +2,10 @@
   <arg name="box_namespace" default="gt_box"/>
   <group ns="$(arg box_namespace)">
     
-    <node pkg="box_fan_control" type="fan_control_node.py" name="box_fan_control_node">
+    <node pkg="box_fan_control" type="fan_control.py" name="box_fan_control_node">
       <param name="capability_group" value="Monitoring"/>
     </node>
-    <node pkg="box_fan_control" type="user_interface.py" name="box_user_interface_node">
+    <node pkg="box_fan_control" type="buttons_and_leds.py" name="box_buttons_and_leds_node">
       <param name="capability_group" value="Monitoring"/>
     </node>
 

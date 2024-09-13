@@ -13,6 +13,7 @@
   <depend>bringup_alphasense</depend>
   <depend>bringup_hesai</depend>
   <depend>bringup_cpt7</depend>
+  <depend>box_calibration</depend>
   <exec_depend>bringup_fkie</exec_depend>
   <depend>box_launch</depend>
   <depend>box_recording</depend>
