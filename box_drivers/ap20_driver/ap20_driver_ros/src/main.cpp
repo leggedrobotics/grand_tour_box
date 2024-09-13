@@ -143,7 +143,7 @@ std::vector<ros::Time> read_timestamps()
     return ret;
   }
 
-  uint_32 secs, nsecs;
+  std::uint32_t secs, nsecs;
   char dot;
   while(timestamps_file >> secs >> dot >> nsecs)
   {
