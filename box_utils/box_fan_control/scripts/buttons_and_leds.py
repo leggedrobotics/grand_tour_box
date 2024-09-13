@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
-
 import rospy
 import pigpio
 from std_msgs.msg import Bool
-# from smbus2 import SMBus
 
 
 class UserInterfaceNode:
     def __init__(self):
-        rospy.init_node('user_interface_node', anonymous=True)
+        rospy.init_node("user_interface_node", anonymous=True)
         self.rate = rospy.Rate(10)  # 10Hz for 100ms period
 
         # Initialize GPIO
@@ -21,8 +19,8 @@ class UserInterfaceNode:
         self.pi.set_pull_up_down(self.right_button_pin, pigpio.PUD_UP)
 
         # Initialize publishers
-        self.left_button_pub = rospy.Publisher('/gt_box/user_interface/button_left_status', Bool, queue_size=10)
-        self.right_button_pub = rospy.Publisher('/gt_box/user_interface/button_right_status', Bool, queue_size=10)
+        self.left_button_pub = rospy.Publisher("/gt_box/user_interface/button_left_status", Bool, queue_size=10)
+        self.right_button_pub = rospy.Publisher("/gt_box/user_interface/button_right_status", Bool, queue_size=10)
 
         # Initialize I2C
         # self.bus = SMBus(0)  # Use I2C_0
@@ -75,7 +73,8 @@ class UserInterfaceNode:
             self.publish_button_status()
             self.rate.sleep()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     try:
         node = UserInterfaceNode()
         node.run()

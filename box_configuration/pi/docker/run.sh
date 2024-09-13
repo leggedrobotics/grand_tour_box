@@ -10,7 +10,7 @@ Usage: $(basename $0) [OPTIONS]
 # Default target
 REMOVE_FLAG="--rm"
 INTERACTIVE_FLAG="-it"
-IMAGE="rslethz:noetic-pi_tmp-focal"
+IMAGE="rslethz:noetic-pi-focal"
 ENTRYPOINT="/home/rsl/git/grand_tour_box/box_configuration/pi/docker/entrypoint.sh"
 
 COMMAND=""

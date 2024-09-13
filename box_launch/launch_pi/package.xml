@@ -15,5 +15,4 @@
   <depend>box_fan_control</depend>
   <depend>box_launch</depend>
 
-
 </package>
