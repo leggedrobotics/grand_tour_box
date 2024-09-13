@@ -14,3 +14,6 @@ network:
       addresses:
         - 192.168.20.1/24
       dhcp4: no
+      set-name: enp46s0
+      match:
+        macaddress: a8:a1:59:d1:58:a9
