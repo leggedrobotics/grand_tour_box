@@ -1,7 +1,7 @@
 string offset_ptp4l_eth0
 string offset_phc2sys_eth0
 
-float64 gt_box_adis16470_imu_hz
+float64 gt_box_adis16475_node_imu_hz
 float64 gt_box_stim320_imu_hz
 
 float32 cpu_usage
