@@ -1,5 +1,4 @@
 <launch>
-  <include file="$(find hdr_camera_time_stamper_ros)/launch/camera_trigger.launch"> </include>
   <include file="$(find box_health)/launch/box_health.launch"> </include>
   <include file="$(find bringup_adis16475)/launch/adis16475.launch"> </include>
   <include file="$(find box_fan_control)/launch/fan_control.launch"> </include>

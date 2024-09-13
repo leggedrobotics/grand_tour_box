@@ -12,8 +12,8 @@
   <exec_depend>bringup_fkie</exec_depend>
   <depend>box_health</depend>
   <depend>bringup_adis16475</depend>
-  <depend>bringup_stim320</depend>
-  <depend>hdr_camera_time_stamper_ros</depend>
   <depend>box_fan_control</depend>
   <depend>box_launch</depend>
+
+
 </package>

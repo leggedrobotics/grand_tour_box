@@ -20,6 +20,9 @@ from box_recording_helper.cpt7_helper import cpt7_start_recording, cpt7_stop_rec
 import time
 
 
+def start_hdr():
+    subprocess.Popen("/data/workspaces/isaac_ros-dev/src/isaac_ros_common/scripts/run_recording.sh hdr_start", shell=True, stderr=subprocess.PIPE)
+
 class RosbagRecordNode(object):
     def __init__(self):
         # Get the host name of the machine
@@ -69,6 +72,9 @@ class RosbagRecordNode(object):
         free_disk_space_in_gb = 0
         msg = String()
 
+        if self.node == "jetson":
+            start_hdr()
+        
         while rospy.is_shutdown() is False:
             if self.bag_running:
                 p = self.bag_base_path
@@ -258,11 +264,31 @@ class RosbagRecordNode(object):
             response = self.toggle_zed_recording(False, "", response)
 
         if self.recording_hdr:
+            
             docker_script_path = "/data/workspaces/isaac_ros-dev/src/isaac_ros_common/scripts/run_recording.sh"
             bash_command_hdr = docker_script_path + " stop_recording"
             self.recording_hdr = False
             subprocess.Popen(bash_command_hdr, shell=True, stderr=subprocess.PIPE)
 
+            rospy.loginfo(f"[RosbagRecordNode({self.node} HDR)] Call service to stop HDR.")
+            time.sleep(10)
+            rospy.loginfo(f"[RosbagRecordNode({self.node} HDR)] Call docker to kill HDR container.")
+            
+            import docker
+            # Initialize Docker client
+            client = docker.from_env()
+            # List all running containers
+            containers = client.containers.list()
+            image_name = "isaac_ros_dev-aarch64:recording"
+            # Filter containers by image name and stop them
+            for container in containers:
+                if container.image.tags and image_name in container.image.tags[0]:
+                    print(f"Stopping container {container.id} ({container.name}) with image {container.image.tags[0]}")
+                    container.stop()
+            time.sleep(1)
+            rospy.loginfo(f"[RosbagRecordNode({self.node} HDR)] Call docker to restart HDR container.")
+            start_hdr()
+            
         if self.recording_cpt7:
             cpt7_stop_recording()
 

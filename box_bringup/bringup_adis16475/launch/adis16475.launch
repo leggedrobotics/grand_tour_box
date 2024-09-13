@@ -1,12 +1,21 @@
 <launch>
   <arg name="box_namespace" default="gt_box"/>
-  <arg name="calibration" default="no"/>
-  <group ns="$(arg box_namespace)">
-    <node pkg="adis16475_driver_ros" type="adis16475" name="adis16475">
-        <param name="capability_group" value="Driver"/>
-        <param name="decimation_factor" value="4"/>
-        <param name="fir_filter" value="2"/>
-        <param name="burst" value="false"/>
-    </node>
-  </group>
+
+    <!-- Arguments -->
+    <arg name="variant"                 default="2"/>
+    <arg name="sampling_frequency"      default="2000"/>
+    <arg name="uri"                     default="local:"/>
+    <arg name="context_timeout_ms"      default="5000"/>
+
+    <env name="ROSCONSOLE_FORMAT" value="[${node}] [${function}:${line}]: ${message}"/>
+    
+    <group ns="$(arg box_namespace)">
+      <node pkg="adi_imu_driver_ros" type="adis16475_node" name="adis16475_node" output="screen" launch-prefix="">
+          <!-- Arguments -->
+          <param name="variant"               value="$(arg variant)"/>
+          <param name="sampling_frequency"    value="$(arg sampling_frequency)"/>
+          <param name="uri"                   value="$(arg uri)"/>
+          <param name="context_timeout_ms"    value="$(arg context_timeout_ms)"/>
+      </node>
+    </group>
 </launch>
