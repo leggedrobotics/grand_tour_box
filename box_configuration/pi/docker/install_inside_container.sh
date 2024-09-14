@@ -35,3 +35,7 @@ sudo make install
 echo "source /opt/ros/noetic/setup.bash" >> ~/.bashrc
 echo "source /home/rsl/catkin_ws/devel/setup.bash" >> ~/.bashrc
 echo "PS1=\"\[\e[1;32m\](docker)\[\e[0;37m\]\[\e[1;34m\]:\[\e[0;33m\]\w\[\e[0m\] \"" >> ~/.bashrc
+
+sudo apt install -y ros-noetic-jsk-rviz-plugins
+
+sudo apt install wget -y

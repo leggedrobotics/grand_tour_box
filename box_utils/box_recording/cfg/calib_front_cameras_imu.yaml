@@ -1,5 +1,12 @@
 jetson:
   bags:
+    hdr:
+      - /gt_box/hdr_front/image_raw
+      - /gt_box/hdr_front/camera_info
+      - /gt_box/hdr_left/image_raw
+      - /gt_box/hdr_left/camera_info
+      - /gt_box/hdr_right/image_raw
+      - /gt_box/hdr_right/camera_info
     zed2i:
       - /gt_box/zed2i_driver_node/left_raw/image_raw_gray
       - /gt_box/zed2i_driver_node/right_raw/image_raw_gray
@@ -10,20 +17,14 @@ jetson:
       - /ap20/tps
       - /ap20/imu
       - /gt_box/ap20/debug
-    hdr:
-      - /gt_box/hdr_front/image_raw
-      - /gt_box/hdr_front/camera_info
-      - /gt_box/hdr_left/image_raw
-      - /gt_box/hdr_left/camera_info
-      - /gt_box/hdr_right/image_raw
-      - /gt_box/hdr_right/camera_info
     clock:
       - /clock
+    adis:
+      - /gt_box/adis16475_node/imu
 nuc:
   bags:
     imus:
       - /gt_box/stim320/imu
-      - /gt_box/adis16475/imu
       - /gt_box/alphasense_driver_node/imu
     livox:
       - /gt_box/livox/imu

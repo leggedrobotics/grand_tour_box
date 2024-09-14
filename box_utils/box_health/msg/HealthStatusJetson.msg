@@ -3,6 +3,7 @@ string offset_phc2sys_mgbe0
 
 float64 gt_box_ap20_imu_hz
 float64 gt_box_ap20_prism_position_hz
+float64 gt_box_adis16475_node_imu_hz
 
 float32 cpu_usage
 string avail_memory

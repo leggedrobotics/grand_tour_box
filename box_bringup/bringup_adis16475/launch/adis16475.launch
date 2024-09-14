@@ -12,6 +12,7 @@
     <group ns="$(arg box_namespace)">
       <node pkg="adi_imu_driver_ros" type="adis16475_node" name="adis16475_node" output="screen" launch-prefix="">
           <!-- Arguments -->
+          <param name="capability_group"      value="Driver"/>
           <param name="variant"               value="$(arg variant)"/>
           <param name="sampling_frequency"    value="$(arg sampling_frequency)"/>
           <param name="uri"                   value="$(arg uri)"/>

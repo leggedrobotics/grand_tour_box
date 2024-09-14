@@ -143,7 +143,7 @@ std::vector<ros::Time> read_timestamps()
     return ret;
   }
 
-  uint_32 secs, nsecs;
+  std::uint32_t secs, nsecs;
   char dot;
   while(timestamps_file >> secs >> dot >> nsecs)
   {
@@ -385,6 +385,8 @@ int main(int argc, char **argv)
 
       updateImuTimestampMapping(imu->header.stamp, time.data);
       imu->header.stamp = time.data;
+      imu->header.frame_id = "ap20_imu";
+      
       ap20_imu_pub.publish(*imu);
     }
     ros::spinOnce();
