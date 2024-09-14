@@ -1,0 +1,13 @@
+[Unit]
+Description=Set the correct approx time to CPT7!
+After=ptp4l_enp45s0.service
+Before=autostart_tmux.service
+
+[Service]
+Type=forking
+ExecStartPre=/bin/sleep 5
+ExecStart=/usr/bin/tmuxp load /home/rsl/git/grand_tour_box/box_launch/tmux/nuc_set_time.yaml -d
+RemainAfterExit=false
+
+[Install]
+WantedBy=multi-user.target

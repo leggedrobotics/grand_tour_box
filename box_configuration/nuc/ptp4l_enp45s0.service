@@ -2,6 +2,7 @@
 Description=Precision Time Protocol (PTP) service - enp45s0 waits for master in network
 Documentation=man:ptp4l
 After=network-online.target
+Before=set_approx_time_cpt7.service
 
 [Service]
 Type=simple

@@ -75,44 +75,10 @@ nuc:
       top: 300
       text_size: 9
 
-lpc:
-  topics:
-    /state_estimator/anymal_state:
-      rate: 400
-  chrony: True
-  recording: True
-  memory: /data
-  cpu: True
-  fsk:
-    text:
-      width: 700
-      height: 0
-      left: 10
-      top: 700
-      text_size: 9
-
-npc:
-  topics:
-    /state_estimator/anymal_state:
-      rate: 400
-  chrony: True
-  recording: True
-  memory: /data
-  cpu: True
-  fsk:
-    text:
-      width: 700
-      height: 0
-      left: 10
-      top: 900
-      text_size: 9
-
-
-
 pi:
   topics:
-    /gt_box/adis16470/imu:
-      rate: 400
+    /gt_box/adis16470_node/imu:
+      rate: 2000
     /gt_box/stim320/imu:
       rate: 400
   ptp4l:
@@ -121,12 +87,12 @@ pi:
     - phc2sys_eth0
   chrony: False
   recording: False
-  memory: /data
+  memory: /home/rsl
   cpu: True
   fsk:
     text:
       width: 700
       height: 0
       left: 10
-      top: 10
-      text_size: 10
+      top: 700
+      text_size: 9

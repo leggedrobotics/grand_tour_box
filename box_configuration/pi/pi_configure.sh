@@ -51,8 +51,20 @@ sudo cp ~/git/grand_tour_box/box_configuration/pi/ptp4l_eth0.service /lib/system
 sudo cp ~/git/grand_tour_box/box_configuration/pi/autostart_tmux.service /lib/systemd/system/
 sudo cp ~/git/grand_tour_box/box_configuration/pi/autostart_set_fan_speed.service /lib/systemd/system/
 sudo cp ~/git/grand_tour_box/box_configuration/pi/pigpiod_box.service /lib/systemd/system/
+sudo cp ~/git/grand_tour_box/box_configuration/pi/autostart_tmux.service /etc/systemd/system/autostart_tmux.service
 
 sudo systemctl daemon-reload
+sudo systemctl enable autostart_tmux
+sudo systemctl restart autostart_tmux
+
+systemctl enable ptp4l_eth0.service
+systemctl enable phc2sys_eth0.service
+systemctl enable autostart_tmux.service
+systemctl enable autostart_set_fan_speed.service
+systemctl enable pigpiod_box.service
+systemctl enable docker.service
+systemctl enable containerd.service
+
 systemctl start ptp4l_eth0.service
 systemctl start phc2sys_eth0.service
 systemctl start autostart_tmux.service
@@ -61,13 +73,7 @@ systemctl start pigpiod_box.service
 systemctl start restart docker
 
 systemctl disable pigpiod.service
-systemctl enable ptp4l_eth0.service
-systemctl enable phc2sys_eth0.service
-systemctl enable autostart_tmux.service
-systemctl enable autostart_set_fan_speed.service
-systemctl enable pigpiod_box.service
-systemctl enable docker.service
-systemctl enable containerd.service
+
 
 systemctl restart ptp4l_eth0.service; sleep 3; systemctl restart phc2sys_eth0.service
 
