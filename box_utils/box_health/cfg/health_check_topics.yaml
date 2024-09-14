@@ -77,7 +77,7 @@ nuc:
 
 pi:
   topics:
-    /gt_box/adis16470_node/imu:
+    /gt_box/adis16475_node/imu:
       rate: 2000
     /gt_box/stim320/imu:
       rate: 400

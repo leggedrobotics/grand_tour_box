@@ -26,7 +26,7 @@ lidar:
       fov_end:  -1
       enable_packet_loss_tool: true     # enable the udp packet loss detection tool
     ros:
-      ros_frame_id: hesaiXT32                     #Frame id of packet message and point cloud message
+      ros_frame_id: hesai_lidar                     #Frame id of packet message and point cloud message
       save_replayed_topics_to_rosbag: false
       output_rosbag_directory: /tmp/  #if left empty, it will save to /data in this driver.
       # Topic used to monitor packets loss condition through ROS

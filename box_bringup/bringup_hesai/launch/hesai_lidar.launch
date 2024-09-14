@@ -6,6 +6,7 @@
     <node pkg="hesai_ros_driver" name="hesai_ros_driver_node" type="hesai_ros_driver_node"  output="screen">
       <param name="capability_group" value="Driver"/>
       <param name="config_path" type="string" value= "$(find bringup_hesai)/config/hesaiXT32_config.yaml"/>
+      <param name="input_rosbag_path" type="string" value="/data"/>
     </node>
     
   </group>
