@@ -15,17 +15,17 @@
     <child link="hesaiXT32" />
   </joint>
 
-  <link name="hesaiXT32_model">
+  <link name="hesai_model">
     <visual>
       <geometry>
         <mesh filename="package://box_model/urdf/box/mesh/hesai_lidar.dae" />
       </geometry>
     </visual>
   </link>
-  <joint name="hesaiXT32_to_hesaiXT32_model" type="fixed">
+  <joint name="hesaiXT32_to_hesai_model" type="fixed">
     <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
     <parent link="hesaiXT32" />
-    <child link="hesaiXT32_model" />
+    <child link="hesai_model" />
   </joint>
 
   <!-- Livox -->
