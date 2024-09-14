@@ -90,7 +90,7 @@
     <child link="cpt7_antenna_back" />
   </joint>
 
-  <link name="State"/>
+  <link name="ap20_imu"/>
   <!-- Basilisk IMU Frame -->
   <joint name="base_to_basilisk_imu_frame" type="fixed">
     <origin xyz=" ${calib['box_base_to_basilisk_imu_frame']['x']}
@@ -100,7 +100,7 @@
                   ${calib['box_base_to_basilisk_imu_frame']['pitch']}
                   ${calib['box_base_to_basilisk_imu_frame']['yaw']}" />
     <parent link="box_base" />
-    <child link="State" />
+    <child link="ap20_imu" />
   </joint>
 
   <xacro:include filename="$(find box_model)/urdf/cameras/cameras.urdf.xacro" />
