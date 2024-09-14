@@ -74,20 +74,20 @@
     <child link="base" />
   </joint>
 
-  <link name="cpt7_front_antenna"/>
+  <link name="cpt7_antenna_front"/>
   <!-- CPT7 Coordinate System -->
-  <joint name="cpt7_to_front_antenna" type="fixed">
+  <joint name="cpt7_to_antenna_front" type="fixed">
     <origin xyz="0.13924890003 -0.0361 -0.1712000" rpy="0.0 0.0 0.0" />
     <parent link="cpt7_imu" />
-    <child link="cpt7_front_antenna" />
+    <child link="cpt7_antenna_front" />
   </joint>
 
-  <link name="cpt7_back_antenna"/>
+  <link name="cpt7_antenna_back"/>
   <!-- CPT7 Coordinate System -->
-  <joint name="cpt7_to_back_antenna" type="fixed">
+  <joint name="cpt7_to_antenna_back" type="fixed">
     <origin xyz="-0.4404038 -0.0361 -0.0267714" rpy="0.0 0.0 0.0" />
     <parent link="cpt7_imu" />
-    <child link="cpt7_back_antenna" />
+    <child link="cpt7_antenna_back" />
   </joint>
 
   <link name="State"/>
