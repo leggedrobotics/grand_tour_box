@@ -66,7 +66,7 @@ docker run --net=host \
     -v /mission_data:/mission_data \
     --gpus all \
     --volume $SSH_AUTH_SOCK:/ssh-agent\
-    # --volume /home/jonfrey/git/grand_tour_box:/home/catkin_ws/src/grand_tour_box\
+    --volume /home/jonfrey/git/grand_tour_box:/home/catkin_ws/src/grand_tour_box\
     --env SSH_AUTH_SOCK=/ssh-agent \
     $IMAGE \
     $COMMAND
