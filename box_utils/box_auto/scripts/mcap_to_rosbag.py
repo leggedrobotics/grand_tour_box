@@ -83,7 +83,7 @@ if __name__ == "__main__":
     for i, mcap in enumerate(mcaps):
 
         # We at first convert all missions to ROS1 - we have to merge the bags into a single mission for the hdr cameras given the metdata.yaml
-        timestamp = Path(mcap).parent.name.split("_")[0]
+        timestamp = Path(mcap).name.split("_")[0]
         camera_direction = mcap.split("_")[-1]
         converted_bag_path = Path(mcap).parent.joinpath(f"{timestamp}_jetson_hdr_{camera_direction}_raw.bag")
         if not converted_bag_path.exists():

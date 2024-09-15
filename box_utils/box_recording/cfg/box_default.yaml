@@ -11,7 +11,6 @@ jetson:
       - /gt_box/hdr_right/image_raw/compressed
       - /gt_box/hdr_right/camera_info
     utils:
-      - /gt_box/alphasense_driver_node/imu
       - /gt_box/health_status/jetson/status
     ap20:
       - /gt_box/ap20/imu

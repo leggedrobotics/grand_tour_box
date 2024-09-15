@@ -5,9 +5,6 @@
     <arg name="replay" value="$(arg replay)"/>
   </include>
   
-  <include file="$(find box_recording)/launch/rosbag_record_coordinator.launch" />
-  <include file="$(find box_recording)/launch/rosbag_record_node.launch" />
-
   <!-- unpack hesai pointcloud packets -->
   <include file="$(find bringup_hesai)/launch/hesai_lidar_unpack.launch" />
 
