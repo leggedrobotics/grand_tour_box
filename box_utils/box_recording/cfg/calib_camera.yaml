@@ -31,7 +31,7 @@ nuc:
     livox:
       - /gt_box/livox/lidar
       - /gt_box/livox/imu
-      - /gt_box/livox/imu_SI
+      - /gt_box/livox/imu_si_compliant
     alphasense:
       - /gt_box/alphasense_driver_node/cam1
       - /gt_box/alphasense_driver_node/cam2

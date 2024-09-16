@@ -23,7 +23,6 @@ SIGNAL_TO_RECORD = [
     "LOG FILE INSUPDATESTATUSB ONCHANGED",
     "LOG FILE QZSSEPHEMERISB ONNEW",
     "LOG FILE RANGECMPB ONTIME 1",
-    "LOG FILE RANGECMP_1B ONTIME 1",
     "LOG FILE RAWDMIB ONNEW",
     "LOG FILE RAWIMUSXB ONNEW",
     "LOG FILE RXCONFIGB ONCE",
@@ -32,6 +31,7 @@ SIGNAL_TO_RECORD = [
     "LOG FILE THISANTENNATYPEB ONCE",
     "LOG FILE TIMEB ONTIME 1",
     "LOG FILE VERSIONB ONCE",
+    "LOG FILE RANGECMP_1 ONTIME 1",  # NEEDS BINARY
     # # GraphNav
     # "LOG FILE BDSEPHEMERIS",
     # "LOG FILE BESTPOS",
@@ -212,7 +212,7 @@ SIGNAL_TO_RECORD = [
 # import os
 
 
-def call_service(cmd, max_attempts=5):
+def call_service(cmd, max_attempts=10):
     from novatel_oem7_msgs.srv import (
         Oem7AbasciiCmd,
         Oem7AbasciiCmdRequest,
