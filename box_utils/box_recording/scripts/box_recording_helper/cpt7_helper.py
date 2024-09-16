@@ -4,34 +4,34 @@ import rospy
 START_RECORDING = ["FILECONFIG OPEN"]
 STOP_RECORDING = ["FILECONFIG CLOSE"]
 SIGNAL_TO_RECORD = [
-    # Inertial Explorer
-    "LOG FILE BESTPOSB ONTIME 1",
+    # Inertial Explorer.
+    # Requires binary logs: https://docs.novatel.com/Waypoint/Content/AppNotes/SPAN_Logging_for_IE.htm#Logging
+    # These fields are populated by inspecting the Logging panel in the Novatel Application Suite app on OPC (Ubuntu)
+    # Select "inertial explorer", then click "Next", and press "Edit Optional Settings"
+    # NOTE! The fields will be shown without the binary binary postfix "B" which is required by Inertial Explorer,
+    # so "B" is appended to the end of each topic name.
+    "LOG FILE BDSEPHEMERISB ONNEW",
     "LOG FILE BESTGNSSPOSB ONTIME 1",
+    "LOG FILE BESTPOSB ONTIME 1",
+    "LOG FILE DMICONFIGB ONCHANGED",  # (if using a DMI sensor)
+    "LOG FILE GALFNAVEPHEMERISB ONNEW",
+    "LOG FILE GALINAVEPHEMERISB ONNEW",
+    "LOG FILE GPSEPHEMB ONNEW",
+    "LOG FILE HEADING2B ONNEW",
+    "LOG FILE INSCONFIGB ONCHANGED",
     "LOG FILE INSPVAXB ONTIME 1",
     "LOG FILE INSUPDATESTATUSB ONCHANGED",
-    "LOG FILE DMICONFIGB ONCHANGED",  # (if using a DMI sensor)
+    "LOG FILE QZSSEPHEMERISB ONNEW",
+    "LOG FILE RANGECMPB ONTIME 1",
+    "LOG FILE RANGECMP_1B ONTIME 1",
     "LOG FILE RAWDMIB ONNEW",
-    "LOG FILE BESTPOSA ONTIME 1",
-    "LOG FILE VERSIONA",
-    "LOG FILE BDSEPHEMERIS",
-    "LOG FILE BESTGNSSPOS",
-    "LOG FILE BESTPOS",
-    "LOG FILE DMICONFIG",
-    "LOG FILE GALFNAVEPHEMERIS",
-    "LOG FILE GALINAVEPHEMERIS",
-    "LOG FILE GPSEPHEM",
-    "LOG FILE HEADING2",
-    "LOG FILE INSCONFIG",
-    "LOG FILE INSPVAX",
-    "LOG FILE INSUPDATESTATUS",
-    "LOG FILE QZSSEPHEMERIS",
-    "LOG FILE RANGECMP",
-    "LOG FILE RANGECMP_1",
-    "LOG FILE RAWDMI",
-    "LOG FILE RAWIMUSX",
-    "LOG FILE RXSTATUS",
-    "LOG FILE THISANTENNATYPE",
-    "LOG FILE TIME",
+    "LOG FILE RAWIMUSXB ONNEW",
+    "LOG FILE RXCONFIGB ONCE",
+    "LOG FILE RXCONFIG ONCE",  # Logged once in ASCII for debug purposes
+    "LOG FILE RXSTATUSB ONCE",
+    "LOG FILE THISANTENNATYPEB ONCE",
+    "LOG FILE TIMEB ONTIME 1",
+    "LOG FILE VERSIONB ONCE",
     # # GraphNav
     # "LOG FILE BDSEPHEMERIS",
     # "LOG FILE BESTPOS",
