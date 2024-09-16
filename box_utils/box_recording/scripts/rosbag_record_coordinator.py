@@ -48,11 +48,13 @@ class RosbagRecordCoordinator(object):
         self.rp = rospkg.RosPack()
         self.default_yaml = join(str(self.rp.get_path("box_recording")), "cfg/box_default.yaml")
         rospy.loginfo("[RosbagRecordCoordinator] Setup.")
+        self.timestamp = ""
         self.cfg = {}
 
     def start_recording(self, request: StartRecordingRequest):
         rospy.loginfo("[RosbagRecordCoordinator] Trying to start rosbag recording process.")
         timestamp = "{date:%Y-%m-%d-%H-%M-%S}".format(date=datetime.datetime.now())
+        self.timestamp = timestamp
         response = StartRecordingResponse()
         response.timestamp = timestamp
         response.suc = True
@@ -191,7 +193,7 @@ class RosbagRecordCoordinator(object):
                     rospy.logerr("Failed to stop rosbag recording process on " + node)
 
         if response.suc:
-            response.message = "Successfully stoped all nodes"
+            response.message = f"Successfully stoped all nodes - GET DATA:    cd /data; boxi get_data --nuc --jetson --directory {self.timestamp}"
         rospy.loginfo("[RosbagRecordCoordinator] Sent STOP to all nodes.")
 
         pretty = ""
