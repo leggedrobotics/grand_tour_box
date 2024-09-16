@@ -85,7 +85,7 @@ class FanControlNode(object):
     def get_params(self):
         self.mode = rospy.get_param("~mode", "normal")
         self.control_rate = rospy.get_param("~control_rate", 5)
-        self.desired_fan_speed_in_percentage = rospy.get_param("~desired_fan_speed_in_percentage", 55)
+        self.desired_fan_speed_in_percentage = rospy.get_param("~desired_fan_speed_in_percentage", 60)
         self.critical_temperature = rospy.get_param("~critical_temperature", 70)
 
         # Initialize PD controller variables
