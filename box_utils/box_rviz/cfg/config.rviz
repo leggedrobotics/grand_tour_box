@@ -37,6 +37,8 @@ Panels:
         - /Global Options1
         - /RobotModel1
         - /Overlay1
+        - /IMU1
+        - /IMU1/Adis IMU1
         - /Lidar1
       Splitter Ratio: 0.5601415038108826
     Tree Height: 1273
@@ -92,9 +94,9 @@ Visualization Manager:
           Value: true
         cam5_sensor_frame:
           Value: true
-        cpt7_back_antenna:
+        cpt7_antenna_back:
           Value: true
-        cpt7_front_antenna:
+        cpt7_antenna_front:
           Value: true
         cpt7_imu:
           Value: true
@@ -106,9 +108,9 @@ Visualization Manager:
           Value: true
         hdr_right:
           Value: true
-        hesaiXT32:
+        hesai_lidar:
           Value: true
-        hesaiXT32_model:
+        hesai_model:
           Value: true
         imu_adis16475:
           Value: true
@@ -116,9 +118,9 @@ Visualization Manager:
           Value: true
         imu_stim320:
           Value: true
-        livox:
+        livox_imu:
           Value: true
-        livox_frame:
+        livox_lidar:
           Value: true
         livox_model:
           Value: true
@@ -166,9 +168,9 @@ Visualization Manager:
           cpt7_imu:
             base:
               {}
-            cpt7_back_antenna:
+            cpt7_antenna_back:
               {}
-            cpt7_front_antenna:
+            cpt7_antenna_front:
               {}
           hdr_base:
             hdr_front:
@@ -177,8 +179,8 @@ Visualization Manager:
               {}
             hdr_right:
               {}
-          hesaiXT32:
-            hesaiXT32_model:
+          hesai_lidar:
+            hesai_model:
               {}
           imu_adis16475:
             {}
@@ -187,8 +189,8 @@ Visualization Manager:
           imu_stim320:
             box_base_model:
               {}
-          livox:
-            livox_frame:
+          livox_lidar:
+            livox_imu:
               {}
             livox_model:
               {}
@@ -258,11 +260,11 @@ Visualization Manager:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        cpt7_back_antenna:
+        cpt7_antenna_back:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        cpt7_front_antenna:
+        cpt7_antenna_front:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -286,11 +288,11 @@ Visualization Manager:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        hesaiXT32:
+        hesai_lidar:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        hesaiXT32_model:
+        hesai_model:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -307,11 +309,11 @@ Visualization Manager:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        livox:
+        livox_imu:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        livox_frame:
+        livox_lidar:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -547,40 +549,40 @@ Visualization Manager:
           History Length: 1
           Name: Adis IMU
           Queue Size: 10
-          Topic: /gt_box/adis16475
+          Topic: /gt_box/adis16475_node/imu
           Unreliable: false
           Value: true
         - Alpha: 1
           Class: rviz_plugin_tutorials/Imu
           Color: 204; 51; 204
-          Enabled: true
+          Enabled: false
           History Length: 1
           Name: Livox IMU
           Queue Size: 10
           Topic: /gt_box/livox/imu
           Unreliable: false
-          Value: true
+          Value: false
         - Alpha: 1
           Class: rviz_plugin_tutorials/Imu
           Color: 204; 51; 204
-          Enabled: true
+          Enabled: false
           History Length: 1
           Name: Alphasense IMU
           Queue Size: 10
           Topic: /gt_box/alphasense_driver_node/imu
           Unreliable: false
-          Value: true
+          Value: false
         - Alpha: 1
           Class: rviz_plugin_tutorials/Imu
           Color: 204; 51; 204
-          Enabled: true
+          Enabled: false
           History Length: 1
           Name: Stim320 IMU
           Queue Size: 10
           Topic: /gt_box/stim320
           Unreliable: false
-          Value: true
-      Enabled: false
+          Value: false
+      Enabled: true
       Name: IMU
     - Class: rviz/Group
       Displays:
@@ -848,8 +850,8 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 2808
-  X: 484
-  Y: 234
+  X: 72
+  Y: 27
   ZED2i Left:
     collapsed: false
   ZED2i Right:

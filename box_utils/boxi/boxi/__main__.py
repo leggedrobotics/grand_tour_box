@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 # PYTHON_ARGCOMPLETE_OK
-import argparse, argcomplete
+import argparse
+import argcomplete
 import logging as log
 import importlib
 
@@ -23,7 +24,6 @@ command_register = [
     "integration_test",
     "repair_bags",
     "set_cpt7_time",
-    "convert_mcap",
     "pre_commit",
 ]
 
