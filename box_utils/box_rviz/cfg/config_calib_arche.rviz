@@ -150,7 +150,7 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        imu_adis16475:
+        adis16475_imu:
           Alpha: 1
           Show Axes: false
           Show Trail: false

@@ -111,7 +111,7 @@ Visualization Manager:
           Value: true
         hesai_model:
           Value: true
-        imu_adis16475:
+        adis16475_imu:
           Value: true
         imu_sensor_frame:
           Value: true
@@ -183,7 +183,7 @@ Visualization Manager:
           hesai_lidar:
             hesai_model:
               {}
-          imu_adis16475:
+          adis16475_imu:
             {}
           imu_sensor_frame:
             {}
@@ -300,7 +300,7 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        imu_adis16475:
+        adis16475_imu:
           Alpha: 1
           Show Axes: false
           Show Trail: false

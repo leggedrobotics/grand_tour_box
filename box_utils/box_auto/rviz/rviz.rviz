@@ -722,7 +722,7 @@ Visualization Manager:
           Value: true
         hesaiXT32_model:
           Value: true
-        imu_adis16475:
+        adis16475_imu:
           Value: true
         imu_link:
           Value: true
@@ -849,7 +849,7 @@ Visualization Manager:
               hesaiXT32:
                 hesaiXT32_model:
                   {}
-              imu_adis16475:
+              adis16475_imu:
                 {}
               imu_sensor_frame:
                 {}

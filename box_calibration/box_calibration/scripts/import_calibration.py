@@ -150,7 +150,7 @@ for kalibr_file in kalibr_imu_results:
         kalibr_calibration = yaml.safe_load(file)
 
         xyz_rpy = transformation_to_xyz_rpy(kalibr_calibration["cam0"]["T_cam_imu"])
-        name = "alphasense_front_left_to_imu_adis16475"
+        name = "alphasense_front_left_to_adis16475_imu"
         name = frame_from_cam(kalibr_calibration, cam) + "_to_" + frame_from_cam(kalibr_calibration, previous_cam)
         if name in calibration:
             calibration[name] = xyz_rpy
