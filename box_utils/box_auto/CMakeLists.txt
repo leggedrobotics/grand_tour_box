@@ -12,6 +12,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(SRC_FILES
   src/box_post_processor.cpp
   src/box_tf_processor.cpp
+  src/merge.cpp
 )
 
 set(CATKIN_PACKAGE_DEPENDENCIES
@@ -91,6 +92,9 @@ add_executable(post_processor_node
 add_executable(tf_processor_node
   src/tf_processor_node.cpp)
 
+add_executable(merge
+  src/merge.cpp)
+
 target_link_libraries(post_processor_node 
 ${catkin_LIBRARIES}
 ${gflags_LIBRARIES}
@@ -104,6 +108,14 @@ ${gflags_LIBRARIES}
 ${GLOG_LIBRARIES}
 ${PROJECT_NAME}
 )
+
+target_link_libraries(merge 
+${catkin_LIBRARIES}
+${gflags_LIBRARIES}
+${GLOG_LIBRARIES}
+${PROJECT_NAME}
+)
+
 
 find_package(cmake_clang_tools QUIET)
 if(cmake_clang_tools_FOUND)

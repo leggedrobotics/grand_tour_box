@@ -1,3 +1,7 @@
+
+# Example usage
+# USAGE: python3 ~/git/grand_tour_box/box_utils/box_auto/scripts/topic_freq.py --folder /mission_data
+
 import rosbag
 import matplotlib
 matplotlib.use('Agg')  # Set the backend to Agg for headless environments
@@ -9,7 +13,6 @@ import argparse
 from pathlib import Path
 import subprocess
 from matplotlib.ticker import ScalarFormatter
-
 
 def run_rosbag_command(bag_file, output_file):
     # Define the command to run
@@ -163,7 +166,6 @@ def parse_arguments():
 
 
 if __name__ == "__main__":
-    # Example usage
     args = parse_arguments()
     rosbag_paths = [str(s) for s in pathlib.Path(args.folder).rglob("*.bag")]
     output_dir = "topic_freq"
