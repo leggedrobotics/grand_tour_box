@@ -16,16 +16,16 @@
   </joint>
 
   <!-- IMU ADIS16475 -->
-  <link name="imu_adis16475" />
-  <joint name="box_base_to_imu_adis16475" type="fixed">
-    <origin xyz=" ${calib['box_base_to_imu_adis16475']['x']}
-                  ${calib['box_base_to_imu_adis16475']['y']}
-                  ${calib['box_base_to_imu_adis16475']['z']}"
-            rpy=" ${calib['box_base_to_imu_adis16475']['roll']}
-                  ${calib['box_base_to_imu_adis16475']['pitch']}
-                  ${calib['box_base_to_imu_adis16475']['yaw']}" />
+  <link name="adis16475_imu" />
+  <joint name="box_base_to_adis16475_imu" type="fixed">
+    <origin xyz=" ${calib['box_base_to_adis16475_imu']['x']}
+                  ${calib['box_base_to_adis16475_imu']['y']}
+                  ${calib['box_base_to_adis16475_imu']['z']}"
+            rpy=" ${calib['box_base_to_adis16475_imu']['roll']}
+                  ${calib['box_base_to_adis16475_imu']['pitch']}
+                  ${calib['box_base_to_adis16475_imu']['yaw']}" />
     <parent link="box_base" />
-    <child link="imu_adis16475" />
+    <child link="adis16475_imu" />
   </joint>
 
   <!-- IMU alphasesnse -->
