@@ -3,7 +3,7 @@
 <robot name="imus" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
   <!-- IMU STIM320 -->
-  <link name="imu_stim320" />
+  <link name="stim320_imu" />
   <joint name="box_base_to_imu_stim320" type="fixed">
     <origin xyz=" ${calib['box_base_to_imu_stim320']['x']}
                   ${calib['box_base_to_imu_stim320']['y']}
@@ -12,7 +12,7 @@
                   ${calib['box_base_to_imu_stim320']['pitch']}
                   ${calib['box_base_to_imu_stim320']['yaw']}" />
     <parent link="box_base" />
-    <child link="imu_stim320" />
+    <child link="stim320_imu" />
   </joint>
 
   <!-- IMU ADIS16475 -->
