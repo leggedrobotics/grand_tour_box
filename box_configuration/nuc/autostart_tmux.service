@@ -1,10 +1,10 @@
 [Unit]
 Description=Autostart Terminal and Run tmuxp
-After=set_approx_time_cpt7.service
+After=ptp4l_enp45s0.service
 
 [Service]
 Type=forking
-ExecStartPre=/bin/sleep 15
+ExecStartPre=/bin/sleep 20
 ExecStart=/usr/bin/tmuxp load /home/rsl/git/grand_tour_box/box_launch/tmux/nuc_recording.yaml -d
 User=rsl
 
