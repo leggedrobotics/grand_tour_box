@@ -25,8 +25,6 @@ jetson:
       - /gt_box/adis16475_node/imu
 nuc:
   bags:
-    cpt7_local:
-      - cpt7_local
     utils:
       - /gt_box/health_status/nuc/status
     hesai:
@@ -77,6 +75,8 @@ nuc:
     tf:
       - /tf
       - /tf_static
+    cpt7_local:
+      - cpt7_local
 lpc:
   grpc_cfg:
     address: 192.168.0.141

@@ -50,7 +50,7 @@ if [ ! -f $XAUTH ]; then
     chmod a+r $XAUTH
 fi
 
-
+cd ~
 mkdir -p .etc && cd .etc
 ln -sf /etc/passwd .
 ln -sf /etc/shadow .

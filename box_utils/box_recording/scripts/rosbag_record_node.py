@@ -229,9 +229,7 @@ class RosbagRecordNode(object):
                 continue
 
             bag_path = os.path.join(self.bag_base_path, timestamp + "_" + self.node + "_" + bag_name)
-            bash_command = (
-                f"rosrun box_recording record_bag.sh {bag_path} {topics} __name:=record_{self.node}_{bag_name}"
-            )
+            bash_command = f"/home/rsl/git/grand_tour_box/box_utils/box_recording/bin/record_bag.sh {bag_path} {topics} __name:=record_{self.node}_{bag_name}"
             self.info_string += f"record_{self.node}_{bag_name}----{bag_path},"
 
             self.processes.append(subprocess.Popen(bash_command, shell=True, stderr=subprocess.PIPE))
