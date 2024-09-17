@@ -2,14 +2,14 @@
 jetson:
   bags:
     zed2i:
-    - svo # SVO recording, not rosbag. Mutually exclusive: won't record zed ros topics if svo is set here.
+      - svo # SVO recording, not rosbag. Mutually exclusive: won't record zed ros topics if svo is set here.
     hdr:
-    - /gt_box/hdr_front/image_raw/compressed
-    - /gt_box/hdr_front/camera_info
-    - /gt_box/hdr_left/image_raw/compressed
-    - /gt_box/hdr_left/camera_info
-    - /gt_box/hdr_right/image_raw/compressed
-    - /gt_box/hdr_right/camera_info
+      - /gt_box/hdr_front/image_raw/compressed
+      - /gt_box/hdr_front/camera_info
+      - /gt_box/hdr_left/image_raw/compressed
+      - /gt_box/hdr_left/camera_info
+      - /gt_box/hdr_right/image_raw/compressed
+      - /gt_box/hdr_right/camera_info
     utils:
       - /gt_box/health_status/jetson/status
     ap20:
@@ -77,7 +77,6 @@ nuc:
     tf:
       - /tf
       - /tf_static
-
 lpc:
   grpc_cfg:
     address: 192.168.0.141
@@ -86,21 +85,15 @@ lpc:
     locomotion:
       - /debug_info
     general:
-      - /anymal_low_level_controller/actuator_readings
-      - /anymal_low_level_controller/actuator_readings_extended_throttled
-      - /motion_reference/command_pose
-      - /motion_reference/command_twist
-      - /pdb/battery_state
-      - /pdb/intrinsic_state
-      - /pdb/power_state
-      - /sensors/battery_voltage
-      - /soft_emcy_stop
-      - /twist_mux/selected_input
-      - /twist_mux/twist
-      - /rsl_joystick_driver/twist
-      - /rsl_joystick_module/twist
-      - /foot_scan
-      - /joy_manager/twist
+      - /anymal_low_level_controller/actuator_readings                  
+      - /anymal_low_level_controller/actuator_readings_extended_throttled           
+      - /foot_scan                                                                
+      - /joy_manager/twist                                                        
+      - /pdb/battery_state                                                        
+      - /pdb/intrinsic_state                                                            
+      - /pdb/power_state                                                               
+      - /twist_mux/selected_input                                                             
+      - /twist_mux/twist 
     anymal_imu:
       - /sensors/imu
     state_estimator:
@@ -123,15 +116,6 @@ npc:
     address: 192.168.0.142
     port: 50052
   bags:
-    general:
-      - /behavior_engine/status
-      - /chrony_monitor_npc/status
-      - /cpu_monitor_npc/status
-      - /cpu_loupe_npc/cpu_loupe
-      - /disk_monitor_npc/status
-      - /memory_monitor_npc/status
-      - /network_monitor_npc/status
-      - /pinger_npc_to_lpc/ping
     depth_cameras:
       - /depth_camera_left/depth/camera_info
       - /depth_camera_left/depth/image_rect_raw
