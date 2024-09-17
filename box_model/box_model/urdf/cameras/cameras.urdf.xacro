@@ -26,12 +26,12 @@
     <!-- Alphasense Cam1/ front center (should be identity)-->
     <link name="cam1_sensor_frame"/>
     <joint name="alphasense_base_to_alphasense_front_middle" type="fixed">
-        <origin xyz=" ${pinned_constraints['alphasense_base_to_alphasense_front_middle']['x']}
-                  ${pinned_constraints['alphasense_base_to_alphasense_front_middle']['y']}
-                  ${pinned_constraints['alphasense_base_to_alphasense_front_middle']['z']}"
-                rpy=" ${pinned_constraints['alphasense_base_to_alphasense_front_middle']['roll']}
-                  ${pinned_constraints['alphasense_base_to_alphasense_front_middle']['pitch']}
-                  ${pinned_constraints['alphasense_base_to_alphasense_front_middle']['yaw']}"/>
+        <origin xyz=" ${calib['alphasense_base_to_alphasense_front_middle']['x']}
+                  ${calib['alphasense_base_to_alphasense_front_middle']['y']}
+                  ${calib['alphasense_base_to_alphasense_front_middle']['z']}"
+                rpy=" ${calib['alphasense_base_to_alphasense_front_middle']['roll']}
+                  ${calib['alphasense_base_to_alphasense_front_middle']['pitch']}
+                  ${calib['alphasense_base_to_alphasense_front_middle']['yaw']}"/>
         <parent link="alphasense_base"/>
         <child link="cam1_sensor_frame"/>
     </joint>
@@ -40,7 +40,7 @@
     <joint name="alphasense_front_right_identity" type="fixed">
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <parent link="cam2_sensor_frame"/>
-        <child link="alphasense_front_center"/>
+        <child link="alphasense_front_right"/>
     </joint>
 
     <!-- Alphasense Cam2/ front right -->
@@ -66,12 +66,12 @@
     <!-- Alphasense Cam3/ front left -->
     <link name="cam3_sensor_frame"/>
     <joint name="alphasense_base_to_alphasense_front_left" type="fixed">
-        <origin xyz=" ${calib['alphasense_base_to_alphasense_front_left']['x']}
-                  ${calib['alphasense_base_to_alphasense_front_left']['y']}
-                  ${calib['alphasense_base_to_alphasense_front_left']['z']}"
-                rpy=" ${calib['alphasense_base_to_alphasense_front_left']['roll']}
-                  ${calib['alphasense_base_to_alphasense_front_left']['pitch']}
-                  ${calib['alphasense_base_to_alphasense_front_left']['yaw']}"/>
+        <origin xyz=" ${pinned_constraints['alphasense_base_to_alphasense_front_left']['x']}
+                  ${pinned_constraints['alphasense_base_to_alphasense_front_left']['y']}
+                  ${pinned_constraints['alphasense_base_to_alphasense_front_left']['z']}"
+                rpy=" ${pinned_constraints['alphasense_base_to_alphasense_front_left']['roll']}
+                  ${pinned_constraints['alphasense_base_to_alphasense_front_left']['pitch']}
+                  ${pinned_constraints['alphasense_base_to_alphasense_front_left']['yaw']}"/>
         <parent link="alphasense_base"/>
         <child link="cam3_sensor_frame"/>
     </joint>
