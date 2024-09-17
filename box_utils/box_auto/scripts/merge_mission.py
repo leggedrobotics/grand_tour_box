@@ -3,6 +3,7 @@ from fnmatch import fnmatchcase
 from rosbag import Bag
 import re
 import argparse
+import tqdm
 
 
 def merge_bags_single(input_bag, output_bag, topics="*", verbose=False):
@@ -17,34 +18,36 @@ def merge_bags_single(input_bag, output_bag, topics="*", verbose=False):
         print("Matching topics against patters: '%s'" % " ".join(topics))
 
     with Bag(output_bag, "w", compression='lz4') as o:
-        for ifile in input_bag:
-            matchedtopics = []
-            included_count = 0
-            skipped_count = 0
-            if verbose:
-                print("> Reading bag file: " + ifile)
-            try:
-                with Bag(ifile, "r") as ib:
-                    for topic, msg, t in ib:
-                        if any(fnmatchcase(topic, pattern) for pattern in topics):
-                            if topic not in matchedtopics:
-                                matchedtopics.append(topic)
-                                if verbose:
-                                    print("Including matched topic '%s'" % topic)
-                            o.write(topic, msg, t)
-                            included_count += 1
-                        else:
-                            skipped_count += 1
-            except Exception as e:
-                print("Failed to read bag file: %s" % str(e))
-                print("Skipping this bag ")
-            total_included_count += included_count
-            total_skipped_count += skipped_count
-            if verbose:
-                print(
-                    "< Included %d messages and skipped %d"
-                    % (included_count, skipped_count)
-                )
+        with tqdm.tqdm(total=len(input_bag), desc=f"Merging {prefix}", unit="subbags", colour = "green") as pbar:
+            for ifile in input_bag:
+                matchedtopics = []
+                included_count = 0
+                skipped_count = 0
+                if verbose:
+                    print("> Reading bag file: " + ifile)
+                try:
+                    with Bag(ifile, "r") as ib:
+                        for topic, msg, t in ib:
+                            if any(fnmatchcase(topic, pattern) for pattern in topics):
+                                if topic not in matchedtopics:
+                                    matchedtopics.append(topic)
+                                    if verbose:
+                                        print("Including matched topic '%s'" % topic)
+                                o.write(topic, msg, t)
+                                included_count += 1
+                            else:
+                                skipped_count += 1
+                except Exception as e:
+                    print("Failed to read bag file: %s" % str(e))
+                    print("Skipping this bag ")
+                total_included_count += included_count
+                total_skipped_count += skipped_count
+                if verbose:
+                    print(
+                        "< Included %d messages and skipped %d"
+                        % (included_count, skipped_count)
+                    )
+                pbar.update(1)
 
     if verbose:
         print(
@@ -79,14 +82,22 @@ if __name__ == "__main__":
                 grouped_files[prefix] = []
             grouped_files[prefix].append(file)
     
+    
     # Merge bags
-    for prefix, files in grouped_files.items():
-        output_bag = Path(mission_folder) / f"{prefix}.bag"
+    with tqdm.tqdm(total=len(grouped_files), desc=f"Merging {prefix}", unit="bags") as pbar:
 
-        # If overwrite is False, check if the output bag already exists
-        if not args.overwrite and output_bag.exists():
-            print(f"Output file {output_bag} already exists. Skipping merge...")
-            continue
+        for prefix, files in grouped_files.items():
+                
+            output_bag = Path(mission_folder) / f"{prefix}.bag"
 
-        print(f"Merging files: {[str(file) for file in files]} into {output_bag}")
-        merge_bags_single([str(file) for file in files], str(output_bag), "*", verbose=True)
+            # If overwrite is False, check if the output bag already exists
+            if not args.overwrite and output_bag.exists():
+                print(f"Output file {output_bag} already exists. Skipping merge...")
+                continue
+
+            filelist = [str(file) for file in files]
+            filelist.sort(key=lambda x: int(x.split(".")[-2].split("_")[-1]))
+            print(f"Merging files: {[str(file) for file in files]} into {output_bag}")
+
+            merge_bags_single(filelist, str(output_bag), "*", verbose=True)
+            pbar.update(1)
