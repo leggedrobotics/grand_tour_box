@@ -36,7 +36,7 @@
   </link>
   <joint name="box_base_to_box_base_model" type="fixed">
     <origin xyz="-0.02 0.0 0.0" rpy="0.0 0.0 0.0" />
-    <parent link="imu_stim320" />
+    <parent link="box_base" />
     <child link="box_base_model" />
   </joint>
 
