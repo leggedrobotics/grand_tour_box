@@ -48,7 +48,7 @@ class RosbagRecordNode(object):
         self.recording_zed = False
         self.recording_cpt7 = False
         self.recording_hdr = False
-        default_path = os.path.join(rospkg.RosPack().get_path("box_recording"), "data")
+        default_path = "/data"
         self.data_path = rospy.get_param("~data_path", default_path)
 
         self.pub_recording_status = rospy.Publisher("~recording_status", Bool, queue_size=3)
