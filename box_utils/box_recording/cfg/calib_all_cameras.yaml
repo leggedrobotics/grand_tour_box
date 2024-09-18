@@ -15,6 +15,11 @@ jetson:
       - /gt_box/ap20/prism_position
     adis:
       - /gt_box/adis16475_node/imu
+    stim:
+      - /gt_box/stim320/acceletometer_temperature
+      - /gt_box/stim320/gyroscope_temperature
+      - /gt_box/stim320/imu
+      - /gt_box/stim320/internal_counter
 nuc:
   bags:
     alphasense:

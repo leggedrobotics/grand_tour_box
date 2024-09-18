@@ -2,12 +2,10 @@
   <arg name="box_namespace" default="gt_box"/>
   <arg name="calibration" default="no"/>
   <group if="$(eval arg('calibration') == 'no' or arg('calibration') == 'imu')" ns="$(arg box_namespace)">
-    <arg name="serial_port" default="/dev/ttyUSB0"/>
-    <arg name="baud_rate" default="921600"/>
-    <node name="stim320" pkg="stim320_ros" type="stim320_node" output="screen">
-      <param name="capability_group" value="Driver"/>
-      <param name="serial_port" value="$(arg serial_port)"/>
-      <param name="baud_rate" value="$(arg baud_rate)"/>
-    </node>
+  <node name="stim320imu" pkg="stim320_driver" type="stim320_node" output="screen" required="true">
+    <param name="serial_port" value="/dev/ttyAMA0"/>
+    <!-- You can't change the hardware decimation through the driver. Change this value only if you changed the hardware decimation through GUI. -->
+    <param name="decimation_ratio" value="4"/>
+  </node>
   </group>
 </launch>
