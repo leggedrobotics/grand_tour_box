@@ -12,10 +12,14 @@ from sensor_msgs.msg import Imu
 
 
 class RAWIMUDataParser:
-    logger = ColorLogger.get_logger()
-    logger.setLevel(logging.INFO)
+    def __del__(self):
+        # Clear handlers on shutdown
+        for handler in self.logger.handlers[:]:
+            self.logger.removeHandler(handler)
 
     def __init__(self):
+        self.logger = ColorLogger.get_logger()
+        self.logger.setLevel(logging.INFO)
         self.raw_imu = None
         self.times = None
         self.expected_utc_offset = -18.0  # UTC time = GPS System Time + UTC offset
