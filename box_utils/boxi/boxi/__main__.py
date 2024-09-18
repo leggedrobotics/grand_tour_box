@@ -25,7 +25,7 @@ command_register = [
     "repair_bags",
     "set_cpt7_time",
     "pre_commit",
-    "export_imu_ascii_to_bag"
+    "export_imu_log"
 ]
 
 

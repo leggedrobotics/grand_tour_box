@@ -10,11 +10,11 @@ import rospy
 from boxi import ColorLogger
 from sensor_msgs.msg import Imu
 
-logger = ColorLogger.get_logger()
-logger.setLevel(logging.INFO)
 
+class RAWIMUDataParser:
+    logger = ColorLogger.get_logger()
+    logger.setLevel(logging.INFO)
 
-class RAWIMUData:
     def __init__(self):
         self.raw_imu = None
         self.times = None
@@ -32,6 +32,15 @@ class RAWIMUData:
         self.z_gyro = list()
         self.ros_times = list()
 
+    def process_imu_data(self, path: str):
+        rawimu_df = self.fetch_dataframe_from_csv(path)
+        if rawimu_df is None:
+            logging.error(f"Could not correctly process IMU file named: {path}")
+            return False
+        self.load_imu_times(imu_df=rawimu_df)
+        self.load_imu_data(rawimu_df)
+        return True
+
     def load_imu_times(self, imu_df: pd.DataFrame):
         """
         According to Novatel the UTC logged times are converted from the
@@ -40,20 +49,20 @@ class RAWIMUData:
         https://docs.novatel.com/OEM7/Content/Logs/TIME.html
         """
         EXPECTED_IMU_FIELDNAME = "%RAWIMUSXA"
-        logger.debug(f"Checking RAWIMU fieldnames...")
+        self.logger.debug(f"Checking RAWIMU fieldnames...")
         if not (imu_df.iloc[:, 0] == EXPECTED_IMU_FIELDNAME).all():
-            logger.error(f"Unexpected IMU message type."
-                         f"\nExpected: {EXPECTED_IMU_FIELDNAME}"
-                         f"\nGot: {imu_df.iloc[0, 0]}")
+            self.logger.error(f"Unexpected IMU message type."
+                              f"\nExpected: {EXPECTED_IMU_FIELDNAME}"
+                              f"\nGot: {imu_df.iloc[0, 0]}")
         else:
-            logger.debug(f"IMU field name {imu_df.iloc[0, 0]} is correct {ColorLogger.GREEN_CHECK}")
+            self.logger.debug(f"IMU field name {imu_df.iloc[0, 0]} is correct {ColorLogger.GREEN_CHECK}")
         WEEK_INDEX = 4
         SOW_INDEX = 5  # Seconds of week
         week = imu_df.iloc[:, WEEK_INDEX]
         seconds_of_week = imu_df.iloc[:, SOW_INDEX] - self.expected_gps_offset + self.expected_utc_offset
         seconds_since_gps_start_in_utc = week * self.weeks_to_seconds + seconds_of_week
         seconds_unix = seconds_since_gps_start_in_utc + self.gps_epoch_start_in_POSIX_seconds
-        logger.info(f"Log time starts at {datetime.utcfromtimestamp(seconds_unix[0])}")
+        self.logger.info(f"Log time starts at {datetime.utcfromtimestamp(seconds_unix[0])}")
         self.ros_times = [rospy.Time(secs=int(x), nsecs=int(math.modf(x)[0] * 1e9)) for x in seconds_unix]
 
     def load_imu_data(self, imu_df: pd.DataFrame):
@@ -67,9 +76,9 @@ class RAWIMUData:
         """
         IMUTYPE_INDEX = 3
         if imu_df.iloc[0, IMUTYPE_INDEX] != 68:
-            logger.error(f"IMU type {imu_df.iloc[0, IMUTYPE_INDEX]} doesn't match the expected type 68")
+            self.logger.error(f"IMU type {imu_df.iloc[0, IMUTYPE_INDEX]} doesn't match the expected type 68")
         else:
-            logger.debug(f"IMU type is correct {ColorLogger.GREEN_CHECK}")
+            self.logger.debug(f"IMU type is correct {ColorLogger.GREEN_CHECK}")
         INDICES = {"Z Accel": -6,
                    "-(Y Accel)": -5,
                    "X Accel": -4,
@@ -106,21 +115,21 @@ class RAWIMUData:
         self.z_gyro = imu_df.iloc[:, INDICES["Z Gyro"]] * GYROSCALEFACTOR * CPT7RATE
         average_z_accel = np.mean(self.z_accel)
         if self.check_floating_point_diff(average_z_accel, -9.81, tolerance=1e-1):
-            logger.warning(f"Average Z-acceleration of {average_z_accel:.2f} is unexpected")
+            self.logger.warning(f"Average Z-acceleration of {average_z_accel:.2f} is unexpected")
         else:
-            logger.debug(f"Average Z-accel: {average_z_accel:.2f} is reasonable {ColorLogger.GREEN_CHECK}")
+            self.logger.debug(f"Average Z-accel: {average_z_accel:.2f} is reasonable {ColorLogger.GREEN_CHECK}")
 
     def write_to_rosbag(self, path):
-        logger.debug(f"Checking that output data lengths are consistent")
+        self.logger.debug(f"Checking that output data lengths are consistent")
         processed_data = [self.ros_times,
                           self.x_accel, self.minusy_accel, self.z_accel,
                           self.x_gyro, self.minusy_gyro, self.z_gyro]
         lengths = [len(x) for x in processed_data]
         unique_lengths = set(lengths)
         if len(unique_lengths) > 1:
-            logger.error(f"Not all timestamp and IMU data have the same lengths")
+            self.logger.error(f"Not all timestamp and IMU data have the same lengths")
         else:
-            logger.debug(f"All data lengths are consistent.")
+            self.logger.debug(f"All data lengths are consistent.")
 
         topic_name = "/gt_box/cpt7/offline_from_novatel_logs/imu"
         latest_message = Imu()
@@ -128,8 +137,8 @@ class RAWIMUData:
         latest_message.header.seq = 0
         try:
             with rosbag.Bag(path, "w") as bag:
-                logger.debug(f"Opened {path} for writing")
-                logger.info(f"Writing {lengths[0]} samples")
+                self.logger.debug(f"Opened {path} for writing")
+                self.logger.info(f"Writing {lengths[0]} samples")
                 for stamp, x_a, minusy_a, z_a, x_g, minusy_g, z_g in zip(*processed_data):
                     latest_message.header.seq += 1
                     latest_message.header.stamp = stamp
@@ -144,82 +153,85 @@ class RAWIMUData:
 
                     bag.write(topic=topic_name, msg=latest_message, t=stamp)
         except Exception as e:
-            logger.error(f"Writing IMU data to rosbag failed with:"
-                         f"\n {e}")
-        logger.info(f"Done writing to:"
-                    f"\n{path}")
+            self.logger.error(f"Writing IMU data to rosbag failed with:"
+                              f"\n {e}")
+        self.logger.info(f"Successfully wrote to:"
+                         f"\n{path}")
 
     def check_floating_point_diff(self, a, b, tolerance=1e-8):
         return np.abs(a - b) > tolerance
 
+    def optionally_check_time_message_consistency(self, time_message_path):
+        if time_message_path != "":
+            time_df = self.fetch_dataframe_from_csv(time_message_path)
+        else:
+            time_df = None
+        if time_df is not None:
+            self.check_time_message_consistency(times_df=time_df)
+
     def check_time_message_consistency(self, times_df: pd.DataFrame):
-        logger.debug(f"Checking that CPT7 recorded the expected time offsets...")
+        self.logger.debug(f"Checking that CPT7 recorded the expected time offsets...")
         UTC_OFFSET_INDEX = -8
         utc_offsets = times_df.iloc[:, UTC_OFFSET_INDEX]
         if self.check_floating_point_diff(utc_offsets.mean(), self.expected_utc_offset):
-            logger.warning(f"{ColorLogger.YELLOW_WARNING} "
-                           f"UTC offset of {utc_offsets.mean()} if different from expected.")
+            self.logger.warning(f"{ColorLogger.YELLOW_WARNING} "
+                                f"UTC offset of {utc_offsets.mean()} if different from expected.")
         else:
-            logger.debug(f"UTC offset is reasonable {ColorLogger.GREEN_CHECK}")
+            self.logger.debug(f"UTC offset is reasonable {ColorLogger.GREEN_CHECK}")
 
         GPS_SYSTEM_OFFSET_INDEX = 10  # GPS System Time = GPS reference time - offset.
         gps_offset = times_df.iloc[:, GPS_SYSTEM_OFFSET_INDEX]
         if self.check_floating_point_diff(gps_offset.mean(), self.expected_gps_offset):
-            logger.warning(f"{ColorLogger.YELLOW_WARNING} "
-                           f"GPS system offset {gps_offset.mean()} is different from expected")
+            self.logger.warning(f"{ColorLogger.YELLOW_WARNING} "
+                                f"GPS system offset {gps_offset.mean()} is different from expected")
         else:
-            logger.debug(f"GPS offset is reasonable {ColorLogger.GREEN_CHECK}")
+            self.logger.debug(f"GPS offset is reasonable {ColorLogger.GREEN_CHECK}")
 
-
-def fetch_dataframe_from_csv(input_path):
-    logger.debug(f"Processing {input_path}")
-    df = None
-    try:
-        df = pd.read_csv(input_path)
-    except FileNotFoundError as e:
-        logger.error(f"File not found: {e}")
-    except pd.errors.EmptyDataError as e:
-        logger.error(f"Empty file: {e}")
-    except pd.errors.ParserError as e:
-        logger.error(f"Parsing error: {e}")
-    except UnicodeDecodeError as e:
-        logger.error(f"Encoding error: {e}")
-    except Exception as e:
-        logger.error(f"An unexpected error occurred: {e}")
-    return df
+    def fetch_dataframe_from_csv(self, input_path):
+        self.logger.debug(f"Processing {input_path}")
+        if not os.path.exists(input_path):
+            self.logger.error(f"The path: {input_path} does not exist")
+            return None
+        df = None
+        try:
+            df = pd.read_csv(input_path)
+        except FileNotFoundError as e:
+            self.logger.error(f"File not found: {e}")
+        except pd.errors.EmptyDataError as e:
+            self.logger.error(f"Empty file: {e}")
+        except pd.errors.ParserError as e:
+            self.logger.error(f"Parsing error: {e}")
+        except UnicodeDecodeError as e:
+            self.logger.error(f"Encoding error: {e}")
+        except Exception as e:
+            self.logger.error(f"An unexpected error occurred: {e}")
+        return df
 
 
 def add_arguments(parser):
     parser.set_defaults(main=main)
     parser.add_argument("--imu_ascii_file", "-i", help="Path to the ascii csv file with RAWIMUSXA messages",
-                        required=False)
+                        required=True)
     parser.add_argument("--time_ascii_file", "-t", help="Path to the ascii csv file with RAWIMUSXA messages",
                         required=False,
                         default="")
     parser.add_argument("--output", "-o", help="Output bag path", default="")
     parser.add_argument("--debug", action="store_true")
-    args = parser.parse_args()
-    if args.debug:
-        logger.setLevel(logging.DEBUG)
     return parser
 
 
 def main(args):
     imu_path = args.imu_ascii_file
     times_path = args.time_ascii_file
-    rawimu_df = fetch_dataframe_from_csv(imu_path)
-    if times_path != "":
-        time_df = fetch_dataframe_from_csv(times_path)
-    else:
-        time_df = None
-    imu_data = RAWIMUData()
-    if time_df is not None:
-        imu_data.check_time_message_consistency(times_df=time_df)
-    imu_data.load_imu_times(imu_df=rawimu_df)
-    imu_data.load_imu_data(rawimu_df)
-    if args.output == "":
-        basename = os.path.basename(imu_path).split(".")[0]
-        output_path = os.path.join(os.path.dirname(imu_path), basename + ".bag")
-    else:
-        output_path = args.output
-    imu_data.write_to_rosbag(output_path)
+    imu_data_parser = RAWIMUDataParser()
+    if args.debug:
+        imu_data_parser.logger.setLevel(logging.DEBUG)
+
+    imu_data_parser.optionally_check_time_message_consistency(times_path)
+    if imu_data_parser.process_imu_data(imu_path):
+        if args.output == "":
+            basename = os.path.basename(imu_path).split(".")[0]
+            output_path = os.path.join(os.path.dirname(imu_path), basename + ".bag")
+        else:
+            output_path = args.output
+        imu_data_parser.write_to_rosbag(output_path)
