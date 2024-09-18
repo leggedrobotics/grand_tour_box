@@ -50,7 +50,7 @@ if [ ! -f $XAUTH ]; then
     chmod a+r $XAUTH
 fi
 
-
+cd ~
 mkdir -p .etc && cd .etc
 ln -sf /etc/passwd .
 ln -sf /etc/shadow .
@@ -74,6 +74,8 @@ docker run --net=host \
     -v /sys:/sys \
     -v /dev/gpiochip0:/dev/gpiochip0 \
     -v /dev/gpiochip1:/dev/gpiochip1 \
+    -v /tmp/ptp4l_eth0.log:/tmp/ptp4l_eth0.log \
+    -v /tmp/phc2sys_eth0.log:/tmp/phc2sys_eth0.log \
     --entrypoint=$ENTRYPOINT \
     $IMAGE \
     $COMMAND

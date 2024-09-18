@@ -481,7 +481,7 @@
                                         <relative_minimum>-1000</relative_minimum>
                                         <type>0</type>
                                     </scale>
-                                    <topic>/gt_box/adis16475_node/imu</topic>
+                                    <topic>/gt_box/livox/imu_si_compliant</topic>
                                     <type>sensor_msgs/Imu</type>
                                 </y_axis>
                             </axes>

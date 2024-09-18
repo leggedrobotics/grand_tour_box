@@ -21,7 +21,12 @@ import time
 
 
 def start_hdr():
-    subprocess.Popen("/data/workspaces/isaac_ros-dev/src/isaac_ros_common/scripts/run_recording.sh hdr_start", shell=True, stderr=subprocess.PIPE)
+    subprocess.Popen(
+        "/data/workspaces/isaac_ros-dev/src/isaac_ros_common/scripts/run_recording.sh hdr_start",
+        shell=True,
+        stderr=subprocess.PIPE,
+    )
+
 
 class RosbagRecordNode(object):
     def __init__(self):
@@ -43,7 +48,7 @@ class RosbagRecordNode(object):
         self.recording_zed = False
         self.recording_cpt7 = False
         self.recording_hdr = False
-        default_path = rospkg.RosPack().get_path("box_recording") + "/data"
+        default_path = os.path.join(rospkg.RosPack().get_path("box_recording"), "data")
         self.data_path = rospy.get_param("~data_path", default_path)
 
         self.pub_recording_status = rospy.Publisher("~recording_status", Bool, queue_size=3)
@@ -74,7 +79,7 @@ class RosbagRecordNode(object):
 
         if self.node == "jetson":
             start_hdr()
-        
+
         while rospy.is_shutdown() is False:
             if self.bag_running:
                 p = self.bag_base_path
@@ -224,15 +229,13 @@ class RosbagRecordNode(object):
                 continue
 
             bag_path = os.path.join(self.bag_base_path, timestamp + "_" + self.node + "_" + bag_name)
-            bash_command = (
-                f"rosrun box_recording record_bag.sh {bag_path} {topics} __name:=record_{self.node}_{bag_name}"
-            )
-
+            bash_command = f"/home/rsl/git/grand_tour_box/box_utils/box_recording/bin/record_bag.sh {bag_path} {topics} __name:=record_{self.node}_{bag_name}"
             self.info_string += f"record_{self.node}_{bag_name}----{bag_path},"
 
             self.processes.append(subprocess.Popen(bash_command, shell=True, stderr=subprocess.PIPE))
 
             response.message += f"{bag_name} [SUC], "
+            rospy.loginfo(f"[RosbagRecordNode({self.node} {bag_name})] {bash_command}.")
 
             rospy.loginfo(f"[RosbagRecordNode({self.node} {bag_name})] Starting rosbag recording process.")
 
@@ -253,9 +256,6 @@ class RosbagRecordNode(object):
             response.message = "No recording process running yet."
             rospy.logwarn("[RosbagRecordNode(" + self.node + ")] No recording process running yet.")
 
-        # First kill the recording process inside Docker. This ugliness is required due to https://github.com/moby/moby/issues/9098
-        self.terminate_process_inside_docker()
-
         for p in self.processes:
             self.terminate_process_and_children(p)
         self.processes = []
@@ -264,7 +264,7 @@ class RosbagRecordNode(object):
             response = self.toggle_zed_recording(False, "", response)
 
         if self.recording_hdr:
-            
+
             docker_script_path = "/data/workspaces/isaac_ros-dev/src/isaac_ros_common/scripts/run_recording.sh"
             bash_command_hdr = docker_script_path + " stop_recording"
             self.recording_hdr = False
@@ -273,8 +273,9 @@ class RosbagRecordNode(object):
             rospy.loginfo(f"[RosbagRecordNode({self.node} HDR)] Call service to stop HDR.")
             time.sleep(10)
             rospy.loginfo(f"[RosbagRecordNode({self.node} HDR)] Call docker to kill HDR container.")
-            
+
             import docker
+
             # Initialize Docker client
             client = docker.from_env()
             # List all running containers
@@ -287,8 +288,13 @@ class RosbagRecordNode(object):
                     container.stop()
             time.sleep(1)
             rospy.loginfo(f"[RosbagRecordNode({self.node} HDR)] Call docker to restart HDR container.")
+
+            # This was only needed in old version
+            # First kill the recording process inside Docker. This ugliness is required due to https://github.com/moby/moby/issues/9098
+            # self.terminate_process_inside_docker()
+
             start_hdr()
-            
+
         if self.recording_cpt7:
             cpt7_stop_recording()
 

@@ -57,20 +57,20 @@ sudo systemctl daemon-reload
 sudo systemctl enable autostart_tmux
 sudo systemctl restart autostart_tmux
 
-systemctl enable ptp4l_eth0.service
-systemctl enable phc2sys_eth0.service
-systemctl enable autostart_tmux.service
-systemctl enable autostart_set_fan_speed.service
-systemctl enable pigpiod_box.service
-systemctl enable docker.service
-systemctl enable containerd.service
+sudo systemctl enable ptp4l_eth0.service
+sudo systemctl enable phc2sys_eth0.service
+sudo systemctl enable autostart_tmux.service
+sudo systemctl enable autostart_set_fan_speed.service
+sudo systemctl enable pigpiod_box.service
+sudo systemctl enable docker.service
+sudo systemctl enable containerd.service
 
-systemctl start ptp4l_eth0.service
-systemctl start phc2sys_eth0.service
-systemctl start autostart_tmux.service
-systemctl start autostart_set_fan_speed.service
-systemctl start pigpiod_box.service
-systemctl start restart docker
+sudo systemctl start ptp4l_eth0.service
+sudo systemctl start phc2sys_eth0.service
+sudo systemctl start autostart_tmux.service
+sudo systemctl start autostart_set_fan_speed.service
+sudo systemctl start pigpiod_box.service
+sudo systemctl start restart docker
 
 systemctl disable pigpiod.service
 

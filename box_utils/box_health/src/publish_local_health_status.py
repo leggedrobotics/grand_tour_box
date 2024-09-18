@@ -17,6 +17,7 @@ from pathlib import Path
 import os
 import rospy
 import rosnode
+from subprocess import Popen, PIPE
 
 
 def is_node_alive(node_name):
@@ -124,6 +125,34 @@ def add_color(text, rgb):
     return f'<span style="color: rgb({rgb[0]},{rgb[1]},{rgb[2]});">' + text + "</span>\n"
 
 
+class PiReader:
+    def __init__(self, services):
+        self.files = {}
+        self.k = {}
+        for service in services:
+            self.files[service] = open(os.path.join("/tmp", service + ".log"), "r+")
+            self.k[service] = 0
+
+    def read_clock_status(self, service):
+        # Move the pointer to the beginning of the file and read all lines
+        self.k[service] += 1
+        if self.k[service] == 100:
+            # remove content from file
+            self.files[service].seek(0)
+            self.files[service].truncate()
+
+        try:
+            f = f"/tmp/{service}.log"
+            p = Popen(["tail", "-1", f], shell=False, stderr=PIPE, stdout=PIPE)
+            res, err = p.communicate()
+
+            res = str(res.decode("utf-8"))
+            return res
+        except:
+            rospy.logerr(f"[BoxStatus] Error reading clock status: {service}")
+            return "No data"
+
+
 class BoxStatus:
     def __init__(self):
         self.hostname = socket.gethostname()
@@ -162,6 +191,10 @@ class BoxStatus:
             self.subs = rospy.Subscriber(
                 f"/gt_box/rosbag_record_node_{self.hostname}/recording_info", String, self.recording_info_callback
             )
+
+        if self.namespace.find("pi"):
+            self.pi_reader = PiReader(self.cfg.get("ptp4l", []) + self.cfg.get("phc2sys", []))
+            self.read_clock_status = self.read_clock_status_pi
 
         self.rate = rospy.Rate(1.2)
 
@@ -226,6 +259,9 @@ class BoxStatus:
         }
         state_symbol = recent_line[1]
         return states[state_symbol]
+
+    def read_clock_status_pi(self, service):
+        return self.pi_reader.read_clock_status(service.replace(".service", ""))
 
     def read_clock_status(self, service):
         p = subprocess.Popen(["systemctl", "status", service], stdout=subprocess.PIPE)
