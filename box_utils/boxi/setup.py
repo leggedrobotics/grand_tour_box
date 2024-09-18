@@ -28,5 +28,6 @@ if __name__ == "__main__":
                 "boxi = boxi.__main__:main",
             ]
         },
-        install_requires=["argcomplete>=3.2.2", "setuptools>=45.2.0", "black==24.4.0", "ntplib", "rosbags"],
+        install_requires=["argcomplete>=3.2.2", "setuptools>=45.2.0", "black==24.4.0", "ntplib", "rosbags",
+                          "colorlog"],
     )
