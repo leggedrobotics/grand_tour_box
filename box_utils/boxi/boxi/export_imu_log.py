@@ -235,3 +235,7 @@ def main(args):
         else:
             output_path = args.output
         imu_data_parser.write_to_rosbag(output_path)
+    else:
+        imu_data_parser.logger.error("FAILED TO RUN. Remember that CPT7 .LOG files need to be"
+                                     " processed through the Novatel Convert App, to extract the"
+                                     " ASCII RAWIMU file used here.")
