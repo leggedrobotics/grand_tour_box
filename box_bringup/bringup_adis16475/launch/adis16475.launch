@@ -16,25 +16,23 @@
     <arg name="software_dec_rate"           default="4"/>      <!-- software side decimation, equivalent to DEC_RATE, 0 for no decimation -->
 
     <env name="ROSCONSOLE_FORMAT" value="[${node}] [${function}:${line}]: ${message}"/>
-
     <group ns="$(arg box_namespace)">
       <node pkg="adi_imu_driver_ros" type="adis16475_node" name="adis16475_node" output="screen" launch-prefix="">
-        <param name="capability_group"      value="Driver"/>
+          <param name="capability_group"      value="Driver"/>
+          <!-- Arguments -->
+          <param name="variant"               value="$(arg variant)"/>
+          <param name="sampling_frequency"    value="$(arg sampling_frequency)"/>
+          <param name="uri"                   value="$(arg uri)"/>
+          <param name="context_timeout_ms"    value="$(arg context_timeout_ms)"/>
+          <param name="frame_id"              value="$(arg frame_id)"/>
 
-        <!-- Arguments -->
-        <param name="variant"               value="$(arg variant)"/>
-        <param name="sampling_frequency"    value="$(arg sampling_frequency)"/>
-        <param name="uri"                   value="$(arg uri)"/>
-        <param name="context_timeout_ms"    value="$(arg context_timeout_ms)"/>
-        <param name="frame_id"              value="$(arg frame_id)"/>
-
-        <!-- Stream Options -->
-        <param name="use_buffer"                value="$(arg use_buffer)"/>
-        <param name="buffer_size"               value="$(arg buffer_size)"/>
-        <param name="use_channelwise_callback"  value="$(arg use_channelwise_callback)"/>
-        <param name="blocking"                  value="$(arg blocking)"/>
-        <param name="non_blocking_freq"         value="$(arg non_blocking_freq)"/>
-        <param name="software_dec_rate"         value="$(arg software_dec_rate)"/>
+          <!-- Stream Options -->
+          <param name="use_buffer"                value="$(arg use_buffer)"/>
+          <param name="buffer_size"               value="$(arg buffer_size)"/>
+          <param name="use_channelwise_callback"  value="$(arg use_channelwise_callback)"/>
+          <param name="blocking"                  value="$(arg blocking)"/>
+          <param name="non_blocking_freq"         value="$(arg non_blocking_freq)"/>
+          <param name="software_dec_rate"         value="$(arg software_dec_rate)"/>
       </node>
     </group>
 </launch>
