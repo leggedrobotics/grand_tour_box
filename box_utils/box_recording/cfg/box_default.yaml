@@ -19,8 +19,6 @@ jetson:
       - /ap20/tps
       - /ap20/imu
       - /gt_box/ap20/debug
-    clock_jetson:
-      - /clock
     adis:
       - /gt_box/adis16475_node/imu
 nuc:
