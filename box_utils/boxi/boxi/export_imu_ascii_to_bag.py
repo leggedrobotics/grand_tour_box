@@ -1,3 +1,4 @@
+import logging
 import math
 import os.path
 from datetime import datetime
@@ -11,6 +12,7 @@ import argparse
 from box_utils import ColorLogger
 
 logger = ColorLogger.get_logger()
+logger.setLevel(logging.INFO)
 
 
 class RAWIMUData:
@@ -129,7 +131,7 @@ class RAWIMUData:
             with rosbag.Bag(path, "w") as bag:
                 logger.debug(f"Opened {path} for writing")
                 logger.info(f"Writing {lengths[0]} samples")
-                for stamp, x_a, minusy_a, z_a, x_g, minusy_g, z_g in zip(processed_data):
+                for stamp, x_a, minusy_a, z_a, x_g, minusy_g, z_g in zip(*processed_data):
                     latest_message.header.seq += 1
                     latest_message.header.stamp = stamp
 
@@ -145,6 +147,8 @@ class RAWIMUData:
         except Exception as e:
             logger.error(f"Writing IMU data to rosbag failed with:"
                          f"\n {e}")
+        logger.info(f"Done writing to:"
+                    f"\n{path}")
 
     def check_floating_point_diff(self, a, b, tolerance=1e-8):
         return np.abs(a - b) > tolerance
@@ -200,7 +204,7 @@ def main(args):
     imu_data.load_imu_times(imu_df=rawimu_df)
     imu_data.load_imu_data(rawimu_df)
     if args.output == "":
-        basename = os.path.basename(imu_path).split(".")
+        basename = os.path.basename(imu_path).split(".")[0]
         output_path = os.path.join(os.path.dirname(imu_path), basename + ".bag")
     else:
         output_path = args.output
@@ -216,5 +220,8 @@ if __name__ == "__main__":
                         required=False,
                         default="")
     parser.add_argument("--output", "-o", help="Output bag path", default="")
+    parser.add_argument("--debug", action="store_true")
     args = parser.parse_args()
+    if args.debug:
+        logger.setLevel(logging.DEBUG)
     main(args=args)
