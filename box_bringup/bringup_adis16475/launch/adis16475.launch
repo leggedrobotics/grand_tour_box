@@ -2,7 +2,7 @@
   <arg name="box_namespace" default="gt_box"/>
     <!-- Arguments -->
     <arg name="variant"                     default="2"/>
-    <arg name="sampling_frequency"          default="2000"/>
+    <arg name="sampling_frequency"          default="400"/>
     <arg name="uri"                         default="local:"/>
     <arg name="context_timeout_ms"          default="5000"/>
     <arg name="frame_id"                    default="imu_adis16475"/>
@@ -11,9 +11,9 @@
     <arg name="use_buffer"                  default="true"/>    <!-- true is highly recommended unless debugging -->
     <arg name="buffer_size"                 default="5"/>       <!-- number of messages that can be stored -->
     <arg name="use_channelwise_callback"    default="false"/>   <!-- read data by channel rather than by message -->
-    <arg name="blocking"                    default="true"/>    <!-- wait until buffer is full to read (false only possible for uri local:) -->
-    <arg name="non_blocking_freq"           default="2000.0"/>  <!-- frequency to attempt to read buffer when blocking == false -->
-    <arg name="software_dec_rate"           default="4"/>      <!-- software side decimation, equivalent to DEC_RATE, 0 for no decimation -->
+    <arg name="blocking"                    default="false"/>    <!-- wait until buffer is full to read (false only possible for uri local:) -->
+    <arg name="non_blocking_freq"           default="400.0"/>  <!-- frequency to attempt to read buffer when blocking == false -->
+    <arg name="software_dec_rate"           default="0"/>      <!-- software side decimation, equivalent to DEC_RATE, 0 for no decimation -->
 
     <env name="ROSCONSOLE_FORMAT" value="[${node}] [${function}:${line}]: ${message}"/>
     <group ns="$(arg box_namespace)">
