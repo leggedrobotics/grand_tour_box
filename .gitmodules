@@ -50,3 +50,6 @@
 	path = box_drivers/adi_imu_driver
 	url = git@github.com:leggedrobotics/adi_imu_driver.git
 	branch = main
+[submodule "box_drivers/tf_bag"]
+	path = box_drivers/tf_bag
+	url = git@github.com:IFL-CAMP/tf_bag.git
