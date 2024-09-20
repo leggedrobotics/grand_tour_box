@@ -34,14 +34,4 @@ catkin_install_python(
   DESTINATION
     ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
-
-#==
-# Package installation
-#==
-
-install(
-  DIRECTORY scripts
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-)
-
 # EOF

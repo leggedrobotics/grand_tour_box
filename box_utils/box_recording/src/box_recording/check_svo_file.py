@@ -10,7 +10,6 @@
     Read in an SVO file and calculate the frequency of the data, printing it to the console.
 """
 
-import sys
 import pyzed.sl as sl
 import argparse
 import os

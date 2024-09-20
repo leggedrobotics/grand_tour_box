@@ -24,7 +24,6 @@ nuc:
     imus:
       - /gt_box/stim320/imu
       - /gt_box/adis16475/imu
-      - /gt_box/stim320/imu
       - /gt_box/alphasense_driver_node/imu
     hesai:
       - /gt_box/hesai/packets

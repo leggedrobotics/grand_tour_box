@@ -75,6 +75,7 @@ docker run --net=host \
     -v /dev/gpiochip0:/dev/gpiochip0 \
     -v /dev/gpiochip1:/dev/gpiochip1 \
     -v /tmp/ptp4l_eth0.log:/tmp/ptp4l_eth0.log \
+    -v /tmp/clock_info.txt:/tmp/clock_info.txt \
     -v /tmp/phc2sys_eth0.log:/tmp/phc2sys_eth0.log \
     --entrypoint=$ENTRYPOINT \
     $IMAGE \
