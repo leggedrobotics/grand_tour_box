@@ -1,7 +1,7 @@
 <launch>
   <arg name="box_namespace" default="gt_box"/>
   <group ns="$(arg box_namespace)">
-    <node name="stim320imu" pkg="stim320_driver" type="stim320_node" output="screen" required="false" respawn="true">
+    <node name="stim320imu" pkg="stim320_driver" type="stim320_node" output="screen" required="true" launch-prefix="bash -c 'sleep 4; $0 $@' " >
       <param name="capability_group"      value="Driver"/>
       <param name="serial_port" value="/dev/ttyAMA0"/>
       <!-- You can't change the hardware decimation through the driver. Change this value only if you changed the hardware decimation through GUI. -->
