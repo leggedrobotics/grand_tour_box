@@ -80,7 +80,7 @@ pi:
     /gt_box/adis16475_node/imu:
       rate: 400
     /gt_box/stim320/imu:
-      rate: 400
+      rate: 500
   ptp4l:
     - ptp4l_eth0
   phc2sys:
