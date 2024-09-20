@@ -12,17 +12,29 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
   FILES
   DebugInfo.msg
+  ImuDebug.msg
+  PositionDebug.msg
+  TimestampDebug.msg
 )
+
 
 # Generate messages
 generate_messages(
   DEPENDENCIES
   std_msgs
   geometry_msgs
+  sensor_msgs
+)
+
+
+catkin_install_python(
+  PROGRAMS
+  DESTINATION
+    ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
 catkin_package(
-    CATKIN_DEPENDS roscpp std_msgs geometry_msgs sensor_msgs message_runtime
+    CATKIN_DEPENDS roscpp std_msgs geometry_msgs sensor_msgs message_runtime 
 )
 
 include_directories(
@@ -33,18 +45,18 @@ add_executable(ap20_driver_ros
   src/main.cpp
 )
 
-
 target_link_libraries(ap20_driver_ros
   ${catkin_LIBRARIES}
+)
+
+install(
+  DIRECTORY script
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 
 install(TARGETS ap20_driver_ros
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
-
-find_package(catkin REQUIRED COMPONENTS
-  message_generation
-)
 
 

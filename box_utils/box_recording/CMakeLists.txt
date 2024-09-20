@@ -51,8 +51,7 @@ catkin_package(
 # Package installation
 #==
 
-install(DIRECTORY bin data scripts
+install(DIRECTORY bin src
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
-
 # EOF
