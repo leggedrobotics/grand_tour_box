@@ -18,7 +18,9 @@ jetson:
     ap20_aux:
       - /ap20/tps
       - /ap20/imu
-      - /gt_box/ap20/debug
+      - /gt_box/ap20/imu_debug
+      - /gt_box/ap20/position_debug
+      - /gt_box/ap20/timestamp_debug
     clock_jetson:
       - /clock
     adis:
