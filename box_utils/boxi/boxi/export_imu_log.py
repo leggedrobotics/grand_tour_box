@@ -17,7 +17,7 @@ class RAWIMUDataParser:
         for handler in self.logger.handlers[:]:
             self.logger.removeHandler(handler)
 
-    def __init__(self):
+    def __init__(self, output_imu_msg_name):
         self.logger = ColorLogger.get_logger()
         self.logger.setLevel(logging.INFO)
         self.raw_imu = None
@@ -35,6 +35,7 @@ class RAWIMUDataParser:
         self.minusy_gyro = list()
         self.z_gyro = list()
         self.ros_times = list()
+        self.output_imu_msg_name = output_imu_msg_name
 
     def process_imu_data(self, path: str):
         rawimu_df = self.fetch_dataframe_from_csv(path)
@@ -135,7 +136,7 @@ class RAWIMUDataParser:
         else:
             self.logger.debug(f"All data lengths are consistent.")
 
-        topic_name = "/gt_box/cpt7/offline_from_novatel_logs/imu"
+        topic_name = self.output_imu_msg_name
         latest_message = Imu()
         latest_message.header.frame_id = "cpt7_imu"
         latest_message.header.seq = 0
@@ -220,6 +221,9 @@ def add_arguments(parser):
                         required=False,
                         default="")
     parser.add_argument("--output", "-o", help="Output bag path", default="")
+    parser.add_argument("--output_topic_name", "-n", help="Name of the output IMU message rostopic",
+                        required=False,
+                        default="/gt_box/cpt7/offline_from_novatel_logs/imu")
     parser.add_argument("--debug", action="store_true")
     return parser
 
@@ -227,7 +231,7 @@ def add_arguments(parser):
 def main(args):
     imu_path = args.imu_ascii_file
     times_path = args.time_ascii_file
-    imu_data_parser = RAWIMUDataParser()
+    imu_data_parser = RAWIMUDataParser(output_imu_msg_name=args.output_topic_name)
     if args.debug:
         imu_data_parser.logger.setLevel(logging.DEBUG)
 
