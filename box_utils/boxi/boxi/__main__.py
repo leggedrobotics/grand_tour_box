@@ -21,7 +21,6 @@ command_register = [
     "shutdown",
     "load_calib",
     "mission_summary",
-    "integration_test",
     "repair_bags",
     "set_cpt7_time",
     "pre_commit",

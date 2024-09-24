@@ -222,7 +222,7 @@ def call_service(cmd, max_attempts=10):
     rospy.wait_for_service(service_name)
     oem_service = rospy.ServiceProxy(service_name, Oem7AbasciiCmd)
 
-    for attempt in range(max_attempts):
+    for _ in range(max_attempts):
         try:
             req = Oem7AbasciiCmdRequest()
             req.cmd = cmd
@@ -251,7 +251,9 @@ def cpt7_start_recording():
 
 
 def cpt7_stop_recording():
-    return call_service(STOP_RECORDING[0])
+    suc = call_service(STOP_RECORDING[0])
+
+    return suc
 
 
 if __name__ == "__main__":

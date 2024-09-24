@@ -151,7 +151,7 @@ class RosbagRecordCoordinator(object):
         pretty_ls = {}
 
         response.suc = True
-        response.message = "Failed to stop recording process on:"
+        response.message = ""
         for node, node_cfg in self.cfg.items():
             if node_cfg.get("grpc_cfg", None) is not None:
                 import grpc
@@ -168,7 +168,7 @@ class RosbagRecordCoordinator(object):
                         response.message += f"{node}-[SUC], "
                 except Exception as e:
                     response.suc = False
-                    response.message += f"{node} [FAILED] Exception: " + str(e) + ", "
+                    response.result = response.result + node + ": [FAILED] Exception " + str(e) + ", "
                     print("Service did not process request: " + str(e))
                     rospy.logerr("Failed to start rosbag recording process on " + node)
                 continue
@@ -180,20 +180,21 @@ class RosbagRecordCoordinator(object):
                     int_req = StopRecordingInternalRequest()
                     int_req.verbose = request.verbose
                     int_res = stop_recording_srv(int_req)
-                    response.result += int_res.result
+
+                    response.result = response.result + node + ": " + int_res.message + ", "
 
                     pretty_ls[node] = int_res.result
 
                     rospy.loginfo("[RosbagRecordCoordinator] Stop rosbag recording process on " + node)
 
-                except rospy.ROSException as exception:
+                except rospy.ROSException as e:
                     response.suc = False
-                    response.message = response.message + " " + node
-                    print("Service did not process request: " + str(exception))
+                    response.result = response.result + node + ": [FAILED] Exception " + str(e) + ", "
+                    print("Service did not process request: " + str(e))
                     rospy.logerr("Failed to stop rosbag recording process on " + node)
 
         if response.suc:
-            response.message = f"Successfully stoped all nodes - GET DATA:    cd /data; boxi get_data --nuc --jetson --directory {self.timestamp}"
+            response.message += f"boxi get_data --nuc --jetson --lpc --npc --directory {self.timestamp}"
         rospy.loginfo("[RosbagRecordCoordinator] Sent STOP to all nodes.")
 
         pretty = ""
@@ -212,7 +213,7 @@ class RosbagRecordCoordinator(object):
             pretty += "-" * length
             pretty += ""
 
-        response.result = pretty
+        # response.result = pretty
         return response
 
 
