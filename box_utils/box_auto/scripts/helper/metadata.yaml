@@ -1,0 +1,32 @@
+rosbag2_bagfile_information:
+  version: 5
+  storage_identifier: mcap
+  duration:
+    nanoseconds: 219495218793
+  starting_time:
+    nanoseconds_since_epoch: 1726649946272364343
+  message_count: 4392
+  topics_with_message_count:
+    - topic_metadata:
+        name: /gt_box/replace_hdr_camera/camera_info
+        type: sensor_msgs/msg/CameraInfo
+        serialization_format: cdr
+        offered_qos_profiles: "- history: 3\n  depth: 0\n  reliability: 1\n  durability: 2\n  deadline:\n    sec: 9223372036\n    nsec: 854775807\n  lifespan:\n    sec: 9223372036\n    nsec: 854775807\n  liveliness: 1\n  liveliness_lease_duration:\n    sec: 9223372036\n    nsec: 854775807\n  avoid_ros_namespace_conventions: false"
+      message_count: 2196
+    - topic_metadata:
+        name: /gt_box/replace_hdr_camera/image_raw/compressed
+        type: sensor_msgs/msg/CompressedImage
+        serialization_format: cdr
+        offered_qos_profiles: "- history: 3\n  depth: 0\n  reliability: 1\n  durability: 2\n  deadline:\n    sec: 9223372036\n    nsec: 854775807\n  lifespan:\n    sec: 9223372036\n    nsec: 854775807\n  liveliness: 1\n  liveliness_lease_duration:\n    sec: 9223372036\n    nsec: 854775807\n  avoid_ros_namespace_conventions: false"
+      message_count: 2196
+  compression_format: ""
+  compression_mode: ""
+  relative_file_paths:
+    - replace_me_with_relative_file_path
+  files:
+    - path: replace_me_with_relative_file_path
+      starting_time:
+        nanoseconds_since_epoch: 1726649946272364343
+      duration:
+        nanoseconds: 219495218793
+      message_count: 4392

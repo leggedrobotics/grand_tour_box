@@ -27,11 +27,48 @@ x-common-config: &common-config
     - /mission_data:/mission_data
     - /home/jonfrey/git/grand_tour_box:/home/catkin_ws/src/grand_tour_box # For debugging
 
+x-ros2-common-config: &ros2-common-config
+  build:
+    context: "$HOME/git/grand_tour_box/box_utils/box_auto/docker"
+    dockerfile: "$HOME/git/grand_tour_box/box_utils/box_auto/docker/box_ros2.Dockerfile"
+    ssh:
+      default: "$HOME/.ssh/id_rsa_2"
+  image: rslethz/gt_box_ros2
+  runtime: nvidia
+  # network_mode: host
+  privileged: true
+  environment:
+    QT_X11_NO_MITSHM: "1"
+    XAUTHORITY: "/root/.docker.xauth"
+    DISPLAY: "$DISPLAY"  
+  deploy:
+    resources:
+      reservations:
+        devices:
+          - driver: nvidia
+            count: all
+            capabilities:
+              - gpu
+              - utility # nvidia-smi
+              - compute # CUDA
+              - video   # encoding 
+  volumes:
+    - /mission_data:/mission_data
+    - /home/jonfrey/git/grand_tour_box:/home/catkin_ws/src/grand_tour_box # For debugging
+
 services:
+  ros2_fix_bags:
+    <<: *ros2-common-config
+    container_name: fix_mcaps
+    command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/repair_ros2.py"]
+
   mcap_to_rosbag:
     <<: *common-config
     container_name: mcap_to_rosbag
     command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/mcap_to_rosbag.py"]
+    depends_on:
+      ros2_fix_bags:
+        condition: service_completed_successfully
 
   # zed2i:
   #   <<: *common-config
