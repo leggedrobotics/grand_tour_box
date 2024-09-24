@@ -1,0 +1,4 @@
+imu_topic: "/gt_box/ap20/imu"
+imu_rate: 200
+measure_rate: 200 # Rate to which imu data is subsampled
+sequence_time: 129601 # 36 hours in seconds (len of 2024-09-14-21-09-35_jetson_ap20.bag)
