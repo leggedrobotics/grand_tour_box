@@ -20,7 +20,8 @@ jetson:
       - /gt_box/stim320/gyroscope_temperature
       - /gt_box/stim320/imu
       - /gt_box/stim320/internal_counter
-      - /gt_box/stim320/kernel_timer
+      - /gt_box/stim320/kernel_time
+      - /gt_box/stim320/ros_time
       - /gt_box/stim320/continuous_counter
 nuc:
   bags:
