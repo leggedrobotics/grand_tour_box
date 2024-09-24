@@ -50,6 +50,7 @@ class AP20Node:
 
         self.verbose = rospy.get_param("~verbose", True)
         self.debug = rospy.get_param("~debug", False)
+        self.publish_timestamps = rospy.get_param("~publish_timestamps", True)
         self.timestamp_queue = deque()
         self.imu_message_queue = deque()
         self.position_message_queue = deque()
@@ -72,6 +73,8 @@ class AP20Node:
             # New debug publishers
             self.imu_debug_pub = rospy.Publisher("~imu_debug", ImuDebug, queue_size=200)
             self.position_debug_pub = rospy.Publisher("~position_debug", PositionDebug, queue_size=100)
+            self.publish_timestamps = True
+        if self.publish_timestamps:
             self.timestamp_debug_pub = rospy.Publisher("~timestamp_debug", TimestampDebug, queue_size=100)
 
         self.imu_sub = rospy.Subscriber("/ap20/imu", Imu, self.imu_callback, queue_size=100)
@@ -165,7 +168,7 @@ class AP20Node:
             max_added = 0
             last_time = None
             diff_time_max = 0
-
+            self.shutdown = False
             # This is neede because the tps are continued to be streamed
             self.position_message_queue.clear()
             self.position_message_counter = 0
@@ -176,7 +179,7 @@ class AP20Node:
 
             while True:
                 if self.imu_message_counter % 1000 == 0:
-                    print(
+                    rospy.loginfo(
                         f"IMU messages: {self.imu_message_counter} - Timestamps: {self.timestamp_counter} - Position messages: {self.position_message_counter}"
                     )
                 steps_without_new_timestamps += 1
@@ -203,7 +206,7 @@ class AP20Node:
 
                     self.timestamp_queue.appendleft(time_msg)
 
-                    if self.debug:
+                    if self.publish_timestamps:
                         # Create and publish TimestampDebug message
                         timestamp_debug = TimestampDebug()
                         timestamp_debug.header.stamp = rospy.Time.now()
@@ -269,7 +272,7 @@ Current queue sizes --- Max added new timestamps {max_added} --- Max time differ
             rate = (ap20_original_ts - self.lookup_seq[j - 1]) / (self.lookup_seq[j] - self.lookup_seq[j - 1])
             new_ts = self.lookup_ts[j - 1] + ((self.lookup_ts[j] - self.lookup_ts[j - 1]) * rate)
 
-            position.header.stamp = new_ts
+            position.header.stamp = rospy.Time.from_sec(new_ts)
             self.ap20_position_pub.publish(position)
             self.lookup_seq = self.lookup_seq[j - 1 :]
             self.lookup_ts = self.lookup_ts[j - 1 :]
@@ -283,9 +286,9 @@ Current queue sizes --- Max added new timestamps {max_added} --- Max time differ
             self.lookup_ts.append(time_msg.data.to_sec())
 
             new_line_delay = self.lookup_seq[-1] - self.lookup_ts[-1]
-            if len(self.line_delay) == 20:
+            if len(self.line_delay) == 10:
                 self.line_delay.pop(0)
-                est = np.array(self.line_delay).mean()
+                est = np.median(np.array(self.line_delay))
                 # IMU Messages come in at 100 Hz so we should be robous up to half a message delay 5ms
                 if abs(est - new_line_delay) > 0.005:
                     self.shutdown = True

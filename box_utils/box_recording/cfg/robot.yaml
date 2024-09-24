@@ -132,9 +132,7 @@ npc:
       - /depth_camera_right/depth/image_rect_raw
     velodyne:
       - /lidar/packets
-      - /lidar/point_cloud
       - /lidar/time_sync_status
-      - /point_cloud_filter/lidar/point_cloud_filtered
     elevation_mapping:
       - /elevation_mapping/elevation_map_raw
 
