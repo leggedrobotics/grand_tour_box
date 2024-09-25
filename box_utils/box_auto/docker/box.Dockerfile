@@ -14,6 +14,8 @@ COPY dependencies/zed.sh /zed.sh
 RUN sh -c "chmod +x /zed.sh"
 RUN /bin/bash -c '/zed.sh'
 
+RUN pwd
+RUN pwd
 COPY dependencies/general.sh /general.sh
 RUN sh -c "chmod +x /general.sh"
 RUN /bin/bash -c '/general.sh'

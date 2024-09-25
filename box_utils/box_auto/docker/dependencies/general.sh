@@ -17,7 +17,8 @@ apt install -y python3-opencv
 apt install -y python3-pip
 pip3 install tqdm 
 pip3 install pytictac
-pip3 install rerun-sdk
+pip3 install --upgrade pip
+pip install rerun-sdk
 
 mkdir -p /root/.ssh
 ssh-keyscan github.com 2> /dev/null >> /root/.ssh/known_hosts
