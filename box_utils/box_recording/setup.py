@@ -11,7 +11,7 @@ import subprocess
 def generate_protobufs():
     proto_files = ["proto/start_recording.proto", "proto/stop_recording.proto"]
     proto_path = "proto"
-    output_path = "./scripts"
+    output_path = "./src"
     for proto_file in proto_files:
         subprocess.check_call(
             [
@@ -30,7 +30,7 @@ generate_protobufs()
 
 d = generate_distutils_setup(
     packages=["box_recording"],
-    package_dir={"": "scripts"},
+    package_dir={"": "src"},
     include_package_data=True,
     package_data={"": ["*.proto"]},
     install_requires=["protobuf>=3.0.0"],

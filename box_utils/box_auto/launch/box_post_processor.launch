@@ -6,8 +6,8 @@
   
   <!-- Replay Options -->
   <arg name="use_sim_time" default="true"/>
-  <arg name="input_filepath" default="/mission_data/tf.bag"/> 
-  <arg name="output_folder" default="/mission_data"/>
+  <arg name="input_filepath" default="/home/tutuna/Videos/stim/2024-09-24-14-57-05.bag"/> 
+  <arg name="output_folder" default="/home/tutuna/Videos/stim"/>
 
   <!-- ROS Param -->
   <param name="/use_sim_time" value="$(arg use_sim_time)"/>
@@ -15,7 +15,7 @@
   <!-- Main Node -->
   <node name="box_post_processor" pkg="box_auto"
         type="post_processor_node" output="screen" required="True">
-    <param name="input_filepath" value="$(arg input_filepath)"/>
+    <param name="rosbag_filename" value="$(arg input_filepath)"/>
     <param name="output_folder" value="$(arg output_folder)"/>
   </node>
 

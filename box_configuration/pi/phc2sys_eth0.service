@@ -7,7 +7,6 @@ After=ptp4l_eth0.service
 [Service]
 Type=simple
 ExecStart=/usr/sbin/phc2sys -s eth0 -c CLOCK_REALTIME -S 1.0 -w -m
-ExecStartPost=/bin/chown rsl:rsl /tmp/phc2sys.log
 
 # Redirect standard output and error to a log file
 StandardOutput=append:/tmp/phc2sys_eth0.log

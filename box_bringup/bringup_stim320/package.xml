@@ -2,10 +2,10 @@
 <package format="2">
   <name>bringup_stim320</name>
   <version>0.0.0</version>
-  <description>The bringup_stim320 package</description>
-  <maintainer email="bkrumme@ethz.ch">Benjamin Krummenacher</maintainer>
+  <description>The bringup_stim320 driver</description>
+  <maintainer email="tutuna@ethz.ch">Turcan Tuna</maintainer>
   <license>Proprietary</license>
-  <depend>stim320_driver_ros</depend>
+  <depend>stim320_driver</depend>
   <export>
   </export>
 </package>

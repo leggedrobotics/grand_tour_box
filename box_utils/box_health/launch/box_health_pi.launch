@@ -4,5 +4,10 @@
     <node pkg="box_health" type="publish_local_health_status.py" name="box_health_pi" output="screen">
       <param name="capability_group" value="Monitoring"/>
     </node>
+
+    <node pkg="box_health" type="clock_speeds.py" name="box_clock_speed_pi" output="screen">
+      <param name="capability_group" value="Monitoring"/>
+    </node>
+
   </group>
 </launch>

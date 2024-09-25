@@ -40,6 +40,8 @@ class BoxPostProcessor {
   std::ofstream imuFile_;
   ros::Time baseTime_ = ros::Time(0);
 
+  ros::Time oldTime_ = ros::Time(0);
+
   // std::string buildUpLogFilename(const std::string& typeSuffix, const std::string& extension = ".txt");
   bool createOutputDirectory();
   bool processRosbag();

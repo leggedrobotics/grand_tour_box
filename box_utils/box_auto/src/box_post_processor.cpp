@@ -1,7 +1,9 @@
 #include "box_post_processor/box_post_processor.hpp"
 #include <ros/ros.h>
 #include <rosbag/view.h>
+#include <sensor_msgs/Illuminance.h>
 #include <sensor_msgs/Imu.h>
+#include <sensor_msgs/Temperature.h>
 #include <tf2/convert.h>
 #include <tf2_eigen/tf2_eigen.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
@@ -59,7 +61,13 @@ bool BoxPostProcessor::createOutputDirectory() {
 bool BoxPostProcessor::processRosbag() {
   std::vector<std::string> topics;
 
-  topics.push_back("/tf");
+  topics.push_back("/gt_box/stim320/ros_time");
+  topics.push_back("/gt_box/stim320/kernel_time");
+  topics.push_back("/gt_box/stim320/internal_counter");
+  topics.push_back("/gt_box/stim320/imu");
+  topics.push_back("/gt_box/stim320/gyroscope_temperature");
+  topics.push_back("/gt_box/stim320/continuous_counter");
+  topics.push_back("/gt_box/stim320/acceletometer_temperature");
 
   // Create me a high resolution clock timer from std chrono
   // Start the timer.
@@ -94,152 +102,203 @@ bool BoxPostProcessor::processRosbag() {
   // ros::WallTime wallStampLastIteration{ros::WallTime::now()};
   // const ros::WallTime wallStampStartSequentialRun{ros::WallTime::now()};
 
-  std::vector<ros::Time> timeStamps;
+  // std::vector<ros::Time> timeStamps;
   for (const auto& messageInstance : view1) {
     // If the node is shutdown, stop processing and do early return.
     if (!ros::ok()) {
       return false;
     }
 
-    if (messageInstance.getTopic() == "/tf") {
-      foundTfmsgs_ = true;
-      // ROS_INFO_STREAM("NORMAL TF FOUND");
-      tf2_msgs::TFMessage::ConstPtr message = messageInstance.instantiate<tf2_msgs::TFMessage>();
+    if (messageInstance.getTopic() == "/gt_box/stim320/ros_time") {
+      std_msgs::Header::ConstPtr message = messageInstance.instantiate<std_msgs::Header>();
       if (message != nullptr) {
-        if (baseTime_.toSec() == 0.0) {
-          baseTime_ = message->transforms[0].header.stamp;
+        std_msgs::Header newMessage = *message;
+        outBag.write("/gt_box/stim320/ros_time", message->stamp, newMessage);
+      }
+    }
+
+    if (messageInstance.getTopic() == "/gt_box/stim320/kernel_time") {
+      std_msgs::Header::ConstPtr message = messageInstance.instantiate<std_msgs::Header>();
+      if (message != nullptr) {
+        std_msgs::Header newMessage = *message;
+        outBag.write("/gt_box/stim320/kernel_time", message->stamp, newMessage);
+      }
+    }
+
+    if (messageInstance.getTopic() == "/gt_box/stim320/internal_counter") {
+      sensor_msgs::Illuminance::ConstPtr message = messageInstance.instantiate<sensor_msgs::Illuminance>();
+      if (message != nullptr) {
+        sensor_msgs::Illuminance newMessage = *message;
+        outBag.write("/gt_box/stim320/internal_counter", message->header.stamp, newMessage);
+      }
+    }
+
+    if (messageInstance.getTopic() == "/gt_box/stim320/continuous_counter") {
+      sensor_msgs::Illuminance::ConstPtr message = messageInstance.instantiate<sensor_msgs::Illuminance>();
+      if (message != nullptr) {
+        sensor_msgs::Illuminance newMessage = *message;
+        outBag.write("/gt_box/stim320/continuous_counter", message->header.stamp, newMessage);
+      }
+    }
+
+    if (messageInstance.getTopic() == "/gt_box/stim320/imu") {
+      sensor_msgs::Imu::ConstPtr message = messageInstance.instantiate<sensor_msgs::Imu>();
+      if (message != nullptr) {
+        sensor_msgs::Imu newMessage = *message;
+
+        ros::Time currentTime = message->header.stamp;
+
+        uint64_t diff = currentTime.toNSec() - oldTime_.toNSec();
+
+        if ((diff > 2500000) && (oldTime_.toNSec() != 0u)) {
+          ROS_ERROR_STREAM("currentTime: " << currentTime);
+          ROS_ERROR_STREAM("oldTime_: " << oldTime_);
+          ROS_ERROR_STREAM("Diff is to big: " << diff);
         }
+        oldTime_ = currentTime;
 
-        tf2_msgs::TFMessage collectionTFMessage_ = *message;
+        outBag.write("/gt_box/stim320/imu", message->header.stamp, newMessage);
+      }
+    }
 
-        timeStamps.push_back(message->transforms[0].header.stamp);
+    if (messageInstance.getTopic() == "/gt_box/stim320/acceletometer_temperature") {
+      sensor_msgs::Temperature::ConstPtr message = messageInstance.instantiate<sensor_msgs::Temperature>();
+      if (message != nullptr) {
+        sensor_msgs::Temperature newMessage = *message;
+        outBag.write("/gt_box/stim320/acceletometer_temperature", message->header.stamp, newMessage);
+      }
+    }
 
-        // outBag.write("/tf", message->transforms[0].header.stamp, collectionTFMessage_);
+    if (messageInstance.getTopic() == "/gt_box/stim320/gyroscope_temperature") {
+      sensor_msgs::Temperature::ConstPtr message = messageInstance.instantiate<sensor_msgs::Temperature>();
+      if (message != nullptr) {
+        sensor_msgs::Temperature newMessage = *message;
+        outBag.write("/gt_box/stim320/gyroscope_temperature", message->header.stamp, newMessage);
       }
     }
   }
 
-  std::vector<std::string> topics2;
-  topics2.push_back("/tf_static");
-  rosbag::View view2(bag, rosbag::TopicQuery(topics2));
+  // std::vector<std::string> topics2;
+  // topics2.push_back("/tf_static");
+  // rosbag::View view2(bag, rosbag::TopicQuery(topics2));
 
-  tf2_msgs::TFMessage collectiontfMessage_;
+  // tf2_msgs::TFMessage collectiontfMessage_;
 
-  for (const auto& messageInstance : view2) {
-    // If the node is shutdown, stop processing and do early return.
-    if (!ros::ok()) {
-      return false;
-    }
+  // for (const auto& messageInstance : view2) {
+  //   // If the node is shutdown, stop processing and do early return.
+  //   if (!ros::ok()) {
+  //     return false;
+  //   }
 
-    bool isInvalidMessageInBag = false;
+  //   bool isInvalidMessageInBag = false;
 
-    // Update time registers.
-    // if ((ros::Time::now() - stampLastIteration) >= ros::Duration(1.0)) {
-    //   stampLastIteration = ros::Time::now();
-    //   wallStampLastIteration = ros::WallTime::now();
-    // }
-    // ROS_INFO_STREAM("Starting bag");
+  //   // Update time registers.
+  //   // if ((ros::Time::now() - stampLastIteration) >= ros::Duration(1.0)) {
+  //   //   stampLastIteration = ros::Time::now();
+  //   //   wallStampLastIteration = ros::WallTime::now();
+  //   // }
+  //   // ROS_INFO_STREAM("Starting bag");
 
-    if (messageInstance.getTopic() == "/tf_static") {
-      // ROS_INFO_STREAM("TF STATIC FOUND");
-      tf2_msgs::TFMessage::ConstPtr message = messageInstance.instantiate<tf2_msgs::TFMessage>();
-      if (message != nullptr) {
-        // ROS_INFO_STREAM("Stamp: " << message->transforms[0].header.stamp);
-        // std::vector<geometry_msgs::TransformStamped> newTransforms;
+  //   if (messageInstance.getTopic() == "/tf_static") {
+  //     // ROS_INFO_STREAM("TF STATIC FOUND");
+  //     tf2_msgs::TFMessage::ConstPtr message = messageInstance.instantiate<tf2_msgs::TFMessage>();
+  //     if (message != nullptr) {
+  //       // ROS_INFO_STREAM("Stamp: " << message->transforms[0].header.stamp);
+  //       // std::vector<geometry_msgs::TransformStamped> newTransforms;
 
-        // Iterate over the transforms and if the frame_id is not the same as the child_frame_id, then we have a static transform.
-        for (auto& transform : message->transforms) {
-          if (!(transform.header.frame_id == "prism" || transform.child_frame_id == "prism")) {
-            if (!(transform.header.frame_id == "leica_world" || transform.child_frame_id == "leica_world")) {
-              if (!(transform.header.frame_id == "leica_base" || transform.child_frame_id == "leica_base")) {
-                if (!(transform.header.frame_id == "leica_pos" || transform.child_frame_id == "leica_pos")) {
-                  if (!(transform.header.frame_id == "leica_base_model" || transform.child_frame_id == "leica_base_model")) {
-                    geometry_msgs::TransformStamped newTransformStamped = transform;
-                    if (transform.child_frame_id == "zed_base") {
-                      newTransformStamped.child_frame_id = "zed_base_link";
-                    }
+  //       // Iterate over the transforms and if the frame_id is not the same as the child_frame_id, then we have a static transform.
+  //       for (auto& transform : message->transforms) {
+  //         if (!(transform.header.frame_id == "prism" || transform.child_frame_id == "prism")) {
+  //           if (!(transform.header.frame_id == "leica_world" || transform.child_frame_id == "leica_world")) {
+  //             if (!(transform.header.frame_id == "leica_base" || transform.child_frame_id == "leica_base")) {
+  //               if (!(transform.header.frame_id == "leica_pos" || transform.child_frame_id == "leica_pos")) {
+  //                 if (!(transform.header.frame_id == "leica_base_model" || transform.child_frame_id == "leica_base_model")) {
+  //                   geometry_msgs::TransformStamped newTransformStamped = transform;
+  //                   if (transform.child_frame_id == "zed_base") {
+  //                     newTransformStamped.child_frame_id = "zed_base_link";
+  //                   }
 
-                    // newTransformStamped.header.stamp = baseTime_;
+  //                   // newTransformStamped.header.stamp = baseTime_;
 
-                    // // NODELET_DEBUG_STREAM(get_logger(), "Odom TS: " << transformStamped.header.stamp);
+  //                   // // NODELET_DEBUG_STREAM(get_logger(), "Odom TS: " << transformStamped.header.stamp);
 
-                    // transformStamped.header.frame_id = mOdomFrameId;
-                    // transformStamped.child_frame_id = mBaseFrameId;
-                    // // conversion from Tranform to message
-                    // mOdomMutex.lock();  //
-                    // tf2::Vector3 translation = mOdom2BaseTransf.getOrigin();
-                    // tf2::Quaternion quat = mOdom2BaseTransf.getRotation();
-                    // mOdomMutex.unlock();  //
-                    // transformStamped.transform.translation.x = translation.x();
-                    // transformStamped.transform.translation.y = translation.y();
-                    // transformStamped.transform.translation.z = translation.z();
-                    // transformStamped.transform.rotation.x = quat.x();
-                    // transformStamped.transform.rotation.y = quat.y();
-                    // transformStamped.transform.rotation.z = quat.z();
-                    // transformStamped.transform.rotation.w = quat.w();
+  //                   // transformStamped.header.frame_id = mOdomFrameId;
+  //                   // transformStamped.child_frame_id = mBaseFrameId;
+  //                   // // conversion from Tranform to message
+  //                   // mOdomMutex.lock();  //
+  //                   // tf2::Vector3 translation = mOdom2BaseTransf.getOrigin();
+  //                   // tf2::Quaternion quat = mOdom2BaseTransf.getRotation();
+  //                   // mOdomMutex.unlock();  //
+  //                   // transformStamped.transform.translation.x = translation.x();
+  //                   // transformStamped.transform.translation.y = translation.y();
+  //                   // transformStamped.transform.translation.z = translation.z();
+  //                   // transformStamped.transform.rotation.x = quat.x();
+  //                   // transformStamped.transform.rotation.y = quat.y();
+  //                   // transformStamped.transform.rotation.z = quat.z();
+  //                   // transformStamped.transform.rotation.w = quat.w();
 
-                    // transform.header.stamp = baseTime_;
-                    collectiontfMessage_.transforms.push_back(newTransformStamped);
-                  }
-                }
-              }
-            }
+  //                   // transform.header.stamp = baseTime_;
+  //                   collectiontfMessage_.transforms.push_back(newTransformStamped);
+  //                 }
+  //               }
+  //             }
+  //           }
 
-            // staticTransformBroadcaster_.sendTransform(transform);
-          }
-        }
-        geometry_msgs::TransformStamped boxToBoxBase;
-        boxToBoxBase.header.frame_id = "base";
-        boxToBoxBase.header.stamp = collectiontfMessage_.transforms[0].header.stamp;
-        boxToBoxBase.child_frame_id = "box_base";
-        // conversion from Tranform to message
+  //           // staticTransformBroadcaster_.sendTransform(transform);
+  //         }
+  //       }
+  //       geometry_msgs::TransformStamped boxToBoxBase;
+  //       boxToBoxBase.header.frame_id = "base";
+  //       boxToBoxBase.header.stamp = collectiontfMessage_.transforms[0].header.stamp;
+  //       boxToBoxBase.child_frame_id = "box_base";
+  //       // conversion from Tranform to message
 
-        tf2::Vector3 translation = tf2::Vector3(-0.0361, 0.2178, 0.07640);
+  //       tf2::Vector3 translation = tf2::Vector3(-0.0361, 0.2178, 0.07640);
 
-        // X Y Z W
-        tf2::Quaternion quat = tf2::Quaternion(0.5, -0.5, 0.5, -0.5);
+  //       // X Y Z W
+  //       tf2::Quaternion quat = tf2::Quaternion(0.5, -0.5, 0.5, -0.5);
 
-        boxToBoxBase.transform.translation.x = translation.x();
-        boxToBoxBase.transform.translation.y = translation.y();
-        boxToBoxBase.transform.translation.z = translation.z();
-        boxToBoxBase.transform.rotation.x = quat.x();
-        boxToBoxBase.transform.rotation.y = quat.y();
-        boxToBoxBase.transform.rotation.z = quat.z();
-        boxToBoxBase.transform.rotation.w = quat.w();
-        collectiontfMessage_.transforms.push_back(boxToBoxBase);
+  //       boxToBoxBase.transform.translation.x = translation.x();
+  //       boxToBoxBase.transform.translation.y = translation.y();
+  //       boxToBoxBase.transform.translation.z = translation.z();
+  //       boxToBoxBase.transform.rotation.x = quat.x();
+  //       boxToBoxBase.transform.rotation.y = quat.y();
+  //       boxToBoxBase.transform.rotation.z = quat.z();
+  //       boxToBoxBase.transform.rotation.w = quat.w();
+  //       collectiontfMessage_.transforms.push_back(boxToBoxBase);
 
-        // ROS_WARN_STREAM("Header stamp: " << baseTime_);
-        // outBag.write("/tf_static", baseTime_, collectiontfMessage_);
+  //       // ROS_WARN_STREAM("Header stamp: " << baseTime_);
+  //       // outBag.write("/tf_static", baseTime_, collectiontfMessage_);
 
-        createZedBasedTransform(collectiontfMessage_);
+  //       createZedBasedTransform(collectiontfMessage_);
 
-      } else {
-        isInvalidMessageInBag = true;
-        ROS_WARN("Invalid message found in ROS bag.");
-      }
-    }
+  //     } else {
+  //       isInvalidMessageInBag = true;
+  //       ROS_WARN("Invalid message found in ROS bag.");
+  //     }
+  //   }
 
-  }  // end of for loop
+  // }  // end of for loop
 
-  if (foundTfmsgs_) {
-    for (auto& time : timeStamps) {
-      if ((counter_ % 100 == 0) || (counter_ == 0)) {
-        for (auto& transform : collectiontfMessage_.transforms) {
-          transform.header.stamp = time;
-        }
+  // if (foundTfmsgs_) {
+  //   for (auto& time : timeStamps) {
+  //     if ((counter_ % 100 == 0) || (counter_ == 0)) {
+  //       for (auto& transform : collectiontfMessage_.transforms) {
+  //         transform.header.stamp = time;
+  //       }
 
-        outBag.write("/tf_static", time, collectiontfMessage_);
-      }
+  //       outBag.write("/tf_static", time, collectiontfMessage_);
+  //     }
 
-      counter_++;
-    }
-  } else {
-    ros::Time time = collectiontfMessage_.transforms[0].header.stamp;
-    ros::Duration duration = ros::Duration(0.1);
-    // collectiontfMessage_.transforms[1].header.stamp = time + duration;
-    outBag.write("/tf_static", collectiontfMessage_.transforms[0].header.stamp, collectiontfMessage_);
-    outBag.write("/tf_static", time + duration, collectiontfMessage_);
-  }
+  //     counter_++;
+  //   }
+  // } else {
+  //   ros::Time time = collectiontfMessage_.transforms[0].header.stamp;
+  //   ros::Duration duration = ros::Duration(0.1);
+  //   // collectiontfMessage_.transforms[1].header.stamp = time + duration;
+  //   outBag.write("/tf_static", collectiontfMessage_.transforms[0].header.stamp, collectiontfMessage_);
+  //   outBag.write("/tf_static", time + duration, collectiontfMessage_);
+  // }
 
   ROS_INFO("Finished running through the TF msgs.");
   // const ros::Time bag_begin_time = view.getBeginTime();

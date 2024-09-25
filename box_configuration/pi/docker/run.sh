@@ -72,15 +72,12 @@ docker run --net=host \
     --cap-add=sys_nice \
     -v$HOME:$HOME \
     -v /sys:/sys \
+    -v /etc/hosts:/etc/hosts \
     -v /dev/gpiochip0:/dev/gpiochip0 \
     -v /dev/gpiochip1:/dev/gpiochip1 \
     -v /tmp/ptp4l_eth0.log:/tmp/ptp4l_eth0.log \
+    -v /tmp/clock_info.txt:/tmp/clock_info.txt \
     -v /tmp/phc2sys_eth0.log:/tmp/phc2sys_eth0.log \
     --entrypoint=$ENTRYPOINT \
     $IMAGE \
     $COMMAND
-
-   # -eHOST_USERNAME=rsl \
-    #-v$(pwd)/.etc/shadow:/etc/shadow \
-    #-v$(pwd)/.etc/passwd:/etc/passwd \
-    #-v$(pwd)/.etc/group:/etc/group \
