@@ -27,11 +27,11 @@ x-common-config: &common-config
     - /mission_data:/mission_data
     - /home/jonfrey/git/grand_tour_box:/home/catkin_ws/src/grand_tour_box # For debugging
 
-services:
-  mcap_to_rosbag:
-    <<: *common-config
-    container_name: mcap_to_rosbag
-    command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/mcap_to_rosbag.py"]
+# services:
+#   mcap_to_rosbag:
+#     <<: *common-config
+#     container_name: mcap_to_rosbag
+#     command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/mcap_to_rosbag.py"]
 
   # zed2i:
   #   <<: *common-config
@@ -65,6 +65,17 @@ services:
   #   depends_on:
   #     merge_mission:
   #       condition: service_completed_successfully
+
+
+  imu_timesync:
+    <<: *common-config
+    container_name: imu_timesync
+    command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/imu_timesync.py"]
+    # depends_on:
+    #   merge_mission:
+    #     condition: service_completed_successfully
+
+
 
   # cpt7:
   #   <<: *common-config
