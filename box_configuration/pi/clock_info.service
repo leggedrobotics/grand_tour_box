@@ -1,0 +1,12 @@
+[Unit]
+Description=Write System Clocks to File in /tmp/clock_info.txt
+Documentation=man:phc2sys
+Requires=ptp4l_eth0.service
+After=ptp4l_eth0.service
+
+[Service]
+Type=simple
+ExecStart=/home/rsl/git/grand_tour_box/box_utils/box_health/src/write_clock_to_file.sh
+
+[Install]
+WantedBy=multi-user.target

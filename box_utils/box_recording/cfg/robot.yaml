@@ -18,11 +18,21 @@ jetson:
     ap20_aux:
       - /ap20/tps
       - /ap20/imu
-      - /gt_box/ap20/debug
+      - /gt_box/ap20/imu_debug
+      - /gt_box/ap20/position_debug
+      - /gt_box/ap20/timestamp_debug
     clock_jetson:
       - /clock
     adis:
       - /gt_box/adis16475_node/imu
+    stim:
+      - /gt_box/stim320/acceletometer_temperature
+      - /gt_box/stim320/gyroscope_temperature
+      - /gt_box/stim320/imu
+      - /gt_box/stim320/internal_counter
+      - /gt_box/stim320/kernel_time
+      - /gt_box/stim320/ros_time
+      - /gt_box/stim320/continuous_counter
 nuc:
   bags:
     utils:
@@ -123,9 +133,7 @@ npc:
       - /depth_camera_right/depth/image_rect_raw
     velodyne:
       - /lidar/packets
-      - /lidar/point_cloud
       - /lidar/time_sync_status
-      - /point_cloud_filter/lidar/point_cloud_filtered
     elevation_mapping:
       - /elevation_mapping/elevation_map_raw
 

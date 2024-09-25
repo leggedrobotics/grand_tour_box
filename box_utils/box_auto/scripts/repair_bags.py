@@ -20,7 +20,7 @@ def main(overwrite: bool):
         
         # Execute rosbag fix and reindex commands
         # shell_run(f"rosbag fix {p} {output_file}")
-        shell_run(f"rosbag reindex {output_file}")
+        shell_run(f"rosbag reindex --output-dir=/mission_data {p}")
 
 
 if __name__ == "__main__":

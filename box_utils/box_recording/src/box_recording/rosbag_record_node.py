@@ -154,7 +154,7 @@ class RosbagRecordNode(object):
         try:
             rospy.wait_for_service(service_name, timeout=2.0)
         except rospy.ROSException as e:
-            response.message += f"zed2i [FAILED] service not found, {e}"
+            response.message += f"zed2i FAILED Service not found: {e}"
             response.suc = False
             return response
 
@@ -165,14 +165,14 @@ class RosbagRecordNode(object):
             req.video_filename = self.bag_base_path + f"/{timestamp}_{self.node}_zed2i.svo2"
 
             start_recording_svo_srv(req)
-            response.message += "zed2i [SUC], "
+            response.message += "zed2i OK "
             self.recording_zed = start
             rospy.loginfo(
                 f"[RosbagRecordNode({self.node} zed2i)] {'Started' if start else 'Stopped'} svo recording process on zed2i"
             )
         except rospy.ServiceException as e:
             response.suc = False
-            response.message += f"zed2i [FAILED] Exception: {e}, "
+            response.message += f"zed2i FAILED Exception: {e} "
             rospy.logerr(f"Failed to {'start' if start else 'stop'} rosbag recording process on zed2i: {e}")
         return response
 
@@ -208,8 +208,13 @@ class RosbagRecordNode(object):
             self.bag_running = True
 
             if bag_name == "cpt7_local" and "cpt7_local" in topics:
-                cpt7_start_recording()
-                response.message += "cpt7_local [SUC], "
+                suc = cpt7_start_recording()
+                if suc:
+                    response.message += "cpt7_local [SUC], "
+                else:
+                    response.message += "cpt7_local [FAILED], "
+                    response.suc = False
+
                 self.recording_cpt7 = True
                 continue
 
@@ -249,11 +254,11 @@ class RosbagRecordNode(object):
 
         if self.bag_running:
             response.suc = True
-            response.message = "Sending SIGINT to recording process."
+            response.message = "Bags Stopped - "
             rospy.loginfo("[RosbagRecordNode(" + self.node + ")] Sent SIGINT to recording process.")
         else:
             response.suc = False
-            response.message = "No recording process running yet."
+            response.message = "Bags Nothing to Stop - "
             rospy.logwarn("[RosbagRecordNode(" + self.node + ")] No recording process running yet.")
 
         for p in self.processes:
@@ -281,7 +286,7 @@ class RosbagRecordNode(object):
             # List all running containers
             containers = client.containers.list()
             image_name = "isaac_ros_dev-aarch64:recording"
-            # Filter containers by image name and stop them
+            # Filter containermessages by image name and stop them
             for container in containers:
                 if container.image.tags and image_name in container.image.tags[0]:
                     print(f"Stopping container {container.id} ({container.name}) with image {container.image.tags[0]}")
@@ -296,11 +301,22 @@ class RosbagRecordNode(object):
             start_hdr()
 
         if self.recording_cpt7:
-            cpt7_stop_recording()
+            suc = cpt7_stop_recording()
+            if suc:
+                response.message += "  CPT7 OK"
+            else:
+                response.message += "  CPT7 Failed"
+
+            response.suc = suc and response.suc
 
         if request.verbose:
             # output = subprocess.check_output([f"rosbag info --freq {self.bag_path}*.bag"], shell=True)
-            response.result += ". Other output not implemented yet"  # str(output)[2:-1]
+            response.result += "Verbose not working"  # str(output)[2:-1]
+
+        if response.suc:
+            response.message = "[SUC] " + response.message
+        else:
+            response.message = "[FAILED] " + response.message
 
         self.bag_running = False
         return response

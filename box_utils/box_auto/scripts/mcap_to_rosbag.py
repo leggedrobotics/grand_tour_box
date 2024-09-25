@@ -81,13 +81,13 @@ if __name__ == "__main__":
     mcaps = np.unique(np.array(mcaps)).tolist()
     print(f"Found {len(mcaps)} directories to process: \n {mcaps}")
     for i, mcap in enumerate(mcaps):
-
         # We at first convert all missions to ROS1 - we have to merge the bags into a single mission for the hdr cameras given the metdata.yaml
         timestamp = Path(mcap).name.split("_")[0]
         camera_direction = mcap.split("_")[-1]
         converted_bag_path = Path(mcap).parent.joinpath(f"{timestamp}_jetson_hdr_{camera_direction}_raw.bag")
         if not converted_bag_path.exists():
             cmd = f"rosbags-convert {mcap} --dst {str(converted_bag_path)}"
+            print(cmd)
             shell_run(cmd)
             print("Converted to ROS1 raw format, types are not yet converted.")
         else:
@@ -97,15 +97,15 @@ if __name__ == "__main__":
         if not Path(downgraded_bag_path).exists():
             # Downgrade CameraInfo and write to a new bag
             print("Downgrading CameraInfo to ROS1 format and saving")
-            downgrade_camerainfo_to_rosbag1(converted_bag_path, Path(downgraded_bag_path))
+            ## downgrade_camerainfo_to_rosbag1(converted_bag_path, Path(downgraded_bag_path))
         else:
             print(f"Skipping {mcap} downgraded.")
 
         # Split the downgraded bag into 5-minute chunks
         print("Splitting the downgraded bag into 5-minute chunks.")
-        split_rosbags(downgraded_bag_path, camera_direction=camera_direction)
+        ## split_rosbags(downgraded_bag_path, camera_direction=camera_direction)
         # Remove intermediate artifacts
-        os.remove(converted_bag_path)
-        os.remove(downgraded_bag_path)
+        ##os.remove(converted_bag_path)
+        ## os.remove(downgraded_bag_path)
 
     print("All directories processed. Split bags are available in each directory.")
