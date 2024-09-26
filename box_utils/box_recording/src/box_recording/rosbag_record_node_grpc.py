@@ -64,7 +64,7 @@ class StopRecordingServicer(stop_recording_pb2_grpc.StopRecordingServicer):
     def SendMessage(self, request, context):
 
         if self.recorder_node.store_debug_logs:
-            store_debug_logs_to_folder(self.recorder_node.start_recording_time, directory="/home/rsl/.ros", copy_to=os.path.join( self.bag_base_path, "ros_logs"))
+            store_debug_logs_to_folder(self.recorder_node.start_recording_time, directory="/home/rsl/.ros", copy_to=os.path.join( self.bag_base_path, "ros_logs_" + self.recorder_node.node))
 
         def terminate_process_and_children(p):
             process = psutil.Process(p.pid)

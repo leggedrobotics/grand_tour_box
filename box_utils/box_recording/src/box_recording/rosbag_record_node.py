@@ -255,7 +255,7 @@ class RosbagRecordNode(object):
         response.result = ""
 
         if self.store_debug_logs:
-            store_debug_logs_to_folder(self.start_recording_time, directory="/home/rsl/.ros", copy_to=os.path.join( self.bag_base_path, "ros_logs"))
+            store_debug_logs_to_folder(self.start_recording_time, directory="/home/rsl/.ros", copy_to=os.path.join( self.bag_base_path, "ros_logs_" + self.node))
 
         if self.bag_running:
             response.suc = True
