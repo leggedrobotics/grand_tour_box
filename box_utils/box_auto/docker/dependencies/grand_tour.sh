@@ -5,10 +5,10 @@ set -e
 # Cloning repositories
 mkdir -p /home/catkin_ws/src
 source /opt/ros/noetic/setup.bash
-source /home/opencv_ws/devel/setup.bash
+source /home/opencv_gtsam_ws/devel/setup.bash
 cd /home/catkin_ws
 catkin init
-catkin config --extend /home/opencv_ws/devel
+catkin config --extend /home/opencv_gtsam_ws/devel
 catkin config --cmake-args -DCMAKE_BUILD_TYPE=RelWithDebInfo
 
 

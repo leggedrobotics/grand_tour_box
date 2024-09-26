@@ -23,8 +23,8 @@ RUN sh -c "chmod +x /ros.sh"
 RUN /bin/bash -c '/ros.sh'
 
 COPY dependencies/open_cv.sh /open_cv.sh
-RUN sh -c "chmod +x /open_cv.sh"
-RUN /bin/bash -c '/open_cv.sh'
+RUN sh -c "chmod +x /open_cv_gtsam.sh"
+RUN /bin/bash -c '/open_cv_gtsam.sh'
 
 COPY dependencies/grand_tour.sh /grand_tour.sh
 RUN sh -c "chmod +x /grand_tour.sh"
