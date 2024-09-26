@@ -17,8 +17,8 @@ from box_recording.srv import StartRecordingInternalResponse, StartRecordingInte
 from box_recording.srv import StopRecordingInternalResponse, StopRecordingInternal, StopRecordingInternalRequest
 from zed2i_recording_driver_msgs.srv import StartRecordingSVO, StartRecordingSVORequest
 from box_recording_helper.cpt7_helper import cpt7_start_recording, cpt7_stop_recording
+from box_recording_helper.store_debug_logs_to_folder import store_debug_logs_to_folder
 import time
-
 
 def start_hdr():
     subprocess.Popen(
@@ -41,6 +41,7 @@ class RosbagRecordNode(object):
         self.processes = []
         self.bag_base_path = None
         self.namespace = rospy.get_namespace()
+        self.store_debug_logs = rospy.get_param("~store_debug_logs", False)
         servers["start"] = rospy.Service("~start_recording", StartRecordingInternal, self.start_recording)
         servers["stop"] = rospy.Service("~stop_recording", StopRecordingInternal, self.stop_recording)
 
@@ -179,6 +180,7 @@ class RosbagRecordNode(object):
     def start_recording(self, request):
         rospy.loginfo("[RosbagRecordNode(" + self.node + ")] Trying to start rosbag recording process.")
         response = StartRecordingInternalResponse()
+        self.start_recording_time = rospy.Time.now()
         timestamp = request.timestamp
         self.bag_base_path = os.path.join(self.data_path, timestamp)
 
@@ -251,6 +253,9 @@ class RosbagRecordNode(object):
         self.info_string = ""
         response = StopRecordingInternalResponse()
         response.result = ""
+
+        if self.store_debug_logs:
+            store_debug_logs_to_folder(self.start_recording_time, directory="/home/rsl/.ros", copy_to=os.path.join( self.bag_base_path, "ros_logs"))
 
         if self.bag_running:
             response.suc = True
