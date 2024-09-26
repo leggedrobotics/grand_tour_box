@@ -1,0 +1,4 @@
+imu_topic: "/gt_box/cpt7/imu/data_raw"
+imu_rate: 100
+measure_rate: 100 # Rate to which imu data is subsampled
+sequence_time: 129621 # 36 hours in seconds (len of 2024-09-14-21-09-35_nuc_cpt7.bag)

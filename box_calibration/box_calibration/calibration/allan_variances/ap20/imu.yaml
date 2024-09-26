@@ -1,0 +1,11 @@
+#Accelerometer
+accelerometer_noise_density: 0.0014051570147523011
+accelerometer_random_walk: 2.389462521335419e-05
+
+#Gyroscope
+gyroscope_noise_density: 0.00017808717694266127
+gyroscope_random_walk: 1.6719529569193707e-06
+
+rostopic: '/gt_box/ap20/imu' #Make sure this is correct
+update_rate: 200.0 #Make sure this is correct
+
