@@ -17,13 +17,14 @@ import start_recording_pb2
 import start_recording_pb2_grpc
 import stop_recording_pb2
 import stop_recording_pb2_grpc
-
+from box_recording_helper.store_debug_logs_to_folder import store_debug_logs_to_folder
 
 class StartRecordingServicer(start_recording_pb2_grpc.StartRecordingServicer):
     def __init__(self, recorder_node):
         self.recorder_node = recorder_node
 
     def SendMessage(self, request, context):
+        self.recorder_node.start_recording_time = rospy.Time.now()
         message = ""
         timestamp = request.timestamp
         bag_base_path = os.path.join(self.recorder_node.data_path, timestamp)
@@ -61,6 +62,10 @@ class StopRecordingServicer(stop_recording_pb2_grpc.StopRecordingServicer):
         self.recorder_node = recorder_node
 
     def SendMessage(self, request, context):
+
+        if self.recorder_node.store_debug_logs:
+            store_debug_logs_to_folder(self.recorder_node.start_recording_time, directory="/home/rsl/.ros", copy_to=os.path.join( self.bag_base_path, "ros_logs"))
+
         def terminate_process_and_children(p):
             process = psutil.Process(p.pid)
             for sub_process in process.children(recursive=True):
@@ -83,6 +88,7 @@ class RosbagRecordNodeGrpc(object):
         self.node = self.node.replace("anymal-d039-", "")
         self.node.replace("anymal-d039-", "")
         rospy.init_node(f"rosbag_record_node_{self.node}")
+        self.store_debug_logs = rospy.get_param("~store_debug_logs", False)
 
         # Set up services
         self.processes = []
