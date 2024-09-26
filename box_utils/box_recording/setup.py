@@ -11,7 +11,7 @@ import subprocess
 def generate_protobufs():
     proto_files = ["proto/start_recording.proto", "proto/stop_recording.proto"]
     proto_path = "proto"
-    output_path = "./src"
+    output_path = "./src/box_recording"
     for proto_file in proto_files:
         subprocess.check_call(
             [

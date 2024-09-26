@@ -63,15 +63,15 @@
             rpy=" ${pinned_constraints['box_base_to_cpt7_imu_frame']['roll']}
                   ${pinned_constraints['box_base_to_cpt7_imu_frame']['pitch']}
                   ${pinned_constraints['box_base_to_cpt7_imu_frame']['yaw']}" />
-    <parent link="cpt7_imu" />
-    <child link="box_base" />
+    <parent link="box_base" />
+    <child link="cpt7_imu" />
   </joint>
 
   <link name="base"/>
   <joint name="cpt7_to_robot_base" type="fixed">
     <origin xyz="0.0764038 -0.0361 0.2802790" rpy="3.1415126 0.0 0.0" />
     <parent link="base" />
-    <child link="cpt7_imu" />
+    <child link="box_base" />
   </joint>
 
   <link name="cpt7_antenna_front"/>
