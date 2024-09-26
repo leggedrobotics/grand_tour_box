@@ -3,7 +3,7 @@
 <robot name="box" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
 <!-- YAML file containing the default values from CAD -->
-<xacro:property name="calib_file" value="$(find box_calibration)/calibration/tf/calibration_latest.yaml" />
+<xacro:property name="calib_file" value="$(find box_calibration)/calibration/tf/calibration_cad.yaml" />
 <!-- load the YAML calibration file into a property -->
 <xacro:property name="calib" value="${xacro.load_yaml(calib_file)}"/>
 <!-- YAML file containing the default values from CAD -->
@@ -35,7 +35,7 @@
     </visual>
   </link>
   <joint name="box_base_to_box_base_model" type="fixed">
-    <origin xyz="-0.02 0.0 0.0" rpy="0.0 0.0 0.0" />
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
     <parent link="stim320_imu" />
     <child link="box_base_model" />
   </joint>
