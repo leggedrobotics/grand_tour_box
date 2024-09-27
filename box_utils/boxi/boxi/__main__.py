@@ -24,8 +24,6 @@ command_register = [
     "repair_bags",
     "set_cpt7_time",
     "pre_commit",
-    "export_gps_gt_trajectory_bag",
-    "export_raw_imu_bag"
 ]
 
 

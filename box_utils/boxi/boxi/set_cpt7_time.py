@@ -26,7 +26,7 @@ def set_internet_time():
     gps_epoch_start = datetime.datetime(1980, 1, 6, 0, 0, 0)
 
     print(response.tx_time)
-    delta_seconds = response.tx_time - datetime.datetime.timestamp(gps_epoch_start) + 18 - 3600
+    delta_seconds = response.tx_time - datetime.datetime.timestamp(gps_epoch_start) - 18 - 3600
     gps_weeks = int(delta_seconds / 604800)  # 604800 seconds in a GPS week
     gps_seconds = delta_seconds % 604800  # 18 leap seconds since 1980
     return gps_weeks, gps_seconds
@@ -38,7 +38,7 @@ def set_local_pc_time():
     # Calculate the current GPS week and seconds since the start of GPS epoch (January 6, 1980 00:00:00 UTC)
     gps_epoch_start = datetime.datetime(1980, 1, 6, 0, 0, 0)
 
-    delta_seconds = now - datetime.datetime.timestamp(gps_epoch_start) + 18 - 3600
+    delta_seconds = now - datetime.datetime.timestamp(gps_epoch_start) - 18 - 3600
     gps_weeks = int(delta_seconds / 604800)  # 604800 seconds in a GPS week
     gps_seconds = delta_seconds % 604800  # 18 leap seconds since 1980
     return gps_weeks, gps_seconds

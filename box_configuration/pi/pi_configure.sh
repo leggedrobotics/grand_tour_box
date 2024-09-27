@@ -53,8 +53,11 @@ sudo cp ~/git/grand_tour_box/box_configuration/pi/autostart_set_fan_speed.servic
 sudo cp ~/git/grand_tour_box/box_configuration/pi/pigpiod_box.service /lib/systemd/system/
 sudo cp ~/git/grand_tour_box/box_configuration/pi/autostart_tmux.service /etc/systemd/system/autostart_tmux.service
 sudo cp ~/git/grand_tour_box/box_configuration/pi/clock_info.service /etc/systemd/system/clock_info.service
+sudo cp /home/rsl/git/grand_tour_box/box_configuration/pi/cleanup_ros_folder.service /etc/systemd/system/cleanup_ros_folder.service
 
 sudo systemctl daemon-reload
+sudo systemctl enable cleanup_ros_folder
+
 sudo systemctl enable clock_info
 sudo systemctl enable ptp4l_eth0.service
 sudo systemctl enable phc2sys_eth0.service
