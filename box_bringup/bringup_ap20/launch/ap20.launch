@@ -2,11 +2,10 @@
   <arg name="box_namespace" default="gt_box"/>
   
   <group ns="$(arg box_namespace)">
-    <node pkg="ap20_driver_ros" type="ap20_debug_node.py" name="ap20" output="screen">
+    <node pkg="ap20_driver_ros" type="ap20_driver_node" name="ap20" output="screen">
       <param name="capability_group" value="Driver"/>
       <rosparam file="$(find bringup_ap20)/config/default.yaml" command="load" />
     </node>
-    <node pkg="ap20_driver_ros" type="ap20_start_rosrover.sh" name="ap20_start_rosrover" output="screen"/>
-    
+    <!-- <node pkg="ap20_driver_ros" type="ap20_start_rosrover.sh" name="ap20_start_rosrover" output="screen"/> -->
   </group> 
 </launch>

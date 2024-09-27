@@ -6,6 +6,7 @@ find_package(catkin REQUIRED COMPONENTS
     geometry_msgs
     sensor_msgs
     message_generation
+    rosconsole
 )
 
 # Add message files
@@ -15,6 +16,7 @@ add_message_files(
   ImuDebug.msg
   PositionDebug.msg
   TimestampDebug.msg
+  TimestampKappiDebug.msg
 )
 
 
@@ -41,11 +43,25 @@ include_directories(
     ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(ap20_driver_ros 
-  src/main.cpp
+# add_executable(ap20_driver_ros 
+#   src/main.cpp
+# )
+
+
+add_executable(ap20_driver_dev 
+  src/demo_node.cpp
 )
 
-target_link_libraries(ap20_driver_ros
+add_executable(ap20_driver_node 
+  src/simple_ap20_node.cpp
+)
+
+
+target_link_libraries(ap20_driver_node
+  ${catkin_LIBRARIES}
+)
+
+target_link_libraries(ap20_driver_dev
   ${catkin_LIBRARIES}
 )
 
@@ -54,7 +70,11 @@ install(
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 
-install(TARGETS ap20_driver_ros
+install(TARGETS ap20_driver_dev
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(TARGETS ap20_driver_node
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
