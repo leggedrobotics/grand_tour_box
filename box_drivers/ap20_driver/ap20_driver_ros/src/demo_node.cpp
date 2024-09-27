@@ -14,6 +14,7 @@
 #include <signal.h>
 #include <algorithm>
 #include <memory>
+#include <ap20_driver_ros/TimestampKappiDebug.h> 
 
 
 extern const std::string timestamps_fn;
@@ -56,6 +57,8 @@ private:
     ros::Publisher ap20_position_pub_;
     ros::Subscriber imu_sub_;
     ros::Subscriber position_sub_;
+    // DEBUG
+    ros::Publisher timestamp_debug_pub_;
     
     std::deque<sensor_msgs::ImuPtr> imu_message_queue_;
     std::deque<geometry_msgs::PointStampedPtr> position_message_queue_;
@@ -81,6 +84,8 @@ private:
     bool internal_counter_imu_ap20_valid_;
     bool soft_shutdown_;
     int last_published_imu_seq_;
+    bool backlog_cleared_;
+    float last_imu_message_header_time;
 
     void initializeVariables() {
         publish_timestamps_ = false;
@@ -90,13 +95,17 @@ private:
         internal_counter_imu_ap20_valid_ = false;
         soft_shutdown_ = false;
         last_published_imu_seq_ = -1;
+        backlog_cleared_ = false;
+        last_imu_message_header_time = -1;
     }
 
     void initializePublishersAndSubscribers() {
         ap20_imu_pub_ = nh_.advertise<sensor_msgs::Imu>("ap20/imu", 200);
         ap20_position_pub_ = nh_.advertise<geometry_msgs::PointStamped>("ap20/prism_position", 100);
-        imu_sub_ = nh_.subscribe("/ap20/imu", 100, &AP20Node::imuCallback, this);
-        position_sub_ = nh_.subscribe("/ap20/tps", 20, &AP20Node::positionCallback, this);
+        imu_sub_ = nh_.subscribe("/ap20/imu", 50, &AP20Node::imuCallback, this);
+        position_sub_ = nh_.subscribe("/ap20/tps", 50, &AP20Node::positionCallback, this);
+        // DEBUG
+        timestamp_debug_pub_ = nh_.advertise<ap20_driver_ros::TimestampKappiDebug>("ap20/timestamp_debug", 10);
     }
 
 };
@@ -147,6 +156,8 @@ std::vector<ros::Time> AP20Node::ContinuousTimestampReader::readTimestamps() {
 
 // Implementation of AP20Node methods
 void AP20Node::imuCallback(const sensor_msgs::Imu::ConstPtr& msg) {
+    ROS_INFO_STREAM("New IMU Message");
+
     std::lock_guard<std::mutex> lock(imu_message_queue_mutex_);
     imu_message_queue_.push_front(boost::make_shared<sensor_msgs::Imu>(*msg));
 
@@ -164,6 +175,8 @@ void AP20Node::imuCallback(const sensor_msgs::Imu::ConstPtr& msg) {
 }
 
 void AP20Node::positionCallback(const geometry_msgs::PointStamped::ConstPtr& msg) {
+    ROS_INFO_STREAM("New Position Message");
+    
     std::lock_guard<std::mutex> lock(position_message_queue_mutex_);
     position_message_queue_.push_front(boost::make_shared<geometry_msgs::PointStamped>(*msg));
 
@@ -178,6 +191,7 @@ void AP20Node::publishPositionMessages() {
         double ap20_original_ts = position->header.stamp.toSec();
 
         if (lookup_seq_.empty()) {
+            ROS_ERROR("lookup seq is empty in pos calc.");
             return;
         }
 
@@ -192,15 +206,17 @@ void AP20Node::publishPositionMessages() {
         }
 
         if (delta > 0.01 + 1e-5) {
+            ROS_ERROR("delta > 0.01 + 1e-5 in pos calc.");
             return;
         }
 
         if (j == 0) {
+            ROS_ERROR("j == 0 in pos calc.");
             return;
         }
 
         if (j == lookup_ts_.size()) {
-            position_message_queue_.push_front(position);
+            position_message_queue_.push_back(position);
             return;
         }
 
@@ -231,21 +247,56 @@ void AP20Node::publishImuMessages() {
         imu_message_queue_.pop_back();  
     }
 
-    lookup_seq_.push_back(imu->header.stamp.toSec());
-    lookup_ts_.push_back(time_msg.toSec());
+    if (last_imu_message_header_time != -1 && imu->header.stamp.toSec() < last_imu_message_header_time){
+        ROS_ERROR("The totalstation fully disconnected from the AP20 - and successfully reconncted - as a result the AP20 starts counting again from 0 seconds - jumped back in time");
+        line_delay_.clear();
+        lookup_seq_.clear();
+        lookup_ts_.clear();
+        soft_shutdown_ = true;
+        return;
+    } 
 
-    double new_line_delay = lookup_seq_.back() - lookup_ts_.back();
+    // DEBUG
+    ap20_driver_ros::TimestampKappiDebug timestamp_debug_msg;
+    timestamp_debug_msg.timestamp.data = time_msg;
+    timestamp_debug_msg.ap20_timestamp.data = imu->header.stamp;
+    auto now = ros::Time::now();
+    timestamp_debug_msg.header.stamp = now;
+    timestamp_debug_msg.node_arrival_delta = now.toSec() - time_msg.toSec();
+    timestamp_debug_msg.ap20_msg_delta = imu->header.stamp.toSec() - time_msg.toSec();
+    timestamp_debug_pub_.publish(timestamp_debug_msg);
+
+    double new_line_delay = imu->header.stamp.toSec() - time_msg.toSec();
     if (line_delay_.size() == 10) {
         line_delay_.erase(line_delay_.begin());
         std::vector<double> sorted_delays = line_delay_;
+
+        std::ostringstream oss;
+
         std::sort(sorted_delays.begin(), sorted_delays.end());
         double est = sorted_delays[sorted_delays.size() / 2];
         if (std::abs(est - new_line_delay) > 0.005) {
             ROS_ERROR_STREAM("Line delay is too high. Time delay: " << 
             new_line_delay << ". Deviates from recent delays by " << est - new_line_delay << "s.");
             soft_shutdown_ = true;
+            return;
+
+            // if (!backlog_cleared_) {
+            //     ROS_ERROR("Backlog not cleared. CLEARING ONCE. <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+            //     backlog_cleared_ = true;
+            //     line_delay_.clear();
+            //     lookup_seq_.clear();
+            //     lookup_ts_.clear();
+            // } 
+            // else {
+            // }
+            // return;
         }
     }
+
+    lookup_seq_.push_back(imu->header.stamp.toSec());
+    lookup_ts_.push_back(time_msg.toSec());
+
 
     line_delay_.push_back(new_line_delay);
 
@@ -254,11 +305,14 @@ void AP20Node::publishImuMessages() {
         lookup_ts_.erase(lookup_ts_.begin(), lookup_ts_.end() - 100);
     }
 
+    last_imu_message_header_time = imu->header.stamp.toSec();
     last_published_imu_seq_ = imu->header.seq;
     imu->header.stamp = time_msg;
     imu->header.frame_id = "ap20_imu";
 
     ap20_imu_pub_.publish(imu);
+
+    
 
 }
 
@@ -308,6 +362,8 @@ void AP20Node::run() {
             // auto old_timestamps = read_timestamps();
             auto old_timestamps = timestamp_reader_->readTimestamps();
             ROS_INFO_STREAM("Timestamp queue size: " << old_timestamps.size());
+            ROS_INFO_STREAM("IMU Message counter: " << imu_message_counter_);
+
             if (old_timestamps.empty() && imu_message_counter_ == 0) {
                 break;
             }
@@ -317,7 +373,6 @@ void AP20Node::run() {
         {
             std::lock_guard<std::mutex> lock(imu_message_queue_mutex_);
             imu_message_queue_.clear();
-            timestamp_reader_->readTimestamps();
             timestamp_queue_.clear();
             position_message_queue_.clear();
         }
@@ -328,32 +383,47 @@ void AP20Node::run() {
         lookup_ts_.clear();
         line_delay_.clear();
         int steps_without_timestamps = 0;
+        internal_counter_imu_ap20_valid_ = true;
+        last_imu_message_header_time = -1;
+
 
         changeImuMode(true);
 
         ROS_INFO("Start normal operation");
-
+        int k = 0;
         while (ros::ok() && !soft_shutdown_) {
             auto stamps = timestamp_reader_->readTimestamps();
             //auto stamps = read_timestamps();
             max_added = std::max(max_added, static_cast<int>(stamps.size()));
             if (stamps.empty()) {
                 steps_without_timestamps++;
-                if (steps_without_timestamps > 2000) {
-                    ROS_ERROR("No timestamps for 2000 steps (4s). Shutting down.");
+                if (steps_without_timestamps > 4000) {
+                    ROS_ERROR("No timestamps for 4000 steps (8s). Shutting down.");
                     soft_shutdown_ = true;
                 }
             } else{
                 steps_without_timestamps = 0;
                 for (const auto& ts : stamps) {
                     timestamp_queue_.push_front(ts);
+                    ROS_INFO_STREAM("New Timestamp Message");
+    
                     timestamp_counter_++;
                 }
             }
 
+            if (k<100){
+                std::lock_guard<std::mutex> lock(imu_message_queue_mutex_);
+                if (!imu_message_queue_.empty() && !timestamp_queue_.empty()) {
+                    imu_message_queue_.pop_back();
+                    timestamp_queue_.pop_back();
+                    k++;
+                }
+                loop_rate.sleep();
+                continue;
+            }
+
             publishImuMessages();
             publishPositionMessages();
-            ros::spinOnce();
             loop_rate.sleep();
         }
 
