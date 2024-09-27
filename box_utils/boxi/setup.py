@@ -33,10 +33,5 @@ if __name__ == "__main__":
             "setuptools>=45.2.0",
             "black==24.4.0",
             "ntplib",
-            "rosbags",
-            "colorlog",
-            "scipy>=1.4",
-            "pandas>=2.0",
-            "numexpr>=2.7.3",
         ],
     )

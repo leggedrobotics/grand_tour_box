@@ -54,11 +54,11 @@ class RAWIMUDataParser:
         https://docs.novatel.com/OEM7/Content/Logs/TIME.html
         """
         EXPECTED_IMU_FIELDNAME = "%RAWIMUSXA"
-        self.logger.debug(f"Checking RAWIMU fieldnames...")
+        self.logger.debug("Checking RAWIMU fieldnames...")
         if not (imu_df.iloc[:, 0] == EXPECTED_IMU_FIELDNAME).all():
-            self.logger.error(f"Unexpected IMU message type."
-                              f"\nExpected: {EXPECTED_IMU_FIELDNAME}"
-                              f"\nGot: {imu_df.iloc[0, 0]}")
+            self.logger.error(
+                "Unexpected IMU message type." f"\nExpected: {EXPECTED_IMU_FIELDNAME}" f"\nGot: {imu_df.iloc[0, 0]}"
+            )
         else:
             self.logger.debug(f"IMU field name {imu_df.iloc[0, 0]} is correct {ColorLogger.GREEN_CHECK}")
         WEEK_INDEX = 4
@@ -84,12 +84,7 @@ class RAWIMUDataParser:
             self.logger.error(f"IMU type {imu_df.iloc[0, IMUTYPE_INDEX]} doesn't match the expected type 68")
         else:
             self.logger.debug(f"IMU type is correct {ColorLogger.GREEN_CHECK}")
-        INDICES = {"Z Accel": -6,
-                   "-(Y Accel)": -5,
-                   "X Accel": -4,
-                   "Z Gyro": -3,
-                   "-Y Gyro": -2,
-                   "X Gyro": -1}
+        INDICES = {"Z Accel": -6, "-(Y Accel)": -5, "X Accel": -4, "Z Gyro": -3, "-Y Gyro": -2, "X Gyro": -1}
         CPT7RATE = 100.0
         """
         Values below come from: https://docs.novatel.com/OEM7/Content/SPAN_Logs/RAWIMUSX.htm#RawIMUScaleFactors
@@ -125,16 +120,22 @@ class RAWIMUDataParser:
             self.logger.debug(f"Average Z-accel: {average_z_accel:.2f} is reasonable {ColorLogger.GREEN_CHECK}")
 
     def write_to_rosbag(self, path):
-        self.logger.debug(f"Checking that output data lengths are consistent")
-        processed_data = [self.ros_times,
-                          self.x_accel, self.minusy_accel, self.z_accel,
-                          self.x_gyro, self.minusy_gyro, self.z_gyro]
+        self.logger.debug("Checking that output data lengths are consistent")
+        processed_data = [
+            self.ros_times,
+            self.x_accel,
+            self.minusy_accel,
+            self.z_accel,
+            self.x_gyro,
+            self.minusy_gyro,
+            self.z_gyro,
+        ]
         lengths = [len(x) for x in processed_data]
         unique_lengths = set(lengths)
         if len(unique_lengths) > 1:
-            self.logger.error(f"Not all timestamp and IMU data have the same lengths")
+            self.logger.error("Not all timestamp and IMU data have the same lengths")
         else:
-            self.logger.debug(f"All data lengths are consistent.")
+            self.logger.debug("All data lengths are consistent.")
 
         topic_name = self.output_imu_msg_name
         latest_message = Imu()
@@ -158,10 +159,8 @@ class RAWIMUDataParser:
 
                     bag.write(topic=topic_name, msg=latest_message, t=stamp)
         except Exception as e:
-            self.logger.error(f"Writing IMU data to rosbag failed with:"
-                              f"\n {e}")
-        self.logger.info(f"Successfully wrote to:"
-                         f"\n{path}")
+            self.logger.error(f"Writing IMU data to rosbag failed with:" f"\n {e}")
+        self.logger.info(f"Successfully wrote to:" f"\n{path}")
 
     def check_floating_point_diff(self, a, b, tolerance=1e-8):
         return np.abs(a - b) > tolerance
@@ -175,20 +174,22 @@ class RAWIMUDataParser:
             self.check_time_message_consistency(times_df=time_df)
 
     def check_time_message_consistency(self, times_df: pd.DataFrame):
-        self.logger.debug(f"Checking that CPT7 recorded the expected time offsets...")
+        self.logger.debug("Checking that CPT7 recorded the expected time offsets...")
         UTC_OFFSET_INDEX = -8
         utc_offsets = times_df.iloc[:, UTC_OFFSET_INDEX]
         if self.check_floating_point_diff(utc_offsets.mean(), self.expected_utc_offset):
-            self.logger.warning(f"{ColorLogger.YELLOW_WARNING} "
-                                f"UTC offset of {utc_offsets.mean()} if different from expected.")
+            self.logger.warning(
+                f"{ColorLogger.YELLOW_WARNING} " f"UTC offset of {utc_offsets.mean()} if different from expected."
+            )
         else:
             self.logger.debug(f"UTC offset is reasonable {ColorLogger.GREEN_CHECK}")
 
         GPS_SYSTEM_OFFSET_INDEX = 10  # GPS System Time = GPS reference time - offset.
         gps_offset = times_df.iloc[:, GPS_SYSTEM_OFFSET_INDEX]
         if self.check_floating_point_diff(gps_offset.mean(), self.expected_gps_offset):
-            self.logger.warning(f"{ColorLogger.YELLOW_WARNING} "
-                                f"GPS system offset {gps_offset.mean()} is different from expected")
+            self.logger.warning(
+                f"{ColorLogger.YELLOW_WARNING} " f"GPS system offset {gps_offset.mean()} is different from expected"
+            )
         else:
             self.logger.debug(f"GPS offset is reasonable {ColorLogger.GREEN_CHECK}")
 
@@ -215,15 +216,20 @@ class RAWIMUDataParser:
 
 def add_arguments(parser):
     parser.set_defaults(main=main)
-    parser.add_argument("--imu_ascii_file", "-i", help="Path to the ascii csv file with RAWIMUSXA messages",
-                        required=True)
-    parser.add_argument("--time_ascii_file", "-t", help="Path to the ascii csv file with RAWIMUSXA messages",
-                        required=False,
-                        default="")
+    parser.add_argument(
+        "--imu_ascii_file", "-i", help="Path to the ascii csv file with RAWIMUSXA messages", required=True
+    )
+    parser.add_argument(
+        "--time_ascii_file", "-t", help="Path to the ascii csv file with RAWIMUSXA messages", required=False, default=""
+    )
     parser.add_argument("--output", "-o", help="Output bag path", default="")
-    parser.add_argument("--output_topic_name", "-n", help="Name of the output IMU message rostopic",
-                        required=False,
-                        default="/gt_box/cpt7/offline_from_novatel_logs/imu")
+    parser.add_argument(
+        "--output_topic_name",
+        "-n",
+        help="Name of the output IMU message rostopic",
+        required=False,
+        default="/gt_box/cpt7/offline_from_novatel_logs/imu",
+    )
     parser.add_argument("--debug", action="store_true")
     return parser
 
@@ -244,6 +250,8 @@ def main(args):
             output_path = args.output
         imu_data_parser.write_to_rosbag(output_path)
     else:
-        imu_data_parser.logger.error("FAILED TO RUN. Remember that CPT7 .LOG files need to be"
-                                     " processed through the Novatel Convert App, to extract the"
-                                     " ASCII RAWIMU file used here.")
+        imu_data_parser.logger.error(
+            "FAILED TO RUN. Remember that CPT7 .LOG files need to be"
+            " processed through the Novatel Convert App, to extract the"
+            " ASCII RAWIMU file used here."
+        )

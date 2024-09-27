@@ -28,6 +28,11 @@ sudo cp /home/rsl/git/grand_tour_box/box_configuration/nuc/ptp4l_enp45s0.service
 sudo cp /home/rsl/git/grand_tour_box/box_configuration/nuc/set_approx_time_cpt7.service /lib/systemd/system/set_approx_time_cpt7.service
 sudo cp /home/rsl/git/grand_tour_box/box_configuration/nuc/autostart_tmux.service /etc/systemd/system/autostart_tmux.service
 
+sudo cp /home/rsl/git/grand_tour_box/box_configuration/nuc/cleanup_ros_folder.service /etc/systemd/system/cleanup_ros_folder.service
+
+sudo systemctl daemon-reload
+sudo systemctl enable cleanup_ros_folder
+
 sudo systemctl daemon-reload
 
 sudo systemctl enable phc2sys_enp45s0

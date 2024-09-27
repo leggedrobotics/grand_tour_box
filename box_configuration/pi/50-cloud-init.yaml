@@ -10,7 +10,9 @@ network:
       dhcp6: false
       gateway4: 192.168.2.51
       nameservers:
-        addresses: [8.8.8.8]
+        addresses: 
+        - 8.8.8.8
+        - 1.1.1.1 
       routes:
         - to: 0.0.0.0/0
           via: 192.168.2.51
