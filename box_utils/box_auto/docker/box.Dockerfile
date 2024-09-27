@@ -22,9 +22,9 @@ COPY dependencies/ros.sh /ros.sh
 RUN sh -c "chmod +x /ros.sh"
 RUN /bin/bash -c '/ros.sh'
 
-COPY dependencies/open_cv.sh /open_cv.sh
-RUN sh -c "chmod +x /open_cv.sh"
-RUN /bin/bash -c '/open_cv.sh'
+COPY dependencies/opencv.sh /open_cv.sh
+RUN sh -c "chmod +x /opencv_gtsam.sh"
+RUN /bin/bash -c '/opencv_gtsam.sh'
 
 COPY dependencies/grand_tour.sh /grand_tour.sh
 RUN sh -c "chmod +x /grand_tour.sh"
