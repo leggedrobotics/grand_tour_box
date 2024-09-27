@@ -4,13 +4,15 @@ set -e
 apt update -y
 
 # Installing dependencies
-apt install -y git libyaml-cpp-dev libtool
+apt install -y libyaml-cpp-dev libtool
 apt install -y vim tmux tmuxp 
 apt install -y figlet
 apt install -y curl # if you haven't already installed curl
 apt install -y lsb-release
 apt install -y openssh-client
 apt install -y git-all
+
+apt update -y
 
 # Install python packages
 apt install -y python3-opencv
