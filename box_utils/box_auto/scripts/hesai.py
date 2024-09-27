@@ -8,8 +8,8 @@ import subprocess
 import signal
 import rospkg
 import glob
-
 import subprocess
+import psutil
 
 WS = "/home/catkin_ws"
 PRE = f"source /opt/ros/noetic/setup.bash; source {WS}/devel/setup.bash;"
@@ -34,7 +34,6 @@ def check_ros_node_exists(node_name):
         print(f"An error occurred: {e}")
         return False
     
-import psutil
 
 def kill_rosmaster():
     # Find all processes with name 'rosmaster'
