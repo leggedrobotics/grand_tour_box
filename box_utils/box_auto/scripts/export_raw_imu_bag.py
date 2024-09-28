@@ -9,6 +9,7 @@ import rosbag
 import rospy
 from boxi import ColorLogger
 from sensor_msgs.msg import Imu
+import argparse
 
 
 class RAWIMUDataParser:
@@ -65,10 +66,12 @@ class RAWIMUDataParser:
         SOW_INDEX = 5  # Seconds of week
         week = imu_df.iloc[:, WEEK_INDEX]
         seconds_of_week = imu_df.iloc[:, SOW_INDEX] - self.expected_gps_offset + self.expected_utc_offset
-        seconds_since_gps_start_in_utc = week * self.weeks_to_seconds + seconds_of_week
+        ns_of_seconds_of_week = [int(round(int(math.modf(x)[0] * 1e9) / 1000, 0)) * 1000 for x in seconds_of_week]
+        seconds_of_week_without_ns = seconds_of_week.astype(int)
+        seconds_since_gps_start_in_utc = week * self.weeks_to_seconds + seconds_of_week_without_ns
         seconds_unix = seconds_since_gps_start_in_utc + self.gps_epoch_start_in_POSIX_seconds
         self.logger.info(f"Log time starts at {datetime.utcfromtimestamp(seconds_unix[0])}")
-        self.ros_times = [rospy.Time(secs=int(x), nsecs=int(math.modf(x)[0] * 1e9)) for x in seconds_unix]
+        self.ros_times = [rospy.Time(secs=int(x), nsecs=y) for x, y in zip(seconds_unix, ns_of_seconds_of_week)]
 
     def load_imu_data(self, imu_df: pd.DataFrame):
         """
@@ -142,7 +145,7 @@ class RAWIMUDataParser:
         latest_message.header.frame_id = "cpt7_imu"
         latest_message.header.seq = 0
         try:
-            with rosbag.Bag(path, "w") as bag:
+            with rosbag.Bag(path, "w", compression="lz4") as bag:
                 self.logger.debug(f"Opened {path} for writing")
                 self.logger.info(f"Writing {lengths[0]} samples")
                 for stamp, x_a, minusy_a, z_a, x_g, minusy_g, z_g in zip(*processed_data):
@@ -214,13 +217,12 @@ class RAWIMUDataParser:
         return df
 
 
-def add_arguments(parser):
+def add_arguments():
+    parser = argparse.ArgumentParser(description="Boxi")
     parser.set_defaults(main=main)
+    parser.add_argument("--imu_ascii_file", "-i", help="Path to the ascii csv file with RAWIMUSXA messages")
     parser.add_argument(
-        "--imu_ascii_file", "-i", help="Path to the ascii csv file with RAWIMUSXA messages", required=True
-    )
-    parser.add_argument(
-        "--time_ascii_file", "-t", help="Path to the ascii csv file with RAWIMUSXA messages", required=False, default=""
+        "--time_ascii_file", "-t", help="Path to the ascii csv file with RAWIMUSXA messages", default=""
     )
     parser.add_argument("--output", "-o", help="Output bag path", default="")
     parser.add_argument(
@@ -230,11 +232,27 @@ def add_arguments(parser):
         required=False,
         default="/gt_box/cpt7/offline_from_novatel_logs/imu",
     )
+    parser.add_argument("--directory", "-d", help="Directory")
     parser.add_argument("--debug", action="store_true")
     return parser
 
 
 def main(args):
+    from pathlib import Path
+
+    if args.directory is not None:
+        date = [(str(s.name)).split("_")[0] for s in Path(args.directory).glob("*_nuc_livox*.bag")][0]
+        args.output = str(Path(args.directory) / f"{date}_cpt7_raw_imu.bag")
+
+        files = [str(s) for s in Path(args.directory).rglob("*RAWIMUSX.ASCII")]
+        if len(files) == 1:
+            args.imu_ascii_file = files[0]
+        else:
+            nr = len(files)
+            print(f"Invalid number [{nr}] of _RAWIMUSX.ASCII file found in the directory {args.directory}")
+            print("Specify the correct _RAWIMUSX.ASCII file manually or move it to the directory")
+            return
+
     imu_path = args.imu_ascii_file
     times_path = args.time_ascii_file
     imu_data_parser = RAWIMUDataParser(output_imu_msg_name=args.output_topic_name)
@@ -255,3 +273,9 @@ def main(args):
             " processed through the Novatel Convert App, to extract the"
             " ASCII RAWIMU file used here."
         )
+
+
+if __name__ == "__main__":
+    parser = add_arguments()
+    args = parser.parse_args()
+    main(args)
