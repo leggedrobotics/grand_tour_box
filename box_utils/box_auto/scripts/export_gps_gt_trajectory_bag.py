@@ -4,19 +4,29 @@ import rosbag
 import rospy
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import PoseWithCovarianceStamped, Point, Quaternion, TransformStamped, Vector3
-
+import argparse
 from tf2_msgs.msg import TFMessage
 from scipy.spatial.transform import Rotation
+from pathlib import Path
 
 
-def add_arguments(parser):
+def add_arguments():
+    parser = argparse.ArgumentParser(description="Export GPS optimized trajectory to a bag file")
     parser.set_defaults(main=main)
-    parser.add_argument("--gps_file", "-g", help="Path to the GPS optimized trajectory", required=True)
+    parser.add_argument("--gps_file", "-g", help="Path to the GPS optimized trajectory")
     parser.add_argument("--output", "-o", help="Output bag path", default="./gps_gt_output.bag")
+    parser.add_argument("--directory", "-d", help="Directory")
     return parser
 
 
 def main(args):
+    if args.directory is not None:
+        date = [(str(s.name)).split("_")[0] for s in Path(args.directory).glob("*_nuc_livox*.bag")][0]
+        args.output = str(Path(args.directory) / f"{date}_cpt7_gps_optimized_trajectory.bag")
+        args.gps_file = str(Path(args.directory) / "ie/ie.txt")
+
+    print(args.output, args.gps_file)
+
     gps_file_path = args.gps_file
     gps_file = pd.read_csv(gps_file_path)
     gps_file.columns = gps_file.columns.str.strip()
@@ -47,7 +57,7 @@ def main(args):
     )
 
     start_time = None
-    with rosbag.Bag(args.output, "w") as bag:
+    with rosbag.Bag(args.output, "w", compression="lz4") as bag:
         for i, (time, position, orientation, sigma, sigma_orientation) in enumerate(
             zip(times, positions, orientations, xyz_stdeviations, orientation_stdeviations)
         ):
@@ -109,3 +119,9 @@ def euler_and_translation_to_SE3(orientation, position):
             np.array([[0, 0, 0, 1.0]]),
         )
     )
+
+
+if __name__ == "__main__":
+    parser = add_arguments()
+    args = parser.parse_args()
+    main(args)

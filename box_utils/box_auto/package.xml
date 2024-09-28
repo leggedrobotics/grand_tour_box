@@ -32,5 +32,5 @@
   <depend>bringup_hesai</depend>
   <depend>zed_wrapper</depend>
   <depend>tf_bag</depend>
-
+  <depend>atn_position3_fuser</depend>
 </package>
