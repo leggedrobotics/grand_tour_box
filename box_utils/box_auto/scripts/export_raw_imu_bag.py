@@ -10,7 +10,7 @@ import rospy
 from boxi import ColorLogger
 from sensor_msgs.msg import Imu
 import argparse
-
+from pathlib import Path
 
 class RAWIMUDataParser:
     def __del__(self):
@@ -45,6 +45,12 @@ class RAWIMUDataParser:
             return False
         self.load_imu_times(imu_df=rawimu_df)
         self.load_imu_data(rawimu_df)
+
+        # Convert rospy.Time to datetime
+        start_time = datetime.fromtimestamp(self.ros_times[0].to_sec()).strftime("%Y-%m-%d-%H-%M-%S")
+        end_time = datetime.fromtimestamp(self.ros_times[0].to_sec()).strftime("%Y-%m-%d-%H-%M-%S")
+        print("Rosbag Time:", start_time, end_time)
+
         return True
 
     def load_imu_times(self, imu_df: pd.DataFrame):
@@ -218,8 +224,7 @@ class RAWIMUDataParser:
 
 
 def add_arguments():
-    parser = argparse.ArgumentParser(description="Boxi")
-    parser.set_defaults(main=main)
+    parser = argparse.ArgumentParser()
     parser.add_argument("--imu_ascii_file", "-i", help="Path to the ascii csv file with RAWIMUSXA messages")
     parser.add_argument(
         "--time_ascii_file", "-t", help="Path to the ascii csv file with RAWIMUSXA messages", default=""
@@ -238,8 +243,6 @@ def add_arguments():
 
 
 def main(args):
-    from pathlib import Path
-
     if args.directory is not None:
         date = [(str(s.name)).split("_")[0] for s in Path(args.directory).glob("*_nuc_livox*.bag")][0]
         args.output = str(Path(args.directory) / f"{date}_cpt7_raw_imu.bag")
