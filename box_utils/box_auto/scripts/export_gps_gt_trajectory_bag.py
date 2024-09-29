@@ -32,8 +32,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 '''
 
-import numpy as np
-
 class GPS_utils:
 	'''
 		Contains the algorithms to convert a gps signal (longitude, latitude, height)
