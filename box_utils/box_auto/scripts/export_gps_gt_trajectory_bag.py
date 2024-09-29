@@ -7,105 +7,251 @@ from geometry_msgs.msg import PoseWithCovarianceStamped, Point, Quaternion, Tran
 
 from tf2_msgs.msg import TFMessage
 from scipy.spatial.transform import Rotation
+from pathlib import Path
+import argparse
 
+'''
+MIT License
+Copyright (c) 2019 Michail Kalaitzakis
 
-def add_arguments(parser):
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+'''
+
+import numpy as np
+
+class GPS_utils:
+	'''
+		Contains the algorithms to convert a gps signal (longitude, latitude, height)
+		to a local cartesian ENU system and vice versa
+		
+		Use setENUorigin(lat, lon, height) to set the local ENU coordinate system origin
+		Use geo2enu(lat, lon, height) to get the position in the local ENU system
+		Use enu2geo(x_enu, y_enu, z_enu) to get the latitude, longitude and height
+	'''
+	
+	def __init__(self):
+		# Geodetic System WGS 84 axes
+		self.a  = 6378137.0
+		self.b  = 6356752.314245
+		self.a2 = self.a * self.a
+		self.b2 = self.b * self.b
+		self.e2 = 1.0 - (self.b2 / self.a2)
+		self.e  = self.e2 / (1.0 - self.e2)
+		
+		# Local ENU Origin
+		self.latZero = None
+		self.lonZero = None
+		self.hgtZero = None
+		self.xZero = None
+		self.yZero = None
+		self.zZero = None
+		self.R = np.asmatrix(np.eye(3))
+
+	def setENUorigin(self, lat, lon, height):
+		# Save origin lat, lon, height
+		self.latZero = lat
+		self.lonZero = lon
+		self.hgtZero = height
+		
+		# Get origin ECEF X,Y,Z
+		origin = self.geo2ecef(self.latZero, self.lonZero, self.hgtZero)		
+		self.xZero = origin.item(0)
+		self.yZero = origin.item(1)
+		self.zZero = origin.item(2)
+		self.oZero = np.array([[self.xZero], [self.yZero], [self.zZero]])
+		
+		# Build rotation matrix
+		phi = np.deg2rad(self.latZero)
+		lmd = np.deg2rad(self.lonZero)
+		
+		cPhi = np.cos(phi)
+		cLmd = np.cos(lmd)
+		sPhi = np.sin(phi)
+		sLmd = np.sin(lmd)
+		
+		self.R[0, 0] = -sLmd
+		self.R[0, 1] =  cLmd
+		self.R[0, 2] =  0.0
+		self.R[1, 0] = -sPhi * cLmd
+		self.R[1, 1] = -sPhi * sLmd
+		self.R[1, 2] =  cPhi
+		self.R[2, 0] =  cPhi * cLmd
+		self.R[2, 1] =  cPhi * sLmd
+		self.R[2, 2] =  sPhi
+	
+	def geo2ecef(self, lat, lon, height):
+		phi = np.deg2rad(lat)
+		lmd = np.deg2rad(lon)
+		
+		cPhi = np.cos(phi)
+		cLmd = np.cos(lmd)
+		sPhi = np.sin(phi)
+		sLmd = np.sin(lmd)
+		
+		N = self.a / np.sqrt(1.0 - self.e2 * sPhi * sPhi)
+		
+		x = (N + height) * cPhi * cLmd
+		y = (N + height) * cPhi * sLmd
+		z = ((self.b2 / self.a2) * N + height) * sPhi
+		
+		return np.array([[x], [y], [z]])
+	
+	def ecef2enu(self, x, y, z):
+		ecef = np.array([[x], [y], [z]])
+		
+		return self.R * (ecef - self.oZero)
+	
+	def geo2enu(self, lat, lon, height):
+		ecef = self.geo2ecef(lat, lon, height)
+		
+		return self.ecef2enu(ecef.item(0), ecef.item(1), ecef.item(2))
+	
+	def ecef2geo(self, x, y, z):
+		p = np.sqrt(x*x + y*y)
+		q = np.arctan2(self.a * z, self.b * p)
+		
+		sq = np.sin(q)
+		cq = np.cos(q)
+		
+		sq3 = sq * sq * sq
+		cq3 = cq * cq * cq
+		
+		phi = np.arctan2(z + self.e * self.b * sq3, p - self.e2 * self.a * cq3)
+		lmd = np.arctan2(y, x)
+		v = self.a / np.sqrt(1.0 - self.e2 * np.sin(phi) * np.sin(phi))
+
+		lat = np.rad2deg(phi)
+		lon = np.rad2deg(lmd)		
+		h = (p / np.cos(phi)) - v
+		
+		return np.array([[lat], [lon], [h]])
+		
+	def enu2ecef(self, x, y, z):
+		lmd = np.deg2rad(self.latZero)
+		phi = np.deg2rad(self.lonZero)
+		
+		cPhi = np.cos(phi)
+		cLmd = np.cos(lmd)
+		sPhi = np.sin(phi)
+		sLmd = np.sin(lmd)
+		
+		N = self.a / np.sqrt(1.0 - self.e2 * sLmd * sLmd)
+		
+		x0 = (self.hgtZero + N) * cLmd * cPhi
+		y0 = (self.hgtZero + N) * cLmd * sPhi
+		z0 = (self.hgtZero + (1.0 - self.e2) * N) * sLmd
+		
+		xd = -sPhi * x - cPhi * sLmd * y + cLmd * cPhi * z
+		yd =  cPhi * x - sPhi * sLmd * y + cLmd * sPhi * z
+		zd =  cLmd * y + sLmd * z
+		
+		return np.array([[x0+xd], [y0+yd], [z0+zd]])
+	
+	def enu2geo(self, x, y, z):
+		ecef = self.enu2ecef(x, y, z)
+		
+		return self.ecef2geo(ecef.item(0), ecef.item(1), ecef.item(2))
+      
+def add_arguments():
+    parser = argparse.ArgumentParser(description="Export GPS optimized trajectory to a bag file")
     parser.set_defaults(main=main)
-    parser.add_argument("--gps_file", "-g", help="Path to the GPS optimized trajectory", required=True)
+    parser.add_argument("--gps_file", "-g", help="Path to the GPS optimized trajectory")
     parser.add_argument("--output", "-o", help="Output bag path", default="./gps_gt_output.bag")
+    parser.add_argument("--directory", "-d", default= "/Data/Projects/GrandTour/2024-09-23-10-52-57", help="Directory")
     return parser
 
 
 def main(args):
+    if args.directory is not None:
+        date = [(str(s.name)).split("_")[0] for s in Path(args.directory).glob("*_nuc_livox.bag")][0]
+        args.output = str(Path(args.directory) / f"{date}_cpt7_gps_optimized_trajectory.bag")
+        args.gps_file = str(Path(args.directory) / "ie/ie.txt")
+
+    print(args.output, args.gps_file)
+
     gps_file_path = args.gps_file
     gps_file = pd.read_csv(gps_file_path)
     gps_file.columns = gps_file.columns.str.strip()
     position_columns = ["X-ECEF", "Y-ECEF", "Z-ECEF"]
-    xyz_stdeviation_columns = ["SDX-ECEF", "SDY-ECEF", "SDZ-ECEF"]
-    orientation_columns = ["ECTX", "ECTY", "ECTZ"]
-    orientation_stdeviation_columns = ["ECTXSD", "ECTYSD", "ECTZSD"]
+    positions_std_columns = ["SDX-ECEF", "SDY-ECEF", "SDZ-ECEF"]
+    orientation_columns = ["Heading", "Roll", "Pitch"]
+    orientations_rpy_std_columns = [ "HdngSD", "RollSD",       "PitchSD"]
     times = gps_file.iloc[:, 0]
     positions = np.array(gps_file[position_columns].to_numpy())
-    orientations = np.array(gps_file[orientation_columns].to_numpy())
-    xyz_stdeviations = np.array(gps_file[xyz_stdeviation_columns].to_numpy())
-    orientation_stdeviations = np.array(gps_file[orientation_stdeviation_columns].to_numpy())
-    orientation = orientations[0]
-    position = positions[0]
-    T_world_origin = euler_and_translation_to_SE3(orientation, position)
-    T_origin_world = np.linalg.inv(T_world_origin)
-    T_cpt7_robot = np.eye(4)
-    T_cpt7_robot[:3, :3] = np.array([[0, 1, 0], [1, 0, 0], [0, 0, -1]])
-    T_robot_cpt7 = np.linalg.inv(T_cpt7_robot)
-    T_headingcorrection = np.eye(4)
-    correction_angle = np.deg2rad(20)
-    T_headingcorrection[:3, :3] = np.array(
-        [
-            [np.cos(correction_angle), -np.sin(correction_angle), 0],
-            [np.sin(correction_angle), np.cos(correction_angle), 0],
-            [0, 0, 1],
-        ]
-    )
+    orientations_rpy = np.array(gps_file[orientation_columns].to_numpy())
+    positions_std = np.array(gps_file[positions_std_columns].to_numpy())
+    orientations_rpy_std = np.array(gps_file[orientations_rpy_std_columns].to_numpy())
+    
+    utils = GPS_utils()
+    lat_long_h = utils.ecef2geo(positions[0,0], positions[0,1], positions[0,2])
+    utils.setENUorigin(lat_long_h[0], lat_long_h[1], lat_long_h[2])
 
     start_time = None
     with rosbag.Bag(args.output, "w") as bag:
-        for i, (time, position, orientation, sigma, sigma_orientation) in enumerate(
-            zip(times, positions, orientations, xyz_stdeviations, orientation_stdeviations)
+        for i, (time, position, orientation_rpy, position_std, orientation_rpy_std) in enumerate(
+            zip(times, positions, orientations_rpy, positions_std, orientations_rpy_std)
         ):
             if start_time is None:
                 start_time = time
-            T_world_robot = euler_and_translation_to_SE3(orientation, position)
-            R_origin_world = T_origin_world[:3, :3]
-            xyz_sigma_origin = np.diag(R_origin_world @ np.diag(sigma) @ R_origin_world.T)
-            orientation_sigma_origin = np.diag(R_origin_world @ np.diag(sigma_orientation) @ R_origin_world.T)
-            T_origin_robot = T_origin_world @ T_world_robot
-            T_origin_cpt7 = T_origin_robot @ T_robot_cpt7
-            T_origin_cpt7 = T_origin_cpt7 @ T_headingcorrection
+            
+            # Position
+            position_enu = utils.ecef2enu(position[0], position[1], position[2])
+            # Absolutely not sure if this is correct
+            position_enu_std = utils.R @ position_std
 
-            angle, axis = R_to_angle_axis(T_origin_cpt7[:3, :3])
-            local_point = T_origin_cpt7[:3, -1]
+
+            # Covariance is diagonal - 6x6 matrix ( dx, dy, dz, droll, dpitch, dyaw)
+            # TO ROS convention: fixed axis https://www.ros.org/reps/rep-0103.html
+            quaternion_xyzw = Rotation.from_euler("ZXY", orientation_rpy, degrees=True).as_quat()
+            rot_std = Rotation.from_euler("ZXY", orientation_rpy_std, degrees=True).as_euler("xyz", degrees=False)
+            
+            covariance = np.diag(np.concatenate([rot_std[:], np.array(position_enu_std)[0,:]],axis=0))
+
             timestamp = rospy.Time.from_sec(time)
             output_msg = PoseWithCovarianceStamped()
             output_msg.header.seq = i
             output_msg.header.stamp = timestamp
             output_msg.header.frame_id = "world"
-            output_msg.pose.pose.position = Point(x=local_point[0], y=local_point[1], z=local_point[2])
-            quaternion = R_to_quat_xyzw(T_origin_cpt7[:3, :3])
+            output_msg.pose.pose.position = Point(x=position_enu[1], y=position_enu[0], z=position_enu[2])
+
             output_msg.pose.pose.orientation = Quaternion(
-                x=quaternion[0], y=quaternion[1], z=quaternion[2], w=quaternion[3]
+                x=quaternion_xyzw[0], y=quaternion_xyzw[1], z=quaternion_xyzw[2], w=quaternion_xyzw[3]
             )
-            covariance = np.diag(np.concatenate([np.deg2rad(orientation_sigma_origin), xyz_sigma_origin]) ** 2)
-            output_msg.pose.covariance = covariance.flatten().tolist()
+            output_msg.pose.covariance = covariance.astype(np.float32).flatten().tolist()
             bag.write(topic="/gt_box/gt_poses_novatel", msg=output_msg, t=timestamp)
+            
             odometry_msg = Odometry()
             odometry_msg.header = output_msg.header
             odometry_msg.pose.pose = output_msg.pose.pose
             bag.write(topic="/gt_box/odometry", msg=odometry_msg, t=timestamp)
+
             tf_message = TFMessage()
             tf_message.transforms = []
             box_transform = TransformStamped()
             box_transform.header = odometry_msg.header
+            box_transform.header.frame_id = "world"
             box_transform.child_frame_id = "box_base"
-            box_transform.transform.translation = Vector3(*local_point)
+            box_transform.transform.translation = Vector3(x=position_enu[1], y=position_enu[0], z=position_enu[2])
             box_transform.transform.rotation = output_msg.pose.pose.orientation
             tf_message.transforms.append(box_transform)
             bag.write(topic="/tf", msg=tf_message, t=timestamp)
 
 
-def R_to_angle_axis(orientation):
-    angle_axis = Rotation.from_matrix(orientation).as_rotvec()
-    angle = np.linalg.norm(angle_axis) + 1e-6
-    axis = angle_axis / angle
-    return angle, axis
-
-
-def R_to_quat_xyzw(orientation):
-    return Rotation.from_matrix(orientation).as_quat()
-
-
-def euler_and_translation_to_SE3(orientation, position):
-    return np.vstack(
-        (
-            np.hstack((Rotation.from_euler("xyz", orientation, degrees=True).as_matrix(), position.reshape(3, 1))),
-            np.array([[0, 0, 0, 1.0]]),
-        )
-    )
+if __name__ == "__main__":
+    parser = add_arguments()
+    args = parser.parse_args()
+    main(args)

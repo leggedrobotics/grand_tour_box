@@ -65,9 +65,14 @@ if __name__ == "__main__":
         default=True,
         help="Whether to overwrite existing bag files (default: True)."
     )
+    parser.add_argument(
+        "--directory", "-d",
+        type=str,
+        default="/mission_data",
+        help="Whether to overwrite existing bag files (default: True)."
+    )
     args = parser.parse_args()
-
-    mission_folder = "/mission_data"
+    mission_folder = args.directory
     bag_files =sorted( Path(mission_folder).rglob("*.bag"))
     print("Found files: ", bag_files)
     # Group bags
@@ -87,7 +92,9 @@ if __name__ == "__main__":
     with tqdm.tqdm(total=len(grouped_files), desc=f"Merging {prefix}", unit="bags") as pbar:
 
         for prefix, files in grouped_files.items():
-                
+            if prefix.find("lpc") != -1 or prefix.find("npc") != -1:
+                continue
+
             output_bag = Path(mission_folder) / f"{prefix}.bag"
 
             # If overwrite is False, check if the output bag already exists

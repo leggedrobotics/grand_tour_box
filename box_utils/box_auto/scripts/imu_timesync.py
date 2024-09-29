@@ -275,6 +275,11 @@ def process_all(directory, axis):
             "topic": "/gt_box/alphasense_driver_node/imu",
             "bag_pattern": "*_nuc_alphasense.bag",
             "max_offset_ms": 1,
+        },
+        {
+            "topic": "/gt_box/cpt7/offline_from_novatel_logs/imu",
+            "bag_pattern": "*_cpt7_raw_imu.bag",
+            "max_offset_ms": 1,
         }
     ]
     
@@ -292,7 +297,7 @@ def process_all(directory, axis):
 
     ploted_reference_imu = False
 
-    rr.init("rerun_example_minimal", spawn=False)
+    rr.init("rerun_example_minimal", spawn=True)
     rr.save(os.path.join(directory, f"imu_timesync-{axis}.rrd"))
     
 
@@ -356,14 +361,21 @@ if __name__ == "__main__":
         optimal_offset_ns, suc = sync_optimizer.time_sync_imu(args.imu2_bag, args.imu2_topic)
         print(f"Final time offset: {optimal_offset_ns}ns")
     else: 
-        directory = "/mission_data"
+        parser = argparse.ArgumentParser(description="Fix and reindex ROS bag files.")
+        parser.add_argument(
+            "--directory", "-d",
+            type=str,
+            default="/mission_data",
+            help="Directory to search for active bag files (default: current directory)."
+        )
+        args = parser.parse_args()
         master_summary = {}
         for axis in ["x", "y", "z"]:
             print("Running for axis: ", axis)
 
-            master_summary[axis] = process_all(directory, axis=axis)
+            master_summary[axis] = process_all(args.directory, axis=axis)
 
             # Dump the dictionary to a YAML file
-            with open(os.path.join(directory, "imu_timesync_summary.yaml"), 'w') as file:
+            with open(os.path.join(args.directory, "imu_timesync_summary.yaml"), 'w') as file:
                 yaml.dump(master_summary, file, default_flow_style=False, width=1000)
                 
