@@ -10,6 +10,7 @@ import rospy
 from boxi import ColorLogger
 from sensor_msgs.msg import Imu
 import argparse
+from pathlib import Path
 
 class RAWIMUDataParser:
     def __del__(self):
@@ -71,10 +72,12 @@ class RAWIMUDataParser:
         SOW_INDEX = 5  # Seconds of week
         week = imu_df.iloc[:, WEEK_INDEX]
         seconds_of_week = imu_df.iloc[:, SOW_INDEX] - self.expected_gps_offset + self.expected_utc_offset
-        seconds_since_gps_start_in_utc = week * self.weeks_to_seconds + seconds_of_week
+        ns_of_seconds_of_week = [int(round(int(math.modf(x)[0] * 1e9) / 1000, 0)) * 1000 for x in seconds_of_week]
+        seconds_of_week_without_ns = seconds_of_week.astype(int)
+        seconds_since_gps_start_in_utc = week * self.weeks_to_seconds + seconds_of_week_without_ns
         seconds_unix = seconds_since_gps_start_in_utc + self.gps_epoch_start_in_POSIX_seconds
         self.logger.info(f"Log time starts at {datetime.utcfromtimestamp(seconds_unix[0])}")
-        self.ros_times = [rospy.Time(secs=int(x), nsecs=int(math.modf(x)[0] * 1e9)) for x in seconds_unix]
+        self.ros_times = [rospy.Time(secs=int(x), nsecs=y) for x, y in zip(seconds_unix, ns_of_seconds_of_week)]
 
     def load_imu_data(self, imu_df: pd.DataFrame):
         """
@@ -148,7 +151,7 @@ class RAWIMUDataParser:
         latest_message.header.frame_id = "cpt7_imu"
         latest_message.header.seq = 0
         try:
-            with rosbag.Bag(path, "w") as bag:
+            with rosbag.Bag(path, "w", compression="lz4") as bag:
                 self.logger.debug(f"Opened {path} for writing")
                 self.logger.info(f"Writing {lengths[0]} samples")
                 for stamp, x_a, minusy_a, z_a, x_g, minusy_g, z_g in zip(*processed_data):
@@ -219,9 +222,9 @@ class RAWIMUDataParser:
             self.logger.error(f"An unexpected error occurred: {e}")
         return df
 
+
 def add_arguments():
-    parser = argparse.ArgumentParser(description="Boxi")
-    parser.set_defaults(main=main)
+    parser = argparse.ArgumentParser()
     parser.add_argument("--imu_ascii_file", "-i", help="Path to the ascii csv file with RAWIMUSXA messages")
     parser.add_argument(
         "--time_ascii_file", "-t", help="Path to the ascii csv file with RAWIMUSXA messages", default=""
@@ -240,8 +243,6 @@ def add_arguments():
 
 
 def main(args):
-    from pathlib import Path
-
     if args.directory is not None:
         date = [(str(s.name)).split("_")[0] for s in Path(args.directory).glob("*_nuc_livox*.bag")][0]
         args.output = str(Path(args.directory) / f"{date}_cpt7_raw_imu.bag")

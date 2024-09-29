@@ -4,11 +4,12 @@ import rosbag
 import rospy
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import PoseWithCovarianceStamped, Point, Quaternion, TransformStamped, Vector3
-
+import argparse
 from tf2_msgs.msg import TFMessage
 from scipy.spatial.transform import Rotation
 from pathlib import Path
 import argparse
+
 
 '''
 MIT License
@@ -166,18 +167,20 @@ class GPS_utils:
 		
 		return self.ecef2geo(ecef.item(0), ecef.item(1), ecef.item(2))
       
+
+    
 def add_arguments():
     parser = argparse.ArgumentParser(description="Export GPS optimized trajectory to a bag file")
     parser.set_defaults(main=main)
     parser.add_argument("--gps_file", "-g", help="Path to the GPS optimized trajectory")
     parser.add_argument("--output", "-o", help="Output bag path", default="./gps_gt_output.bag")
-    parser.add_argument("--directory", "-d", default= "/Data/Projects/GrandTour/2024-09-23-10-52-57", help="Directory")
+    parser.add_argument("--directory", "-d", help="Directory")
     return parser
 
 
 def main(args):
     if args.directory is not None:
-        date = [(str(s.name)).split("_")[0] for s in Path(args.directory).glob("*_nuc_livox.bag")][0]
+        date = [(str(s.name)).split("_")[0] for s in Path(args.directory).glob("*_nuc_livox*.bag")][0]
         args.output = str(Path(args.directory) / f"{date}_cpt7_gps_optimized_trajectory.bag")
         args.gps_file = str(Path(args.directory) / "ie/ie.txt")
 
@@ -201,7 +204,7 @@ def main(args):
     utils.setENUorigin(lat_long_h[0], lat_long_h[1], lat_long_h[2])
 
     start_time = None
-    with rosbag.Bag(args.output, "w") as bag:
+    with rosbag.Bag(args.output, "w", compression="lz4") as bag:
         for i, (time, position, orientation_rpy, position_std, orientation_rpy_std) in enumerate(
             zip(times, positions, orientations_rpy, positions_std, orientations_rpy_std)
         ):
