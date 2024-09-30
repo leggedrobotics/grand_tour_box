@@ -202,6 +202,28 @@ def main(args):
     utils.setENUorigin(lat_long_h[0], lat_long_h[1], lat_long_h[2])
 
     start_time = None
+
+    R_con_cpt7__imu_cpt7 = np.array( [
+        [0, 1, 0],
+        [1, 0, 0],
+        [0, 0, -1]
+        # [1, 0, 0],
+        # [0, 1, 0],
+        # [0, 0, 1]
+    ])
+	
+
+
+    R_enu__imu_cpt7 = np.array( [
+        [0, 1, 0],
+        [1, 0, 0],
+        [0, 0, -1]
+        # [1, 0, 0],
+        # [0, 1, 0],
+        # [0, 0, 1]
+    ])
+	
+    frame_id = "enu_origin"
     with rosbag.Bag(args.output, "w", compression="lz4") as bag:
         for i, (time, position, orientation_rpy, position_std, orientation_rpy_std) in enumerate(
             zip(times, positions, orientations_rpy, positions_std, orientations_rpy_std)
@@ -210,43 +232,47 @@ def main(args):
                 start_time = time
             
             # Position
-            position_enu = utils.ecef2enu(position[0], position[1], position[2])
+            position_enu = R_con_cpt7__imu_cpt7 @ utils.ecef2enu(position[0], position[1], position[2])
             # Absolutely not sure if this is correct
-            position_enu_std = utils.R @ position_std
+            position_enu_std = R_con_cpt7__imu_cpt7 @ utils.R @ position_std
 
 
             # Covariance is diagonal - 6x6 matrix ( dx, dy, dz, droll, dpitch, dyaw)
             # TO ROS convention: fixed axis https://www.ros.org/reps/rep-0103.html
             quaternion_xyzw = Rotation.from_euler("ZXY", orientation_rpy, degrees=True).as_quat()
             rot_std = Rotation.from_euler("ZXY", orientation_rpy_std, degrees=True).as_euler("xyz", degrees=False)
-            
+
+			# Missing **2
             covariance = np.diag(np.concatenate([rot_std[:], np.array(position_enu_std)[0,:]],axis=0))
+
+
+
 
             timestamp = rospy.Time.from_sec(time)
             output_msg = PoseWithCovarianceStamped()
             output_msg.header.seq = i
             output_msg.header.stamp = timestamp
-            output_msg.header.frame_id = "world"
-            output_msg.pose.pose.position = Point(x=position_enu[1], y=position_enu[0], z=position_enu[2])
+            output_msg.header.frame_id = frame_id
+            output_msg.pose.pose.position = Point(x=position_enu[0], y=position_enu[1], z=position_enu[2])
 
             output_msg.pose.pose.orientation = Quaternion(
                 x=quaternion_xyzw[0], y=quaternion_xyzw[1], z=quaternion_xyzw[2], w=quaternion_xyzw[3]
             )
             output_msg.pose.covariance = covariance.astype(np.float32).flatten().tolist()
-            bag.write(topic="/gt_box/gt_poses_novatel", msg=output_msg, t=timestamp)
+            bag.write(topic="/gt_box/inertial_explorer/gt_poses_novatel", msg=output_msg, t=timestamp)
             
             odometry_msg = Odometry()
             odometry_msg.header = output_msg.header
             odometry_msg.pose.pose = output_msg.pose.pose
-            bag.write(topic="/gt_box/odometry", msg=odometry_msg, t=timestamp)
+            bag.write(topic="/gt_box/inertial_explorer/odometry", msg=odometry_msg, t=timestamp)
 
             tf_message = TFMessage()
             tf_message.transforms = []
             box_transform = TransformStamped()
             box_transform.header = odometry_msg.header
-            box_transform.header.frame_id = "world"
+            box_transform.header.frame_id = frame_id
             box_transform.child_frame_id = "box_base"
-            box_transform.transform.translation = Vector3(x=position_enu[1], y=position_enu[0], z=position_enu[2])
+            box_transform.transform.translation = Vector3(x=position_enu[0], y=position_enu[1], z=position_enu[2])
             box_transform.transform.rotation = output_msg.pose.pose.orientation
             tf_message.transforms.append(box_transform)
             bag.write(topic="/tf", msg=tf_message, t=timestamp)
