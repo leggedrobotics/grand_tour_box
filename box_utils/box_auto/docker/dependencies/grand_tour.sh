@@ -22,7 +22,7 @@ catkin init
 catkin config --extend /home/opencv_gtsam_ws/devel
 catkin config --cmake-args -DCMAKE_BUILD_TYPE=RelWithDebInfo
 
-# Get the grand_tour_box repository and its submodules
+# Get the grand_tour_box repository and its submodules test
 cd /home/catkin_ws/src; git clone -b feat/kleinkramIntegration --single-branch --recurse-submodules git@github.com:leggedrobotics/grand_tour_box.git
 
 # Dependency for raw_image_pipeline

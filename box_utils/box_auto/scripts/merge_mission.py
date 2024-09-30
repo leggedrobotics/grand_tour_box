@@ -56,8 +56,6 @@ def merge_bags_single(input_bag, output_bag, topics="*", verbose=False):
             % (total_included_count, total_skipped_count)
         )
 
-    print(f"Uploading with klein {output_bag} to {os.environ['MISSION_UUID']}")
-    os.system(f"ls -a ~/")
     os.system(f"klein mission upload --mission {os.environ['MISSION_UUID']} --path {output_bag}")
     os.system(f"cp {output_bag} /out")
     return total_included_count, total_skipped_count
