@@ -15,10 +15,11 @@ from box_recording.srv import (
     StartRecordingResponse,
     StartRecordingRequest,
 )
+from std_srvs.srv import SetBool
 from box_recording.srv import StopRecording, StopRecordingResponse, StopRecordingRequest
 from pathlib import Path
 import shutil
-
+import time
 
 def load_yaml(path: str) -> dict:
     """Loads yaml file
@@ -48,10 +49,40 @@ class RosbagRecordCoordinator(object):
         self.rp = rospkg.RosPack()
         self.default_yaml = join(str(self.rp.get_path("box_recording")), "cfg/box_default.yaml")
         rospy.loginfo("[RosbagRecordCoordinator] Setup.")
+
+        self.ap20_stop_recording = rospy.get_param("~ap20_stop_recording", False)
+
         self.timestamp = ""
         self.cfg = {}
 
     def start_recording(self, request: StartRecordingRequest):
+        if self.ap20_stop_recording:
+            rospy.loginfo("[RosbagRecordCoordinator] Trying to stop /ap20/streaming.")
+            service_name = "/ap20/enable_streaming"
+            rospy.wait_for_service(service_name, timeout=15.0)
+            try:
+                change_mode = rospy.ServiceProxy(service_name, SetBool)
+                response = change_mode(False)
+                if response.success:
+                    rospy.loginfo(
+                        f"IMU mode changed successfully. Streaming is now {'enabled' if False else 'disabled'}."
+                    )
+                    suc = True
+                else:
+                    rospy.logwarn(f"Failed to change IMU mode: {response.message}")
+                    suc = False
+            except rospy.ServiceException as e:
+                rospy.logerr(f"Service call failed: {e}")
+                suc = False
+            
+            if not suc:
+                rospy.logwarn_once("[RosbagRecordCoordinator] Could not stop /ap20/streaming - No rosbags recording!")
+                response = StartRecordingResponse()
+                response.message += "Could not stop /ap20/streaming - No rosbags recording!"
+                return response
+            else:
+                time.sleep(1.0)
+
         rospy.loginfo("[RosbagRecordCoordinator] Trying to start rosbag recording process.")
         timestamp = "{date:%Y-%m-%d-%H-%M-%S}".format(date=datetime.datetime.now())
         self.timestamp = timestamp
@@ -80,6 +111,8 @@ class RosbagRecordCoordinator(object):
             return response
 
         self.cfg = load_yaml(request.yaml_file)
+
+
 
         # Copy yaml file to data folder
         default_path = rospkg.RosPack().get_path("box_recording") + "/data"

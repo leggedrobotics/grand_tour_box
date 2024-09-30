@@ -1,0 +1,159 @@
+import rosbag
+import numpy as np
+from sensor_msgs.msg import Imu
+from geometry_msgs.msg import PointStamped
+from ap20_driver_ros.msg import ImuDebug, PositionDebug, TimestampDebug
+import rosbag
+from collections import deque
+import rospy
+
+class LastMatch:
+    """Class for keeping track of an item in inventory."""
+    def __init__( self, imu_debug_msg, timestamp_debug_msg):
+        self.imu_arrivial_ros_time = imu_debug_msg.header.stamp.to_sec()
+        self.imu_counter = imu_debug_msg.header.seq
+        self.imu_time = imu_debug_msg.imu.header.stamp.to_sec()
+        self.imu_seq = imu_debug_msg.imu.header.seq
+
+        self.timestamp_time = timestamp_debug_msg.timestamp.data.to_sec()
+
+        self.imu_debug_msg = imu_debug_msg
+        self.timestamp_debug_msg = timestamp_debug_msg
+
+    def get_line_delay(self):
+        return self.imu_arrivial_ros_time - self.timestamp_time
+    
+    def line_delay_valid(self):
+        delay = self.get_line_delay() # timestamp arrives before imu but not more than 3ms
+        return delay > 0 and delay < 0.005
+    
+    def get_stats(self, other):
+        res = {}
+        res["N_imu_messages"] = self.imu_seq - other.imu_seq 
+        res["N_imu_count"] = self.imu_counter - other.imu_counter
+        res["N_imu_time"] = round( float(self.imu_time - other.imu_time) / 0.005 )
+        res["AP20_time_accuracy_check"] = abs( float(other.imu_time + res["N_imu_time"] * 0.005 ) - self.imu_time) < 0.0005
+        res["N_imu_arrivial_ros_time"] = round(  float(self.imu_arrivial_ros_time - other.imu_arrivial_ros_time) / 0.005 )
+        res["N_timestamp_time"] = round( float(self.timestamp_time - other.timestamp_time) / 0.005 )
+        res["HardwareTS_time_accuracy_check"] = abs( (other.timestamp_time + res["N_timestamp_time"] * 0.005 ) - self.timestamp_time) < 0.001
+        res["HardwareTS_shutdown_timestamp"] = (self.timestamp_time - other.timestamp_time) < 0.001
+        res["ROS_arrivial_time_check"] = self.line_delay_valid()
+        res["ROS_arrivial_line_delay"] = self.get_line_delay()
+
+        return res
+
+    def publish(self, bag):
+        self.imu_debug_msg.imu.header.stamp = rospy.Time.from_sec(self.timestamp_time)
+        bag.write('/gt_box/ap20/imu', self.imu_debug_msg)
+
+def read_bag_file(bag_path):
+    last_match = None
+    imu_data = deque()
+    tps_data = deque()
+    imu_debug_data = deque()
+    position_debug_data = deque()
+    timestamp_debug_data = deque()
+
+    line_delay = []
+    matching_results = {
+        "prefect_match": 0,
+        "arrivial_time_mismatch": 0,
+        "failed": 0,
+        "reset": 0,
+        "initial_skip" : 0
+    }
+
+    with rosbag.Bag(bag_path.replace("jetson_ap20_aux", "jetson_ap20_synced"), 'w') as bag_out:
+        with rosbag.Bag(bag_path, 'r') as bag:
+            for topic, msg, t in bag.read_messages(topics=['/gt_box/ap20/imu_debug',
+                                                        '/gt_box/ap20/position_debug', '/gt_box/ap20/timestamp_debug']):
+                if topic == '/gt_box/ap20/imu_debug':
+                    imu_debug_data.append(msg)
+                elif topic == '/gt_box/ap20/position_debug':
+                    position_debug_data.append(msg)
+                elif topic == '/gt_box/ap20/timestamp_debug':
+                    timestamp_debug_data.append(msg)
+
+                if len(imu_debug_data) > 0 and len(timestamp_debug_data) > 0:
+                    new_imu_msg = imu_debug_data.popleft()
+                    new_timestamp_msg = timestamp_debug_data.popleft()
+
+                    # Create inital match based on guessing
+                    if last_match is None:
+                        candidate = LastMatch(new_imu_msg, new_timestamp_msg)
+                        valid = candidate.line_delay_valid()
+                        if valid:
+                            last_match = candidate
+                            last_match.publish(bag_out)
+                        else:
+                            if candidate.get_line_delay() < 0.0:
+                                # Lets skip the IMU message
+                                timestamp_debug_data.appendleft(new_timestamp_msg)
+                                print(f"{new_imu_msg.header.seq} - ERROR - Skipping Inital IMU message poor matching")
+                                matching_results["initial_skip"] += 1
+                    else:
+                        candidate = LastMatch(new_imu_msg, new_timestamp_msg)
+                        res = candidate.get_stats(last_match)
+                        
+                        # if  not res["AP20_time_accuracy_check"]:
+                        #     print(f"{new_imu_msg.header.seq} ERROR - AP20 Time Accuracy bad")
+                        #     ap20_reset in time , stopped streaming 
+
+                        if  not res["HardwareTS_time_accuracy_check"]:
+                            print(f"{new_imu_msg.header.seq} ERROR - Hardware Accuracy bad")
+
+                        if res["N_imu_messages"] == res["N_imu_count"] != res["N_imu_time"]:
+                            print(f"{new_imu_msg.header.seq} WARNING - We most likely lost some IMU messages however timestamps all look good")
+                            # ap20_resumed sync, ap20_reset
+
+                        # This case can always happen.
+                        # if not res["ROS_arrivial_time_check"]:
+                        #     print(f"{new_imu_msg.header.seq} INFO - Timestamp arrived after imu or with more then 5ms delay")
+
+                        if res["N_imu_time"] == res["N_imu_arrivial_ros_time"]  == res["N_timestamp_time"] :
+                            # perfect match
+                        
+                            matching_results["prefect_match"] += 1
+                            last_match = candidate
+                            last_match.publish(bag_out)
+                            line_delay.append( res["ROS_arrivial_line_delay"] )
+
+                        elif res["N_imu_time"] == res["N_timestamp_time"]:
+                            # good match
+                            matching_results["prefect_match"] += 1
+                            last_match = candidate
+                            last_match.publish(bag_out)
+                            line_delay.append( res["ROS_arrivial_line_delay"] )
+
+                        elif res["HardwareTS_shutdown_timestamp"] or (res["N_imu_time"] < 0 and res["N_timestamp_time"] == 0):
+                            # ap20_reset
+                            print(f"{new_imu_msg.header.seq} WARNING - Throw away timestamp - detected double timestamp shut down behaviour by AP20 when reseting")
+                            matching_results["reset"] += 1
+                            imu_debug_data.appendleft(new_imu_msg)
+
+                        elif res["N_imu_time"] < 0 and res["N_timestamp_time"] > 10:
+                            # ap20_resumed_sync
+                            print(f"{new_imu_msg.header.seq} WARNING - We assume it is now working again and we are synced == 1.005 ???" )
+                            last_match = candidate
+                            last_match.publish(bag_out)
+                            line_delay.append( res["ROS_arrivial_line_delay"] )
+                        else:
+                            # failed
+                            matching_results["failed"] += 1
+                            print("ERROR - Case not understood", res["N_imu_messages"] , " ",res["N_imu_count"] , " ", res["N_imu_time"] , " ", res["N_imu_arrivial_ros_time"], " ", res["N_timestamp_time"])
+
+
+    print ( matching_results)
+    print("LINE DELAY", np.array( line_delay).max(), np.array( line_delay).min(), np.array( line_delay).mean())
+
+    return {
+        'imu': imu_data,
+        'tps': tps_data,
+        'imu_debug': imu_debug_data,
+        'position_debug': position_debug_data,
+        'timestamp_debug': timestamp_debug_data
+    }
+
+# Usage example
+bag_path = '/Data/Projects/GrandTour/ap20_matching_data/2024-09-28-19-33-31_jetson_ap20_aux_0.bag'
+data = read_bag_file(bag_path)
