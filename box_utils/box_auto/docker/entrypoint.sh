@@ -5,8 +5,7 @@ figlet Welcome GrandTour + Kleinkram Docker
 klein endpoint set $ENDPOINT
 klein login --key $APIKEY
 mkdir "/mission_data"
-mkdir "/mission_data/mission"
-klein mission download $MISSION_UUID "/mission_data/mission"
+klein mission download $MISSION_UUID "/mission_data"
 
 
 export HOME=/home/$HOST_USERNAME
@@ -32,4 +31,4 @@ else
 fi
 
 
-figlet Exit GrandTour Docker
+figlet Exit GrandTour Docker + KK

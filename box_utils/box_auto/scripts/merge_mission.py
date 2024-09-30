@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from fnmatch import fnmatchcase
 from rosbag import Bag
@@ -54,6 +55,10 @@ def merge_bags_single(input_bag, output_bag, topics="*", verbose=False):
             "Total: Included %d messages and skipped %d"
             % (total_included_count, total_skipped_count)
         )
+
+    print(f"Uploading with klein {output_bag} to {os.environ['MISSION_UUID']}")
+    os.system(f"klein mission upload --mission {os.environ['MISSION_UUID']} --file {output_bag}")
+    os.system(f"cp {output_bag} /out")
     return total_included_count, total_skipped_count
 
 # write the following code. 
