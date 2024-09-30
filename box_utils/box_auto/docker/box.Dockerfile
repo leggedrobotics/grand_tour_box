@@ -33,6 +33,6 @@ RUN --mount=type=ssh /bin/bash -c '/grand_tour.sh'
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-RUN pip3 install kleinkram --force-reinstall --pre
+RUN pip3 install kleinkram --pre --force-reinstall --pre
 
 ENTRYPOINT ["/entrypoint.sh"]
