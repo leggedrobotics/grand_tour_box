@@ -1,0 +1,13 @@
+Header header
+float32 arm
+float32 core
+float32 h264
+float32 isp
+float32 v3d
+float32 uart
+float32 pwm
+float32 emmc
+float32 pixel
+float32 vec
+float32 hdmi
+float32 dpi

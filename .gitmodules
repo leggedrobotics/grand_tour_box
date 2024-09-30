@@ -14,14 +14,6 @@
 	path = box_drivers/zed-ros-wrapper
 	url = git@github.com:leggedrobotics/zed-ros-wrapper.git
 	branch = grandTour
-[submodule "box_drivers/adis16475_driver"]
-	path = box_drivers/adis16475_driver
-	url = git@github.com:leggedrobotics/adis16475_driver.git
-	branch = main
-[submodule "box_drivers/ADIS16475-raspi"]
-	path = box_drivers/ADIS16475-raspi
-	url = git@github.com:leggedrobotics/ADIS16475-raspi.git
-	branch = main
 [submodule "box_drivers/raw_image_pipeline"]
 	path = box_drivers/raw_image_pipeline
 	url = git@github.com:leggedrobotics/raw_image_pipeline.git
@@ -50,3 +42,22 @@
 	path = box_drivers_ros2/isaac_ros_common
 	url = git@github.com:leggedrobotics/isaac_ros_common.git
 	branch = dev/grand_tour
+[submodule "box_drivers/iio_cpp"]
+	path = box_drivers/iio_cpp
+	url = git@github.com:leggedrobotics/iio_cpp.git
+	branch = main
+[submodule "box_drivers/adi_imu_driver"]
+	path = box_drivers/adi_imu_driver
+	url = git@github.com:leggedrobotics/adi_imu_driver.git
+	branch = main
+[submodule "box_drivers/tf_bag"]
+	path = box_drivers/tf_bag
+	url = git@github.com:IFL-CAMP/tf_bag.git
+[submodule "box_drivers/graph_msf_dev"]
+	path = box_drivers/graph_msf_dev
+	url = git@bitbucket.org:leggedrobotics/graph_msf_dev.git
+	branch = feature/gt_generation
+[submodule "box_drivers/open3d_slam_private"]
+	path = box_drivers/open3d_slam_private
+	url = git@github.com:leggedrobotics/open3d_slam_private.git
+	branch = main

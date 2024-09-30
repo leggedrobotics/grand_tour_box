@@ -1,15 +1,12 @@
 #!/usr/bin/env python3
 
 import rospy
-import roslaunch
 import os
 from time import sleep
 import subprocess
-import signal
-import rospkg
 import glob
-
 import subprocess
+import psutil
 
 WS = "/home/catkin_ws"
 PRE = f"source /opt/ros/noetic/setup.bash; source {WS}/devel/setup.bash;"
@@ -34,7 +31,6 @@ def check_ros_node_exists(node_name):
         print(f"An error occurred: {e}")
         return False
     
-import psutil
 
 def kill_rosmaster():
     # Find all processes with name 'rosmaster'
@@ -51,17 +47,35 @@ def kill_rosmaster():
 
 def launch_nodes(input_rosbag_path):
     os.environ['ROS_MASTER_URI'] = "http://localhost:11311"
-
+    
     os.system("bash -c '" + PRE + "roscore&' ")
     sleep(3)
     os.system("bash -c '" + PRE + f"rosrun hesai_ros_driver hesai_ros_driver_node _config_path:={WS}/src/grand_tour_box/box_drivers/hesai_lidar_ros_driver/config/packet_replay.yaml _use_sim_time:=True _input_rosbag_path:={input_rosbag_path} &' ")
     sleep(3)
-    os.system("bash -c '" + PRE + f"rosbag play -r 5 -d 2 --clock {input_rosbag_path}' ")
+    os.system("bash -c '" + PRE + f"rosbag play -r 5 -d 5 --wait-for-subscribers --clock {input_rosbag_path} --topics /gt_box/hesai/packets' ")
+    sleep(30)
     kill_rosmaster()
 
 
 if __name__ == '__main__':
-    input_rosbag_paths = sorted(glob.glob(os.path.join("/mission_data", "*_nuc_hesai.bag")))
+    import argparse
+    parser = argparse.ArgumentParser(description="Fix and reindex ROS bag files.")
+    parser.add_argument(
+        "--directory", "-d",
+        type=str,
+        default="/mission_data",
+        help="Directory to search for active bag files (default: current directory)."
+    )
+    args = parser.parse_args()
+    
+
+    input_rosbag_paths = sorted(glob.glob(os.path.join(args.directory, "*_nuc_hesai.bag")))
+
+    print(f"Found {len(input_rosbag_paths)} Hesai bags in {args.directory}")
+
+    if len(input_rosbag_paths) == 0:
+        print("Bags available: " , [str(s) for s in glob.glob(os.path.join(args.directory, "*.bag"))])
+
     for input_rosbag_path in input_rosbag_paths:
         print(f"Processing Hesai bag: {input_rosbag_path}")
         try:

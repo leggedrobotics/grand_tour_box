@@ -2,10 +2,10 @@
 <package format="2">
   <name>bringup_adis16475</name>
   <version>0.0.0</version>
-  <description>The bringup_adis16475 package</description>
-  <maintainer email="code@lennart-werner.de">Lennart Werner</maintainer>
+  <description>The bringup_adis16475 package for the linux driver</description>
+  <maintainer email="jonfrey@ethz.ch">Jonas Frey</maintainer>
   <license>Proprietary</license>
-  <depend>adis16475_driver_ros</depend>
+  <depend>adi_imu_driver_ros</depend>
   <export>
   </export>
 </package>

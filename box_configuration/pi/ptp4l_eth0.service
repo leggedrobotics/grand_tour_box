@@ -1,11 +1,16 @@
 [Unit]
-Description=Precision Time Protocol (PTP) service for eth0
+Description=Precision Time Protocol (PTP) service
 Documentation=man:ptp4l
-After=sys-subsystem-net-devices-eth0.device
+After=network-online.target
 
 [Service]
 Type=simple
-ExecStart=/usr/sbin/ptp4l -f /etc/linuxptp/ptp4l.conf -i eth0 -H -s
+ExecStart=/usr/sbin/ptp4l -i eth0 -H -s -m -f /home/rsl/git/grand_tour_box/box_configuration/jetson/ptp4l.conf
+Restart=on-failure
+
+# Redirect standard output and error to a log file
+StandardOutput=append:/tmp/ptp4l_eth0.log
+StandardError=append:/tmp/ptp4l_eth0.log
 
 [Install]
 WantedBy=multi-user.target

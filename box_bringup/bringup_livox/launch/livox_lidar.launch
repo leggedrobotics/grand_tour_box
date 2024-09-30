@@ -15,10 +15,10 @@
 	<arg name="rviz_enable" default="false"/>
 	<arg name="rosbag_enable" default="false"/>
 	<arg name="cmdline_arg" default="$(arg bd_list)"/>
-	<arg name="msg_frame_id" default="livox"/>
+	<arg name="msg_frame_id" default="livox_lidar"/>
 	<arg name="lidar_bag" default="false"/>
 	<arg name="imu_bag" default="false"/>
-	<!--user configure parameters for ros end--> 
+	<!--user configure parameters for ros end-->
 
 	<param name="xfer_format" value="$(arg xfer_format)"/>
 	<param name="multi_topic" value="$(arg multi_topic)"/>
@@ -35,7 +35,7 @@
 	<node name="livox_lidar_publisher2" pkg="livox_ros_driver2"
 	      type="livox_ros_driver2_node" required="true"
 	      output="screen" args="$(arg cmdline_arg)">
-		  
+
 		  <param name="capability_group" value="Driver"/>
 	</node>
 

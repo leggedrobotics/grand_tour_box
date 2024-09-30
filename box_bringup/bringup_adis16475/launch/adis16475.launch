@@ -1,12 +1,39 @@
 <launch>
   <arg name="box_namespace" default="gt_box"/>
-  <arg name="calibration" default="no"/>
-  <group ns="$(arg box_namespace)">
-    <node pkg="adis16475_driver_ros" type="adis16475" name="adis16475">
-        <param name="capability_group" value="Driver"/>
-        <param name="decimation_factor" value="4"/>
-        <param name="fir_filter" value="2"/>
-        <param name="burst" value="false"/>
-    </node>
-  </group>
+    <!-- Arguments -->
+    <arg name="variant"                     default="2"/>       <!-- [1, 2, 3] e.g. 2 for adis16475-2 -->
+    <arg name="sampling_frequency"          default="200"/>     <!-- should equal 2000 / (n + 1) for n >= 0 -->
+    <arg name="uri"                         default="local:"/>  <!-- e.g. local: or ip:192.168.XXX.YYY -->
+    <arg name="context_timeout_ms"          default="5000"/>
+    <arg name="frame_id"                    default="adis16475_imu"/>
+
+    <!-- Stream Options -->
+    <arg name="use_buffer"                  default="true"/>    <!-- true is highly recommended unless debugging -->
+    <arg name="buffer_size"                 default="5"/>       <!-- number of messages that can be stored -->
+    <arg name="use_channelwise_callback"    default="false"/>   <!-- read data by channel rather than by message -->
+    <arg name="blocking"                    default="false"/>   <!-- wait until buffer is full to read (false only possible for uri local:) -->
+    <arg name="non_blocking_freq"           default="200"/>     <!-- frequency to attempt to read buffer when blocking == false -->
+    <arg name="software_dec_rate"           default="0"/>       <!-- software side decimation, equivalent to DEC_RATE, 0 for no decimation -->
+
+    <env name="ROSCONSOLE_FORMAT" value="[${node}] [${function}:${line}]: ${message}"/>
+
+    <group ns="$(arg box_namespace)">
+      <node pkg="adi_imu_driver_ros" type="adis16475_node" name="adis16475_node" output="screen" launch-prefix="">
+          <param name="capability_group"      value="Driver"/>
+          <!-- Arguments -->
+          <param name="variant"               value="$(arg variant)"/>
+          <param name="sampling_frequency"    value="$(arg sampling_frequency)"/>
+          <param name="uri"                   value="$(arg uri)"/>
+          <param name="context_timeout_ms"    value="$(arg context_timeout_ms)"/>
+          <param name="frame_id"              value="$(arg frame_id)"/>
+
+          <!-- Stream Options -->
+          <param name="use_buffer"                value="$(arg use_buffer)"/>
+          <param name="buffer_size"               value="$(arg buffer_size)"/>
+          <param name="use_channelwise_callback"  value="$(arg use_channelwise_callback)"/>
+          <param name="blocking"                  value="$(arg blocking)"/>
+          <param name="non_blocking_freq"         value="$(arg non_blocking_freq)"/>
+          <param name="software_dec_rate"         value="$(arg software_dec_rate)"/>
+      </node>
+    </group>
 </launch>

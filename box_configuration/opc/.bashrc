@@ -94,6 +94,7 @@ alias la='ls -A'
 alias l='ls -CF'
 alias box='terminator -l box && exit'
 alias reset_chrony='sudo systemctl restart chrony.service'
+alias run_local_ros_master='export ROS_MASTER_URI=http://localhost:11311'
 
 # Add an "alert" alias for long running commands.  Use like so:
 #   sleep 10; alert

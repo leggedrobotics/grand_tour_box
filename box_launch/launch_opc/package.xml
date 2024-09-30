@@ -17,4 +17,9 @@
   <depend>box_throttling</depend>
   <depend>box_relaying</depend>
   <depend>box_launch</depend>
+  <depend>launch_replay</depend>
+ <depend>bringup_ap20</depend> 
+  <depend>novatel_oem7_msgs</depend>
+ 
+  
 </package>

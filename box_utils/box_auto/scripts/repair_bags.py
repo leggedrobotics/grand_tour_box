@@ -2,9 +2,9 @@ import argparse
 from boxi import shell_run
 from pathlib import Path
 
-def main(overwrite: bool):
+def main(overwrite: bool, directory: str):
     # Get all .bag.active files
-    bag_files = [str(s) for s in Path("/mission_data").rglob("*.bag.active")]
+    bag_files = [str(s) for s in Path(directory).rglob("*.bag.active")]
     
     if len(bag_files) == 0:
         print("No active bag files found. --- Finished cleanly!")
@@ -20,7 +20,7 @@ def main(overwrite: bool):
         
         # Execute rosbag fix and reindex commands
         # shell_run(f"rosbag fix {p} {output_file}")
-        shell_run(f"rosbag reindex {output_file}")
+        shell_run(f"rosbag reindex --output-dir=/mission_data {p}")
 
 
 if __name__ == "__main__":
@@ -31,7 +31,13 @@ if __name__ == "__main__":
         default=True,
         help="Whether to overwrite existing bag files (default: True)."
     )
+    parser.add_argument(
+        "--directory", "-d",
+        type=str,
+        default="/mission_data",
+        help="Directory to search for active bag files (default: current directory)."
+    )
     args = parser.parse_args()
     
     # Run main function with the parsed argument
-    main(args.overwrite)
+    main(args.overwrite, args.directory)

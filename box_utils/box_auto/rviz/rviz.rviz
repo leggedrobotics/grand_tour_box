@@ -722,7 +722,7 @@ Visualization Manager:
           Value: true
         hesaiXT32_model:
           Value: true
-        imu_adis16475:
+        adis16475_imu:
           Value: true
         imu_link:
           Value: true
@@ -849,7 +849,7 @@ Visualization Manager:
               hesaiXT32:
                 hesaiXT32_model:
                   {}
-              imu_adis16475:
+              adis16475_imu:
                 {}
               imu_sensor_frame:
                 {}
@@ -1156,7 +1156,7 @@ Visualization Manager:
       History Length: 1
       Name: Imu
       Queue Size: 10
-      Topic: /gt_box/livox/imu_SI
+      Topic: /gt_box/livox/imu_si_compliant
       Unreliable: false
       Value: true
     - Alpha: 1

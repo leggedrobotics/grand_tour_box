@@ -13,7 +13,7 @@
   <build_depend>python3</build_depend>
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>cmake_clang_tools</build_depend>
-
+  
   <depend>roscpp</depend>
   <depend>roslib</depend>
   <depend>eigen_conversions</depend>
@@ -31,5 +31,6 @@
   <depend>hesai_ros_driver</depend>
   <depend>bringup_hesai</depend>
   <depend>zed_wrapper</depend>
-
+  <depend>tf_bag</depend>
+  <depend>atn_position3_fuser</depend>
 </package>

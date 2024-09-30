@@ -1,0 +1,11 @@
+<launch>
+  <!-- Add an argument for the YAML file -->
+  <arg name="config_file" default="$(find box_rviz)/config/default_config.yaml" />
+
+  <!-- Load parameters from the specified YAML file -->
+  <rosparam command="load" file="$(arg config_file)" />
+
+  <include file="$(find box_rviz)/launch/box_rviz.launch">
+    <arg name="replay" value="true"/>
+  </include>
+</launch>

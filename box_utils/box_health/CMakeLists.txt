@@ -30,6 +30,7 @@ add_message_files(
   HealthStatusPi.msg
   HealthStatusLpc.msg
   HealthStatusNpc.msg
+  ClockFrequencies.msg
 )
 
 catkin_install_python(

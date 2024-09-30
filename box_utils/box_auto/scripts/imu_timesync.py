@@ -1,0 +1,381 @@
+import numpy as np
+import torch
+from rosbag import Bag
+from tf_bag import BagTfTransformer
+from tqdm import tqdm
+import argparse
+from scipy.spatial.transform import Rotation
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from pathlib import Path
+import os
+import rerun as rr
+import yaml
+
+def get_bag(directory, pattern):
+    files = [str(s) for s in Path(directory).rglob(pattern)]
+    if len(files) != 1:
+        print(f"Error: More or less matching bag files found: {pattern} in directory {directory}")
+        return [], False
+    
+    return files[0], True
+
+class BagTfTransformerWrapper:
+    def __init__(self, bag):
+        self.tf_listener = BagTfTransformer(bag)
+    def waitForTransform(self, parent_frame, child_frame, time, duration):
+        return self.tf_listener.waitForTransform(parent_frame, child_frame, time)
+    def lookupTransform(self, parent_frame, child_frame, time):
+        try:
+            return self.tf_listener.lookupTransform(parent_frame, child_frame, time)
+        except Exception:
+            return (None, None)
+        
+def extract_imu_data(bag_file, topic, tf_transformer=None, reference_frame=None):
+    imu_data = []
+
+    # Update return reference frame
+    data_reference_frame = None
+    if reference_frame is not None:
+        data_reference_frame = reference_frame
+    
+    transform = None 
+
+    if not os.path.exists(bag_file):
+        raise ValueError(f"Bag file {bag_file} does not exist")
+
+    with Bag(bag_file, 'r') as bag:
+        for topic_name, msg, t in bag.read_messages(topics=[topic]):
+            if reference_frame is not None:
+
+                # Get static tf
+                if transform is None:
+                    p,q = tf_transformer.lookupTransform(reference_frame,
+                                            msg.header.frame_id,
+                                            msg.header.stamp)
+                    
+                    trans = np.array(p)
+                    # Convert quaternion to rotation matrix
+                    rot = Rotation.from_quat(q).as_matrix()
+                    
+                    # 1. Rotate angular velocity
+                    ang = msg.angular_velocity
+                    angular_velocity_target = rot @ np.array([ ang.x, ang.y, ang.z ])
+                    
+                    # 2. Rotate linear acceleration
+                    lin = msg.linear_acceleration
+                    linear_acceleration_rotated = rot @ np.array([ lin.x, lin.y, lin.z ])
+                    
+                    # 3. Account for lever arm effects
+                    # 3a. Centripetal acceleration
+                    r = np.array(t)
+                    centripetal_acc = np.cross(angular_velocity_target, np.cross(angular_velocity_target, trans))
+                    
+                    # 3b. Tangential acceleration (assuming angular acceleration is zero for simplicity)
+                    # If you have angular acceleration data, you can uncomment the following lines:
+                    # alpha = ... # Calculate or provide angular acceleration
+                    # tangential_acc = np.cross(alpha, r)
+                    # linear_acceleration_target = linear_acceleration_rotated + centripetal_acc + tangential_acc
+                    
+                    # Without angular acceleration:
+                    linear_acceleration_target = linear_acceleration_rotated + centripetal_acc
+                    
+                    msg.linear_acceleration.x = linear_acceleration_target[0]
+                    msg.linear_acceleration.y = linear_acceleration_target[1]
+                    msg.linear_acceleration.z = linear_acceleration_target[2]
+                    msg.angular_velocity.x = angular_velocity_target[0]
+                    msg.angular_velocity.y = angular_velocity_target[1]
+                    msg.angular_velocity.z = angular_velocity_target[2]
+
+
+                # Transform imu data to same orign here.
+                msg = msg
+
+            ts = t.to_sec()
+            if data_reference_frame is None:
+                data_reference_frame = msg.header.frame_id
+
+            acc = [msg.linear_acceleration.x, msg.linear_acceleration.y, msg.linear_acceleration.z]
+            rot_vel = [msg.angular_velocity.x, msg.angular_velocity.y, msg.angular_velocity.z]
+            imu_data.append([ts] + acc + rot_vel)
+
+    return np.array(imu_data, dtype=np.float64), data_reference_frame
+
+def interpolate(t_common, t1_adjusted, y1_adjusted):
+    # Find indices for lower bound of each t_common
+    indices = torch.searchsorted(t1_adjusted, t_common, right=True) - 1
+    
+    # Clip indices to valid range
+    indices = torch.clamp(indices, 0, len(t1_adjusted) - 2)
+
+    # Get lower and upper bounds
+    t0 = t1_adjusted[indices]
+    t1 = t1_adjusted[indices + 1]
+    y0 = y1_adjusted[indices]
+    y1 = y1_adjusted[indices + 1]
+
+    # Compute weights
+    w1 = (t_common - t0) / (t1 - t0)
+    w0 = 1 - w1
+
+    # Perform linear interpolation
+    y_common = w0 * y0 + w1 * y1
+
+    return y_common
+
+class TimeOffsetOptimizer(nn.Module):
+    def __init__(self, time_offset_guess):
+        super(TimeOffsetOptimizer, self).__init__()
+        self.time_offset = nn.Parameter(torch.tensor(float(time_offset_guess), dtype=torch.float32))
+
+    def forward(self, t1, y1, t2, y2):
+        """Apply time offset to the second signal."""
+        return t1, y1, t2.clone() + self.time_offset, y2
+
+class IMUSyncOptimizer:
+    def __init__(self, imu1_bag, imu1_topic, tf_bag, axis):
+        self.axis = axis
+        self.imu1_data, self.reference_frame = extract_imu_data(imu1_bag, imu1_topic)
+        self.tf_transformer = BagTfTransformerWrapper(tf_bag)
+        
+
+    def time_sync_imu(self, imu2_bag, imu2_topic):
+        try:
+            imu2_data, reference_frame = extract_imu_data(imu2_bag, imu2_topic, tf_transformer = self.tf_transformer, reference_frame=self.reference_frame)
+        except:
+            return 0, False
+        
+        if len(imu2_data) == 0:
+            return 0, False
+        
+        t2 = torch.from_numpy( imu2_data[:, 0])
+        if self.axis == "x":
+            nr = 4
+        elif self.axis == "y":
+            nr = 5
+        elif self.axis == "z":
+            nr = 6
+
+        y2 = torch.from_numpy( imu2_data[:, nr])
+
+        t1 = torch.from_numpy( self.imu1_data[:, 0])
+        y1 = torch.from_numpy( self.imu1_data[:, nr])
+
+        val = max( t1.min(), t2.min() )
+        t1 = t1 - val
+        t2 = t2 - val
+        optimal_offset = self.optimize_time_offset(t1.cuda(), y1.cuda(), t2.cuda(), y2.cuda())
+        return optimal_offset, True
+        
+    
+    def optimize_time_offset(self, t1, y1, t2, y2, num_iterations=5000, learning_rate=0.001):
+        # Interpolate both signals to a common time grid
+        t_min = max(t1.min(), t2.min())
+        t_max = min(t1.max(), t2.max())
+        t_common = torch.linspace(t_min, t_max, 50000)
+        t_common = t_common.to(t1.device)
+        y1_interp = interpolate(t_common, t1, y1)
+        y2_interp = interpolate(t_common, t2, y2)
+
+        # Apply cross-correlation to find initial guess
+        convoluted_signal = np.correlate( y1_interp.cpu().detach().numpy() , y2_interp.cpu().detach().numpy() , mode="full") 
+        num_frames = len(t_common) - 1
+        frame_ids = np.arange(num_frames)
+        conv_axis = np.hstack((-frame_ids[::-1][:-1], frame_ids))
+        time_offset_id = conv_axis[np.argmax(convoluted_signal)]
+        time_offset_guess = -t_common[abs(time_offset_id)] if time_offset_id < 0 else t_common[abs(time_offset_id)]
+        
+
+        # Initialize model and optimizer for fine adjustment
+        model = TimeOffsetOptimizer(time_offset_guess)
+        model.to(t1.device)
+        optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+
+
+        self.t1_original = t1
+        self.t2_original = t2
+        self.y1_original = y1
+        self.y2_original = y2
+
+        smallest_loss, early_stopping_iter, patience, EPS = torch.inf, 0, 500, 0.0000001
+        for i in range(num_iterations):
+            optimizer.zero_grad()
+            
+            # Apply time offset
+            t1_adjusted, y1_adjusted, t2_adjusted, y2_adjusted = model(t1, y1, t2, y2)
+            
+            # Interpolate both signals to a common time grid
+            t_min = max(t1_adjusted.min(), t2_adjusted.min())
+            t_max = min(t1_adjusted.max(), t2_adjusted.max())
+            t_common = torch.linspace(t_min, t_max, 100000)
+            t_common = t_common.to(t1.device)
+            
+            y1_interp = interpolate(t_common, t1_adjusted, y1_adjusted)
+            y2_interp = interpolate(t_common, t2_adjusted, y2_adjusted)
+            
+            # Compute MSE loss
+            loss = nn.MSELoss()(y1_interp, y2_interp)
+            # Backpropagate and update
+            loss.backward()
+            optimizer.step()
+            # print("Loss: ", float(loss), " Offset: ", model.time_offset.item()) # started with 0.0076
+
+            if loss + EPS < smallest_loss:
+                smallest_loss = loss
+                early_stopping_iter = 0
+            else:
+                early_stopping_iter += 1
+                if early_stopping_iter > patience:
+                    # print("Early stopping epoch: ", i)
+                    break
+        
+        self.t2_final =  self.t2_original.clone() + model.time_offset
+        
+        
+        print(f"Time FFT Guess: {time_offset_guess * 10**9}ns,   Final Time Offset: {model.time_offset.item() * 10**9}ns")
+
+        return model.time_offset.item() * 10**9
+    
+
+def process_all(directory, axis):
+
+    
+    summary = {}
+    plot = True
+
+    reference_imu = {
+        "topic": "/gt_box/cpt7/imu/data_raw",
+        "bag_pattern": "*_nuc_cpt7.bag",
+        "tf_bag_pattern" : "*_nuc_tf.bag"
+    }
+
+    validation_imus = [
+        {
+            "topic": "/gt_box/zed2i/zed_node/imu/data",
+            "bag_pattern": "*_jetson_zed2i_proprioceptive.bag",
+            "max_offset_ms": 1,
+        },
+        {
+            "topic": "/gt_box/ap20/imu",
+            "bag_pattern": "*_jetson_ap20.bag",
+            "max_offset_ms": 1,
+        },
+        {
+            "topic": "/gt_box/adis16475_node/imu",
+            "bag_pattern": "*_jetson_adis.bag",
+            "max_offset_ms": 1,
+        },
+        {
+            "topic": "/gt_box/livox/imu",
+            "bag_pattern": "*_nuc_livox.bag",
+            "max_offset_ms": 1,
+        },
+        {
+            "topic": "/gt_box/alphasense_driver_node/imu",
+            "bag_pattern": "*_nuc_alphasense.bag",
+            "max_offset_ms": 1,
+        },
+        {
+            "topic": "/gt_box/cpt7/offline_from_novatel_logs/imu",
+            "bag_pattern": "*_cpt7_raw_imu.bag",
+            "max_offset_ms": 1,
+        }
+    ]
+    
+    reference_imu_file, suc = get_bag(directory, reference_imu["bag_pattern"])
+    if not suc: 
+        summary[ "Reference IMU" ] = "Bag file not found! Stop processing!"
+        return summary
+
+    tf_bag_file, suc = get_bag(directory, reference_imu["tf_bag_pattern"])
+    if not suc: 
+        summary[ "Transform" ] = "Bag not found! Stop processing!"
+        return summary
+    
+    sync_optimizer = IMUSyncOptimizer( reference_imu_file, reference_imu["topic"], tf_bag_file, axis)
+
+    ploted_reference_imu = False
+
+    rr.init("rerun_example_minimal", spawn=True)
+    rr.save(os.path.join(directory, f"imu_timesync-{axis}.rrd"))
+    
+
+    for validation_imu in validation_imus:
+        bag_file, suc = get_bag(directory, validation_imu["bag_pattern"])
+        pattern = validation_imu["bag_pattern"]
+        
+
+        if not suc: 
+            log = f"{pattern} [FAILED] - No bag file found"
+            summary[ pattern[2:] ] = log
+            print(log)
+            continue
+        optimal_offset_ns, suc = sync_optimizer.time_sync_imu(bag_file, validation_imu["topic"])
+        if not suc:
+            log = f"{pattern} [FAILED] - Error processing data"
+            summary[ pattern[2:] ] = log
+            print(log)
+            continue
+
+        if optimal_offset_ns > validation_imu["max_offset_ms"] * 10**6:
+            log = f"{pattern} [FAILED] - Offset to high: {optimal_offset_ns}ns"
+        else:
+            log = f"{pattern} [SUC] - Offset: {optimal_offset_ns}ns"
+        
+        summary[ pattern[2:]] = log
+        print(log)
+
+        if plot:
+            if not ploted_reference_imu:
+                for t in range(len(sync_optimizer.t1_original)):
+                    rr.set_time_seconds("time", float(sync_optimizer.t1_original[t]) )
+                    rr.log(reference_imu["bag_pattern"][2:] + f"-{axis}", rr.Scalar( float(sync_optimizer.y1_original[t]) ))
+                ploted_reference_imu = True
+
+            for t in range(len(sync_optimizer.t2_original)):
+                rr.set_time_seconds("time", float(sync_optimizer.t2_original[t]) )
+                rr.log(pattern[2:] + "_original"+ f"-{axis}", rr.Scalar( float(sync_optimizer.y2_original[t]) ))
+
+            for t in range(len(sync_optimizer.t2_final)):
+                rr.set_time_seconds("time", float(sync_optimizer.t2_final[t]) )
+                rr.log(pattern[2:] + "_adjusted"+ f"-{axis}", rr.Scalar( float(sync_optimizer.y2_original[t]) ))
+    return summary
+    
+
+
+if __name__ == "__main__":
+    
+    debug = False
+    if debug:
+        base = "/Data/Projects/GrandTour/lee_k_democracy/2024-09-18-10-59-00/2024-09-18-10-59-00"
+        parser = argparse.ArgumentParser(description="IMU Synchronization and Time Offset Optimization")
+        parser.add_argument("--imu1_bag", default=f"{base}_jetson_ap20_0.bag", help="Path to IMU1 rosbag file")
+        parser.add_argument("--imu2_bag", default=f"{base}_nuc_cpt7_0.bag", help="Path to IMU2 rosbag file")
+        parser.add_argument("--tf_bag", default=f"{base}_nuc_tf_0.bag", help="Path to TF rosbag file")
+        parser.add_argument("--imu1_topic", default="/gt_box/ap20/imu", help="IMU1 topic name")
+        parser.add_argument("--imu2_topic", default="/gt_box/cpt7/imu/data_raw", help="IMU2 topic name")
+        
+        args = parser.parse_args()
+        sync_optimizer = IMUSyncOptimizer( args.imu1_bag, args.imu1_topic, args.tf_bag)
+        optimal_offset_ns, suc = sync_optimizer.time_sync_imu(args.imu2_bag, args.imu2_topic)
+        print(f"Final time offset: {optimal_offset_ns}ns")
+    else: 
+        parser = argparse.ArgumentParser(description="Fix and reindex ROS bag files.")
+        parser.add_argument(
+            "--directory", "-d",
+            type=str,
+            default="/mission_data",
+            help="Directory to search for active bag files (default: current directory)."
+        )
+        args = parser.parse_args()
+        master_summary = {}
+        for axis in ["x", "y", "z"]:
+            print("Running for axis: ", axis)
+
+            master_summary[axis] = process_all(args.directory, axis=axis)
+
+            # Dump the dictionary to a YAML file
+            with open(os.path.join(args.directory, "imu_timesync_summary.yaml"), 'w') as file:
+                yaml.dump(master_summary, file, default_flow_style=False, width=1000)
+                

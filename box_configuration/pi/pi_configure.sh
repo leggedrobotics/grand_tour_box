@@ -50,34 +50,39 @@ sudo cp ~/git/grand_tour_box/box_configuration/pi/phc2sys_eth0.service /lib/syst
 sudo cp ~/git/grand_tour_box/box_configuration/pi/ptp4l_eth0.service /lib/systemd/system/
 sudo cp ~/git/grand_tour_box/box_configuration/pi/autostart_tmux.service /lib/systemd/system/
 sudo cp ~/git/grand_tour_box/box_configuration/pi/autostart_set_fan_speed.service /lib/systemd/system/
-sudo cp ~/git/grand_tour_box/box_configuration/pi/pigpiod.service /lib/systemd/system/
+sudo cp ~/git/grand_tour_box/box_configuration/pi/pigpiod_box.service /lib/systemd/system/
+sudo cp ~/git/grand_tour_box/box_configuration/pi/autostart_tmux.service /etc/systemd/system/autostart_tmux.service
+sudo cp ~/git/grand_tour_box/box_configuration/pi/clock_info.service /etc/systemd/system/clock_info.service
+sudo cp /home/rsl/git/grand_tour_box/box_configuration/pi/cleanup_ros_folder.service /etc/systemd/system/cleanup_ros_folder.service
 
 sudo systemctl daemon-reload
-systemctl start ptp4l_eth0.service
-systemctl start phc2sys_eth0.service
-systemctl start autostart_tmux.service
-systemctl start autostart_set_fan_speed.service
-systemctl start pigpiod.service
-systemctl start restart docker
+sudo systemctl enable cleanup_ros_folder
 
-systemctl enable ptp4l_eth0.service
-systemctl enable phc2sys_eth0.service
-systemctl enable autostart_tmux.service
-systemctl enable autostart_set_fan_speed.service
-systemctl enable pigpiod.service
-systemctl enable docker.service
-systemctl enable containerd.service
+sudo systemctl enable clock_info
+sudo systemctl enable ptp4l_eth0.service
+sudo systemctl enable phc2sys_eth0.service
+sudo systemctl enable autostart_tmux.service
+sudo systemctl enable autostart_set_fan_speed.service
+sudo systemctl enable pigpiod_box.service
+sudo systemctl enable docker.service
+sudo systemctl enable containerd.service
+
+sudo systemctl start ptp4l_eth0.service
+sudo systemctl start phc2sys_eth0.service
+sudo systemctl start autostart_tmux.service
+sudo systemctl start autostart_set_fan_speed.service
+sudo systemctl start pigpiod_box.service
+sudo systemctl start restart docker
+
+systemctl disable pigpiod.service
 
 
 systemctl restart ptp4l_eth0.service; sleep 3; systemctl restart phc2sys_eth0.service
 
-
 # Install for tmux
 sudo apt install tmux tmuxp -y
 
-
 # Install pigpio
-
 sudo apt install python-setuptools python3-setuptools -y
 
 cd ~/git; wget https://github.com/joan2937/pigpio/archive/master.zip
@@ -129,7 +134,6 @@ sudo usermod -aG docker $USER
 ####
 
 
-
 # Install Boxi
 cd ~/git/grand_tour_box/box_utils/boxi
 sudo apt -y update
@@ -137,10 +141,12 @@ sudo apt install python3-pip -y
 pip3 install -e ./
 
 
-
 cd /home/rsl/git/grand_tour_box/box_configuration/pi/docker
 ./build.sh
 ~/git/grand_tour_box/box_configuration/pi/docker/run.sh
 # ACTION /home/rsl/git/grand_tour_box/box_configuration/pi/docker/install_manually.sh
-# ACTION - open new terminal and do the following - docker commit 12312312 leggedrobotics:noetic-pi-focal
+# ACTION - open new terminal and do the following - docker commit 12312312 rslethz:noetic-pi-focal
 # Done
+
+# Follow the instructions in https://forums.raspberrypi.com/viewtopic.php?t=164868 to get the clock monitoring working.
+# In addition the ptp4l and phy2sys create temporary files that are read within the healt_status given taht no systemd access is available within the container.

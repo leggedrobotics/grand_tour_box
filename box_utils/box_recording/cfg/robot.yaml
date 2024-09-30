@@ -1,18 +1,17 @@
 
 jetson:
   bags:
-    utils:
-      - /gt_box/alphasense_driver_node/imu
-      - /gt_box/health_status/jetson/status
-    zed2i:
-      - svo # SVO recording, not rosbag. Mutually exclusive: won't record zed ros topics if svo is set here.
     ap20:
       - /gt_box/ap20/imu
       - /gt_box/ap20/prism_position
     ap20_aux:
       - /ap20/tps
       - /ap20/imu
-      - /gt_box/ap20/debug
+      - /gt_box/ap20/imu_debug
+      - /gt_box/ap20/position_debug
+      - /gt_box/ap20/timestamp_debug
+    zed2i:
+      - svo # SVO recording, not rosbag. Mutually exclusive: won't record zed ros topics if svo is set here.
     hdr:
       - /gt_box/hdr_front/image_raw/compressed
       - /gt_box/hdr_front/camera_info
@@ -20,13 +19,22 @@ jetson:
       - /gt_box/hdr_left/camera_info
       - /gt_box/hdr_right/image_raw/compressed
       - /gt_box/hdr_right/camera_info
+    utils:
+      - /gt_box/health_status/jetson/status
     clock_jetson:
       - /clock
-
+    adis:
+      - /gt_box/adis16475_node/imu
+    stim:
+      - /gt_box/stim320/acceletometer_temperature
+      - /gt_box/stim320/gyroscope_temperature
+      - /gt_box/stim320/imu
+      - /gt_box/stim320/internal_counter
+      - /gt_box/stim320/kernel_time
+      - /gt_box/stim320/ros_time
+      - /gt_box/stim320/continuous_counter
 nuc:
   bags:
-    cpt7_local:
-      - cpt7_local
     utils:
       - /gt_box/health_status/nuc/status
     hesai:
@@ -36,7 +44,7 @@ nuc:
     livox:
       - /gt_box/livox/lidar
       - /gt_box/livox/imu
-      - /gt_box/livox/imu_SI
+      - /gt_box/livox/imu_si_compliant
     alphasense:
       - /gt_box/alphasense_driver_node/cam1/color/image/compressed
       - /gt_box/alphasense_driver_node/cam1/color/camera_info
@@ -77,7 +85,8 @@ nuc:
     tf:
       - /tf
       - /tf_static
-
+    cpt7_local:
+      - cpt7_local
 lpc:
   grpc_cfg:
     address: 192.168.0.141
@@ -86,21 +95,15 @@ lpc:
     locomotion:
       - /debug_info
     general:
-      - /anymal_low_level_controller/actuator_readings
-      - /anymal_low_level_controller/actuator_readings_extended_throttled
-      - /motion_reference/command_pose
-      - /motion_reference/command_twist
-      - /pdb/battery_state
-      - /pdb/intrinsic_state
-      - /pdb/power_state
-      - /sensors/battery_voltage
-      - /soft_emcy_stop
-      - /twist_mux/selected_input
-      - /twist_mux/twist
-      - /rsl_joystick_driver/twist
-      - /rsl_joystick_module/twist
-      - /foot_scan
-      - /joy_manager/twist
+      - /anymal_low_level_controller/actuator_readings                  
+      - /anymal_low_level_controller/actuator_readings_extended_throttled           
+      - /foot_scan                                                                
+      - /joy_manager/twist                                                        
+      - /pdb/battery_state                                                        
+      - /pdb/intrinsic_state                                                            
+      - /pdb/power_state                                                               
+      - /twist_mux/selected_input                                                             
+      - /twist_mux/twist 
     anymal_imu:
       - /sensors/imu
     state_estimator:
@@ -123,15 +126,6 @@ npc:
     address: 192.168.0.142
     port: 50052
   bags:
-    general:
-      - /behavior_engine/status
-      - /chrony_monitor_npc/status
-      - /cpu_monitor_npc/status
-      - /cpu_loupe_npc/cpu_loupe
-      - /disk_monitor_npc/status
-      - /memory_monitor_npc/status
-      - /network_monitor_npc/status
-      - /pinger_npc_to_lpc/ping
     depth_cameras:
       - /depth_camera_left/depth/camera_info
       - /depth_camera_left/depth/image_rect_raw
@@ -139,9 +133,7 @@ npc:
       - /depth_camera_right/depth/image_rect_raw
     velodyne:
       - /lidar/packets
-      - /lidar/point_cloud
       - /lidar/time_sync_status
-      - /point_cloud_filter/lidar/point_cloud_filtered
     elevation_mapping:
       - /elevation_mapping/elevation_map_raw
 

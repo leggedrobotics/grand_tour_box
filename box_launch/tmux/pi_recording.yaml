@@ -18,4 +18,5 @@ windows:
       - df -h $HOME
       - history -s tk
       - history -s l-docker
+      - cd ~
       focus: true

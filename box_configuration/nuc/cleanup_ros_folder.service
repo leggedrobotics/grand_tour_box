@@ -1,0 +1,11 @@
+[Unit]
+Description=Cleanup ros folder
+After=ptp4l_enp45s0.service
+
+[Service]
+Type=forking
+ExecStart=python3 /home/rsl/git/grand_tour_box/box_utils/box_cleanup/cleanup_ros_folder.py
+User=rsl
+
+[Install]
+WantedBy=default.target

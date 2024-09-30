@@ -10,6 +10,8 @@ ENV NVIDIA_DRIVER_CAPABILITIES=${NVIDIA_DRIVER_CAPABILITIES:+$NVIDIA_DRIVER_CAPA
 
 RUN echo "Europe/Zurich" > /etc/localtime ; echo "CUDA Version 12.4.1" > /usr/local/cuda/version.txt
 
+# RUN rm /etc/apt/sources.list.d/cuda.list
+
 COPY dependencies/zed.sh /zed.sh
 RUN sh -c "chmod +x /zed.sh"
 RUN /bin/bash -c '/zed.sh'
@@ -22,12 +24,13 @@ COPY dependencies/ros.sh /ros.sh
 RUN sh -c "chmod +x /ros.sh"
 RUN /bin/bash -c '/ros.sh'
 
-COPY dependencies/open_cv.sh /open_cv.sh
-RUN sh -c "chmod +x /open_cv.sh"
-RUN /bin/bash -c '/open_cv.sh'
+COPY dependencies/opencv_gtsam.sh /opencv_gtsam.sh
+RUN sh -c "chmod +x /opencv_gtsam.sh"
+RUN /bin/bash -c '/opencv_gtsam.sh'
 
 COPY dependencies/grand_tour.sh /grand_tour.sh
 RUN sh -c "chmod +x /grand_tour.sh"
+
 RUN --mount=type=ssh /bin/bash -c '/grand_tour.sh'
 
 COPY entrypoint.sh /entrypoint.sh

@@ -1,0 +1,9 @@
+[Unit]
+Description=Daemon required to control GPIO pins via pigpio
+After=network-online.target
+
+[Service]
+ExecStart=sudo pigpiod -l
+Type=forking
+[Install]
+WantedBy=multi-user.target

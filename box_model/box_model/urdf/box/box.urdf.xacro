@@ -3,7 +3,7 @@
 <robot name="box" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
 <!-- YAML file containing the default values from CAD -->
-<xacro:property name="calib_file" value="$(find box_calibration)/calibration/tf/calibration_latest.yaml" />
+<xacro:property name="calib_file" value="$(find box_calibration)/calibration/tf/calibration_cad.yaml" />
 <!-- load the YAML calibration file into a property -->
 <xacro:property name="calib" value="${xacro.load_yaml(calib_file)}"/>
 <!-- YAML file containing the default values from CAD -->
@@ -36,7 +36,7 @@
   </link>
   <joint name="box_base_to_box_base_model" type="fixed">
     <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
-    <parent link="box_base" />
+    <parent link="stim320_imu" />
     <child link="box_base_model" />
   </joint>
 
@@ -69,28 +69,28 @@
 
   <link name="base"/>
   <joint name="cpt7_to_robot_base" type="fixed">
-    <origin xyz="-0.0764038 -0.0361 0.2802790" rpy="3.1415126 0.0 0.0" />
-    <parent link="cpt7_imu" />
-    <child link="base" />
+    <origin xyz="0.0764038 -0.0361 0.2802790" rpy="3.1415126 0.0 0.0" />
+    <parent link="base" />
+    <child link="box_base" />
   </joint>
 
-  <link name="cpt7_front_antenna"/>
+  <link name="cpt7_antenna_front"/>
   <!-- CPT7 Coordinate System -->
-  <joint name="cpt7_to_front_antenna" type="fixed">
-    <origin xyz="0.13924890003 -0.0361 -0.1712000" rpy="0.0 0.0 0.0" />
+  <joint name="cpt7_to_antenna_front" type="fixed">
+    <origin xyz="0.13924890003 -0.0361 -0.193298" rpy="0.0 0.0 0.0" />
     <parent link="cpt7_imu" />
-    <child link="cpt7_front_antenna" />
+    <child link="cpt7_antenna_front" />
   </joint>
 
-  <link name="cpt7_back_antenna"/>
+  <link name="cpt7_antenna_back"/>
   <!-- CPT7 Coordinate System -->
-  <joint name="cpt7_to_back_antenna" type="fixed">
-    <origin xyz="-0.4404038 -0.0361 -0.0267714" rpy="0.0 0.0 0.0" />
+  <joint name="cpt7_to_antenna_back" type="fixed">
+    <origin xyz="-0.4404038 -0.0361 -0.048868" rpy="0.0 0.0 0.0" />
     <parent link="cpt7_imu" />
-    <child link="cpt7_back_antenna" />
+    <child link="cpt7_antenna_back" />
   </joint>
 
-  <link name="State"/>
+  <link name="ap20_imu"/>
   <!-- Basilisk IMU Frame -->
   <joint name="base_to_basilisk_imu_frame" type="fixed">
     <origin xyz=" ${calib['box_base_to_basilisk_imu_frame']['x']}
@@ -100,7 +100,7 @@
                   ${calib['box_base_to_basilisk_imu_frame']['pitch']}
                   ${calib['box_base_to_basilisk_imu_frame']['yaw']}" />
     <parent link="box_base" />
-    <child link="State" />
+    <child link="ap20_imu" />
   </joint>
 
   <xacro:include filename="$(find box_model)/urdf/cameras/cameras.urdf.xacro" />

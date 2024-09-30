@@ -118,17 +118,21 @@ sudo systemctl enable autostart_tmux
 #sudo systemctl disable phc2sys_mgbe1
 
 
-sudo cp /home/rsl/git/grand_tour_box/box_configuration/jetson/sync_time_once.service /etc/systemd/system/sync_time_once.service
 sudo cp /home/rsl/git/grand_tour_box/box_configuration/jetson/jetson_clocks_once.service /etc/systemd/system/jetson_clocks_once.service
 sudo cp /home/rsl/git/grand_tour_box/box_configuration/jetson/ptp4l_mgbe0.service /lib/systemd/system/ptp4l_mgbe0.service
 sudo cp /home/rsl/git/grand_tour_box/box_configuration/jetson/phc2sys_mgbe0.service /lib/systemd/system/phc2sys_mgbe0.service
 sudo cp /home/rsl/git/grand_tour_box/box_configuration/jetson/box_chrony.service /lib/systemd/system/box_chrony.service
+sudo cp /home/rsl/git/grand_tour_box/box_configuration/jetson/autostart_tmux.service /etc/systemd/system/autostart_tmux.service
+sudo cp /home/rsl/git/grand_tour_box/box_configuration/jetson/cleanup_ros_folder.service /etc/systemd/system/cleanup_ros_folder.service
 
 sudo systemctl daemon-reload
-sudo systemctl disable sync_time_once
+sudo systemctl enable cleanup_ros_folder
+sudo systemctl enable autostart_tmux
+
 sudo systemctl enable ptp4l_mgbe0
 sudo systemctl enable phc2sys_mgbe0
 sudo systemctl enable box_chrony
+
 sudo systemctl disable chrony
 sync-clocks
 

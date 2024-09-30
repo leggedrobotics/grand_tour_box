@@ -82,7 +82,7 @@ box_base_to_imu_stim320:
   roll: 3.141592653589793
   pitch: 0.0
   yaw: 0.0
-box_base_to_imu_adis16475:
+box_base_to_adis16475_imu:
   x: 0.32228149377799997
   y: -0.002500000013999998
   z: 0.161543522844

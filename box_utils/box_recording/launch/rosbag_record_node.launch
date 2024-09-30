@@ -8,6 +8,7 @@
         type="rosbag_record_node.py"
         output="screen">
         <param name="capability_group" value="Recording"/>
+        <param name="store_debug_logs" value="True"/>
     </node>
   </group>
 </launch>

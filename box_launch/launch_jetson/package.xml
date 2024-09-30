@@ -23,4 +23,5 @@
   <depend>box_health</depend>
   <depend>box_throttling</depend>
   <depend>box_relaying</depend>
+  <depend>box_calibration</depend>
 </package>

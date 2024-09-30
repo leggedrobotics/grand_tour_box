@@ -3,7 +3,7 @@
 <robot name="cameras" xmlns:xacro="http://www.ros.org/wiki/xacro">
     <!-- ////////// Alphasense ////////// -->
 
-    <!-- Alphasense base (coincides with alphasense Cam0/ front left) -->
+    <!-- Alphasense base (coincides with alphasense Cam1/ front center) -->
     <link name="alphasense_base"/>
     <joint name="box_base_to_alphasense_base" type="fixed">
         <origin xyz=" ${calib['box_base_to_alphasense_base']['x']}
@@ -16,17 +16,31 @@
         <child link="alphasense_base"/>
     </joint>
 
-    <!-- Alphasense Cam1/ front left (should be identity)-->
+    <link name="alphasense_front_center"/>
+    <joint name="alphasense_front_center_identity" type="fixed">
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <parent link="cam1_sensor_frame"/>
+        <child link="alphasense_front_center"/>
+    </joint>
+
+    <!-- Alphasense Cam1/ front center (should be identity)-->
     <link name="cam1_sensor_frame"/>
-    <joint name="alphasense_base_to_alphasense_front_left" type="fixed">
-        <origin xyz=" ${pinned_constraints['alphasense_base_to_alphasense_front_left']['x']}
-                  ${pinned_constraints['alphasense_base_to_alphasense_front_left']['y']}
-                  ${pinned_constraints['alphasense_base_to_alphasense_front_left']['z']}"
-                rpy=" ${pinned_constraints['alphasense_base_to_alphasense_front_left']['roll']}
-                  ${pinned_constraints['alphasense_base_to_alphasense_front_left']['pitch']}
-                  ${pinned_constraints['alphasense_base_to_alphasense_front_left']['yaw']}"/>
+    <joint name="alphasense_base_to_alphasense_front_middle" type="fixed">
+        <origin xyz=" ${calib['alphasense_base_to_alphasense_front_middle']['x']}
+                  ${calib['alphasense_base_to_alphasense_front_middle']['y']}
+                  ${calib['alphasense_base_to_alphasense_front_middle']['z']}"
+                rpy=" ${calib['alphasense_base_to_alphasense_front_middle']['roll']}
+                  ${calib['alphasense_base_to_alphasense_front_middle']['pitch']}
+                  ${calib['alphasense_base_to_alphasense_front_middle']['yaw']}"/>
         <parent link="alphasense_base"/>
         <child link="cam1_sensor_frame"/>
+    </joint>
+
+    <link name="alphasense_front_right"/>
+    <joint name="alphasense_front_right_identity" type="fixed">
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <parent link="cam2_sensor_frame"/>
+        <child link="alphasense_front_right"/>
     </joint>
 
     <!-- Alphasense Cam2/ front right -->
@@ -42,17 +56,31 @@
         <child link="cam2_sensor_frame"/>
     </joint>
 
-    <!-- Alphasense Cam3/ front middle -->
+    <link name="alphasense_front_left"/>
+    <joint name="alphasense_front_left_identity" type="fixed">
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <parent link="cam3_sensor_frame"/>
+        <child link="alphasense_front_left"/>
+    </joint>
+
+    <!-- Alphasense Cam3/ front left -->
     <link name="cam3_sensor_frame"/>
-    <joint name="alphasense_base_to_alphasense_front_middle" type="fixed">
-        <origin xyz=" ${calib['alphasense_base_to_alphasense_front_middle']['x']}
-                  ${calib['alphasense_base_to_alphasense_front_middle']['y']}
-                  ${calib['alphasense_base_to_alphasense_front_middle']['z']}"
-                rpy=" ${calib['alphasense_base_to_alphasense_front_middle']['roll']}
-                  ${calib['alphasense_base_to_alphasense_front_middle']['pitch']}
-                  ${calib['alphasense_base_to_alphasense_front_middle']['yaw']}"/>
+    <joint name="alphasense_base_to_alphasense_front_left" type="fixed">
+        <origin xyz=" ${pinned_constraints['alphasense_base_to_alphasense_front_left']['x']}
+                  ${pinned_constraints['alphasense_base_to_alphasense_front_left']['y']}
+                  ${pinned_constraints['alphasense_base_to_alphasense_front_left']['z']}"
+                rpy=" ${pinned_constraints['alphasense_base_to_alphasense_front_left']['roll']}
+                  ${pinned_constraints['alphasense_base_to_alphasense_front_left']['pitch']}
+                  ${pinned_constraints['alphasense_base_to_alphasense_front_left']['yaw']}"/>
         <parent link="alphasense_base"/>
         <child link="cam3_sensor_frame"/>
+    </joint>
+
+    <link name="alphasense_left"/>
+    <joint name="alphasense_left_identity" type="fixed">
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <parent link="cam4_sensor_frame"/>
+        <child link="alphasense_left"/>
     </joint>
 
     <!-- Alphasense Cam4/ left -->
@@ -66,6 +94,13 @@
                   ${calib['alphasense_base_to_alphasense_left']['yaw']}"/>
         <parent link="alphasense_base"/>
         <child link="cam4_sensor_frame"/>
+    </joint>
+
+    <link name="alphasense_right"/>
+    <joint name="alphasense_right_identity" type="fixed">
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <parent link="cam5_sensor_frame"/>
+        <child link="alphasense_right"/>
     </joint>
 
     <!-- Alphasense Cam5/ right -->

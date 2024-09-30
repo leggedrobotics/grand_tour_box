@@ -10,7 +10,7 @@ Usage: $(basename $0) [OPTIONS]
 # Default target
 REMOVE_FLAG="--rm"
 INTERACTIVE_FLAG="-it"
-IMAGE="leggedrobotics:noetic-pi-focal"
+IMAGE="rslethz:noetic-pi-focal"
 ENTRYPOINT="/home/rsl/git/grand_tour_box/box_configuration/pi/docker/entrypoint.sh"
 
 COMMAND=""
@@ -50,7 +50,7 @@ if [ ! -f $XAUTH ]; then
     chmod a+r $XAUTH
 fi
 
-
+cd ~
 mkdir -p .etc && cd .etc
 ln -sf /etc/passwd .
 ln -sf /etc/shadow .
@@ -61,7 +61,6 @@ cd ..
 # Run docker
 docker run --net=host \
    --privileged \
-   -eHOST_USERNAME=rsl \
     $INTERACTIVE_FLAG \
     $REMOVE_FLAG \
     --volume=$XSOCK:/root/.X11-unix:rw \
@@ -73,11 +72,12 @@ docker run --net=host \
     --cap-add=sys_nice \
     -v$HOME:$HOME \
     -v /sys:/sys \
-    -v$(pwd)/.etc/shadow:/etc/shadow \
-    -v$(pwd)/.etc/passwd:/etc/passwd \
-    -v$(pwd)/.etc/group:/etc/group \
+    -v /etc/hosts:/etc/hosts \
     -v /dev/gpiochip0:/dev/gpiochip0 \
     -v /dev/gpiochip1:/dev/gpiochip1 \
+    -v /tmp/ptp4l_eth0.log:/tmp/ptp4l_eth0.log \
+    -v /tmp/clock_info.txt:/tmp/clock_info.txt \
+    -v /tmp/phc2sys_eth0.log:/tmp/phc2sys_eth0.log \
     --entrypoint=$ENTRYPOINT \
     $IMAGE \
     $COMMAND

@@ -10,13 +10,8 @@
 
   <depend>launch_scripts</depend>
   <depend>bringup_hesai</depend>
-  <exec_depend>bringup_fkie</exec_depend>
-  <depend>box_recording</depend>
   <depend>box_rviz</depend>
-  <depend>box_health</depend>
   <depend>box_model</depend>
   <depend>box_throttling</depend>
-  <depend>box_relaying</depend>
-  <depend>box_launch</depend>
 
 </package>

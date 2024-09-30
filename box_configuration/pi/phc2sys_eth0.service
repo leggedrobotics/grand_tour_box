@@ -3,11 +3,15 @@ Description=Synchronize system clock or PTP hardware clock (PHC)
 Documentation=man:phc2sys
 Requires=ptp4l_eth0.service
 After=ptp4l_eth0.service
-Before=time-sync.target
 
 [Service]
 Type=simple
-ExecStart=/usr/sbin/phc2sys -s eth0 -c CLOCK_REALTIME -w
+ExecStart=/usr/sbin/phc2sys -s eth0 -c CLOCK_REALTIME -S 1.0 -w -m
+Restart=on-failure
+
+# Redirect standard output and error to a log file
+StandardOutput=append:/tmp/phc2sys_eth0.log
+StandardError=append:/tmp/phc2sys_eth0.log
 
 [Install]
 WantedBy=multi-user.target

@@ -1,14 +1,10 @@
 [Unit]
 Description=Autostart Terminal and Run tmuxp
-After=network-online.target
-After=phc2sys_system.service
-After=ptp4l.service
-Requires=wait_for_jetson_once.service
-After=wait_for_jetson_once.service
+After=ptp4l_enp45s0.service
 
 [Service]
 Type=forking
-ExecStartPre=/bin/sleep 30
+ExecStartPre=/bin/sleep 20
 ExecStart=/usr/bin/tmuxp load /home/rsl/git/grand_tour_box/box_launch/tmux/nuc_recording.yaml -d
 User=rsl
 
