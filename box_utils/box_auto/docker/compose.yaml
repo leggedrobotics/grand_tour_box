@@ -4,7 +4,7 @@ x-common-config: &common-config
     dockerfile: "./box.Dockerfile"
     ssh:
       default: "/home/zivi/.ssh/id_rsa"
-  image: rslethz/gt_box:latest
+  image: rslethz/grand_tour_box:latest
   runtime: nvidia
   # network_mode: host
   privileged: true
