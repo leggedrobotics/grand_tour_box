@@ -1,6 +1,6 @@
 #!/bin/bash
 
-figlet Welcome GrandTour Docker
+figlet Welcome GrandTour + Kleinkram Docker
 
 klein endpoint set $ENDPOINT
 klein login --key $APIKEY
