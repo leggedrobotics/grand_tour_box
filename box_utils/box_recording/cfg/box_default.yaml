@@ -1,6 +1,15 @@
 
 jetson:
   bags:
+    ap20:
+      - /gt_box/ap20/imu
+      - /gt_box/ap20/prism_position
+    ap20_aux:
+      - /ap20/tps
+      - /ap20/imu
+      - /gt_box/ap20/imu_debug
+      - /gt_box/ap20/position_debug
+      - /gt_box/ap20/timestamp_debug
     zed2i:
       - svo # SVO recording, not rosbag. Mutually exclusive: won't record zed ros topics if svo is set here.
     hdr:
@@ -12,15 +21,6 @@ jetson:
       - /gt_box/hdr_right/camera_info
     utils:
       - /gt_box/health_status/jetson/status
-    ap20:
-      - /gt_box/ap20/imu
-      - /gt_box/ap20/prism_position
-    ap20_aux:
-      - /ap20/tps
-      - /ap20/imu
-      - /gt_box/ap20/imu_debug
-      - /gt_box/ap20/position_debug
-      - /gt_box/ap20/timestamp_debug
     adis:
       - /gt_box/adis16475_node/imu
     stim:

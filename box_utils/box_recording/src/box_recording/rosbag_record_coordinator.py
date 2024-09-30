@@ -21,6 +21,7 @@ from pathlib import Path
 import shutil
 import time
 
+
 def load_yaml(path: str) -> dict:
     """Loads yaml file
 
@@ -74,14 +75,14 @@ class RosbagRecordCoordinator(object):
             except rospy.ServiceException as e:
                 rospy.logerr(f"Service call failed: {e}")
                 suc = False
-            
+
             if not suc:
                 rospy.logwarn_once("[RosbagRecordCoordinator] Could not stop /ap20/streaming - No rosbags recording!")
                 response = StartRecordingResponse()
                 response.message += "Could not stop /ap20/streaming - No rosbags recording!"
                 return response
             else:
-                time.sleep(1.0)
+                time.sleep(0.75)
 
         rospy.loginfo("[RosbagRecordCoordinator] Trying to start rosbag recording process.")
         timestamp = "{date:%Y-%m-%d-%H-%M-%S}".format(date=datetime.datetime.now())
@@ -111,8 +112,6 @@ class RosbagRecordCoordinator(object):
             return response
 
         self.cfg = load_yaml(request.yaml_file)
-
-
 
         # Copy yaml file to data folder
         default_path = rospkg.RosPack().get_path("box_recording") + "/data"
