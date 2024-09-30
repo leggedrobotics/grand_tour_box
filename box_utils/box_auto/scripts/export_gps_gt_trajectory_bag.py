@@ -172,7 +172,7 @@ def add_arguments():
     parser.set_defaults(main=main)
     parser.add_argument("--gps_file", "-g", help="Path to the GPS optimized trajectory")
     parser.add_argument("--output", "-o", help="Output bag path", default="./gps_gt_output.bag")
-    parser.add_argument("--directory", "-d", help="Directory")
+    parser.add_argument("--directory", "-d", default="/Data/Projects/GrandTour/2024-09-23-10-52-57", help="Directory")
     return parser
 
 
@@ -200,29 +200,9 @@ def main(args):
     utils = GPS_utils()
     lat_long_h = utils.ecef2geo(positions[0,0], positions[0,1], positions[0,2])
     utils.setENUorigin(lat_long_h[0], lat_long_h[1], lat_long_h[2])
-
     start_time = None
 
-    R_con_cpt7__imu_cpt7 = np.array( [
-        [0, 1, 0],
-        [1, 0, 0],
-        [0, 0, -1]
-        # [1, 0, 0],
-        # [0, 1, 0],
-        # [0, 0, 1]
-    ])
-	
 
-
-    R_enu__imu_cpt7 = np.array( [
-        [0, 1, 0],
-        [1, 0, 0],
-        [0, 0, -1]
-        # [1, 0, 0],
-        # [0, 1, 0],
-        # [0, 0, 1]
-    ])
-	
     frame_id = "enu_origin"
     with rosbag.Bag(args.output, "w", compression="lz4") as bag:
         for i, (time, position, orientation_rpy, position_std, orientation_rpy_std) in enumerate(
@@ -232,9 +212,9 @@ def main(args):
                 start_time = time
             
             # Position
-            position_enu = R_con_cpt7__imu_cpt7 @ utils.ecef2enu(position[0], position[1], position[2])
+            position_enu = utils.ecef2enu(position[0], position[1], position[2])
             # Absolutely not sure if this is correct
-            position_enu_std = R_con_cpt7__imu_cpt7 @ utils.R @ position_std
+            position_enu_std = utils.R @ position_std
 
 
             # Covariance is diagonal - 6x6 matrix ( dx, dy, dz, droll, dpitch, dyaw)
@@ -245,15 +225,12 @@ def main(args):
 			# Missing **2
             covariance = np.diag(np.concatenate([rot_std[:], np.array(position_enu_std)[0,:]],axis=0))
 
-
-
-
             timestamp = rospy.Time.from_sec(time)
             output_msg = PoseWithCovarianceStamped()
             output_msg.header.seq = i
             output_msg.header.stamp = timestamp
             output_msg.header.frame_id = frame_id
-            output_msg.pose.pose.position = Point(x=position_enu[0], y=position_enu[1], z=position_enu[2])
+            output_msg.pose.pose.position = Point(x=position_enu[1], y=position_enu[0], z=position_enu[2])
 
             output_msg.pose.pose.orientation = Quaternion(
                 x=quaternion_xyzw[0], y=quaternion_xyzw[1], z=quaternion_xyzw[2], w=quaternion_xyzw[3]
@@ -270,10 +247,20 @@ def main(args):
             tf_message.transforms = []
             box_transform = TransformStamped()
             box_transform.header = odometry_msg.header
-            box_transform.header.frame_id = frame_id
-            box_transform.child_frame_id = "box_base"
-            box_transform.transform.translation = Vector3(x=position_enu[0], y=position_enu[1], z=position_enu[2])
-            box_transform.transform.rotation = output_msg.pose.pose.orientation
+            box_transform.header.frame_id = "box_base"
+            box_transform.child_frame_id = frame_id
+
+            position_enu = np.array(position_enu)[:,0]
+			
+            SE3 = np.eye(4)
+            SE3[:3, :3] = Rotation.from_quat(quaternion_xyzw).as_matrix()
+            SE3[:3, 3] = [position_enu[1], position_enu[0], position_enu[2]]
+            SE3 = np.linalg.inv(SE3)
+            box_transform.transform.translation = Vector3(x=SE3[0,3], y=SE3[1,3], z=SE3[2,3])
+
+            q = Rotation.from_matrix(SE3[:3, :3]).as_quat()
+            box_transform.transform.rotation = Quaternion(q[0],q[1],q[2],q[3])
+			
             tf_message.transforms.append(box_transform)
             bag.write(topic="/tf", msg=tf_message, t=timestamp)
 
