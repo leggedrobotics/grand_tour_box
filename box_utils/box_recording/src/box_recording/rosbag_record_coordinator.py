@@ -57,33 +57,6 @@ class RosbagRecordCoordinator(object):
         self.cfg = {}
 
     def start_recording(self, request: StartRecordingRequest):
-        if self.ap20_stop_recording:
-            rospy.loginfo("[RosbagRecordCoordinator] Trying to stop /ap20/streaming.")
-            service_name = "/ap20/enable_streaming"
-            rospy.wait_for_service(service_name, timeout=15.0)
-            try:
-                change_mode = rospy.ServiceProxy(service_name, SetBool)
-                response = change_mode(False)
-                if response.success:
-                    rospy.loginfo(
-                        f"IMU mode changed successfully. Streaming is now {'enabled' if False else 'disabled'}."
-                    )
-                    suc = True
-                else:
-                    rospy.logwarn(f"Failed to change IMU mode: {response.message}")
-                    suc = False
-            except rospy.ServiceException as e:
-                rospy.logerr(f"Service call failed: {e}")
-                suc = False
-
-            if not suc:
-                rospy.logwarn_once("[RosbagRecordCoordinator] Could not stop /ap20/streaming - No rosbags recording!")
-                response = StartRecordingResponse()
-                response.message += "Could not stop /ap20/streaming - No rosbags recording!"
-                return response
-            else:
-                time.sleep(0.75)
-
         rospy.loginfo("[RosbagRecordCoordinator] Trying to start rosbag recording process.")
         timestamp = "{date:%Y-%m-%d-%H-%M-%S}".format(date=datetime.datetime.now())
         self.timestamp = timestamp
@@ -132,6 +105,34 @@ class RosbagRecordCoordinator(object):
                 self.send_request_grpc(node, topic_cfgs, node_cfg["grpc_cfg"], timestamp, response)
             else:
                 self.send_request_ros(node, topic_cfgs, timestamp, response)
+
+
+
+            if node == "jetson" and self.ap20_stop_recording:
+                time.sleep(0.75)
+                rospy.loginfo("[RosbagRecordCoordinator] Trying to stop /ap20/streaming.")
+                service_name = "/ap20/enable_streaming"
+                rospy.wait_for_service(service_name, timeout=15.0)
+                try:
+                    change_mode = rospy.ServiceProxy(service_name, SetBool)
+                    response = change_mode(False)
+                    if response.success:
+                        rospy.loginfo(
+                            f"IMU mode changed successfully. Streaming is now {'enabled' if False else 'disabled'}."
+                        )
+                        suc = True
+                    else:
+                        rospy.logwarn(f"Failed to change IMU mode: {response.message}")
+                        suc = False
+                except rospy.ServiceException as e:
+                    rospy.logerr(f"Service call failed: {e}")
+                    suc = False
+
+                if not suc:
+                    rospy.logwarn_once("[RosbagRecordCoordinator] Could not stop /ap20/streaming - Only Stated Recording on Jetson - Make sure to stop recording and ensure ap20 is alive!")
+                    response = StartRecordingResponse()
+                    response.message += "Could not stop /ap20/streaming - No rosbags recording! - Only Stated Recording on Jetson - Make sure to stop recording and ensure ap20 is alive!"
+                    return response
 
         if response.suc:
             response.message += " - All nodes started recording."
