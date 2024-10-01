@@ -4,7 +4,7 @@ x-common-config: &common-config
     dockerfile: "$HOME/git/grand_tour_box/box_utils/box_auto/docker/box.Dockerfile"
     ssh:
       default: "$HOME/.ssh/id_rsa_2"
-  image: rslethz/gt_box
+  image: rslethz/grand_tour_box
   runtime: nvidia
   # network_mode: host
   privileged: true
@@ -24,7 +24,7 @@ x-common-config: &common-config
               - compute # CUDA
               - video   # encoding 
   volumes:
-    - /mission_data:/mission_data
+    - /Data/Projects/GrandTour/polyterasse_test_gps/2024-09-30-15-41-44:/mission_data
     - /home/jonfrey/git/grand_tour_box:/home/catkin_ws/src/grand_tour_box # For debugging
 x-ros2-common-config: &ros2-common-config
   build:
@@ -32,7 +32,7 @@ x-ros2-common-config: &ros2-common-config
     dockerfile: "$HOME/git/grand_tour_box/box_utils/box_auto/docker/box_ros2.Dockerfile"
     ssh:
       default: "$HOME/.ssh/id_rsa_2"
-  image: rslethz/gt_box_ros2
+  image: rslethz/grand_tour_box_ros2
   runtime: nvidia
   # network_mode: host
   privileged: true
@@ -52,7 +52,7 @@ x-ros2-common-config: &ros2-common-config
               - compute # CUDA
               - video   # encoding 
   volumes:
-    - /mission_data:/mission_data
+    - /Data/Projects/GrandTour/polyterasse_test_gps/2024-09-30-15-41-44:/mission_data
     - /home/jonfrey/git/grand_tour_box:/home/catkin_ws/src/grand_tour_box # For debugging
 
 
