@@ -92,8 +92,6 @@ private:
     std::atomic<int> position_counter_;
     std::atomic<int> imu_counter_;
 
-    std::mutex imu_mutex;
-
     void initializeCallbacks() {
         timestamp_debug_pub_ = nh_.advertise<ap20_driver_ros::TimestampDebug>("ap20/timestamp_debug", 1000);
         position_debug_pub_ = nh_.advertise<ap20_driver_ros::PositionDebug>("ap20/position_debug", 1000);
