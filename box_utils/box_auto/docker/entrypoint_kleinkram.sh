@@ -8,7 +8,6 @@ cd $HOME
 
 klein endpoint set $ENDPOINT
 klein login --key $APIKEY
-cat ~/.kleinkram.json
 mkdir "/mission_data"
 klein mission download $MISSION_UUID "/mission_data"
 
