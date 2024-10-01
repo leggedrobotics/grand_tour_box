@@ -166,7 +166,7 @@ void AP20Node::positionCallback(const geometry_msgs::PointStamped::ConstPtr& msg
     ap20_driver_ros::PositionDebug debug_position;
     debug_position.header.stamp = ros::Time::now();
     debug_position.position = *msg;
-    int tmp = position_counter_.load()
+    int tmp = position_counter_.load();
     debug_position.header.seq = tmp;
     position_debug_pub_.publish(debug_position);
 
@@ -182,7 +182,7 @@ void AP20Node::timerCallback(const ros::TimerEvent&) {
         
         ap20_driver_ros::TimestampDebug debug_timestamp;
         debug_timestamp.header.stamp = ros::Time::now();
-        int tmp = timestamp_counter_.load()
+        int tmp = timestamp_counter_.load();
         debug_timestamp.header.seq = tmp;
         debug_timestamp.timestamp.data = ts;
         timestamp_debug_pub_.publish(debug_timestamp);
