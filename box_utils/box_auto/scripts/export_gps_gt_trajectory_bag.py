@@ -230,7 +230,7 @@ def main(args):
             output_msg.header.seq = i
             output_msg.header.stamp = timestamp
             output_msg.header.frame_id = frame_id
-            output_msg.pose.pose.position = Point(x=position_enu[1], y=position_enu[0], z=position_enu[2])
+            output_msg.pose.pose.position = Point(x=position_enu[1], y=position_enu[0], z=-position_enu[2])
 
             output_msg.pose.pose.orientation = Quaternion(
                 x=quaternion_xyzw[0], y=quaternion_xyzw[1], z=quaternion_xyzw[2], w=quaternion_xyzw[3]
@@ -254,7 +254,7 @@ def main(args):
 			
             SE3 = np.eye(4)
             SE3[:3, :3] = Rotation.from_quat(quaternion_xyzw).as_matrix()
-            SE3[:3, 3] = [position_enu[1], position_enu[0], position_enu[2]]
+            SE3[:3, 3] = [position_enu[1], position_enu[0], -position_enu[2]]
             SE3 = np.linalg.inv(SE3)
             box_transform.transform.translation = Vector3(x=SE3[0,3], y=SE3[1,3], z=SE3[2,3])
 
