@@ -240,13 +240,13 @@ void AP20Node::monitor(const ros::TimerEvent&) {
                 changeImuMode(false);
                 imu_counter_ = 0;
                 position_counter_ = 0;
-                int timestamp_counter_before_wait = timestamp_counter_;
-                int imu_counter_before_wait = imu_counter_;
                 timestamp_counter_ = 0;
+                last_imu_counter_ = 0;
+                last_timestamp_counter_ = 0;
 
                 ros::Duration(0.5).sleep();
 
-                if (timestamp_counter_ == timestamp_counter_before_wait && imu_counter_ == imu_counter_before_wait) {
+                if (timestamp_counter_ == 0 && imu_counter_ == 0) {
                     changeImuMode(true);
                     ROS_INFO("No messages received in 0.5 seconds - stop sucessful, restarting streaming.");
                     state_ = WAITING_FOR_FIRST_MESSAGE;
