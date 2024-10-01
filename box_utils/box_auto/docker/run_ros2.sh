@@ -10,7 +10,7 @@ Usage: $(basename $0) [OPTIONS]
 # Default target
 REMOVE_FLAG="--rm"
 INTERACTIVE_FLAG="-it"
-IMAGE="rslethz/gt_box_ros2"
+IMAGE="rslethz/grand_tour_box_ros2"
 COMMAND="bash"
 # Read arguments
 for i in "$@"; do

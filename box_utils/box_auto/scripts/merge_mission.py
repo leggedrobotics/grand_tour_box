@@ -4,7 +4,7 @@ from rosbag import Bag
 import re
 import argparse
 import tqdm
-
+import os
 
 def merge_bags_single(input_bag, output_bag, topics="*", verbose=False):
     # From https://www.clearpathrobotics.com/assets/downloads/support/merge_bag.py
@@ -54,6 +54,11 @@ def merge_bags_single(input_bag, output_bag, topics="*", verbose=False):
             "Total: Included %d messages and skipped %d"
             % (total_included_count, total_skipped_count)
         )
+
+    if os.environ.get("KLEINKRAM_ACTIVE", False):
+        os.system(f"klein mission upload --mission {os.environ['MISSION_UUID']} --path {output_bag}")
+        os.system(f"cp {output_bag} /out")
+
     return total_included_count, total_skipped_count
 
 # write the following code. 

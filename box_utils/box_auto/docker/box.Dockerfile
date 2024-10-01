@@ -30,9 +30,11 @@ RUN /bin/bash -c '/opencv_gtsam.sh'
 
 COPY dependencies/grand_tour.sh /grand_tour.sh
 RUN sh -c "chmod +x /grand_tour.sh"
-
 RUN --mount=type=ssh /bin/bash -c '/grand_tour.sh'
 
+RUN pip3 install kleinkram --pre --force-reinstall
+
+COPY entrypoint_kleinkram.sh /entrypoint_kleinkram.sh
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
