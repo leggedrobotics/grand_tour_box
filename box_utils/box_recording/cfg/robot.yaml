@@ -117,8 +117,6 @@ lpc:
     tf:
       - /tf
       - /tf_static
-    clock_lpc:
-      - /clock
 npc:
   grpc_cfg:
     address: 192.168.0.142
