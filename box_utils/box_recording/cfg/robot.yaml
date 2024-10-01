@@ -21,8 +21,6 @@ jetson:
       - /gt_box/hdr_right/camera_info
     utils:
       - /gt_box/health_status/jetson/status
-    clock_jetson:
-      - /clock
     adis:
       - /gt_box/adis16475_node/imu
     stim:
