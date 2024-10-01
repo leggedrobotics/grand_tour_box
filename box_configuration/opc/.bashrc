@@ -174,3 +174,5 @@ __python_argcomplete_expand_tilde_by_ref () {
 }
 
 eval "$(register-python-argcomplete boxi)"
+
+source '/home/rsl/.bash_completions/klein.sh'
