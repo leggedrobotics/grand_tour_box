@@ -1,0 +1,1 @@
+docker image push grand_tour_box:lastest
