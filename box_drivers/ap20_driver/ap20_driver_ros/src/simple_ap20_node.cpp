@@ -92,6 +92,8 @@ private:
     std::atomic<int> position_counter_;
     std::atomic<int> imu_counter_;
 
+    std::mutex imu_mutex;
+
     void initializeCallbacks() {
         timestamp_debug_pub_ = nh_.advertise<ap20_driver_ros::TimestampDebug>("ap20/timestamp_debug", 1000);
         position_debug_pub_ = nh_.advertise<ap20_driver_ros::PositionDebug>("ap20/position_debug", 1000);
@@ -154,8 +156,7 @@ void AP20Node::imuCallback(const sensor_msgs::Imu::ConstPtr& msg) {
     ap20_driver_ros::ImuDebug debug_imu;
     debug_imu.header.stamp = ros::Time::now();
     debug_imu.imu = *msg;
-    int tmp = imu_counter_.load();
-    debug_imu.header.seq = tmp;
+    debug_imu.counter = imu_counter_;
     imu_debug_pub_.publish(debug_imu);
 
     imu_counter_++;
@@ -166,8 +167,7 @@ void AP20Node::positionCallback(const geometry_msgs::PointStamped::ConstPtr& msg
     ap20_driver_ros::PositionDebug debug_position;
     debug_position.header.stamp = ros::Time::now();
     debug_position.position = *msg;
-    int tmp = position_counter_.load();
-    debug_position.header.seq = tmp;
+    debug_position.counter = position_counter_;
     position_debug_pub_.publish(debug_position);
 
     position_counter_++;
@@ -178,13 +178,11 @@ void AP20Node::timerCallback(const ros::TimerEvent&) {
     
     for (const auto& ts : stamps) {
         ROS_INFO_STREAM_THROTTLE(5.0, "New Timestamp Message (throttled 5s): " << timestamp_counter_);
-
         
         ap20_driver_ros::TimestampDebug debug_timestamp;
         debug_timestamp.header.stamp = ros::Time::now();
-        int tmp = timestamp_counter_.load();
-        debug_timestamp.header.seq = tmp;
         debug_timestamp.timestamp.data = ts;
+        debug_timestamp.counter = timestamp_counter_;
         timestamp_debug_pub_.publish(debug_timestamp);
 
         timestamp_counter_++;

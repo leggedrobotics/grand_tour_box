@@ -106,10 +106,8 @@ class RosbagRecordCoordinator(object):
             else:
                 self.send_request_ros(node, topic_cfgs, timestamp, response)
 
-
-
             if node == "jetson" and self.ap20_stop_recording:
-                time.sleep(0.75)
+                time.sleep(2.0)
                 rospy.loginfo("[RosbagRecordCoordinator] Trying to stop /ap20/streaming.")
                 service_name = "/ap20/enable_streaming"
                 rospy.wait_for_service(service_name, timeout=15.0)
@@ -129,7 +127,9 @@ class RosbagRecordCoordinator(object):
                     suc = False
 
                 if not suc:
-                    rospy.logwarn_once("[RosbagRecordCoordinator] Could not stop /ap20/streaming - Only Stated Recording on Jetson - Make sure to stop recording and ensure ap20 is alive!")
+                    rospy.logwarn_once(
+                        "[RosbagRecordCoordinator] Could not stop /ap20/streaming - Only Stated Recording on Jetson - Make sure to stop recording and ensure ap20 is alive!"
+                    )
                     response = StartRecordingResponse()
                     response.message += "Could not stop /ap20/streaming - No rosbags recording! - Only Stated Recording on Jetson - Make sure to stop recording and ensure ap20 is alive!"
                     return response
