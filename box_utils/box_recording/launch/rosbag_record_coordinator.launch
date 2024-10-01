@@ -9,6 +9,7 @@
         type="rosbag_record_coordinator.py"
         output="screen">
         <param name="capability_group" value="Recording"/>
+        <param name="ap20_stop_recording" value="True"/>
     </node>
   </group>
 </launch>
