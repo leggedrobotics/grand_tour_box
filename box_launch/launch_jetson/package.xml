@@ -9,9 +9,6 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <depend>launch_scripts</depend>
-  <!--Disable until CPT-7 Arrives-->
-  <!--<depend>bringup_gps</depend>-->
-  <depend>bringup_stim320</depend>
   <depend>bringup_ap20</depend>
   <depend>bringup_zed2i</depend>
   <depend>bringup_zed2i_recording</depend>
