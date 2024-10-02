@@ -61,3 +61,6 @@
 	path = box_drivers/open3d_slam_private
 	url = git@github.com:leggedrobotics/open3d_slam_private.git
 	branch = main
+[submodule "box_drivers_ros2/ros1_bridge"]
+	path = box_drivers_ros2/ros1_bridge
+	url = git@github.com:leggedrobotics/ros1_bridge.git
