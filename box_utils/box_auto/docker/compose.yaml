@@ -24,8 +24,8 @@ x-common-config: &common-config
               - compute # CUDA
               - video   # encoding 
   volumes:
-    - /Data/Projects/GrandTour/polyterasse_test_gps/2024-09-30-15-41-44:/mission_data
-    - /home/jonfrey/git/grand_tour_box:/home/catkin_ws/src/grand_tour_box # For debugging
+    - /Data/Projects/GrandTour/deployment_day_1/2024-10-01-11-47-44:/mission_data
+    - /home/jonfrey/git/grand_tour_box:/home/catkin_ws/src/grand_tour_box
 x-ros2-common-config: &ros2-common-config
   build:
     context: "$HOME/git/grand_tour_box/box_utils/box_auto/docker"
@@ -57,6 +57,17 @@ x-ros2-common-config: &ros2-common-config
 
 
 services:
+
+  export_raw_imu_bag:
+    <<: *common-config
+    container_name: export_raw_imu_bag
+    command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/export_raw_imu_bag.py"]
+
+  export_gps_gt_trajectory_bag:
+    <<: *common-config
+    container_name: export_gps_gt_trajectory_bag
+    command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/export_gps_gt_trajectory_bag.py"]
+
   # ros2_fix_bags:
   #   <<: *ros2-common-config
   #   container_name: fix_mcaps
@@ -93,6 +104,16 @@ services:
       # repair_bags:
       #   condition: service_completed_successfully
 
+  create_tf_static:
+    <<: *common-config
+    container_name: create_tf_static
+    command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/create_tf_static.py"]
+    depends_on:
+      mcap_to_rosbag:
+        condition: service_completed_successfully
+
+
+
   # # STOP 1
   # update_camera_info:
   #   <<: *common-config
@@ -102,16 +123,13 @@ services:
   #     merge_mission:
   #       condition: service_completed_successfully
 
-
-  imu_timesync:
+  hesai:
     <<: *common-config
-    container_name: imu_timesync
-    command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/imu_timesync.py"]
+    container_name: hesai
+    command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/hesai.py"]
     depends_on:
       merge_mission:
         condition: service_completed_successfully
-
-
 
   cpt7:
     <<: *common-config
@@ -120,13 +138,15 @@ services:
     depends_on:
       merge_mission:
         condition: service_completed_successfully
-
-  hesai:
+  
+  imu_timesync:
     <<: *common-config
-    container_name: hesai
-    command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/hesai.py"]
+    container_name: imu_timesync
+    command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/imu_timesync.py"]
     depends_on:
-      merge_mission:
+      cpt7:
+        condition: service_completed_successfully
+      create_tf_static:
         condition: service_completed_successfully
 
   topic_freq:

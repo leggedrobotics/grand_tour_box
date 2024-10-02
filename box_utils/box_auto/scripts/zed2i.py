@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
-import subprocess
 import glob
 import os
-import sys
 from boxi import shell_run
+
+MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
+
 PRE = "source /opt/ros/noetic/setup.bash; source /home/opencv_gtsam_ws/devel/setup.bash; source /home/catkin_ws/devel/setup.bash; "
 # Find relevant files
-zed_svos = sorted(glob.glob(os.path.join("/mission_data", "*_jetson_zed2i.svo2")))
+zed_svos = sorted(glob.glob(os.path.join(MISSION_DATA, "*_jetson_zed2i.svo2")))
 # Process CPT bags
 for zed_svo in zed_svos:
     print(f"Processing CPT bag: {zed_svo}")

@@ -14,6 +14,8 @@ from pathlib import Path
 import subprocess
 from matplotlib.ticker import ScalarFormatter
 
+MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
+
 def run_rosbag_command(bag_file, output_file):
     # Define the command to run
     command = ["rosbag", "info", "--freq", bag_file]
@@ -31,10 +33,6 @@ def run_rosbag_command(bag_file, output_file):
         # Handle error if the command fails
         print(f"Error running command: {e}")
         print(f"Error output: {e.stderr}")
-
-
-MISSION_FOLDER = os.environ.get("MISSION_FOLDER", "/mission_data")
-
 
 def read_rosbag_and_generate_histograms(rosbag_path, output_dir, name, skip_same_timestamps=True):
     # Ensure the output directory exists
@@ -158,16 +156,8 @@ def read_rosbag_and_generate_histograms(rosbag_path, output_dir, name, skip_same
     run_rosbag_command(rosbag_path, output_txt_file)
 
 
-# Function to parse command-line arguments
-def parse_arguments():
-    parser = argparse.ArgumentParser(description="Generate histograms from rosbag files.")
-    parser.add_argument("--folder", type=str, default=MISSION_FOLDER, help="Directory containing rosbag files.")
-    return parser.parse_args()
-
-
 if __name__ == "__main__":
-    args = parse_arguments()
-    rosbag_paths = [str(s) for s in pathlib.Path(args.folder).rglob("*.bag")]
+    rosbag_paths = [str(s) for s in pathlib.Path(MISSION_DATA).rglob("*.bag")]
     output_dir = "topic_freq"
 
     for rosbag_path in rosbag_paths:

@@ -8,7 +8,7 @@ from tqdm import tqdm
 from py_raw_image_pipeline import RawImagePipeline
 import time
 
-MISSION_FOLDER = os.environ.get("MISSION_FOLDER", "/mission_data")
+MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
 
 
 def dump_camera_info(camera_info_msg, filename):
@@ -96,7 +96,7 @@ if __name__ == "__main__":
     image_topics = [f"/gt_box/alphasense_driver_node/cam{n}/color/image/compressed" for n in [1,2,3,4,5]]
 
     output_pattern = "_nuc_alphasense_color_corrected.bag"
-    bags = [str(s) for s in Path(MISSION_FOLDER).glob("*"+pattern) if output_pattern not in str(s)]
+    bags = [str(s) for s in Path(MISSION_DATA).glob("*"+pattern) if output_pattern not in str(s)]
     print("Process bags:", bags)
     for input_bag in bags:
         output_bag = input_bag.replace(pattern, output_pattern)

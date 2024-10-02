@@ -1,8 +1,9 @@
 from pathlib import Path
 import os
+MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
 
-folder = Path("/data/2024-09-23-10-22-43")
-files_to_upload = [str(s) for s in folder.rglob("*.bag")] + [str(s) for s in folder.rglob("*.mcap")]
+folder = Path(MISSION_DATA)
+files_to_upload = [str(s) for s in folder.rglob("*.bag")]
 mission_name = folder.name
 project = "GrandTourShakeout"
 files_to_upload = ",".join(files_to_upload)

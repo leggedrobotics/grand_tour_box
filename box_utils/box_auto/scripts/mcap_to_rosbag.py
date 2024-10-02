@@ -9,6 +9,8 @@ from rosbags.typesys import Stores, get_typestore
 from pathlib import Path
 import numpy as np
 
+MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
+
 def downgrade_camerainfo_to_rosbag1(src: Path, dst: Path):
     typename = "sensor_msgs/msg/CameraInfo"
     typestore = get_typestore(Stores.ROS1_NOETIC)
@@ -77,7 +79,7 @@ def split_rosbags(input_bag_path, camera_direction, duration_minutes=5):
 
 
 if __name__ == "__main__":
-    mcaps = [str(Path(p).parent) for p in glob.glob("/mission_data/*/*.mcap", recursive=True)]
+    mcaps = [str(Path(p).parent) for p in glob.glob(f"{MISSION_DATA}/*/*.mcap", recursive=True)]
     mcaps = np.unique(np.array(mcaps)).tolist()
     print(f"Found {len(mcaps)} directories to process: \n {mcaps}")
     for i, mcap in enumerate(mcaps):

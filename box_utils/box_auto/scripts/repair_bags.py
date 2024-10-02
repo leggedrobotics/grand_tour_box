@@ -1,6 +1,9 @@
 import argparse
 from boxi import shell_run
 from pathlib import Path
+import os
+
+MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
 
 def main(overwrite: bool, directory: str):
     # Get all .bag.active files
@@ -31,13 +34,7 @@ if __name__ == "__main__":
         default=True,
         help="Whether to overwrite existing bag files (default: True)."
     )
-    parser.add_argument(
-        "--directory", "-d",
-        type=str,
-        default="/mission_data",
-        help="Directory to search for active bag files (default: current directory)."
-    )
     args = parser.parse_args()
     
     # Run main function with the parsed argument
-    main(args.overwrite, args.directory)
+    main(args.overwrite, MISSION_DATA)

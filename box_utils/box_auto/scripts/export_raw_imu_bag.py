@@ -11,6 +11,9 @@ from boxi import ColorLogger
 from sensor_msgs.msg import Imu
 import argparse
 from pathlib import Path
+import os
+
+MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
 
 class RAWIMUDataParser:
     def __del__(self):
@@ -223,52 +226,35 @@ class RAWIMUDataParser:
         return df
 
 
-def add_arguments():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--imu_ascii_file", "-i", help="Path to the ascii csv file with RAWIMUSXA messages")
-    parser.add_argument(
-        "--time_ascii_file", "-t", help="Path to the ascii csv file with RAWIMUSXA messages", default=""
-    )
-    parser.add_argument("--output", "-o", help="Output bag path", default="")
-    parser.add_argument(
-        "--output_topic_name",
-        "-n",
-        help="Name of the output IMU message rostopic",
-        required=False,
-        default="/gt_box/cpt7/offline_from_novatel_logs/imu",
-    )
-    parser.add_argument("--directory", "-d", help="Directory")
-    parser.add_argument("--debug", action="store_true")
-    return parser
 
+def main():
+    debug = False
+    output_topic_name = "/gt_box/cpt7/offline_from_novatel_logs/imu"
+    date = [(str(s.name)).split("_")[0] for s in Path(MISSION_DATA).glob("*_nuc_livox*.bag")][0]
+    output = str(Path(MISSION_DATA) / f"{date}_cpt7_raw_imu.bag")
 
-def main(args):
-    if args.directory is not None:
-        date = [(str(s.name)).split("_")[0] for s in Path(args.directory).glob("*_nuc_livox*.bag")][0]
-        args.output = str(Path(args.directory) / f"{date}_cpt7_raw_imu.bag")
+    files = [str(s) for s in Path(MISSION_DATA).rglob("*RAWIMUSX.ASCII")]
+    if len(files) == 1:
+        imu_ascii_file = files[0]
+    else:
+        nr = len(files)
+        print(f"Invalid number [{nr}] of _RAWIMUSX.ASCII file found in the directory {MISSION_DATA}")
+        print("Specify the correct _RAWIMUSX.ASCII file manually or move it to the directory")
+        return
 
-        files = [str(s) for s in Path(args.directory).rglob("*RAWIMUSX.ASCII")]
-        if len(files) == 1:
-            args.imu_ascii_file = files[0]
-        else:
-            nr = len(files)
-            print(f"Invalid number [{nr}] of _RAWIMUSX.ASCII file found in the directory {args.directory}")
-            print("Specify the correct _RAWIMUSX.ASCII file manually or move it to the directory")
-            return
-
-    imu_path = args.imu_ascii_file
-    times_path = args.time_ascii_file
-    imu_data_parser = RAWIMUDataParser(output_imu_msg_name=args.output_topic_name)
-    if args.debug:
+    imu_path = imu_ascii_file
+    times_path = imu_ascii_file
+    imu_data_parser = RAWIMUDataParser(output_imu_msg_name=output_topic_name)
+    if debug:
         imu_data_parser.logger.setLevel(logging.DEBUG)
 
     imu_data_parser.optionally_check_time_message_consistency(times_path)
     if imu_data_parser.process_imu_data(imu_path):
-        if args.output == "":
+        if output == "":
             basename = os.path.basename(imu_path).split(".")[0]
             output_path = os.path.join(os.path.dirname(imu_path), basename + ".bag")
         else:
-            output_path = args.output
+            output_path = output
         imu_data_parser.write_to_rosbag(output_path)
     else:
         imu_data_parser.logger.error(
@@ -279,6 +265,4 @@ def main(args):
 
 
 if __name__ == "__main__":
-    parser = add_arguments()
-    args = parser.parse_args()
-    main(args)
+    main()

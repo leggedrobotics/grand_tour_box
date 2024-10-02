@@ -2,10 +2,14 @@
 import os
 import glob
 from boxi import shell_run
+
+MISSION_FOLDER = os.environ.get("MISSION_FOLDER", "/mission_data")
+
+
 PRE = "source /opt/ros/noetic/setup.bash; source /home/opencv_gtsam_ws/devel/setup.bash; source /home/catkin_ws/devel/setup.bash; "
 
 # Find relevant files
-cpt_bags = sorted(glob.glob(os.path.join("/mission_data", "*_nuc_cpt7.bag")))
+cpt_bags = sorted(glob.glob(os.path.join(MISSION_FOLDER, "*_nuc_cpt7.bag")))
 
 # Process CPT bags
 for cpt_bag in cpt_bags:
