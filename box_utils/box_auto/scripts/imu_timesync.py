@@ -45,19 +45,27 @@ def extract_imu_data(bag_file, topic, tf_transformer=None, reference_frame=None)
     if not os.path.exists(bag_file):
         raise ValueError(f"Bag file {bag_file} does not exist")
 
+    count = 0
+    p = None
     with Bag(bag_file, 'r') as bag:
         for topic_name, msg, t in bag.read_messages(topics=[topic]):
+            count += 1
+            if count == 50000:
+                print("Got 50000 samples...")
+                break
             if reference_frame is not None:
 
                 # Get static tf
                 if transform is None:
-                    p,q = tf_transformer.lookupTransform(reference_frame,
-                                            msg.header.frame_id,
-                                            msg.header.stamp)
+                    if p is None:
+                        p,q = tf_transformer.lookupTransform(reference_frame,
+                                                msg.header.frame_id,
+                                                msg.header.stamp)
                     
-                    trans = np.array(p)
-                    # Convert quaternion to rotation matrix
-                    rot = Rotation.from_quat(q).as_matrix()
+
+                        trans = np.array(p)
+                        # Convert quaternion to rotation matrix
+                        rot = Rotation.from_quat(q).as_matrix()
                     
                     # 1. Rotate angular velocity
                     ang = msg.angular_velocity
@@ -143,7 +151,8 @@ class IMUSyncOptimizer:
     def time_sync_imu(self, imu2_bag, imu2_topic):
         try:
             imu2_data, reference_frame = extract_imu_data(imu2_bag, imu2_topic, tf_transformer = self.tf_transformer, reference_frame=self.reference_frame)
-        except:
+        except Exception as e:
+            print(e)
             return 0, False
         
         if len(imu2_data) == 0:
@@ -193,10 +202,10 @@ class IMUSyncOptimizer:
         optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
 
-        self.t1_original = t1
-        self.t2_original = t2
-        self.y1_original = y1
-        self.y2_original = y2
+        self.t1_original = t1[:min(20000, len(t1))]
+        self.t2_original = t2[:min(20000, len(t1))]
+        self.y1_original = y1[:min(20000, len(t1))]
+        self.y2_original = y2[:min(20000, len(t1))]
 
         smallest_loss, early_stopping_iter, patience, EPS = torch.inf, 0, 500, 0.0000001
         for i in range(num_iterations):
@@ -245,20 +254,15 @@ def process_all(directory, axis):
     plot = True
 
     reference_imu = {
-        "topic": "/gt_box/cpt7/imu/data_raw",
-        "bag_pattern": "*_nuc_cpt7.bag",
-        "tf_bag_pattern" : "*_nuc_tf.bag"
+        "topic": "/gt_box/cpt7/offline_from_novatel_logs/imu",
+        "bag_pattern": "*_cpt7_raw_imu.bag",
+        "tf_bag_pattern" : "*_tf_static.bag"
     }
 
     validation_imus = [
         {
-            "topic": "/gt_box/zed2i/zed_node/imu/data",
-            "bag_pattern": "*_jetson_zed2i_proprioceptive.bag",
-            "max_offset_ms": 1,
-        },
-        {
             "topic": "/gt_box/ap20/imu",
-            "bag_pattern": "*_jetson_ap20.bag",
+            "bag_pattern": "*_jetson_ap20_synced.bag",
             "max_offset_ms": 1,
         },
         {
@@ -378,4 +382,3 @@ if __name__ == "__main__":
             # Dump the dictionary to a YAML file
             with open(os.path.join(args.directory, "imu_timesync_summary.yaml"), 'w') as file:
                 yaml.dump(master_summary, file, default_flow_style=False, width=1000)
-                

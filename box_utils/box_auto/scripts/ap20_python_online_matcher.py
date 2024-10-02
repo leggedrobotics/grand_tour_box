@@ -6,6 +6,10 @@ from ap20_driver_ros.msg import ImuDebug, PositionDebug, TimestampDebug
 import rosbag
 from collections import deque
 import rospy
+from pathlib import Path
+
+def get_bag(directory, pattern):
+    return [str(s) for s in Path(directory).rglob(pattern)][0]
 
 class LastMatch:
     """Class for keeping track of an item in inventory."""
@@ -42,9 +46,12 @@ class LastMatch:
 
         return res
 
-    def publish(self, bag):
+    def publish(self, bag, counter):
         self.imu_debug_msg.imu.header.stamp = rospy.Time.from_sec(self.timestamp_time)
-        bag.write('/gt_box/ap20/imu', self.imu_debug_msg)
+        self.imu_debug_msg.imu.header.seq = counter
+        self.imu_debug_msg.imu.header.frame_id = "ap20_imu"
+        bag.write('/gt_box/ap20/imu', self.imu_debug_msg.imu, self.imu_debug_msg.imu.header.stamp)
+        counter += 1
 
 def read_bag_file(bag_path):
     last_match = None
@@ -53,16 +60,19 @@ def read_bag_file(bag_path):
     imu_debug_data = deque()
     position_debug_data = deque()
     timestamp_debug_data = deque()
-
+    counter = 0
     line_delay = []
     matching_results = {
         "prefect_match": 0,
         "arrivial_time_mismatch": 0,
         "failed": 0,
         "reset": 0,
+        "skipped_imu": 0,
         "initial_skip" : 0
     }
 
+    all_matches = []
+    counter_ts = 0
     with rosbag.Bag(bag_path.replace("jetson_ap20_aux", "jetson_ap20_synced"), 'w') as bag_out:
         with rosbag.Bag(bag_path, 'r') as bag:
             for topic, msg, t in bag.read_messages(topics=['/gt_box/ap20/imu_debug',
@@ -74,6 +84,45 @@ def read_bag_file(bag_path):
                 elif topic == '/gt_box/ap20/timestamp_debug':
                     timestamp_debug_data.append(msg)
 
+                if len(position_debug_data) > 0:
+                    position = position_debug_data.popleft()
+                    t = position.position.header.stamp.to_sec()
+                    suc = False
+                    ref = -1
+                    for i in range(len(all_matches)):
+                        
+                        if all_matches[i].imu_time > t:
+                            ref = i
+                            delta = all_matches[i].imu_time - t
+                            break
+                    
+                    if ref > 0 and ref != -1:
+                        p1 = all_matches[ref-1]
+                        p2 = all_matches[ref]
+                        if not ( delta > 0.005 + + 1e-5) :
+                            
+                            suc = True
+                            rate = (t - p1.imu_time) / (p2.imu_time - p1.imu_time)
+                            new_ts = p1.timestamp_time + ((p2.timestamp_time - p1.timestamp_time) * rate)
+                            
+                            new_msg = PointStamped()
+                            new_msg.header.stamp = rospy.Time.from_sec(new_ts)
+                            new_msg.header.seq = counter_ts
+                            new_msg.header.frame_id = "leica_total_station"
+                            new_msg.point.x = position.position.point.x
+                            new_msg.point.y = position.position.point.y
+                            new_msg.point.z = position.position.point.z                            
+                            counter_ts += 1
+                            bag_out.write('/gt_box/ap20/prism_position', new_msg, new_msg.header.stamp)
+
+                            all_matches = all_matches[i-1:]
+                        else:
+                            print("delta to high - removing the timestamp")
+                    else:
+                        if ref == -1:
+                            position_debug_data.appendleft(position)
+
+
                 if len(imu_debug_data) > 0 and len(timestamp_debug_data) > 0:
                     new_imu_msg = imu_debug_data.popleft()
                     new_timestamp_msg = timestamp_debug_data.popleft()
@@ -84,7 +133,8 @@ def read_bag_file(bag_path):
                         valid = candidate.line_delay_valid()
                         if valid:
                             last_match = candidate
-                            last_match.publish(bag_out)
+                            last_match.publish(bag_out, counter)
+                            all_matches.append(last_match)
                         else:
                             if candidate.get_line_delay() < 0.0:
                                 # Lets skip the IMU message
@@ -115,14 +165,16 @@ def read_bag_file(bag_path):
                         
                             matching_results["prefect_match"] += 1
                             last_match = candidate
-                            last_match.publish(bag_out)
+                            last_match.publish(bag_out,counter)
+                            all_matches.append(last_match)
                             line_delay.append( res["ROS_arrivial_line_delay"] )
 
                         elif res["N_imu_time"] == res["N_timestamp_time"]:
                             # good match
                             matching_results["prefect_match"] += 1
                             last_match = candidate
-                            last_match.publish(bag_out)
+                            last_match.publish(bag_out,counter)
+                            all_matches.append(last_match)
                             line_delay.append( res["ROS_arrivial_line_delay"] )
 
                         elif res["HardwareTS_shutdown_timestamp"] or (res["N_imu_time"] < 0 and res["N_timestamp_time"] == 0):
@@ -135,16 +187,24 @@ def read_bag_file(bag_path):
                             # ap20_resumed_sync
                             print(f"{new_imu_msg.header.seq} WARNING - We assume it is now working again and we are synced == 1.005 ???" )
                             last_match = candidate
-                            last_match.publish(bag_out)
+                            last_match.publish(bag_out,counter)
+                            all_matches.append(last_match)
                             line_delay.append( res["ROS_arrivial_line_delay"] )
+
+
+                        elif res["N_imu_messages"] == res["N_imu_count"] == res["N_imu_time"] and res["N_timestamp_time"] > res["N_imu_time"]:
+                            print("Skipping IMU message", res["N_imu_messages"] , "- we have to skip: ",  res["N_timestamp_time"])
+                            matching_results["skipped_imu"] += 1
+                            timestamp_debug_data.appendleft(new_timestamp_msg)
+
                         else:
                             # failed
                             matching_results["failed"] += 1
-                            print("ERROR - Case not understood", res["N_imu_messages"] , " ",res["N_imu_count"] , " ", res["N_imu_time"] , " ", res["N_imu_arrivial_ros_time"], " ", res["N_timestamp_time"])
+                            print("ERROR - Case not understood", res["N_imu_messages"] , " ", res["N_imu_count"] , " ", res["N_imu_time"] , " ", res["N_imu_arrivial_ros_time"], " ", res["N_timestamp_time"])
 
 
     print ( matching_results)
-    print("LINE DELAY", np.array( line_delay).max(), np.array( line_delay).min(), np.array( line_delay).mean())
+    print("LINE DELAY min: ", np.array( line_delay).min(),  " max: ", np.array( line_delay).max(), " median: ", np.median(np.array( line_delay)))
 
     return {
         'imu': imu_data,
@@ -154,6 +214,17 @@ def read_bag_file(bag_path):
         'timestamp_debug': timestamp_debug_data
     }
 
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--directory", "-d",
+    type=str,
+    default="/Data/Projects/GrandTour/polyterasse_test_gps/2024-09-30-15-41-44",
+    help="Directory to search for active bag files (default: current directory)."
+)
+args = parser.parse_args()
+
+ap20_bag = get_bag(args.directory, "*_jetson_ap20_aux.bag")
+
 # Usage example
-bag_path = '/Data/Projects/GrandTour/ap20_matching_data/2024-09-28-19-33-31_jetson_ap20_aux_0.bag'
-data = read_bag_file(bag_path)
+data = read_bag_file(ap20_bag)

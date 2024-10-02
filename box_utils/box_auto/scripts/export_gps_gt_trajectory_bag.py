@@ -172,7 +172,7 @@ def add_arguments():
     parser.set_defaults(main=main)
     parser.add_argument("--gps_file", "-g", help="Path to the GPS optimized trajectory")
     parser.add_argument("--output", "-o", help="Output bag path", default="./gps_gt_output.bag")
-    parser.add_argument("--directory", "-d", default="/Data/Projects/GrandTour/2024-09-23-10-52-57", help="Directory")
+    parser.add_argument("--directory", "-d", default="/mission_data", help="Directory")
     return parser
 
 

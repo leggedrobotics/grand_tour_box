@@ -23,17 +23,17 @@ catkin config --extend /home/opencv_gtsam_ws/devel
 catkin config --cmake-args -DCMAKE_BUILD_TYPE=RelWithDebInfo
 
 # Get the grand_tour_box repository
-cd /home/catkin_ws/src; git clone --recurse-submodules git@github.com:leggedrobotics/grand_tour_box.git
+cd /home/catkin_ws/src; git clone --recurse-submodules --shallow-submodules git@github.com:leggedrobotics/grand_tour_box.git
 
 # Dependency for raw_image_pipeline
-cd /home/catkin_ws/src; git clone https://github.com/leggedrobotics/pybind11_catkin.git
-cd /home/catkin_ws/src; git clone https://github.com/catkin/catkin_simple.git
-cd /home/catkin_ws/src; git clone https://github.com/ethz-asl/glog_catkin.git
+cd /home/catkin_ws/src; git clone https://github.com/leggedrobotics/pybind11_catkin.git --depth 1
+cd /home/catkin_ws/src; git clone https://github.com/catkin/catkin_simple.git --depth 1
+cd /home/catkin_ws/src; git clone https://github.com/ethz-asl/glog_catkin.git --depth 1
 
 # Dependency for open3d_slam_private
-cd /home/catkin_ws/src;  git clone git@github.com:leggedrobotics/message_logger.git
+cd /home/catkin_ws/src;  git clone git@github.com:leggedrobotics/message_logger.git --depth 1
 # Maybe only needed for graph_msf_dev
-cd /home/catkin_ws/src; git clone git@github.com:leggedrobotics/libnabo.git
+cd /home/catkin_ws/src; git clone git@github.com:leggedrobotics/libnabo.git --depth 1
 
 
 # Added simlink to access the hesai files correctly
@@ -59,6 +59,8 @@ rosdep install --from-paths . --ignore-src -r -y --reinstall
 cd /home/catkin_ws
 catkin build box_auto
 echo "source /home/catkin_ws/devel/setup.bash" >> /root/.bashrc
+pip3 install pandas
+pip3 install scipy
 
 cd /home/catkin_ws/src/grand_tour_box/box_utils/boxi; pip3 install -e ./ --no-cache-dir
 

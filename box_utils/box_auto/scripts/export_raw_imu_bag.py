@@ -237,7 +237,7 @@ def add_arguments():
         required=False,
         default="/gt_box/cpt7/offline_from_novatel_logs/imu",
     )
-    parser.add_argument("--directory", "-d", help="Directory")
+    parser.add_argument("--directory", "-d", default="/mission_data", help="Directory")
     parser.add_argument("--debug", action="store_true")
     return parser
 
