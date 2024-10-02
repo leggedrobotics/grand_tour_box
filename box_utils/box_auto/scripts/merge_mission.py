@@ -6,6 +6,8 @@ import argparse
 import tqdm
 import os
 
+MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
+
 def merge_bags_single(input_bag, output_bag, topics="*", verbose=False):
     # From https://www.clearpathrobotics.com/assets/downloads/support/merge_bag.py
     topics = topics.split(" ")
@@ -70,15 +72,8 @@ if __name__ == "__main__":
         default=True,
         help="Whether to overwrite existing bag files (default: True)."
     )
-    parser.add_argument(
-        "--directory", "-d",
-        type=str,
-        default="/mission_data",
-        help="Whether to overwrite existing bag files (default: True)."
-    )
     args = parser.parse_args()
-    mission_folder = args.directory
-    bag_files =sorted( Path(mission_folder).rglob("*.bag"))
+    bag_files =sorted( Path(MISSION_DATA).rglob("*.bag"))
     print("Found files: ", bag_files)
     # Group bags
     grouped_files = {}
@@ -100,7 +95,7 @@ if __name__ == "__main__":
             if prefix.find("lpc") != -1 or prefix.find("npc") != -1:
                 continue
 
-            output_bag = Path(mission_folder) / f"{prefix}.bag"
+            output_bag = Path(MISSION_DATA) / f"{prefix}.bag"
 
             # If overwrite is False, check if the output bag already exists
             if not args.overwrite and output_bag.exists():

@@ -4,6 +4,9 @@ import yaml
 from sensor_msgs.msg import CameraInfo
 from pathlib import Path
 from tqdm import tqdm
+import os 
+
+MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
 
 class RosbagPostprocessor:
     def __init__(self, mission_folder, pattern, camera_info_topics, calibration_files, output_pattern):
@@ -76,13 +79,12 @@ class RosbagPostprocessor:
             print(f"Processed {bag} -> {output_bag}")
 
 if __name__ == "__main__":
-    mission_folder = "/mission_data"
     output_pattern = "_nuc_alphasense_updated_intrinsics.bag"
     pattern = "_nuc_alphasense.bag"
     camera_info_topics = [f"/gt_box/alphasense_driver_node/cam{n}/color/camera_info" for n in [1,2,3,4,5]]
     calibration_files = [f"alphasense/cam{n}.yaml" for n in [1,2,3,4,5] ]
 
-    processor = RosbagPostprocessor(mission_folder, pattern, camera_info_topics, calibration_files, output_pattern)
+    processor = RosbagPostprocessor(MISSION_DATA, pattern, camera_info_topics, calibration_files, output_pattern)
     processor.run()
 
     # Add futher configs for HDR camera

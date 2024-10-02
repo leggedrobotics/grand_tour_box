@@ -8,7 +8,9 @@ import argparse
 from tf2_msgs.msg import TFMessage
 from scipy.spatial.transform import Rotation
 from pathlib import Path
-import argparse
+import os
+
+MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
 
 
 '''
@@ -167,24 +169,14 @@ class GPS_utils:
       
 
     
-def add_arguments():
-    parser = argparse.ArgumentParser(description="Export GPS optimized trajectory to a bag file")
-    parser.set_defaults(main=main)
-    parser.add_argument("--gps_file", "-g", help="Path to the GPS optimized trajectory")
-    parser.add_argument("--output", "-o", help="Output bag path", default="./gps_gt_output.bag")
-    parser.add_argument("--directory", "-d", default="/mission_data", help="Directory")
-    return parser
 
 
-def main(args):
-    if args.directory is not None:
-        date = [(str(s.name)).split("_")[0] for s in Path(args.directory).glob("*_nuc_livox*.bag")][0]
-        args.output = str(Path(args.directory) / f"{date}_cpt7_gps_optimized_trajectory.bag")
-        args.gps_file = str(Path(args.directory) / "ie/ie.txt")
+def main():
+    date = [(str(s.name)).split("_")[0] for s in Path(MISSION_DATA).glob("*_nuc_livox*.bag")][0]
+    output = str(Path(MISSION_DATA) / f"{date}_cpt7_gps_optimized_trajectory.bag")
+    gps_file = str(Path(MISSION_DATA) / "ie/ie.txt")
 
-    print(args.output, args.gps_file)
-
-    gps_file_path = args.gps_file
+    gps_file_path = gps_file
     gps_file = pd.read_csv(gps_file_path)
     gps_file.columns = gps_file.columns.str.strip()
     position_columns = ["X-ECEF", "Y-ECEF", "Z-ECEF"]
@@ -204,7 +196,7 @@ def main(args):
 
 
     frame_id = "enu_origin"
-    with rosbag.Bag(args.output, "w", compression="lz4") as bag:
+    with rosbag.Bag(output, "w", compression="lz4") as bag:
         for i, (time, position, orientation_rpy, position_std, orientation_rpy_std) in enumerate(
             zip(times, positions, orientations_rpy, positions_std, orientations_rpy_std)
         ):
@@ -266,6 +258,4 @@ def main(args):
 
 
 if __name__ == "__main__":
-    parser = add_arguments()
-    args = parser.parse_args()
-    main(args)
+    main()

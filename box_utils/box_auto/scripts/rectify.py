@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 import os
 
-MISSION_FOLDER = os.environ.get("MISSION_FOLDER", "/mission_data")
+MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
 
 
 def undistort_image(image, camera_info):
@@ -124,7 +124,7 @@ if __name__ == "__main__":
         }
     }
     for name, task in tasks.items():
-        bags = [str(s) for s in Path(MISSION_FOLDER).rglob(task["pattern"]) if str(s).find("rectified") == -1]
+        bags = [str(s) for s in Path(MISSION_DATA).rglob(task["pattern"]) if str(s).find("rectified") == -1]
         print(f"\nProcess for {name} the following bags: \n", bags)
         for input_bag in bags:
             process_rosbag(str(input_bag), task["image_topics"], task["camera_info_topics"])

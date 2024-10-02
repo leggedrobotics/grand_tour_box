@@ -8,6 +8,9 @@ import glob
 import subprocess
 import psutil
 
+
+MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
+
 WS = "/home/catkin_ws"
 PRE = f"source /opt/ros/noetic/setup.bash; source {WS}/devel/setup.bash;"
 
@@ -58,23 +61,12 @@ def launch_nodes(input_rosbag_path):
 
 
 if __name__ == '__main__':
-    import argparse
-    parser = argparse.ArgumentParser(description="Fix and reindex ROS bag files.")
-    parser.add_argument(
-        "--directory", "-d",
-        type=str,
-        default="/mission_data",
-        help="Directory to search for active bag files (default: current directory)."
-    )
-    args = parser.parse_args()
-    
+    input_rosbag_paths = sorted(glob.glob(os.path.join(MISSION_DATA, "*_nuc_hesai.bag")))
 
-    input_rosbag_paths = sorted(glob.glob(os.path.join(args.directory, "*_nuc_hesai.bag")))
-
-    print(f"Found {len(input_rosbag_paths)} Hesai bags in {args.directory}")
+    print(f"Found {len(input_rosbag_paths)} Hesai bags in {MISSION_DATA}")
 
     if len(input_rosbag_paths) == 0:
-        print("Bags available: " , [str(s) for s in glob.glob(os.path.join(args.directory, "*.bag"))])
+        print("Bags available: " , [str(s) for s in glob.glob(os.path.join(MISSION_DATA, "*.bag"))])
 
     for input_rosbag_path in input_rosbag_paths:
         print(f"Processing Hesai bag: {input_rosbag_path}")

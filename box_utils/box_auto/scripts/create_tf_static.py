@@ -2,12 +2,13 @@
 
 import rosbag
 import rospy
-from tf2_msgs.msg import TFMessage
 import numpy as np
 from pathlib import Path
 import rospkg
 import os
-import argparse
+import os
+
+MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
 
 def get_package_path(package_name):
     try:
@@ -54,16 +55,8 @@ def process_bags(reference_bag_path, tf_static_bag_path, output_bag_path):
 
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--directory", "-d",
-        type=str,
-        default="/mission_data",
-        help="Directory to search for active bag files (default: current directory)."
-    )
-    args = parser.parse_args()
 
-    reference_bag_path, suc = get_bag(args.directory, "*_jetson_adis.bag")
+    reference_bag_path, suc = get_bag(MISSION_DATA, "*_jetson_adis.bag")
     tf_static_bag_path = os.path.join( get_package_path("box_calibration"), "calibration/tf_static.bag")               
     output_bag_path =  reference_bag_path.replace("_jetson_adis.bag", "_tf_static.bag")
     

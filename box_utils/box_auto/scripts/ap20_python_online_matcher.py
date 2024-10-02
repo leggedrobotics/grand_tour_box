@@ -7,6 +7,9 @@ import rosbag
 from collections import deque
 import rospy
 from pathlib import Path
+import os
+
+MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
 
 def get_bag(directory, pattern):
     return [str(s) for s in Path(directory).rglob(pattern)][0]
@@ -214,17 +217,7 @@ def read_bag_file(bag_path):
         'timestamp_debug': timestamp_debug_data
     }
 
-import argparse
-parser = argparse.ArgumentParser()
-parser.add_argument(
-    "--directory", "-d",
-    type=str,
-    default="/Data/Projects/GrandTour/polyterasse_test_gps/2024-09-30-15-41-44",
-    help="Directory to search for active bag files (default: current directory)."
-)
-args = parser.parse_args()
-
-ap20_bag = get_bag(args.directory, "*_jetson_ap20_aux.bag")
+ap20_bag = get_bag(MISSION_DATA, "*_jetson_ap20_aux.bag")
 
 # Usage example
 data = read_bag_file(ap20_bag)

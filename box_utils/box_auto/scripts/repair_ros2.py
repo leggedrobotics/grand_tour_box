@@ -2,6 +2,8 @@ import argparse
 from pathlib import Path
 import os
 
+MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
+
 def replace_strings_in_yaml(file_path, new_relative_file_path, out_file,new_hdr_camera):
     # Open the output file for writing
     with open(out_file, 'w') as ofile:
@@ -20,7 +22,7 @@ def replace_strings_in_yaml(file_path, new_relative_file_path, out_file,new_hdr_
 
 def main(overwrite: bool):
     # Get all .bag.active files
-    bag_files = [s for s in Path("/mission_data").rglob("*.mcap")]
+    bag_files = [s for s in Path(MISSION_DATA).rglob("*.mcap")]
     
     for p in bag_files:
         directory = p.parent

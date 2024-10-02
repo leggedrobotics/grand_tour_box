@@ -13,6 +13,8 @@ import os
 import rerun as rr
 import yaml
 
+MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
+
 def get_bag(directory, pattern):
     files = [str(s) for s in Path(directory).rglob(pattern)]
     if len(files) != 1:
@@ -350,35 +352,28 @@ def process_all(directory, axis):
 
 if __name__ == "__main__":
     
-    debug = False
-    if debug:
-        base = "/Data/Projects/GrandTour/lee_k_democracy/2024-09-18-10-59-00/2024-09-18-10-59-00"
-        parser = argparse.ArgumentParser(description="IMU Synchronization and Time Offset Optimization")
-        parser.add_argument("--imu1_bag", default=f"{base}_jetson_ap20_0.bag", help="Path to IMU1 rosbag file")
-        parser.add_argument("--imu2_bag", default=f"{base}_nuc_cpt7_0.bag", help="Path to IMU2 rosbag file")
-        parser.add_argument("--tf_bag", default=f"{base}_nuc_tf_0.bag", help="Path to TF rosbag file")
-        parser.add_argument("--imu1_topic", default="/gt_box/ap20/imu", help="IMU1 topic name")
-        parser.add_argument("--imu2_topic", default="/gt_box/cpt7/imu/data_raw", help="IMU2 topic name")
+    # debug = False
+    # if debug:
+    #     base = "/Data/Projects/GrandTour/lee_k_democracy/2024-09-18-10-59-00/2024-09-18-10-59-00"
+    #     parser = argparse.ArgumentParser(description="IMU Synchronization and Time Offset Optimization")
+    #     parser.add_argument("--imu1_bag", default=f"{base}_jetson_ap20_0.bag", help="Path to IMU1 rosbag file")
+    #     parser.add_argument("--imu2_bag", default=f"{base}_nuc_cpt7_0.bag", help="Path to IMU2 rosbag file")
+    #     parser.add_argument("--tf_bag", default=f"{base}_nuc_tf_0.bag", help="Path to TF rosbag file")
+    #     parser.add_argument("--imu1_topic", default="/gt_box/ap20/imu", help="IMU1 topic name")
+    #     parser.add_argument("--imu2_topic", default="/gt_box/cpt7/imu/data_raw", help="IMU2 topic name")
         
-        args = parser.parse_args()
-        sync_optimizer = IMUSyncOptimizer( args.imu1_bag, args.imu1_topic, args.tf_bag)
-        optimal_offset_ns, suc = sync_optimizer.time_sync_imu(args.imu2_bag, args.imu2_topic)
-        print(f"Final time offset: {optimal_offset_ns}ns")
-    else: 
-        parser = argparse.ArgumentParser(description="Fix and reindex ROS bag files.")
-        parser.add_argument(
-            "--directory", "-d",
-            type=str,
-            default="/mission_data",
-            help="Directory to search for active bag files (default: current directory)."
-        )
-        args = parser.parse_args()
-        master_summary = {}
-        for axis in ["x", "y", "z"]:
-            print("Running for axis: ", axis)
+    #     args = parser.parse_args()
+    #     sync_optimizer = IMUSyncOptimizer( args.imu1_bag, args.imu1_topic, args.tf_bag)
+    #     optimal_offset_ns, suc = sync_optimizer.time_sync_imu(args.imu2_bag, args.imu2_topic)
+    #     print(f"Final time offset: {optimal_offset_ns}ns")
+    # else: 
 
-            master_summary[axis] = process_all(args.directory, axis=axis)
+    master_summary = {}
+    for axis in ["x", "y", "z"]:
+        print("Running for axis: ", axis)
 
-            # Dump the dictionary to a YAML file
-            with open(os.path.join(args.directory, "imu_timesync_summary.yaml"), 'w') as file:
-                yaml.dump(master_summary, file, default_flow_style=False, width=1000)
+        master_summary[axis] = process_all(MISSION_DATA, axis=axis)
+
+        # Dump the dictionary to a YAML file
+        with open(os.path.join(MISSION_DATA, "imu_timesync_summary.yaml"), 'w') as file:
+            yaml.dump(master_summary, file, default_flow_style=False, width=1000)
