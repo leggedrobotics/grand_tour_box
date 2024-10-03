@@ -30,7 +30,7 @@ catkin_package()
 catkin_package()
 
 catkin_install_python(
-  PROGRAMS
+  PROGRAMS  scripts/rosbag_play.sh
   DESTINATION
     ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
