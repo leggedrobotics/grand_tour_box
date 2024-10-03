@@ -33,4 +33,5 @@
   <depend>zed_wrapper</depend>
   <depend>tf_bag</depend>
   <depend>atn_position3_fuser</depend>
+  <depend>ap20_driver_ros</depend>
 </package>
