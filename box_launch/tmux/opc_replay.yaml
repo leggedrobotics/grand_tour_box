@@ -22,6 +22,6 @@ windows:
       - source /opt/ros/noetic/setup.bash
       - source ~/catkin_ws/devel/setup.bash
       - source ~/catkin_ws/src/grand_tour_box/box_configuration/opc/alias.sh 
-      - cd /mission_data/
-      - history -s "rosrun launch_replay rosbag_replay.sh --folder <path>"
+      - history -s "rosrun launch_replay rosbag_play.sh --folder ./"
+      - clear
       focus: true

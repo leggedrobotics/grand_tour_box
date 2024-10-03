@@ -29,9 +29,8 @@ catkin_package()
 
 catkin_package()
 
-catkin_install_python(
+install(
   PROGRAMS  scripts/rosbag_play.sh
-  DESTINATION
-    ${CATKIN_PACKAGE_BIN_DESTINATION}
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 # EOF

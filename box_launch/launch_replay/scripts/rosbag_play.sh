@@ -9,7 +9,7 @@ usage() {
     exit 1
 }
 
-# Parse command line arguments
+args=""
 while [[ $# -gt 0 ]]; do
     case $1 in
         --folder)
@@ -20,8 +20,8 @@ while [[ $# -gt 0 ]]; do
             usage
             ;;
         *)
-            echo "Unknown option: $1"
-            usage
+            args="$args $1"
+            shift 1
             ;;
     esac
 done
@@ -49,9 +49,9 @@ keys=(
     # "_jetson_zed2i_proprioceptive.bag"
     # "_jetson_zed2i_images.bag"
     # "_jetson_zed2i_depth.bag"
-    # "_jetson_hdr_right_raw.bag"
-    # "_jetson_hdr_left_raw.bag"
-    # "_jetson_hdr_front_raw.bag"
+    "_jetson_hdr_right_raw.bag"
+    "_jetson_hdr_left_raw.bag"
+    "_jetson_hdr_front_raw.bag"
 )
 
 # Find all .bag files and filter them
@@ -75,4 +75,4 @@ fi
 rosparam set use_sim_time 1
 
 # Play the filtered bag files
-rosbag play --clock "${filtered_files[@]}"
+rosbag play --clock "${filtered_files[@]}" $args
