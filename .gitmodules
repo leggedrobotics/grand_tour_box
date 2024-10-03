@@ -65,3 +65,6 @@
 	path = box_drivers/wavemap
 	url = git@github.com:ethz-asl/wavemap.git
 	branch = feature/alma
+[submodule "box_drivers_ros2/ros1_bridge"]
+	path = box_drivers_ros2/ros1_bridge
+	url = git@github.com:leggedrobotics/ros1_bridge.git

@@ -24,7 +24,7 @@ x-common-config: &common-config
               - compute # CUDA
               - video   # encoding 
   volumes:
-    - /Data/Projects/GrandTour/deployment_day_1/2024-10-01-11-47-44:/mission_data
+    - /Data/Projects/GrandTour/deployment_day_1/2024-10-01-12-00-49:/mission_data
     - /home/jonfrey/git/grand_tour_box:/home/catkin_ws/src/grand_tour_box
 x-ros2-common-config: &ros2-common-config
   build:
@@ -52,7 +52,7 @@ x-ros2-common-config: &ros2-common-config
               - compute # CUDA
               - video   # encoding 
   volumes:
-    - /Data/Projects/GrandTour/polyterasse_test_gps/2024-09-30-15-41-44:/mission_data
+    - /Data/Projects/GrandTour/deployment_day_1/2024-10-01-11-47-44:/mission_data
     - /home/jonfrey/git/grand_tour_box:/home/catkin_ws/src/grand_tour_box # For debugging
 
 
@@ -68,10 +68,6 @@ services:
     container_name: export_gps_gt_trajectory_bag
     command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/export_gps_gt_trajectory_bag.py"]
 
-  # ros2_fix_bags:
-  #   <<: *ros2-common-config
-  #   container_name: fix_mcaps
-  #   command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/repair_ros2.py"]
 
   mcap_to_rosbag:
     <<: *common-config
@@ -80,17 +76,11 @@ services:
     # depends_on:
     #   ros2_fix_bags:
     #     condition: service_completed_successfully
+
   zed2i:
     <<: *common-config
     container_name: zed2i
     command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/zed2i.py"]
-
-  # repair_bags:
-  #   <<: *common-config
-  #   container_name: repair_bags
-  #   command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/repair_bags.py"]
-
-  # #STOP 0
 
   merge_mission:
     <<: *common-config
@@ -101,27 +91,22 @@ services:
         condition: service_completed_successfully
       zed2i:
         condition: service_completed_successfully
-      # repair_bags:
-      #   condition: service_completed_successfully
 
   create_tf_static:
     <<: *common-config
     container_name: create_tf_static
     command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/create_tf_static.py"]
     depends_on:
-      mcap_to_rosbag:
+      merge_mission:
         condition: service_completed_successfully
 
-
-
-  # # STOP 1
-  # update_camera_info:
-  #   <<: *common-config
-  #   container_name: update_camera_info
-  #   command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/update_camera_info.py"]
-  #   depends_on:
-  #     merge_mission:
-  #       condition: service_completed_successfully
+  ap20_python_online_matcher:
+    <<: *common-config
+    container_name: ap20_python_online_matcher
+    command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/ap20_python_online_matcher.py"]
+    depends_on:
+      merge_mission:
+        condition: service_completed_successfully
 
   hesai:
     <<: *common-config
@@ -158,14 +143,24 @@ services:
         condition: service_completed_successfully
       cpt7:
         condition: service_completed_successfully
+      ap20_python_online_matcher:
+        condition: service_completed_successfully
   
-  # # STOP 2
-  # color_correction:
+  color_correction:
+    <<: *common-config
+    container_name: color_correction
+    command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/color_correction.py"]
+    # depends_on:
+    #   update_camera_info:
+    #     condition: service_completed_successfully
+
+  # Optionals
+  # update_camera_info:
   #   <<: *common-config
-  #   container_name: color_correction
-  #   command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/color_correction.py"]
+  #   container_name: update_camera_info
+  #   command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/update_camera_info.py"]
   #   depends_on:
-  #     update_camera_info:
+  #     merge_mission:
   #       condition: service_completed_successfully
 
   # rectify:
@@ -175,3 +170,12 @@ services:
   #   depends_on:
   #     update_camera_info:
   #       condition: service_completed_successfully
+
+  # # ros2_fix_bags:
+  # #   <<: *ros2-common-config
+  # #   container_name: fix_mcaps
+  # #   command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/repair_ros2.py"]
+  # # repair_bags:
+  # #   <<: *common-config
+  # #   container_name: repair_bags
+  # #   command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/repair_bags.py"]

@@ -8,6 +8,6 @@ alias l-jetson='tmuxp load $(rospack find box_launch)/../tmux/jetson_recording.y
 alias l-jetson-viz='tmuxp load $(rospack find box_launch)/../tmux/jetson_visualization.yaml'
 
 alias attach-jetson='tmux attach-session -t jetson'
-alias l-docker='/data/workspaces/isaac_ros-dev/src/isaac_ros_common/scripts/run_recording.sh'
+alias l-docker='/home/rsl/git/grand_tour_box/box_drivers_ros2/isaac_ros_common/scripts/run_recording.sh'
 alias stop_recording='rosservice call /gt_box/rosbag_record_coordinator/stop_recording "verbose: false"'
 alias sync-clocks='/home/rsl/git/grand_tour_box/box_configuration/jetson/sync_clocks_jetson.sh'

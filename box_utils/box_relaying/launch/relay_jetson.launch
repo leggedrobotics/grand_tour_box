@@ -14,13 +14,13 @@
     <node name="hdr_front_relayer" type="relay" pkg="topic_tools" args="/gt_box/hdr_front/image_raw /gt_box/hdr_front/image_raw/opc" > 
       <param name="capability_group" value="Relaying"/>
     </node> -->
-    <node name="hdr_left_compressed_relayer" type="relay" pkg="topic_tools" args="/gt_box/hdr_left/image_raw/compressed /gt_box/hdr_opc/left/image_raw/compressed" > 
+    <node name="hdr_left_relayer" type="relay" pkg="topic_tools" args="/gt_box/hdr_left/image_raw /gt_box/hdr_opc/left/image_raw" > 
       <param name="capability_group" value="Relaying"/>
     </node>
-    <node name="hdr_right_compressed_relayer" type="relay" pkg="topic_tools" args="/gt_box/hdr_right/image_raw/compressed /gt_box/hdr_opc/right/image_raw/compressed" > 
+    <node name="hdr_right_relayer" type="relay" pkg="topic_tools" args="/gt_box/hdr_right/image_raw /gt_box/hdr_opc/right/image_raw" > 
       <param name="capability_group" value="Relaying"/>
     </node>
-    <node name="hdr_front_compressed_relayer" type="relay" pkg="topic_tools" args="/gt_box/hdr_front/image_raw/compressed /gt_box/hdr_opc/center/image_raw/compressed" > 
+    <node name="hdr_front_relayer" type="relay" pkg="topic_tools" args="/gt_box/hdr_front/image_raw /gt_box/hdr_opc/center/image_raw" > 
       <param name="capability_group" value="Relaying"/>
     </node>
     
