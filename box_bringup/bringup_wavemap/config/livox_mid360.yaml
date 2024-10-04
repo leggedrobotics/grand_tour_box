@@ -5,7 +5,7 @@ general:
 
 map:
   type: hashed_chunked_wavelet_octree
-  min_cell_width: { meters: 0.1 }
+  min_cell_width: { meters: 0.15 }
 
 map_operations:
   - type: threshold_map
@@ -43,9 +43,9 @@ measurement_integrators:
 inputs:
   - type: pointcloud_topic
     topic_name: "/gt_box/livox/lidar"
-    topic_type: livox
+    topic_type: pointcloud_topic
     measurement_integrator_names: livox_mid360
-    undistort_motion: true
+    undistort_motion: false
     reprojected_pointcloud_topic_name: "/wavemap/input"
     topic_queue_length: 10
     max_wait_for_pose: { seconds: 1.0 }

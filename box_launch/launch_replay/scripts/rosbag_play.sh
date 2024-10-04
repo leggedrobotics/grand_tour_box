@@ -30,7 +30,7 @@ done
 keys=(
     # "_lpc_"
     # "_npc_"
-    # "_nuc_hesai_post_processed.bag"
+    "_nuc_hesai_post_processed.bag"
     "_jetson_ap20_synced.bag"
     "_cpt7_raw_imu.bag"
     "_cpt7_gps_optimized_trajectory.bag"
@@ -38,7 +38,7 @@ keys=(
     "_nuc_utils.bag"
     "_nuc_tf.bag"
     "_nuc_livox.bag"
-    "_nuc_hesai.bag"
+    # "_nuc_hesai.bag"
     # "_nuc_cpt7.bag"
     # "_nuc_alphasense.bag"
     # "_jetson_utils.bag"

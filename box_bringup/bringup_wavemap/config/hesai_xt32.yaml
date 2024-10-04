@@ -16,7 +16,7 @@ map_operations:
     once_every: { seconds: 2.0 }
 
 measurement_integrators:
-  ouster_os0:
+  hesai_xt32:
     projection_model:
       type: ouster_projector
       lidar_origin_to_beam_origin: { millimeters: 27.67 }
@@ -44,9 +44,9 @@ measurement_integrators:
 
 inputs:
   - type: pointcloud_topic
-    topic_name: "/os_cloud_node/points"
-    topic_type: ouster
-    measurement_integrator_names: ouster_os0
+    topic_name: "/gt_box/hesai/lidar"
+    topic_type: hesai
+    measurement_integrator_names: hesai_xt32
     undistort_motion: true
     topic_queue_length: 10
     max_wait_for_pose: { seconds: 1.0 }
