@@ -26,7 +26,7 @@ def get_bag(directory, pattern):
     
     return files[0], True
 
-def process_bags(reference_bag_path, tf_static_bag_path, output_bag_path):
+def process_bags(reference_bag_path, tf_static_bag_path, output_bag_path, start_end=False):
     # Get start and end time from reference bag
     with rosbag.Bag(reference_bag_path, 'r') as ref_bag:
         start_time = ref_bag.get_start_time()
@@ -51,8 +51,13 @@ def process_bags(reference_bag_path, tf_static_bag_path, output_bag_path):
             for i in range( len(tf_static_msg.transforms)):
                 tf_static_msg.transforms[i].header.stamp = t
             out_bag.write('/tf_static', tf_static_msg, t)
-            current_time = current_time + 1.0
+            if current_time == end_time:
+                break
 
+            if not start_end:
+                current_time = current_time + 1.0
+            else:
+                current_time = end_time
 
 def main():
 
@@ -62,6 +67,17 @@ def main():
     
     try:
         process_bags(reference_bag_path, tf_static_bag_path, output_bag_path)
+        print(f"Successfully created {output_bag_path}")
+    except Exception as e:
+        print(f"Error: {str(e)}")
+
+
+    reference_bag_path, suc = get_bag(MISSION_DATA, "*_jetson_adis.bag")
+    tf_static_bag_path = os.path.join( get_package_path("box_calibration"), "calibration/tf_static.bag")               
+    output_bag_path =  reference_bag_path.replace("_jetson_adis.bag", "_tf_static_start_end.bag")
+    
+    try:
+        process_bags(reference_bag_path, tf_static_bag_path, output_bag_path, start_end=True)
         print(f"Successfully created {output_bag_path}")
     except Exception as e:
         print(f"Error: {str(e)}")

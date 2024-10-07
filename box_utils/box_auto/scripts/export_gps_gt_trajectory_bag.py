@@ -203,18 +203,20 @@ def main():
             if start_time is None:
                 start_time = time
             
+            R_enu__ned = np.array([[0, 1, 0], [1, 0, 0], [0, 0, -1]])
+                
             # Position
-            position_enu = utils.ecef2enu(position[0], position[1], position[2])
+            position_ned = utils.ecef2enu(position[0], position[1], position[2])
+            position_enu = R_enu__ned @ position_ned
             # Absolutely not sure if this is correct
-            position_enu_std = utils.R @ position_std
-
+            position_enu_std = R_enu__ned @ utils.R @ position_std
 
             # Covariance is diagonal - 6x6 matrix ( dx, dy, dz, droll, dpitch, dyaw)
             # TO ROS convention: fixed axis https://www.ros.org/reps/rep-0103.html
-            quaternion_xyzw = Rotation.from_euler("ZXY", orientation_rpy, degrees=True).as_quat()
-            rot_std = Rotation.from_euler("ZXY", orientation_rpy_std, degrees=True).as_euler("xyz", degrees=False)
+            quaternion_xyzw = Rotation.from_matrix( R_enu__ned @ Rotation.from_euler("ZXY", orientation_rpy, degrees=True).as_matrix() ) .as_quat()
+            rot_std = Rotation.from_matrix( R_enu__ned @ Rotation.from_euler("ZXY", orientation_rpy_std, degrees=True).as_matrix() ).as_euler("xyz", degrees=False)
 
-			# Missing **2
+            # Missing **2
             covariance = np.diag(np.concatenate([rot_std[:], np.array(position_enu_std)[0,:]],axis=0))
 
             timestamp = rospy.Time.from_sec(time)
