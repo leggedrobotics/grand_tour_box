@@ -1,0 +1,36 @@
+<launch>
+    <!-- Define global target_type parameter -->
+    <arg name="use_april_grid" default="true"/>
+
+    <!-- Include camera detectors with target_type -->
+    <include file="$(find grand_tour_camera_detectors)/launch/generic_detector.launch">
+        <arg name="name" value="cam1_detector"/>
+        <arg name="image_topic" value="/gt_box/alphasense_driver_node/cam1"/>
+        <arg name="use_april_grid" value="$(arg use_april_grid)"/>
+    </include>
+
+    <include file="$(find grand_tour_camera_detectors)/launch/generic_detector.launch">
+        <arg name="name" value="cam2_detector"/>
+        <arg name="image_topic" value="/gt_box/alphasense_driver_node/cam2"/>
+        <arg name="use_april_grid" value="$(arg use_april_grid)"/>
+    </include>
+
+    <include file="$(find grand_tour_camera_detectors)/launch/generic_detector.launch">
+        <arg name="name" value="cam3_detector"/>
+        <arg name="image_topic" value="/gt_box/alphasense_driver_node/cam3"/>
+        <arg name="use_april_grid" value="$(arg use_april_grid)"/>
+    </include>
+
+    <include file="$(find grand_tour_camera_detectors)/launch/generic_detector.launch">
+        <arg name="name" value="cam4_detector"/>
+        <arg name="image_topic" value="/gt_box/alphasense_driver_node/cam4"/>
+        <arg name="use_april_grid" value="$(arg use_april_grid)"/>
+    </include>
+
+    <include file="$(find grand_tour_camera_detectors)/launch/generic_detector.launch">
+        <arg name="name" value="cam5_detector"/>
+        <arg name="image_topic" value="/gt_box/alphasense_driver_node/cam5"/>
+        <arg name="use_april_grid" value="$(arg use_april_grid)"/>
+    </include>
+
+</launch>
