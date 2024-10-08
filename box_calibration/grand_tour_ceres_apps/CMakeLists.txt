@@ -24,7 +24,6 @@ find_package(yaml-cpp REQUIRED)
 add_library(gtboxcalibration
         include/gtboxcalibration/argparse.h
         include/gtboxcalibration/argparsers.h src/argparsers.cpp
-#        include/gtboxcalibration/callbacks.h src/callbacks.cpp
         include/gtboxcalibration/camerageometry.h
         include/gtboxcalibration/ceresprograms.h src/ceresprogram.cpp
         include/gtboxcalibration/ceresproblems.h src/ceresproblems.cpp
@@ -37,7 +36,6 @@ add_library(gtboxcalibration
         include/gtboxcalibration/reprojectionresiduals.h src/reprojectionresiduals.cpp
         include/gtboxcalibration/utils.h src/utils.cpp
         include/gtboxcalibration/voxel_2d.h src/voxel_2d.cpp
-#        include/gtboxcalibration/visualization.h src/visualization.cpp
 )
 target_include_directories(gtboxcalibration PUBLIC include)
 target_link_libraries(gtboxcalibration PUBLIC Eigen3::Eigen ${OpenCV_LIBS} yaml-cpp Ceres::ceres)

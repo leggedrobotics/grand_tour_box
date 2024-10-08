@@ -6,13 +6,11 @@
 #include <fstream>
 
 #include <gtboxcalibration/argparsers.h>
-#include <gtboxcalibration/callbacks.h>
 #include <gtboxcalibration/ceresprograms.h>
 #include <gtboxcalibration/json.h>
 #include <gtboxcalibration/utils.h>
 
 #include <ceres/ceres.h>
-#include <rerun.hpp>
 #include <gtboxcalibration/ceresproblems.h>
 
 

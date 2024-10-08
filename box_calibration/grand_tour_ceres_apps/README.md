@@ -22,19 +22,8 @@ You can install all the required dependencies using the following `apt` commands
 sudo apt-get update
 sudo apt-get install -y \
     libboost-all-dev \
+    libceres-dev \
     libeigen3-dev \
     libopencv-dev \
     libyaml-cpp-dev
 ```
-
-For `Ceres 2.2`, acquire the release from `http://ceres-solver.org/ceres-solver-2.2.0.tar.gz`
-then: 
-```bash
-tar zxf ceres-solver-2.2.0.tar.gz
-mkdir ceres-bin
-cd ceres-bin
-cmake ../ceres-solver-2.2.0
-make -j3
-make install
-```
-
