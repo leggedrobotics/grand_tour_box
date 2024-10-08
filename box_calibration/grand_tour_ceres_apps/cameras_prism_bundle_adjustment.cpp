@@ -3,7 +3,6 @@
 //
 
 #include <gtboxcalibration/argparsers.h>
-#include <gtboxcalibration/visualization.h>
 #include <gtboxcalibration/ceresprograms.h>
 
 
