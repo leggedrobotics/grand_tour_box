@@ -1,0 +1,8 @@
+image_topic: "/gt_box/hdr_front/image_raw"
+detections_topic: "/gt_box/hdr_front/image_raw_corner_detections_added"
+processed_detections_topic: "/gt_box/hdr_front/image_raw_corner_detections_used"
+processed_extrinsics_detections_topic: "/gt_box/hdr_front/image_raw_corner_detections_used_extrinsics"
+heatmap_subblock_size: [64, 64]
+heatmap_alpha: 0.5
+heatmap_clip_value: 100
+timer_interval: 10

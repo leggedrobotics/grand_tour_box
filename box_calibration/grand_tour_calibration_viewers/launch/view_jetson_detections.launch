@@ -1,0 +1,18 @@
+<launch>
+    <arg name="recording_id" />
+    <!-- Launch the view_camera_camera_optimization.py script -->
+    <node name="gt_camera_calibration_viewer" pkg="grand_tour_calibration_viewers" type="launch_viewer.py" output="screen">
+        <param name="recording_id" value="$(arg recording_id)"/>
+    </node>
+
+    <node name="zed_left_corners_viewer" pkg="grand_tour_calibration_viewers" type="view_camera_camera_optimization.py" output="screen">
+        <rosparam file="$(find grand_tour_calibration_viewers)/config/zed_left.yaml" command="load"/>
+        <param name="recording_id" value="$(arg recording_id)"/>
+    </node>
+
+    <node name="zed_right_corners_viewer" pkg="grand_tour_calibration_viewers" type="view_camera_camera_optimization.py" output="screen">
+        <rosparam file="$(find grand_tour_calibration_viewers)/config/zed_right.yaml" command="load"/>
+        <param name="recording_id" value="$(arg recording_id)"/>
+    </node>
+
+</launch>
