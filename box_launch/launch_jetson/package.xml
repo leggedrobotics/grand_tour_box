@@ -21,4 +21,5 @@
   <depend>box_throttling</depend>
   <depend>box_relaying</depend>
   <depend>box_calibration</depend>
+  <depend>grand_tour_camera_detectors</depend>
 </package>
