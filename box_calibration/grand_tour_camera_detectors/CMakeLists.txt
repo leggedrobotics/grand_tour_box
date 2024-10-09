@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
         sensor_msgs
         cv_bridge
         grand_tour_camera_detection_msgs
+        rosbag
 )
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 find_package(OpenCV REQUIRED)

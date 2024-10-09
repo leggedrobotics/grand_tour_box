@@ -5,15 +5,17 @@
 #ifndef GRAND_TOUR_CAMERA_DETECTORS_DETECTOR_NODE_H
 #define GRAND_TOUR_CAMERA_DETECTORS_DETECTOR_NODE_H
 
+#include "calibrationtargetasl.h"
 #include <ros/ros.h>
 #include <opencv2/core.hpp>
-#include "calibrationtargetasl.h"
 #include <Eigen/Dense>
 #include <string>
 #include <optional>
 #include <sensor_msgs/Image.h>
 #include <cv_bridge/cv_bridge.h>
 #include <std_msgs/Header.h>
+#include <rosbag/bag.h>
+
 
 class CameraDetectorNode {
 public:
@@ -39,6 +41,9 @@ private:
     int grid_size_y_;
     double tag_size_;
     double tag_spacing_;
+    std::string image_topic_;
+    std::string output_suffix_;
+    std::string detection_topic_;
 
     ros::Subscriber image_sub_;  // Subscriber for the image topic
     ros::NodeHandle nh_;
@@ -51,6 +56,7 @@ private:
 
     // Timer for logging statistics periodically
     ros::Timer log_timer_;
+    rosbag::Bag bag_;
 };
 
 

@@ -16,7 +16,6 @@ CameraDetectorNode::CameraDetectorNode(ros::NodeHandle &nh) : nh_(nh) {
     // Use a private NodeHandle to get private parameters
     ros::NodeHandle private_nh("~");
 
-    std::string image_topic, output_suffix;
     double show_stats_every_n_sec;
     bool use_april_grid;
 
@@ -24,12 +23,25 @@ CameraDetectorNode::CameraDetectorNode(ros::NodeHandle &nh) : nh_(nh) {
     int rows, cols;
     double row_spacing, column_spacing;
 
+    std::string output_folder;
     // Fetch parameters from the private parameter server
     private_nh.param<bool>("show_extraction_video", show_extraction_video_, false);
     private_nh.param<bool>("use_april_grid", use_april_grid, true);
     private_nh.param<double>("show_stats_every_n_sec", show_stats_every_n_sec, 30);
-    private_nh.param<std::string>("image_topic", image_topic, "/image");
-    private_nh.param<std::string>("output_suffix", output_suffix, "_corner_detections");
+    private_nh.param<std::string>("image_topic", image_topic_, "/image");
+    private_nh.param<std::string>("output_folder", output_folder, "/data/");
+    private_nh.param<std::string>("output_suffix", output_suffix_, "_corner_detections");
+
+    std::string output_bag_name = image_topic_;
+    std::replace(output_bag_name.begin(), output_bag_name.end(), '/', '_');
+
+    // Get the current timestamp and format it
+    ros::Time current_time = ros::Time::now();
+    std::stringstream ss;
+    ss << output_folder << "/" << output_bag_name << "_" << current_time.sec << ".bag";
+
+    // Open the rosbag with the new name
+    bag_.open(ss.str(), rosbag::bagmode::Write);
 
     if (use_april_grid) {
         private_nh.param<int>("grid_size_x", grid_size_x_, 6);
@@ -62,9 +74,10 @@ CameraDetectorNode::CameraDetectorNode(ros::NodeHandle &nh) : nh_(nh) {
         );
     }
 
-    image_sub_ = nh_.subscribe(image_topic, 1, &CameraDetectorNode::imageCallback, this);
+    detection_topic_ = image_topic_ + output_suffix_;
+    image_sub_ = nh_.subscribe(image_topic_, 1, &CameraDetectorNode::imageCallback, this);
     // Initialize publisher for AprilGrid detections
-    detections_pub_ = nh_.advertise<grand_tour_camera_detection_msgs::CameraDetections>(image_topic + output_suffix, 1);
+    detections_pub_ = nh_.advertise<grand_tour_camera_detection_msgs::CameraDetections>(detection_topic_, 1);
 
     // Set up a periodic timer for logging statistics (every 20 seconds, for example)
     log_timer_ = nh_.createTimer(ros::Duration(show_stats_every_n_sec), &CameraDetectorNode::logStatistics, this);
@@ -95,6 +108,7 @@ void CameraDetectorNode::imageCallback(const sensor_msgs::ImageConstPtr &msg) {
     // If there were valid detections, increment the count
     if (!validCorners.empty()) {
         images_with_detections_++;
+        bag_.write(image_topic_, msg->header.stamp, msg);
         // Publish detections as AprilGridDetections message
         this->publishDetections(validCorners, msg->header);
     }
@@ -140,6 +154,7 @@ void CameraDetectorNode::publishDetections(const std::map<int, Eigen::Vector2d> 
         detections_msg.cornerids.push_back(index);
     }
 
+    bag_.write(detection_topic_, header.stamp, detections_msg);
     // Publish the message
     detections_pub_.publish(detections_msg);
 }
