@@ -1,5 +1,16 @@
 #!/bin/bash
 
+# Simlink only needed packages - we do this to not have ROS2 and ROS1 packages in our ROS1 workspace
+mkdir -p ~/catkin_ws/src/grand_tour_box
+ln -s ~/git/grand_tour_box/box_bringup ~/catkin_ws/src/grand_tour_box/
+ln -s ~/git/grand_tour_box/box_calibration ~/catkin_ws/src/grand_tour_box/
+ln -s ~/git/grand_tour_box/box_configuration ~/catkin_ws/src/grand_tour_box/
+ln -s ~/git/grand_tour_box/box_drivers ~/catkin_ws/src/grand_tour_box/
+ln -s ~/git/grand_tour_box/box_launch ~/catkin_ws/src/grand_tour_box/
+ln -s ~/git/grand_tour_box/box_model ~/catkin_ws/src/grand_tour_box/
+ln -s ~/git/grand_tour_box/box_utils ~/catkin_ws/src/grand_tour_box/
+
+
 rm ~/.bashrc; ln -s /home/rsl/git/grand_tour_box/box_configuration/nuc/.bashrc ~/
 
 # .bashrc
