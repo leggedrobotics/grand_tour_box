@@ -20,6 +20,9 @@
 class CameraDetectorNode {
 public:
     CameraDetectorNode(ros::NodeHandle &nh);
+    ~CameraDetectorNode() {
+        bag_.close();
+    }
 
 private:
 
