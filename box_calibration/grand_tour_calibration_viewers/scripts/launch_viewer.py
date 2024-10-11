@@ -157,6 +157,7 @@ class ViewerBlueprint:
         T_bundle_camera[:3, :3] = R
         T_bundle_camera[:3, -1] = translation
         plot_frame(msg.header.frame_id, T_bundle_camera)
+        print(msg)
 
     def adjacency_callback(self, msg: CameraCameraAdjacency):
         name_a = msg.camera_a.data
