@@ -1,0 +1,43 @@
+<launch>
+    <node pkg="grand_tour_calibration_viewers" type="undistort_images_for_rviz.py" name="image_undistorter1" output="screen">
+        <param name="camera_name" value="/gt_box/alphasense_driver_node/cam1" />
+        <param name="use_compressed" value="false" />
+        <param name="config_file" value="cam1.yaml" />
+    </node>
+    <node pkg="grand_tour_calibration_viewers" type="undistort_images_for_rviz.py" name="image_undistorter2" output="screen">
+        <param name="camera_name" value="/gt_box/alphasense_driver_node/cam2" />
+        <param name="use_compressed" value="false" />
+        <param name="config_file" value="cam2.yaml" />
+    </node>
+    <node pkg="grand_tour_calibration_viewers" type="undistort_images_for_rviz.py" name="image_undistorter3" output="screen">
+        <param name="camera_name" value="/gt_box/alphasense_driver_node/cam3" />
+        <param name="use_compressed" value="false" />
+        <param name="config_file" value="cam3.yaml" />
+    </node>
+
+    <node pkg="grand_tour_calibration_viewers" type="undistort_images_for_rviz.py" name="image_undistorter4" output="screen">
+        <param name="camera_name" value="/gt_box/alphasense_driver_node/cam4" />
+        <param name="use_compressed" value="false" />
+        <param name="config_file" value="cam4.yaml" />
+    </node>
+
+    <node pkg="grand_tour_calibration_viewers" type="undistort_images_for_rviz.py" name="image_undistorter5" output="screen">
+        <param name="camera_name" value="/gt_box/alphasense_driver_node/cam5" />
+        <param name="use_compressed" value="false" />
+        <param name="config_file" value="cam5.yaml" />
+    </node>
+
+<!--   <include file="$(find grand_tour_calibration_viewers)/launch/publish_static_tf_generic.launch"> -->
+<!--     <arg name="file_path" value="/media/fu/Samsung_T5/diffcal_example_gt/cad-livox.yaml"/> -->
+<!--     <arg name="parent_frame" value="cam1_sensor_frame"/> -->
+<!--     <arg name="child_frame" value="livox_lidar"/> -->
+<!--     <arg name="node_name" value="livox_tf_pub"/> -->
+<!--   </include> -->
+
+<!--   <include file="$(find grand_tour_calibration_viewers)/launch/publish_static_tf_generic.launch"> -->
+<!--     <arg name="file_path" value="/media/fu/Samsung_T5/diffcal_example_gt/cad-hesai.yaml"/> -->
+<!--     <arg name="parent_frame" value="cam1_sensor_frame"/> -->
+<!--     <arg name="child_frame" value="hesai_lidar"/> -->
+<!--     <arg name="node_name" value="hesai_tf_pub"/> -->
+<!--   </include> -->
+</launch>

@@ -21,4 +21,5 @@
   <depend>box_health</depend>
   <depend>box_model</depend>
   <depend>box_throttling</depend>
+  <depend>grand_tour_camera_detectors</depend>
 </package>

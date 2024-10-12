@@ -5,8 +5,15 @@ sudo apt install netplan.io linuxptp tmux tmuxp
 
 /home/rsl/git/grand_tour_box/box_configuration/general/general_install.sh
 
-
-
+# Simlink only needed packages - we do this to not have ROS2 and ROS1 packages in our ROS1 workspace
+mkdir -p ~/catkin_ws/src/grand_tour_box
+ln -s ~/git/grand_tour_box/box_bringup ~/catkin_ws/src/grand_tour_box/
+ln -s ~/git/grand_tour_box/box_calibration ~/catkin_ws/src/grand_tour_box/
+ln -s ~/git/grand_tour_box/box_configuration ~/catkin_ws/src/grand_tour_box/
+ln -s ~/git/grand_tour_box/box_drivers ~/catkin_ws/src/grand_tour_box/
+ln -s ~/git/grand_tour_box/box_launch ~/catkin_ws/src/grand_tour_box/
+ln -s ~/git/grand_tour_box/box_model ~/catkin_ws/src/grand_tour_box/
+ln -s ~/git/grand_tour_box/box_utils ~/catkin_ws/src/grand_tour_box/
 
 sudo cp ~/catkin_ws/src/grand_tour_box/box_configuration/jetson/01-network-manager-all.yaml /etc/netplan/01-network-manager-all.yaml
 sudo netplan generate

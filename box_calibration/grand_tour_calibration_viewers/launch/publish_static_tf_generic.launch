@@ -1,0 +1,14 @@
+<launch>
+  <!-- Arguments for file path, parent frame, and child frame -->
+  <arg name="file_path" />
+  <arg name="parent_frame" />
+  <arg name="child_frame" />
+  <arg name="node_name" />
+
+  <!-- Static transform node -->
+  <node name="$(arg node_name)" pkg="grand_tour_calibration_viewers" type="publish_tf_for_rviz.py" output="screen">
+    <param name="file_path" value="$(arg file_path)"/>
+    <param name="parent_frame" value="$(arg parent_frame)"/>
+    <param name="child_frame" value="$(arg child_frame)"/>
+  </node>
+</launch>

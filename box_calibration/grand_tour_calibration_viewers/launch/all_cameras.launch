@@ -1,0 +1,58 @@
+<launch>
+    <arg name="recording_id" />
+<!--     Launch the view_camera_camera_optimization.py script -->
+    <node name="gt_camera_calibration_viewer" pkg="grand_tour_calibration_viewers" type="launch_viewer.py" output="screen">
+        <param name="recording_id" value="$(arg recording_id)"/>
+    </node>
+    <!-- Launch the view_camera_camera_optimization.py script -->
+    <node name="front_center_corners_viewer" pkg="grand_tour_calibration_viewers" type="view_camera_camera_optimization.py" output="screen">
+        <rosparam file="$(find grand_tour_calibration_viewers)/config/alphasense_front_center.yaml" command="load"/>
+        <param name="recording_id" value="$(arg recording_id)"/>
+    </node>
+<!--     Launch the view_camera_camera_optimization.py script -->
+    <node name="front_left_corners_viewer" pkg="grand_tour_calibration_viewers" type="view_camera_camera_optimization.py" output="screen">
+        <rosparam file="$(find grand_tour_calibration_viewers)/config/alphasense_front_left.yaml" command="load"/>
+        <param name="recording_id" value="$(arg recording_id)"/>
+    </node>
+<!--     Launch the view_camera_camera_optimization.py script -->
+    <node name="front_right_corners_viewer" pkg="grand_tour_calibration_viewers" type="view_camera_camera_optimization.py" output="screen">
+        <rosparam file="$(find grand_tour_calibration_viewers)/config/alphasense_front_right.yaml" command="load"/>
+        <param name="recording_id" value="$(arg recording_id)"/>
+    </node>
+<!--     Launch the view_camera_camera_optimization.py script -->
+    <node name="left_corners_viewer" pkg="grand_tour_calibration_viewers" type="view_camera_camera_optimization.py" output="screen">
+        <rosparam file="$(find grand_tour_calibration_viewers)/config/alphasense_left.yaml" command="load"/>
+        <param name="recording_id" value="$(arg recording_id)"/>
+    </node>
+<!--     Launch the view_camera_camera_optimization.py script -->
+    <node name="right_corners_viewer" pkg="grand_tour_calibration_viewers" type="view_camera_camera_optimization.py" output="screen">
+        <rosparam file="$(find grand_tour_calibration_viewers)/config/alphasense_right.yaml" command="load"/>
+        <param name="recording_id" value="$(arg recording_id)"/>
+    </node>
+
+    <node name="zed_left_corners_viewer" pkg="grand_tour_calibration_viewers" type="view_camera_camera_optimization.py" output="screen">
+        <rosparam file="$(find grand_tour_calibration_viewers)/config/zed_left.yaml" command="load"/>
+        <param name="recording_id" value="$(arg recording_id)"/>
+    </node>
+
+    <node name="zed_right_corners_viewer" pkg="grand_tour_calibration_viewers" type="view_camera_camera_optimization.py" output="screen">
+        <rosparam file="$(find grand_tour_calibration_viewers)/config/zed_right.yaml" command="load"/>
+        <param name="recording_id" value="$(arg recording_id)"/>
+    </node>
+
+    <node name="hdr_left_corners_viewer" pkg="grand_tour_calibration_viewers" type="view_camera_camera_optimization.py" output="screen">
+        <rosparam file="$(find grand_tour_calibration_viewers)/config/hdr_left.yaml" command="load"/>
+        <param name="recording_id" value="$(arg recording_id)"/>
+    </node>
+
+    <node name="hdr_front_corners_viewer" pkg="grand_tour_calibration_viewers" type="view_camera_camera_optimization.py" output="screen">
+        <rosparam file="$(find grand_tour_calibration_viewers)/config/hdr_front.yaml" command="load"/>
+        <param name="recording_id" value="$(arg recording_id)"/>
+    </node>
+
+    <node name="hdr_right_corners_viewer" pkg="grand_tour_calibration_viewers" type="view_camera_camera_optimization.py" output="screen">
+        <rosparam file="$(find grand_tour_calibration_viewers)/config/hdr_right.yaml" command="load"/>
+        <param name="recording_id" value="$(arg recording_id)"/>
+    </node>
+
+</launch>

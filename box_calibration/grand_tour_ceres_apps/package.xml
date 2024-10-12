@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<package format="2">
+    <name>grand_tour_ceres_apps</name>
+    <version>0.0.1</version>
+    <description>The grand_tour_ceres_apps package</description>
+
+    <maintainer email="user@example.com">Your Name</maintainer>
+    <license>BSD</license>
+
+    <buildtool_depend>catkin</buildtool_depend>
+
+    <build_depend>roscpp</build_depend>
+    <build_depend>std_msgs</build_depend>
+    <build_depend>grand_tour_camera_detection_msgs</build_depend>
+    <build_depend>Boost</build_depend>
+    <build_depend>Ceres</build_depend>
+    <build_depend>Eigen</build_depend>
+    <build_depend>OpenCV</build_depend>
+
+    <exec_depend>roscpp</exec_depend>
+    <exec_depend>std_msgs</exec_depend>
+    <exec_depend>grand_tour_camera_detection_msgs</exec_depend>
+
+    <export>
+        <build_type>catkin</build_type>
+    </export>
+</package>

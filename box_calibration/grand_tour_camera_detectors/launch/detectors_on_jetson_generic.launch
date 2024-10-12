@@ -1,0 +1,36 @@
+<launch>
+    <!-- Define global target_type parameter -->
+    <arg name="use_april_grid" default="true"/>
+
+    <!-- Include camera detectors with target_type -->
+    <include file="$(find grand_tour_camera_detectors)/launch/generic_detector.launch">
+        <arg name="name" value="zed_left_detector"/>
+        <arg name="image_topic" value="/gt_box/zed2i_driver_node/left_raw/image_raw_color"/>
+        <arg name="use_april_grid" value="$(arg use_april_grid)"/>
+    </include>
+
+    <include file="$(find grand_tour_camera_detectors)/launch/generic_detector.launch">
+        <arg name="name" value="zed_right_detector"/>
+        <arg name="image_topic" value="/gt_box/zed2i_driver_node/right_raw/image_raw_color"/>
+        <arg name="use_april_grid" value="$(arg use_april_grid)"/>
+    </include>
+
+    <include file="$(find grand_tour_camera_detectors)/launch/generic_detector.launch">
+        <arg name="name" value="hdr_left_detector"/>
+        <arg name="image_topic" value="/gt_box/hdr_left/image_raw"/>
+        <arg name="use_april_grid" value="$(arg use_april_grid)"/>
+    </include>
+
+    <include file="$(find grand_tour_camera_detectors)/launch/generic_detector.launch">
+        <arg name="name" value="hdr_front_detector"/>
+        <arg name="image_topic" value="/gt_box/hdr_front/image_raw"/>
+        <arg name="use_april_grid" value="$(arg use_april_grid)"/>
+    </include>
+
+    <include file="$(find grand_tour_camera_detectors)/launch/generic_detector.launch">
+        <arg name="name" value="hdr_right_detector"/>
+        <arg name="image_topic" value="/gt_box/hdr_right/image_raw"/>
+        <arg name="use_april_grid" value="$(arg use_april_grid)"/>
+    </include>
+
+</launch>
