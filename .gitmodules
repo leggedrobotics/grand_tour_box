@@ -61,8 +61,8 @@
 	path = box_applications/open3d_slam_private
 	url = git@github.com:leggedrobotics/open3d_slam_private.git
 	branch = main
-[submodule "box_drivers/wavemap"]
-	path = box_drivers/wavemap
+[submodule "box_applications/wavemap"]
+	path = box_applications/wavemap
 	url = git@github.com:ethz-asl/wavemap.git
 	branch = feature/alma
 [submodule "box_drivers_ros2/ros1_bridge"]
