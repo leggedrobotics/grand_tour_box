@@ -1,0 +1,10 @@
+<launch>
+  <arg name="box_namespace" default="gt_box"/>
+  
+  <group ns="$(arg box_namespace)">
+    <node pkg="grand_tour_ceres_apps" type="camera_camera_online_calibration" name="camera_camera_online_calibration" output="screen">
+      <param name="capability_group" value="Calibration"/>
+      <rosparam file="$(find bringup_ap20)/config/default.yaml" command="load" />
+    </node>
+  </group> 
+</launch>

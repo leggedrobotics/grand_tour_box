@@ -21,6 +21,7 @@ windows:
           autostart_launch_files:="
             $(rospack find box_rviz)/launch/box_rviz.launch
             $(rospack find bringup_ap20)/launch/ap20_multiplot.launch
+            $(rospack find grand_tour_ceras_apps)/launch/camera_camera_online_calibration.launch
             "
           use_gui:=true
     - shell_command:
