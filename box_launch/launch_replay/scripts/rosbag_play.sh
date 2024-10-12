@@ -45,13 +45,14 @@ keys=(
     # "_jetson_stim.bag"
     # "_jetson_ap20_aux.bag"
     # "_jetson_adis.bag"
-    # "_jetson_zed2i_tf.bag"
-    # "_jetson_zed2i_proprioceptive.bag"
+    "_jetson_zed2i_tf.bag"
+    "_jetson_zed2i_proprioceptive.bag"
     # "_jetson_zed2i_images.bag"
-    # "_jetson_zed2i_depth.bag"
-    "_jetson_hdr_right_raw.bag"
-    "_jetson_hdr_left_raw.bag"
-    "_jetson_hdr_front_raw.bag"
+    #"_jetson_zed2i_depth.bag"
+    "_jetson_hdr_right.bag"
+    "_jetson_hdr_left.bag"
+    "_jetson_hdr_front.bag"
+    #"_jetson_hdr_front_rect.bag"
 )
 
 # Find all .bag files and filter them

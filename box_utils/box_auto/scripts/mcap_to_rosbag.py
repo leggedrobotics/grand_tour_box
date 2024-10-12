@@ -8,51 +8,110 @@ from rosbags.rosbag1 import Writer
 from rosbags.typesys import Stores, get_typestore
 from pathlib import Path
 import numpy as np
+import yaml
+import rospkg
+from sensor_msgs.msg import CameraInfo
+import copy
 
 MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
 
-def downgrade_camerainfo_to_rosbag1(src: Path, dst: Path):
+def load_camera_info_from_yaml(yaml_path):
+    with open(yaml_path, 'r') as f:
+        calib_data = yaml.safe_load(f)
+    
+    # Create a CameraInfo message
+    camera_info = CameraInfo()
+    camera_info.width = calib_data['image_width']
+    camera_info.height = calib_data['image_height']
+    camera_info.K = calib_data['camera_matrix']['data']
+    camera_info.D = calib_data['distortion_coefficients']['data']
+    camera_info.R = calib_data['rectification_matrix']['data']
+    camera_info.P = calib_data['projection_matrix']['data']
+    camera_info.distortion_model = calib_data['distortion_model']
+    return camera_info
+
+def get_calibration_file_path(camera_name):
+    rospack = rospkg.RosPack()
+    try:
+        box_calib_path = rospack.get_path('box_calibration')
+        calib_file = os.path.join(box_calib_path, 'calibration', 'hdr', f'{camera_name}.yaml')
+        if os.path.exists(calib_file):
+            return calib_file
+    except rospkg.ResourceNotFound:
+        print(f"Could not find box_calibration package")
+    return None
+
+def downgrade_camerainfo_to_rosbag1(src: Path, dst: Path, replace: bool = False):
     typename = "sensor_msgs/msg/CameraInfo"
     typestore = get_typestore(Stores.ROS1_NOETIC)
+    if replace:
+        camera_info_msg = {}
+        seq_per_topic = {}
+        with rosbag.Bag(src, "r") as input_bag:
+            with rosbag.Bag(dst, "w") as output_bag:
+                for topic, msg, t in input_bag.read_messages():
+                    if topic not in seq_per_topic:
+                        seq_per_topic[topic] = 0
+                    
+                    if 'camera_info' in topic:
+                        if topic not in camera_info_msg:    
+                            # Extract camera name from frame_id
+                            camera_name = msg.header.frame_id.split('/')[-1]
+                            calib_file = get_calibration_file_path(camera_name)
+                            new_camera_info = load_camera_info_from_yaml(calib_file)
+                            camera_info_msg[topic] = new_camera_info
 
-    with AnyReader([src]) as reader, Writer(dst) as writer:
-        conn_map = {}
-        for conn in reader.connections:
-            if conn.msgtype == "sensor_msgs/msg/CameraInfo":
-                from_typestore = typestore
-            else:
-                from_typestore = reader.typestore
+                        new_camera_info = copy.deepcopy(camera_info_msg[topic])
+                        new_camera_info.header = msg.header 
+                        new_camera_info.header.seq = seq_per_topic[topic]
 
-            conn_map[conn.id] = writer.add_connection(
-                conn.topic,
-                conn.msgtype,
-                typestore=from_typestore,
-                callerid=conn.ext.callerid,
-                latching=conn.ext.latching,
-            )
+                        output_bag.write(topic, new_camera_info, t)
 
-        for conn, timestamp, data in reader.messages():
-            wconn = conn_map[conn.id]
-            if conn.msgtype == "sensor_msgs/msg/CameraInfo":
-                msg = reader.deserialize(data, conn.msgtype)
-                converted_msg = typestore.types[typename](
-                    header=msg.header,
-                    height=msg.height,
-                    width=msg.width,
-                    distortion_model=msg.distortion_model,
-                    D=msg.d,
-                    K=msg.k,
-                    R=msg.r,
-                    P=msg.p,
-                    binning_x=msg.binning_x,
-                    binning_y=msg.binning_y,
-                    roi=msg.roi,
+                    else:
+                        # Write original message if not replaced
+                        msg.header.seq = seq_per_topic[topic] 
+                        output_bag.write(topic, msg, t)
+                    seq_per_topic[topic] += 1
+
+    else:
+        with AnyReader([src]) as reader, Writer(dst) as writer:
+            conn_map = {}
+            for conn in reader.connections:
+                if conn.msgtype == "sensor_msgs/msg/CameraInfo":
+                    from_typestore = typestore
+                else:
+                    from_typestore = reader.typestore
+
+                conn_map[conn.id] = writer.add_connection(
+                    conn.topic,
+                    conn.msgtype,
+                    typestore=from_typestore,
+                    callerid=conn.ext.callerid,
+                    latching=conn.ext.latching,
                 )
-                outdata = typestore.serialize_ros1(converted_msg, conn.msgtype)
-            else:
-                outdata = data
 
-            writer.write(wconn, timestamp, outdata)
+            for conn, timestamp, data in reader.messages():
+                wconn = conn_map[conn.id]
+                if conn.msgtype == "sensor_msgs/msg/CameraInfo":
+                    msg = reader.deserialize(data, conn.msgtype)
+                    converted_msg = typestore.types[typename](
+                        header=msg.header,
+                        height=msg.height,
+                        width=msg.width,
+                        distortion_model=msg.distortion_model,
+                        D=msg.d,
+                        K=msg.k,
+                        R=msg.r,
+                        P=msg.p,
+                        binning_x=msg.binning_x,
+                        binning_y=msg.binning_y,
+                        roi=msg.roi,
+                    )
+                    outdata = typestore.serialize_ros1(converted_msg, conn.msgtype)
+                else:
+                    outdata = data
+
+                writer.write(wconn, timestamp, outdata)
 
 
 def split_rosbags(input_bag_path, camera_direction, duration_minutes=5):
@@ -95,11 +154,11 @@ if __name__ == "__main__":
         else:
             print(f"Skipping {mcap} conversion.")
 
-        downgraded_bag_path = str(converted_bag_path).replace("raw", "downgraded")
+        downgraded_bag_path = str(converted_bag_path).replace("_raw", "")
         if not Path(downgraded_bag_path).exists():
             # Downgrade CameraInfo and write to a new bag
             print("Downgrading CameraInfo to ROS1 format and saving")
-            ## downgrade_camerainfo_to_rosbag1(converted_bag_path, Path(downgraded_bag_path))
+            downgrade_camerainfo_to_rosbag1(converted_bag_path, Path(downgraded_bag_path), True)
         else:
             print(f"Skipping {mcap} downgraded.")
 
@@ -107,7 +166,7 @@ if __name__ == "__main__":
         print("Splitting the downgraded bag into 5-minute chunks.")
         ## split_rosbags(downgraded_bag_path, camera_direction=camera_direction)
         # Remove intermediate artifacts
-        ##os.remove(converted_bag_path)
+        os.remove(converted_bag_path)
         ## os.remove(downgraded_bag_path)
 
     print("All directories processed. Split bags are available in each directory.")

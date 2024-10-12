@@ -21,5 +21,6 @@ windows:
       - source /opt/ros/noetic/setup.zsh
       - source ~/workspaces/box_ws/devel/setup.zsh
       - source ~/workspaces/box_ws/src/grand_tour_box/box_configuration/opc/alias.sh 
-      - history -s "rosrun launch_replay rosbag_replay.sh --folder <path>"
+      - print -s "~/git/grand_tour_box/box_launch/launch_replay/scripts/rosbag_play.sh --folder <path>"
+      - clear
       focus: true
