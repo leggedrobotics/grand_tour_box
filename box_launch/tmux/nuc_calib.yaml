@@ -22,10 +22,11 @@ windows:
             $(rospack find box_recording)/launch/rosbag_record_node.launch
             $(rospack find box_health)/launch/box_health.launch
             $(rospack find box_throttling)/launch/throttle_nuc.launch
-            $(rospack find bringup_alphasense)/launch/alphasense_10hz.launch
+            $(rospack find bringup_alphasense)/launch/alphasense_default.launch
             $(rospack find bringup_hesai)/launch/hesai_lidar.launch
             $(rospack find bringup_livox)/launch/livox_lidar.launch
             $(rospack find bringup_cpt7)/launch/rover.launch
+            $(rospack find grand_tour_camera_detectors)/launch/detectors_on_nuc_generic.launch
             "
           use_gui:=false
     - shell_command:
