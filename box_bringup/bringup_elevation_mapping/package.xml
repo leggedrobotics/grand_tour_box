@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>bringup_elevation_mapping</name>
+  <version>0.0.0</version>
+  <description>The bringup_elevation_mapping package for the linux driver</description>
+  <maintainer email="jonfrey@ethz.ch">Jonas Frey</maintainer>
+  <license>Proprietary</license>
+  <depend>elevation_mapping_cupy</depend>
+  <export>
+  </export>
+</package>

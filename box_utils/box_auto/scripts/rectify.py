@@ -6,11 +6,49 @@ import numpy as np
 import sys
 from pathlib import Path
 import os
-
+from pytictac import CpuTimer
 MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
 
+def undistort_image_fisheye(image, camera_info, new_camera_info=None):
+    K = np.array(camera_info.K).reshape((3, 3))
+    D = np.array(camera_info.D)
+    
+    h, w = image.shape[:2]
+    
+    if new_camera_info is None:
+        new_camera_matrix = cv2.fisheye.estimateNewCameraMatrixForUndistortRectify(
+            K, D, (w, h), np.eye(3), balance=0.0, fov_scale=1.0
+        )
+        
+        new_camera_info = CameraInfo()
+        new_camera_info.header = camera_info.header
+        new_camera_info.width = camera_info.width
+        new_camera_info.height = camera_info.height
+        new_camera_info.K = new_camera_matrix.flatten().tolist()
+        new_camera_info.D = [0, 0, 0, 0]  # Fisheye distortion coefficients
+        new_camera_info.R = camera_info.R
+        new_camera_info.distortion_model = "plumb_bob"
+        new_P = np.eye(4)
+        new_P[:3, :3] = new_camera_matrix
+        new_camera_info.P = new_P[:3,:4].flatten().tolist()
+        # Initialize undistortion map
 
-def undistort_image(image, camera_info):
+        
+    else:
+        new_camera_info.header = camera_info.header
+        new_camera_matrix = np.array(new_camera_info.K).reshape((3, 3))
+
+    map1, map2 = cv2.fisheye.initUndistortRectifyMap(
+        K, D, np.eye(3), new_camera_matrix, (w, h), cv2.CV_16SC2
+    )
+    # Apply undistortion
+    undistorted_image = cv2.remap(
+        image, map1, map2, interpolation=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT
+    )
+
+    return undistorted_image, new_camera_info
+
+def undistort_image(image, camera_info, new_camera_info = None):
     # Get camera intrinsic parameters
     K = np.array(camera_info.K).reshape((3, 3))  # Intrinsic matrix
     D = np.array(camera_info.D)  # Distortion coefficients
@@ -18,28 +56,28 @@ def undistort_image(image, camera_info):
 
     # Remove distortion from the image
     h, w = image.shape[:2]
-    new_camera_matrix, _ = cv2.getOptimalNewCameraMatrix(K, D, (w, h), 1, (w, h))
+    if new_camera_info is None:
+        new_camera_matrix, _ = cv2.getOptimalNewCameraMatrix(K, D, (w, h), 0, (w, h))
+        # Return the undistorted image and the updated camera info
+        new_camera_info = CameraInfo()
+        new_camera_info.header = camera_info.header
+        new_camera_info.width = camera_info.width
+        new_camera_info.height = camera_info.height
+        new_camera_info.K = new_camera_matrix.flatten().tolist()
+        new_camera_info.D = [0, 0, 0, 0, 0]
+        new_camera_info.R = camera_info.R
+        new_camera_info.distortion_model = "plumb_bob"
+        new_camera_info.P = P.flatten().tolist()  # Usually, we don't change P for rectification
+
+    else:
+        new_camera_info.header = camera_info.header
+        new_camera_matrix = np.array(new_camera_info.K).reshape((3, 3))
+
     undistorted_image = cv2.undistort(image, K, D, None, new_camera_matrix)
-
-    # Return the undistorted image and the updated camera info
-    new_camera_info = CameraInfo()
-    new_camera_info.header = camera_info.header
-    new_camera_info.width = camera_info.width
-    new_camera_info.height = camera_info.height
-    new_camera_info.K = new_camera_matrix.flatten().tolist()
-    new_camera_info.D = [0, 0, 0, 0, 0]
-    new_camera_info.R = camera_info.R
-    new_camera_info.P = P.flatten().tolist()  # Usually, we don't change P for rectification
-
     return undistorted_image, new_camera_info
 
 
-def process_rosbag(input_bag, image_topics, camera_info_topics):
-    path = Path(input_bag)
-    new_filename = f"{'_'.join(path.stem.split('_')[:-1])}_rectified_{path.stem.split('_')[-1]}{path.suffix}"
-    # Combine the directory part with the new filename
-    output_bag = str(path.with_name(new_filename))
-
+def process_rosbag(input_bag, image_topics, camera_info_topics,  out_bag_path, out_image_topics, out_camera_info_topics ):
     # Initialize ROS bag and CvBridge
     bag = rosbag.Bag(input_bag, "r")
 
@@ -63,14 +101,17 @@ def process_rosbag(input_bag, image_topics, camera_info_topics):
 
     print("Camera info obtained for all topics. Starting image undistortion...")
 
-    out_bag = rosbag.Bag(output_bag, "w", compression='lz4')
+    out_bag = rosbag.Bag(out_bag_path, "w", compression='lz4')
     try:
+        new_camera_info = None
         for topic, msg, t in bag.read_messages():
             if topic in image_topics:
                 compressed = type(msg)._type.find("CompressedImage") != -1
 
                 # Get the corresponding camera info
-                camera_info_topic = camera_info_topics[image_topics.index(topic)]
+                idx = image_topics.index(topic)
+
+                camera_info_topic = camera_info_topics[idx]
                 camera_info = camera_info_dict[camera_info_topic]
 
                 if not compressed:
@@ -80,7 +121,11 @@ def process_rosbag(input_bag, image_topics, camera_info_topics):
                     cv_image = bridge.compressed_imgmsg_to_cv2(msg, desired_encoding="passthrough")
 
                 # Undistort the image
-                undistorted_image, new_camera_info = undistort_image(cv_image, camera_info)
+                if "equidistant" in camera_info.distortion_model:
+                    undistorted_image, new_camera_info = undistort_image_fisheye(cv_image, camera_info, new_camera_info)
+                else:   
+                    undistorted_image, new_camera_info = undistort_image(cv_image, camera_info, new_camera_info)
+
 
                 if not compressed:
                     # Convert back to ROS Image message
@@ -90,41 +135,64 @@ def process_rosbag(input_bag, image_topics, camera_info_topics):
 
                 rectified_image_msg.header = msg.header
 
-                # Write the new image and camera info to the new bag
-                rectified_image_topic = topic.split("/")
-                camera_info_topic = camera_info_topic.split("/")
-
-                rectified_image_topic.insert(len(rectified_image_topic) - 1, "rectified")
-                rectified_image_topic = "/".join(rectified_image_topic)
-
-                camera_info_topic.insert(len(camera_info_topic) - 1, "rectified")
-                camera_info_topic = "/".join(camera_info_topic)
-
-                out_bag.write(rectified_image_topic, rectified_image_msg)
-                new_camera_info.header = camera_info.header
-                out_bag.write(camera_info_topic, new_camera_info)
+                out_bag.write(out_image_topics[idx], rectified_image_msg, t)
+                out_bag.write(out_camera_info_topics[idx], new_camera_info, t)
     finally:
         bag.close()
         out_bag.close()
 
-    print(f"Finished processing. Rectified bag saved as: {output_bag}")
+    print(f"Finished processing. Rectified bag saved as: {out_bag_path}")
 
 
 if __name__ == "__main__":
     tasks = { 
-        # "hdr":{
-        #     "camera_info_topics": ["/camera1/camera_info", "/camera2/camera_info"],
-        #     "image_topics": ["/camera1/image_raw", "/camera2/image_raw"],
-        #     "pattern": "*_jetson_hdr.bag",
-        # },
-        "alphasense":{
-            "camera_info_topics": [f"/gt_box/alphasense_driver_node/cam{n}/color_corrected/camera_info" for n in [1,2,3,4,5]],
-            "image_topics": [f"/gt_box/alphasense_driver_node/cam{n}/color_corrected/image/compressed" for n in [1,2,3,4,5]],
-            "pattern": "*_nuc_alphasense_color_corrected.bag",
-        }
+        "hdr_front":{
+            "in": {
+                "camera_info_topics": ["/gt_box/hdr_front/camera_info"],
+                "image_topics": ["/gt_box/hdr_front/image_raw/compressed"],
+                "pattern": "_jetson_hdr_front.bag",
+            },
+            "out": {
+                "camera_info_topics": ["/gt_box/hdr_front_rect/camera_info"],
+                "image_topics": ["/gt_box/hdr_front_rect/image_rect/compressed"],
+                "pattern": "_jetson_hdr_front_rect.bag",
+            }
+        },
+        "hdr_left":{
+            "in": {
+                "camera_info_topics": ["/gt_box/hdr_left/camera_info"],
+                "image_topics": ["/gt_box/hdr_left/image_raw/compressed"],
+                "pattern": "_jetson_hdr_left.bag",
+            },
+            "out": {
+                "camera_info_topics": ["/gt_box/hdr_left_rect/camera_info"],
+                "image_topics": ["/gt_box/hdr_left_rect/image_rect/compressed"],
+                "pattern": "_jetson_hdr_left_rect.bag",
+            }
+        },
+        "hdr_right":{
+            "in": {
+                "camera_info_topics": ["/gt_box/hdr_right/camera_info"],
+                "image_topics": ["/gt_box/hdr_right/image_raw/compressed"],
+                "pattern": "_jetson_hdr_right.bag",
+            },
+            "out": {
+                "camera_info_topics": ["/gt_box/hdr_right_rect/camera_info"],
+                "image_topics": ["/gt_box/hdr_right_rect/image_rect/compressed"],
+                "pattern": "_jetson_hdr_right_rect.bag",
+            }
+        },
+        # "alphasense":{
+        #     "camera_info_topics": [f"/gt_box/alphasense_driver_node/cam{n}/color_corrected/camera_info" for n in [1,2,3,4,5]],
+        #     "image_topics": [f"/gt_box/alphasense_driver_node/cam{n}/color_corrected/image/compressed" for n in [1,2,3,4,5]],
+        #     "pattern": "_nuc_alphasense_color_corrected.bag",
+        # }
     }
     for name, task in tasks.items():
-        bags = [str(s) for s in Path(MISSION_DATA).rglob(task["pattern"]) if str(s).find("rectified") == -1]
+
+        bags = [str(s) for s in Path(MISSION_DATA).rglob("*" + task["in"]["pattern"])]
         print(f"\nProcess for {name} the following bags: \n", bags)
+
         for input_bag in bags:
-            process_rosbag(str(input_bag), task["image_topics"], task["camera_info_topics"])
+            process_rosbag(str(input_bag), task["in"]["image_topics"], task["in"]["camera_info_topics"], 
+                           str(input_bag).replace(task["in"]["pattern"],task["out"]["pattern"]), task["out"]["image_topics"], task["out"]["camera_info_topics"])

@@ -286,6 +286,11 @@ def process_all(directory, axis):
             "topic": "/gt_box/cpt7/offline_from_novatel_logs/imu",
             "bag_pattern": "*_cpt7_raw_imu.bag",
             "max_offset_ms": 1,
+        },
+        {
+            "topic": "/gt_box/cpt7/offline_from_novatel_logs/imu",
+            "bag_pattern": "*_cpt7_raw_imu.bag",
+            "max_offset_ms": 1,
         }
     ]
     
@@ -304,7 +309,7 @@ def process_all(directory, axis):
     ploted_reference_imu = False
 
     rr.init("rerun_example_minimal", spawn=True)
-    rr.save(os.path.join(directory, f"imu_timesync-{axis}.rrd"))
+    # rr.save(os.path.join(directory, f"imu_timesync-{axis}.rrd"))
     
 
     for validation_imu in validation_imus:
@@ -369,7 +374,7 @@ if __name__ == "__main__":
     # else: 
 
     master_summary = {}
-    for axis in ["x", "y", "z"]:
+    for axis in ["x", "y"]:
         print("Running for axis: ", axis)
 
         master_summary[axis] = process_all(MISSION_DATA, axis=axis)

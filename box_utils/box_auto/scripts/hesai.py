@@ -43,7 +43,7 @@ def kill_rosmaster():
                 # Terminate the process
                 print(f"Terminating rosmaster with PID {proc.info['pid']}")
                 proc.terminate()
-                proc.wait(timeout=5)  # Wait up to 5 seconds for the process to terminate
+                proc.wait(timeout=60)  # Wait up to 60 seconds for the process to terminate
                 print("rosmaster process terminated successfully.")
             except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.TimeoutExpired) as e:
                 print(f"Failed to terminate rosmaster process: {e}")
@@ -52,11 +52,10 @@ def launch_nodes(input_rosbag_path):
     os.environ['ROS_MASTER_URI'] = "http://localhost:11311"
     
     os.system("bash -c '" + PRE + "roscore&' ")
-    sleep(3)
+    sleep(1)
     os.system("bash -c '" + PRE + f"rosrun hesai_ros_driver hesai_ros_driver_node _config_path:={WS}/src/grand_tour_box/box_drivers/hesai_lidar_ros_driver/config/packet_replay.yaml _use_sim_time:=True _input_rosbag_path:={input_rosbag_path} &' ")
-    sleep(3)
+    sleep(10)
     os.system("bash -c '" + PRE + f"rosbag play -r 5 -d 5 --wait-for-subscribers --clock {input_rosbag_path} --topics /gt_box/hesai/packets' ")
-    sleep(30)
     kill_rosmaster()
 
 

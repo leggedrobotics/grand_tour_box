@@ -24,7 +24,7 @@ x-common-config: &common-config
               - compute # CUDA
               - video   # encoding 
   volumes:
-    - /Data/Projects/GrandTour/deployment_day_1/2024-10-01-12-00-49:/mission_data
+    - /Data/Projects/GrandTour/deployment_day_1/2024-10-01-11-29-55:/mission_data
     - /home/jonfrey/git/grand_tour_box:/home/catkin_ws/src/grand_tour_box
 x-ros2-common-config: &ros2-common-config
   build:
@@ -112,9 +112,9 @@ services:
     <<: *common-config
     container_name: hesai
     command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/hesai.py"]
-    depends_on:
-      merge_mission:
-        condition: service_completed_successfully
+    # depends_on:
+    #   merge_mission:
+    #     condition: service_completed_successfully
 
   cpt7:
     <<: *common-config
