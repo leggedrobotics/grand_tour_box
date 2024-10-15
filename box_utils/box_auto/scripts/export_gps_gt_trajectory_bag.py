@@ -235,6 +235,7 @@ def main():
             odometry_msg = Odometry()
             odometry_msg.header = output_msg.header
             odometry_msg.pose.pose = output_msg.pose.pose
+            odometry_msg.child_frame_id = "box_base"
             bag.write(topic="/gt_box/inertial_explorer/odometry", msg=odometry_msg, t=timestamp)
 
             tf_message = TFMessage()
