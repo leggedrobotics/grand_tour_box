@@ -1,0 +1,5 @@
+<launch>
+    <include file="$(find grand_tour_camera_detectors)/launch/detectors_on_nuc_generic.launch">
+        <arg name="use_april_grid" value="True"/>
+    </include>
+</launch>

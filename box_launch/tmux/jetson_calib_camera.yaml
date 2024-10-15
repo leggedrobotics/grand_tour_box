@@ -23,16 +23,16 @@ windows:
             $(rospack find bringup_ap20)/launch/ap20.launch
             $(rospack find box_recording)/launch/rosbag_record_coordinator.launch
             $(rospack find box_recording)/launch/rosbag_record_node.launch
-            $(rospack find bringup_zed2i_visualization)/launch/zed2i_15hz.launch
+            $(rospack find bringup_zed2i_visualization)/launch/zed2i_visualization.launch
             $(rospack find box_throttling)/launch/throttle_jetson.launch
             $(rospack find box_relaying)/launch/relay_jetson.launch
+            $(rospack find grand_tour_camera_detectors)/launch/detectors_on_jetson_camera.launch
             "
           use_gui:=false
     - shell_command:
-      - sleep 1
       - l-docker hdr_start
     - shell_command:
-      - sleep 5
+      - sleep 10
       - l-docker ros1_bridge_start
     - shell_command:
       - source /opt/ros/noetic/setup.bash

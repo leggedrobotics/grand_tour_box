@@ -5,7 +5,10 @@ alias tk_dev='tmux kill-session -a'
 
 alias l-jetson='tmuxp load $(rospack find box_launch)/../tmux/jetson_recording.yaml'
 # Launch mode that doesn't allow for recording
-alias l-jetson-viz='tmuxp load $(rospack find box_launch)/../tmux/jetson_visualization.yaml'
+alias l-viz='tmuxp load $(rospack find box_launch)/../tmux/jetson_visualization.yaml'
+alias l-calib-camera='tmuxp load $(rospack find box_launch)/../tmux/jetson_calib_camera.yaml'
+alias l-calib-lidar='tmuxp load $(rospack find box_launch)/../tmux/jetson_calib_lidar.yaml'
+
 
 alias attach-jetson='tmux attach-session -t jetson'
 alias l-docker='/home/rsl/git/grand_tour_box/box_drivers_ros2/isaac_ros_common/scripts/run_recording.sh'

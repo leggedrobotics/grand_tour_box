@@ -18,7 +18,7 @@
   <depend>box_relaying</depend>
   <depend>box_launch</depend>
   <depend>launch_replay</depend>
-  <depend>bringup_ap20</depend> 
-  <depend>grand_tour_ceres_apps</depend> 
   <depend>novatel_oem7_msgs</depend>
+  <depend>grand_tour_ceres_apps</depend>
+  <depend>grand_tour_calibration_viewers</depend>  
 </package>

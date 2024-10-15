@@ -19,8 +19,10 @@ windows:
       - source ~/catkin_ws/devel/setup.bash
       - roslaunch bringup_fkie fkie.launch
           autostart_launch_files:="
-            $(rospack find box_rviz)/launch/box_rviz.launch
-            $(rospack find bringup_ap20)/launch/ap20_multiplot.launch
+            $(rospack find box_rviz)/launch/recording.launch
+            "
+          load_launch_files:="
+            $(rospack find box_rviz)/launch/multiplot.launch
             "
           use_gui:=true
     - shell_command:

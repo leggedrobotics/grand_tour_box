@@ -1,7 +1,7 @@
 <launch>
   <arg name="box_namespace" default="gt_box"/>
   <group ns="$(arg box_namespace)">
-    <node pkg="rqt_multiplot" type="rqt_multiplot" name="multiplot" args="--multiplot-config $(find bringup_ap20)/config/rqt_multiplot.xml --multiplot-run-all" output="screen">
+    <node pkg="rqt_multiplot" type="rqt_multiplot" name="multiplot" args="--multiplot-config $(find box_rviz)/config/rqt_multiplot.xml --multiplot-run-all" output="screen">
       <param name="capability_group" value="Visualization"/>
     </node>
   </group> 
