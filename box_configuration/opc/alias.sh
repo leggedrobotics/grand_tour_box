@@ -8,7 +8,9 @@ alias auto='terminator -l box_auto && exit'
 alias reset_chrony='sudo systemctl restart chrony.service'
 
 alias l-opc='tmuxp load $(rospack find box_launch)/../tmux/opc_recording.yaml'
-alias l-calib='tmuxp load $(rospack find box_launch)/../tmux/opc_calib.yaml'
+alias l-calib-camera='tmuxp load $(rospack find box_launch)/../tmux/opc_calib_camera.yaml'
+alias l-calib-lidar='tmuxp load $(rospack find box_launch)/../tmux/opc_calib_lidar.yaml'
+
 alias l-replay='tmuxp load $(rospack find box_launch)/../tmux/opc_replay.yaml'
 alias l-replay-zsh='tmuxp load $(rospack find box_launch)/../tmux/opc_replay_zsh.yaml'
 alias stop_recording='rosservice call /gt_box/rosbag_record_coordinator/stop_recording "verbose: false"'

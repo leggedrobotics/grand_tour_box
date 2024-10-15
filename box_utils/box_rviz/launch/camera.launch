@@ -1,0 +1,10 @@
+<launch>
+    <arg name="box_namespace" default="gt_box"/>
+    <group ns="$(arg box_namespace)"> 
+      <node name="rviz_camera" pkg="rviz" type="rviz" args="-d $(find box_rviz)/cfg/calib_camera.rviz" >
+        <param name="capability_group" value="Visualization"/>
+      </node>  
+      <include file="$(find box_model)/launch/box_model.launch"/>
+      <include file="$(find box_rviz)/launch/publish_string.launch"/>
+    </group>
+</launch>

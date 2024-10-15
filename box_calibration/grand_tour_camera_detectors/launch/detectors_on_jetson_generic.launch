@@ -1,6 +1,6 @@
 <launch>
     <!-- Define global target_type parameter -->
-    <arg name="use_april_grid" default="true"/>
+    <arg name="use_april_grid"/>
 
     <!-- Include camera detectors with target_type -->
     <include file="$(find grand_tour_camera_detectors)/launch/generic_detector.launch">
