@@ -1,0 +1,13 @@
+[Unit]
+Description=Run the jetson_clocks script to max the clock cycle time. If this isn't run, camera framerates will drop.
+After=multi-user.target
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+ExecStart=/usr/bin/jetson_clocks
+ExecStart=/usr/bin/jetson_clocks --fan
+
+[Install]
+WantedBy=multi-user.target
