@@ -64,5 +64,6 @@ add_executable(camera_camera_online_calibration ros_camera_camera_calibration.cp
         ros_parsers.cpp
         ros_utils.cpp
 )
-target_link_libraries(camera_camera_online_calibration gtboxcalibration ${catkin_LIBRARIES})
+target_link_libraries(camera_camera_online_calibration gtboxcalibration ${catkin_LIBRARIES}
+)
 target_include_directories(camera_camera_online_calibration PRIVATE ${catkin_INCLUDE_DIRS})

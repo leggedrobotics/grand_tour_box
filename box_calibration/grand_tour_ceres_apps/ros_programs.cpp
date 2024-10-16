@@ -60,8 +60,9 @@ OnlineCameraCameraProgram::OnlineCameraCameraProgram(OnlineCameraCameraParser pa
             "gt_calibration_camera_camera_adjacency", 100);
     intrinsics_extrinsics_publisher_ = nh_.advertise<grand_tour_camera_detection_msgs::CameraIntrinsicsExtrinsics>(
             "gt_calibration_camera_intrinsics_extrinsics", 100);
-    ros::ServiceServer service = nh_.advertiseService(
-            "/gt_calibration_stop_optimizing", &OnlineCameraCameraProgram::stopOptimizationServiceCallback, this);
+    stopping_service_ = nh_.advertiseService(
+            "/camera_camera_online_calibration/stop_optimizing", &OnlineCameraCameraProgram::stopOptimizationServiceCallback, this);
+    ROS_INFO_STREAM("Started stopping service ");
 
     if (camera_parameter_packs.empty()) {
         return;
@@ -199,13 +200,13 @@ void OnlineCameraCameraProgram::optimizationCallback(const ros::TimerEvent &, bo
             if (ready_for_extrinsics_) {
                 this->setExtrinsicParametersVariableBeforeOpt();
             }
+            problem_->solver_options_.max_num_iterations = 5;
             const bool solve_succeeded = this->Solve();
             ROS_DEBUG_STREAM("Solve success: " + std::to_string(solve_succeeded));
             this->rebuildProblemFromLoggedROSAlignmentData();
             if (ready_for_extrinsics_) {
                 this->setExtrinsicParametersVariableBeforeOpt();
             }
-            this->Solve();
             ROS_DEBUG_STREAM("Starting covariance computation...");
             ScopedTimer timer;
             const std::map<std::string, CameraCovariance> covariances = computeCovariances();
@@ -705,7 +706,9 @@ bool OnlineCameraCameraProgram::stopOptimizationServiceCallback(
         grand_tour_camera_detection_msgs::StopOptimizingService::Request &req,
         grand_tour_camera_detection_msgs::StopOptimizingService::Response &res) {
     ros::TimerEvent event_msg;
+    ROS_INFO_STREAM("Performing last solve");
     this->optimizationCallback(event_msg, true);
+    ROS_INFO_STREAM("Final solve done");
     do_optimize_ = false;
     res.successfully_stopped = true;
     return true;

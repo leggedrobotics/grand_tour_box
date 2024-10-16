@@ -75,6 +75,7 @@ private:
                                                 const std::vector<unsigned int> &b) const;
 
     ros::NodeHandle nh_;
+    ros::ServiceServer stopping_service_;
     std::vector<ros::Subscriber> subscribers_;
     std::map<std::string, ros::Publisher> added_detections_publisher_;
     std::map<std::string, ros::Publisher> processed_detections_publisher_;
