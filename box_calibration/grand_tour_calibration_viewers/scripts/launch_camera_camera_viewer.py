@@ -138,14 +138,14 @@ class CameraCameraViewerBlueprintNode:
         rr.spawn(memory_limit="5000MB")
         rr.send_blueprint(blueprint)
         self.node_positions = dict()
-        self.adjacency_subscriber = rospy.Subscriber("/camera_camera_online_calibration/adjacency",
+        self.adjacency_subscriber = rospy.Subscriber("camera_camera_online_calibration/adjacency",
                                                      CameraCameraAdjacency, self.adjacency_callback)
-        self.data_accumulation_subscriber = rospy.Subscriber("/camera_camera_online_calibration/data_accumulation_state",
+        self.data_accumulation_subscriber = rospy.Subscriber("camera_camera_online_calibration/data_accumulation_state",
                                                      CameraCameraCalibrationState, self.data_accumulation_callback)
-        self.sigma_subscriber = rospy.Subscriber("/camera_camera_online_calibration/sigma",
+        self.sigma_subscriber = rospy.Subscriber("camera_camera_online_calibration/sigma",
                                                      CameraIntrinsicsExtrinsicsSigma,
                                                      self.sigma_callback)
-        self.camera_extrinsics_subscriber = rospy.Subscriber("/camera_camera_online_calibration/intrinsics_extrinsics",
+        self.camera_extrinsics_subscriber = rospy.Subscriber("camera_camera_online_calibration/intrinsics_extrinsics",
                                                              CameraIntrinsicsExtrinsics,
                                                              self.camera_extrinsics_callback)
         rr.log(f"{CAMERA_BUNDLE_ORIGIN_NAME}",

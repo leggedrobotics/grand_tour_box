@@ -60,14 +60,14 @@ OnlineCameraCameraProgram::OnlineCameraCameraProgram(OnlineCameraCameraParser pa
             nh_.advertise<grand_tour_camera_detection_msgs::CameraCameraCalibrationState>(
                     "camera_camera_online_calibration/data_accumulation_state", 100);
     output_sigma_publisher_ = nh_.advertise<grand_tour_camera_detection_msgs::CameraIntrinsicsExtrinsicsSigma>(
-            "/camera_camera_online_calibration/sigma",
+            "camera_camera_online_calibration/sigma",
             10);
     adjacency_publisher_ = nh_.advertise<grand_tour_camera_detection_msgs::CameraCameraAdjacency>(
-            "/camera_camera_online_calibration/adjacency", 100);
+            "camera_camera_online_calibration/adjacency", 100);
     intrinsics_extrinsics_publisher_ = nh_.advertise<grand_tour_camera_detection_msgs::CameraIntrinsicsExtrinsics>(
-            "/camera_camera_online_calibration/intrinsics_extrinsics", 100);
+            "camera_camera_online_calibration/intrinsics_extrinsics", 100);
     stopping_service_ = nh_.advertiseService(
-            "/camera_camera_online_calibration/stop_optimizing",
+            "camera_camera_online_calibration/stop_optimizing",
             &OnlineCameraCameraProgram::stopOptimizationServiceCallback, this);
     ROS_INFO_STREAM("Started stopping service ");
 
