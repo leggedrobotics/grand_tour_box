@@ -33,8 +33,9 @@ CameraCamera2D3DTargetDetectionData FetchMulticamera2D3DDetectionData(std::strin
 std::map<std::string, CameraParameterPack> PopulateCameraParameterPacks(const std::string& intrinsics_yaml_path,
                                                                         const std::string& g_path);
 
-bool SerialiseCameraParameters(const std::string output_path,
-                               const std::map<std::string, CameraParameterPack> &camera_parameter_packs);
+bool SerialiseCameraParameters(const std::string& output_path,
+                               const std::map<std::string, CameraParameterPack> &camera_parameter_packs,
+                               const std::string comment="");
 
 std::map<std::string, std::map<unsigned long long, std::shared_ptr<BoardPoseParameterPack>>>
 PopulateBoardParameters(const CameraCamera2D3DTargetDetectionData

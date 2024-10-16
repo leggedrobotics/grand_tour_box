@@ -11,6 +11,8 @@
 #include <grand_tour_camera_detection_msgs/CameraIntrinsicsExtrinsicsSigma.h>
 #include <grand_tour_camera_detection_msgs/CameraIntrinsicsExtrinsics.h>
 #include <iomanip>  // Include for setting precision
+#include <ros/package.h>
+#include <filesystem>  // C++17 and later
 
 
 OnlineCameraCameraProgram::OnlineCameraCameraProgram(OnlineCameraCameraParser parser) {
@@ -61,7 +63,8 @@ OnlineCameraCameraProgram::OnlineCameraCameraProgram(OnlineCameraCameraParser pa
     intrinsics_extrinsics_publisher_ = nh_.advertise<grand_tour_camera_detection_msgs::CameraIntrinsicsExtrinsics>(
             "gt_calibration_camera_intrinsics_extrinsics", 100);
     stopping_service_ = nh_.advertiseService(
-            "/camera_camera_online_calibration/stop_optimizing", &OnlineCameraCameraProgram::stopOptimizationServiceCallback, this);
+            "/camera_camera_online_calibration/stop_optimizing",
+            &OnlineCameraCameraProgram::stopOptimizationServiceCallback, this);
     ROS_INFO_STREAM("Started stopping service ");
 
     if (camera_parameter_packs.empty()) {
@@ -702,6 +705,22 @@ void OnlineCameraCameraProgram::resetStateFromLoggedObservations() {
     n_samples_last_solve_ = parsed_alignment_data.unique_timestamps.size();
 }
 
+std::stringstream GetTimeNowString() {
+    // Get the current ROS time
+    ros::Time current_time = ros::Time::now();
+    // Convert ROS time to time_t (which represents seconds since the Unix epoch)
+    std::time_t raw_time = current_time.sec;
+    // Convert to a tm structure for local time
+    std::tm *time_info = std::localtime(&raw_time);
+    // Convert ROS time to human-readable format
+    std::stringstream time_stream;
+    time_stream << "Generated with data of ROS time: ";
+    time_stream << std::put_time(time_info, "%Y-%m-%d %H:%M:%S");
+    // Add nanoseconds for precision
+    time_stream << "." << std::setw(9) << std::setfill('0') << current_time.nsec << std::endl;
+    return time_stream;
+}
+
 bool OnlineCameraCameraProgram::stopOptimizationServiceCallback(
         grand_tour_camera_detection_msgs::StopOptimizingService::Request &req,
         grand_tour_camera_detection_msgs::StopOptimizingService::Response &res) {
@@ -711,6 +730,19 @@ bool OnlineCameraCameraProgram::stopOptimizationServiceCallback(
     ROS_INFO_STREAM("Final solve done");
     do_optimize_ = false;
     res.successfully_stopped = true;
+
+    std::string calib_package_name = "box_calibration";
+    std::filesystem::path calib_root_path = ros::package::getPath(calib_package_name);
+    if (calib_root_path.empty()) {
+        ROS_ERROR_STREAM("Failed to write output calibration");
+        return true;
+    }
+    std::filesystem::path relative_output_path =
+            "calibration/raw_calibration_output/cameras-intrinsics-extrinsics_latest.yaml";
+    std::filesystem::path output_path = calib_root_path / relative_output_path;
+    SerialiseCameraParameters(output_path.string(), camera_parameter_packs,
+                              GetTimeNowString().str());
+    ROS_INFO_STREAM("Wrote output calibrations to: " + output_path.string());
     return true;
 }
 
