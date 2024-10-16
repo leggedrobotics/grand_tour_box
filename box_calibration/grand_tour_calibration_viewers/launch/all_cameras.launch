@@ -1,4 +1,7 @@
 <launch>
+  <arg name="box_namespace" default="gt_box"/>
+  
+  <group ns="$(arg box_namespace)">
 <!--     Launch the view_camera_camera_optimization.py script -->
     <node name="gt_camera_calibration_viewer" pkg="grand_tour_calibration_viewers" type="launch_camera_camera_viewer.py" output="screen">
     </node>
@@ -42,5 +45,5 @@
     <node name="hdr_right_corners_viewer" pkg="grand_tour_calibration_viewers" type="view_camera_camera_optimization.py" output="screen">
         <rosparam file="$(find grand_tour_calibration_viewers)/config/hdr_right.yaml" command="load"/>
     </node>
-
+  </group> 
 </launch>
