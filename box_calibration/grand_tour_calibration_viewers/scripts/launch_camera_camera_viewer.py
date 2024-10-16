@@ -34,7 +34,7 @@ def plot_frame(source_frame, T_dest_source):
 def generate_random_uuid():
     return str(uuid.uuid4())
 
-class ViewerBlueprint:
+class CameraCameraViewerBlueprintNode:
     def __init__(self):
         rospy.init_node('calibration_viewer_launch')
         self.recording_id = generate_random_uuid()
@@ -239,5 +239,5 @@ class ViewerBlueprint:
 
 
 if __name__ == '__main__':
-    visualizer = ViewerBlueprint()
+    visualizer = CameraCameraViewerBlueprintNode()
     visualizer.run()
