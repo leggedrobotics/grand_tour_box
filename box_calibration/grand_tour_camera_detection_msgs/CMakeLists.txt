@@ -53,6 +53,7 @@ find_package(catkin REQUIRED COMPONENTS
    CameraCameraAdjacency.msg
          CameraIntrinsicsExtrinsics.msg
          CameraIntrinsicsExtrinsicsSigma.msg
+         CameraCameraCalibrationState.msg
  )
 
 ## Generate services in the 'srv' folder

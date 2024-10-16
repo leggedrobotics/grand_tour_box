@@ -9,7 +9,7 @@ import rospkg
 import rospy
 import yaml
 
-from grand_tour_camera_detection_msgs.msg import (CameraCameraAdjacency,
+from grand_tour_camera_detection_msgs.msg import (CameraCameraAdjacency, CameraCameraCalibrationState,
                                                   CameraIntrinsicsExtrinsicsSigma, CameraIntrinsicsExtrinsics)
 from scipy.spatial.transform import Rotation
 
@@ -57,7 +57,9 @@ class ViewerBlueprint:
         hdr_right_topic = load_yaml(os.path.join(config_root, "hdr_right.yaml"))["image_topic"]
 
         # Initialize Rerun blueprint views via ROS params
-        blueprint = rrb.Vertical(
+        blueprint = rrb.Horizontal(rrb.BarChartView(name="percentage_data",
+                                                    origin="percent_till_solve"),
+            rrb.Vertical(
             rrb.Horizontal(
                 rrb.Vertical(
                     rrb.Horizontal(
@@ -123,18 +125,20 @@ class ViewerBlueprint:
                 rrb.BarChartView(name="camera_sigmas", origin="sigma_focal"),
                 name="Camera Optimisation Stats"
             ), row_shares=[2,1]
-        )
+        ), column_shares=[1, 9])
         blueprint = rrb.Blueprint(blueprint, collapse_panels=True)
         rr.init(application_id=application_id, recording_id=recording_id, spawn=True, default_blueprint=blueprint)
         rr.spawn(memory_limit="5000MB")
         rr.send_blueprint(blueprint)
         self.node_positions = dict()
-        self.adjacency_subscriber = rospy.Subscriber("/gt_calibration_camera_camera_adjacency",
+        self.adjacency_subscriber = rospy.Subscriber("/camera_camera_online_calibration/adjacency",
                                                      CameraCameraAdjacency, self.adjacency_callback)
-        self.adjacency_subscriber = rospy.Subscriber("/gt_calibration_camera_camera_calibration_sigma",
+        self.data_accumulation_subscriber = rospy.Subscriber("/camera_camera_online_calibration/data_accumulation_state",
+                                                     CameraCameraCalibrationState, self.data_accumulation_callback)
+        self.sigma_subscriber = rospy.Subscriber("/camera_camera_online_calibration/sigma",
                                                      CameraIntrinsicsExtrinsicsSigma,
                                                      self.sigma_callback)
-        self.camera_extrinsics_subscriber = rospy.Subscriber("/gt_calibration_camera_intrinsics_extrinsics",
+        self.camera_extrinsics_subscriber = rospy.Subscriber("/camera_camera_online_calibration/intrinsics_extrinsics",
                                                              CameraIntrinsicsExtrinsics,
                                                              self.camera_extrinsics_callback)
         rr.log(f"{CAMERA_BUNDLE_ORIGIN_NAME}",
@@ -158,6 +162,14 @@ class ViewerBlueprint:
         T_bundle_camera[:3, -1] = translation
         plot_frame(msg.header.frame_id, T_bundle_camera)
         print(msg)
+
+    def data_accumulation_callback(self, msg: CameraCameraCalibrationState):
+        stamp = msg.header.stamp.to_nsec()
+        rr.set_time_nanos("camera_calibration_time", stamp)
+        percentage = msg.percentage_progress.data
+        rr.log(f"percent_till_solve",
+               rr.BarChart([percentage, 1.0], color=[[255, 255, 255] if percentage < 1.0
+                                                else [255, 0, 0]]))
 
     def adjacency_callback(self, msg: CameraCameraAdjacency):
         name_a = msg.camera_a.data
