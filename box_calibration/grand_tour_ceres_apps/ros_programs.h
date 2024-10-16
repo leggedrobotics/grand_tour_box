@@ -77,6 +77,7 @@ private:
     ros::NodeHandle nh_;
     ros::ServiceServer stopping_service_;
     std::vector<ros::Subscriber> subscribers_;
+    std::map<std::string, std::string> frameid2rostopic_, rostopic2frameid_;
     std::map<std::string, ros::Publisher> added_detections_publisher_;
     std::map<std::string, ros::Publisher> processed_detections_publisher_;
     std::map<std::string, ros::Publisher> extrinsics_detections_publisher_;
