@@ -10,6 +10,7 @@ import rospy
 import yaml
 from cv_bridge import CvBridge, CvBridgeError
 from grand_tour_camera_detection_msgs.msg import CameraDetections
+from grand_tour_calibration_viewers.srv import FetchRecordingIDFromBlueprintNode, FetchRecordingIDFromBlueprintNodeRequest
 from matplotlib import cm
 from sensor_msgs.msg import Image
 from std_msgs.msg import Header
@@ -81,10 +82,14 @@ class CornerVisualizer:
         self.heatmap_alpha = rospy.get_param('~heatmap_alpha', 0.5)
         self.heatmap_clip_value = rospy.get_param('~heatmap_clip_value', 100)
         self.timer_interval = rospy.get_param('~timer_interval', 10)
-        recording_id = rospy.get_param('~recording_id')
-        uuid_namespace = uuid.NAMESPACE_DNS
-        recording_id = uuid.uuid5(uuid_namespace, recording_id)
-
+        self.recording_id_service_name = 'camera_camera_calibration_viewer/recording_id_service'
+        rospy.wait_for_service(self.recording_id_service_name)
+        self.fetch_recording_service = rospy.ServiceProxy(self.recording_id_service_name,
+                                                          FetchRecordingIDFromBlueprintNode)
+        recording_id = self.get_recording_id()
+        if recording_id is None:
+            rospy.logerr("Failed to initialise viewer node")
+            return
         rr.init(application_id=application_id, recording_id=recording_id, spawn=False)
         rr.spawn(memory_limit="5000MB")
 
@@ -112,6 +117,16 @@ class CornerVisualizer:
         self.image_sub = None
         self.setup_image_subscriber()
         self.image = None
+
+    def get_recording_id(self):
+        try:
+            request = FetchRecordingIDFromBlueprintNodeRequest()
+            response = self.fetch_recording_service(request)
+            rospy.loginfo(f"Received recording ID: {response.recording_id}")
+            return response.recording_id.data
+        except rospy.ServiceException as e:
+            rospy.logerr(f"Service call failed: {e}")
+            return None
 
     def intrinsics_residuals_callback(self, msg):
         header: Header = msg.header

@@ -123,8 +123,14 @@ std::map<std::string, Eigen::Affine3d> FetchExtrinsicsFromYaml(const YAML::Node 
     return eigen_results;
 }
 
-bool SerialiseCameraParameters(const std::string output_path,
-                               const std::map<std::string, CameraParameterPack> &camera_parameter_packs) {
+YAML::Emitter& AddComment(YAML::Emitter& out, const std::string& comment) {
+    out << YAML::Comment(comment);
+    return out;
+}
+
+bool SerialiseCameraParameters(const std::string& output_path,
+                               const std::map<std::string, CameraParameterPack> &camera_parameter_packs,
+                               const std::string comment) {
     YAML::Node node;
 
     int index = 0;
@@ -132,23 +138,28 @@ bool SerialiseCameraParameters(const std::string output_path,
         YAML::Node cam_node;
 
         YAML::Node dist_coeffs = YAML::Node(YAML::NodeType::Sequence);
+        dist_coeffs.SetStyle(YAML::EmitterStyle::Flow); // Set to Flow (inline)
         for (auto val: pack.dist_coeffs) {
             dist_coeffs.push_back(val);
         }
 
         YAML::Node intrinsics = YAML::Node(YAML::NodeType::Sequence);
+        intrinsics.SetStyle(YAML::EmitterStyle::Flow); // Set to Flow (inline)
         for (auto val: pack.fxfycxcy) {
             intrinsics.push_back(val);
         }
 
         YAML::Node resolution = YAML::Node(YAML::NodeType::Sequence);
+        resolution.SetStyle(YAML::EmitterStyle::Flow); // Set to Flow (inline)
         resolution.push_back(pack.width);
         resolution.push_back(pack.height);
 
         YAML::Node T_bundle_cam_node = YAML::Node(YAML::NodeType::Sequence);
+        T_bundle_cam_node.SetStyle(YAML::EmitterStyle::Block); // Set to Flow (inline)
         Eigen::Matrix4d T_bundle_cam = SE3Transform::toEigen(pack.T_bundle_sensor);
         for (int i = 0; i < 4; i++) {
             YAML::Node row = YAML::Node(YAML::NodeType::Sequence);
+            row.SetStyle(YAML::EmitterStyle::Flow); // Set to Flow (inline)
             for (int j = 0; j < 4; j++) {
                 row.push_back(T_bundle_cam(i, j));
             }
@@ -171,6 +182,10 @@ bool SerialiseCameraParameters(const std::string output_path,
         node["cam" + std::to_string(index++)] = cam_node;
     }
     std::ofstream fout(output_path);
+    std::string comment_no_newlines = comment;
+    std::replace(comment_no_newlines.begin(), comment_no_newlines.end(), '\n', ' ');
+    comment_no_newlines = "#" + comment_no_newlines;
+    fout << comment_no_newlines << std::endl;
     fout << node;
     return true;
 }

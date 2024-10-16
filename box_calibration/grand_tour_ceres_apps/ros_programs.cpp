@@ -10,7 +10,10 @@
 #include <grand_tour_camera_detection_msgs/CameraCameraAdjacency.h>
 #include <grand_tour_camera_detection_msgs/CameraIntrinsicsExtrinsicsSigma.h>
 #include <grand_tour_camera_detection_msgs/CameraIntrinsicsExtrinsics.h>
+#include <grand_tour_camera_detection_msgs/CameraCameraCalibrationState.h>
 #include <iomanip>  // Include for setting precision
+#include <ros/package.h>
+#include <filesystem>  // C++17 and later
 
 
 OnlineCameraCameraProgram::OnlineCameraCameraProgram(OnlineCameraCameraParser parser) {
@@ -31,9 +34,6 @@ OnlineCameraCameraProgram::OnlineCameraCameraProgram(OnlineCameraCameraParser pa
                              });
 
     const auto frameid_mappings = LoadRostopicFrameIDMapping(parser.rostopic_frameid_mapping_path);
-    output_sigma_publisher_ = nh_.advertise<grand_tour_camera_detection_msgs::CameraIntrinsicsExtrinsicsSigma>(
-            "/gt_calibration_camera_camera_calibration_sigma",
-            10);
     for (const auto [rostopic, params]: rostopic_camera_parameter_packs) {
         if (!frameid_mappings.contains(rostopic)) {
             ROS_ERROR_STREAM("Could not find ROSTOPIC to frameid mapping for " + rostopic
@@ -56,12 +56,20 @@ OnlineCameraCameraProgram::OnlineCameraCameraProgram(OnlineCameraCameraParser pa
             extrinsics_detections_publisher_[frameid_mappings.at(rostopic)] = extrinsics_detection_pub;
         }
     }
+    calibration_data_collection_state_publisher_ =
+            nh_.advertise<grand_tour_camera_detection_msgs::CameraCameraCalibrationState>(
+                    "camera_camera_online_calibration/data_accumulation_state", 100);
+    output_sigma_publisher_ = nh_.advertise<grand_tour_camera_detection_msgs::CameraIntrinsicsExtrinsicsSigma>(
+            "/camera_camera_online_calibration/sigma",
+            10);
     adjacency_publisher_ = nh_.advertise<grand_tour_camera_detection_msgs::CameraCameraAdjacency>(
-            "gt_calibration_camera_camera_adjacency", 100);
+            "/camera_camera_online_calibration/adjacency", 100);
     intrinsics_extrinsics_publisher_ = nh_.advertise<grand_tour_camera_detection_msgs::CameraIntrinsicsExtrinsics>(
-            "gt_calibration_camera_intrinsics_extrinsics", 100);
-    ros::ServiceServer service = nh_.advertiseService(
-            "/gt_calibration_stop_optimizing", &OnlineCameraCameraProgram::stopOptimizationServiceCallback, this);
+            "/camera_camera_online_calibration/intrinsics_extrinsics", 100);
+    stopping_service_ = nh_.advertiseService(
+            "/camera_camera_online_calibration/stop_optimizing",
+            &OnlineCameraCameraProgram::stopOptimizationServiceCallback, this);
+    ROS_INFO_STREAM("Started stopping service ");
 
     if (camera_parameter_packs.empty()) {
         return;
@@ -189,39 +197,40 @@ void OnlineCameraCameraProgram::optimizationCallback(const ros::TimerEvent &, bo
     unsigned int n_samples_now = parsed_alignment_data.unique_timestamps.size();
     ROS_INFO_STREAM("Current n-samples: " + std::to_string(n_samples_now)
                     + ". Rejected " + std::to_string(total_n_samples_rejected_) + " samples.");
-    if (n_samples_now - n_samples_last_solve_ > min_new_samples_for_solve_ or force_finalise) {
+    const int n_new_samples = n_samples_now - n_samples_last_solve_;
+
+    float current_batch_percentage_accumulated = float(n_new_samples) / float(min_new_samples_for_solve_);
+    this->publishPercentageDataAccumulated(current_batch_percentage_accumulated);
+
+    if (n_new_samples > min_new_samples_for_solve_ or force_finalise) {
         n_samples_last_solve_ = n_samples_now;
         std::lock_guard<std::mutex> lock(ceres_problem_mutex_);
-
         ROS_DEBUG_STREAM("Starting solve...");
-
-        {
-            if (ready_for_extrinsics_) {
-                this->setExtrinsicParametersVariableBeforeOpt();
-            }
-            const bool solve_succeeded = this->Solve();
-            ROS_DEBUG_STREAM("Solve success: " + std::to_string(solve_succeeded));
-            this->rebuildProblemFromLoggedROSAlignmentData();
-            if (ready_for_extrinsics_) {
-                this->setExtrinsicParametersVariableBeforeOpt();
-            }
-            this->Solve();
-            ROS_DEBUG_STREAM("Starting covariance computation...");
-            ScopedTimer timer;
-            const std::map<std::string, CameraCovariance> covariances = computeCovariances();
-            ready_for_extrinsics_ = true;
-            for (const auto &[name, covariance]: covariances) {
-                if (covariance.fxfycxcy_sigma.maxCoeff() > 10.0) {
-                    ready_for_extrinsics_ = false;
-                }
-            }
-            this->publishAllParamsAndSigmas(covariances);
-            ROS_DEBUG("Covariance and ros publishing executed in: %f seconds", timer.elapsed().count());
+        if (ready_for_extrinsics_) {
+            this->setExtrinsicParametersVariableBeforeOpt();
         }
+        problem_->solver_options_.max_num_iterations = 5;
+        const bool solve_succeeded = this->Solve();
+        ROS_DEBUG_STREAM("Solve success: " + std::to_string(solve_succeeded));
+        this->rebuildProblemFromLoggedROSAlignmentData();
+        if (ready_for_extrinsics_) {
+            this->setExtrinsicParametersVariableBeforeOpt();
+        }
+        ROS_DEBUG_STREAM("Starting covariance computation...");
+        ScopedTimer timer;
+        const std::map<std::string, CameraCovariance> covariances = computeCovariances();
+        ready_for_extrinsics_ = true;
+        for (const auto &[name, covariance]: covariances) {
+            if (covariance.fxfycxcy_sigma.maxCoeff() > 10.0) {
+                ready_for_extrinsics_ = false;
+            }
+        }
+        this->publishAllParamsAndSigmas(covariances);
+        ROS_DEBUG("Covariance and ros publishing executed in: %f seconds", timer.elapsed().count());
+        this->publishPercentageDataAccumulated(0.0f);
     } else {
         ROS_DEBUG_STREAM("Not enough new samples received since last solve. Not optimizing");
     }
-
 
     for (const auto &[frame_id, data]: logged_ros_alignment_data_) {
 //        ROS_DEBUG_STREAM("Publishing for frame_id: " + frame_id);
@@ -276,6 +285,19 @@ void OnlineCameraCameraProgram::optimizationCallback(const ros::TimerEvent &, bo
         logEdgeCapacities();
     }
 
+}
+
+void OnlineCameraCameraProgram::publishPercentageDataAccumulated(float current_batch_percentage_accumulated) const {
+    if (!parsed_alignment_data.unique_timestamps.empty()) {
+        current_batch_percentage_accumulated =
+                current_batch_percentage_accumulated < 1.0f ? current_batch_percentage_accumulated :
+                1.0f;
+        grand_tour_camera_detection_msgs::CameraCameraCalibrationState data_accumulation_msg;
+        const unsigned long long latest_stamp = *std::prev(parsed_alignment_data.unique_timestamps.end());
+        data_accumulation_msg.header.stamp.fromNSec(latest_stamp);
+        data_accumulation_msg.percentage_progress.data = current_batch_percentage_accumulated;
+        calibration_data_collection_state_publisher_.publish(data_accumulation_msg);
+    }
 }
 
 void OnlineCameraCameraProgram::setExtrinsicParametersVariableBeforeOpt() {// Free up camera transforms before solve
@@ -701,13 +723,44 @@ void OnlineCameraCameraProgram::resetStateFromLoggedObservations() {
     n_samples_last_solve_ = parsed_alignment_data.unique_timestamps.size();
 }
 
+std::stringstream GetTimeNowString() {
+    // Get the current ROS time
+    ros::Time current_time = ros::Time::now();
+    // Convert ROS time to time_t (which represents seconds since the Unix epoch)
+    std::time_t raw_time = current_time.sec;
+    // Convert to a tm structure for local time
+    std::tm *time_info = std::localtime(&raw_time);
+    // Convert ROS time to human-readable format
+    std::stringstream time_stream;
+    time_stream << "Generated with data of ROS time: ";
+    time_stream << std::put_time(time_info, "%Y-%m-%d %H:%M:%S");
+    // Add nanoseconds for precision
+    time_stream << "." << std::setw(9) << std::setfill('0') << current_time.nsec << std::endl;
+    return time_stream;
+}
+
 bool OnlineCameraCameraProgram::stopOptimizationServiceCallback(
         grand_tour_camera_detection_msgs::StopOptimizingService::Request &req,
         grand_tour_camera_detection_msgs::StopOptimizingService::Response &res) {
     ros::TimerEvent event_msg;
+    ROS_INFO_STREAM("Performing last solve");
     this->optimizationCallback(event_msg, true);
+    ROS_INFO_STREAM("Final solve done");
     do_optimize_ = false;
     res.successfully_stopped = true;
+
+    std::string calib_package_name = "box_calibration";
+    std::filesystem::path calib_root_path = ros::package::getPath(calib_package_name);
+    if (calib_root_path.empty()) {
+        ROS_ERROR_STREAM("Failed to write output calibration");
+        return true;
+    }
+    std::filesystem::path relative_output_path =
+            "calibration/raw_calibration_output/cameras-intrinsics-extrinsics_latest.yaml";
+    std::filesystem::path output_path = calib_root_path / relative_output_path;
+    SerialiseCameraParameters(output_path.string(), camera_parameter_packs,
+                              GetTimeNowString().str());
+    ROS_INFO_STREAM("Wrote output calibrations to: " + output_path.string());
     return true;
 }
 
