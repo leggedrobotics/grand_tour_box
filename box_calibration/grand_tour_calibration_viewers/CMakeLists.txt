@@ -162,7 +162,7 @@ include_directories(
 ## in contrast to setup.py, you can choose the destination
 catkin_install_python(PROGRAMS
   scripts/view_camera_camera_optimization.py
-  scripts/launch_viewer.py
+  scripts/launch_camera_camera_viewer.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

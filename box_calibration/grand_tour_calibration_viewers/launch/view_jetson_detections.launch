@@ -1,7 +1,7 @@
 <launch>
     <arg name="recording_id" />
     <!-- Launch the view_camera_camera_optimization.py script -->
-    <node name="gt_camera_calibration_viewer" pkg="grand_tour_calibration_viewers" type="launch_viewer.py" output="screen">
+    <node name="gt_camera_calibration_viewer" pkg="grand_tour_calibration_viewers" type="launch_camera_camera_viewer.py" output="screen">
         <param name="recording_id" value="$(arg recording_id)"/>
     </node>
 
