@@ -20,6 +20,7 @@ from box_recording_helper.cpt7_helper import cpt7_start_recording, cpt7_stop_rec
 from box_recording_helper.store_debug_logs_to_folder import store_debug_logs_to_folder
 import time
 
+
 def start_hdr():
     subprocess.Popen(
         "/data/workspaces/isaac_ros-dev/src/isaac_ros_common/scripts/run_recording.sh hdr_start",
@@ -82,11 +83,13 @@ class RosbagRecordNode(object):
             start_hdr()
 
         while rospy.is_shutdown() is False:
+
             if self.bag_running:
                 p = self.bag_base_path
             else:
                 p = self.data_path
 
+            self.p = p
             if os.path.exists(p):
                 free_disk_space_in_gb = shutil.disk_usage(p)[2] / 1000000000
             else:
@@ -184,6 +187,12 @@ class RosbagRecordNode(object):
         timestamp = request.timestamp
         self.bag_base_path = os.path.join(self.data_path, timestamp)
 
+        free_disk_space_in_gb = shutil.disk_usage(self.p)[2] / 1000000000
+        if free_disk_space_in_gb < 1:
+            response.suc = False
+            response.message = f"No disk space available. Do not start recording on {self.node}"
+            return response
+
         Path(self.bag_base_path).mkdir(parents=True, exist_ok=True)
 
         # Check if we're on lpc. If so, dump rosparams to yaml file.
@@ -255,7 +264,11 @@ class RosbagRecordNode(object):
         response.result = ""
 
         if self.store_debug_logs:
-            store_debug_logs_to_folder(self.start_recording_time, directory="/home/rsl/.ros", copy_to=os.path.join( self.bag_base_path, "ros_logs_" + self.node))
+            store_debug_logs_to_folder(
+                self.start_recording_time,
+                directory="/home/rsl/.ros",
+                copy_to=os.path.join(self.bag_base_path, "ros_logs_" + self.node),
+            )
 
         if self.bag_running:
             response.suc = True
