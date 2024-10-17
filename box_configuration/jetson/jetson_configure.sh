@@ -186,10 +186,10 @@ chronyd -x
 sudo vi /etc/udev/rules.d/99-video-devices.rules
 #############################################
 # Rule for /dev/video2 (tier4_isx021 41-001b)
-SUBSYSTEM=="video4linux", ATTR{name}=="vi-output, tier4_isx021 41-001b", SYMLINK+="hdr_right"
+SUBSYSTEM=="video4linux", ATTR{name}=="vi-output, tier4_isx021 41-001b", SYMLINK+="hdr_front"
 
 # Rule for /dev/video3 (tier4_isx021 41-001c)
-SUBSYSTEM=="video4linux", ATTR{name}=="vi-output, tier4_isx021 41-001c", SYMLINK+="hdr_front"
+SUBSYSTEM=="video4linux", ATTR{name}=="vi-output, tier4_isx021 41-001c", SYMLINK+="hdr_right"
 
 # Rule for /dev/video4 (tier4_isx021 41-001c)
 SUBSYSTEM=="video4linux", ATTR{name}=="vi-output, tier4_isx021 42-001c", SYMLINK+="hdr_left"

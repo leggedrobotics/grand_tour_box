@@ -12,6 +12,8 @@ ln -s /home/rsl/git/grand_tour_box/box_drivers_ros2/hdr_camera_driver /workspace
 ln -s /home/rsl/git/grand_tour_box/box_drivers_ros2/isaac_ros_common /workspaces/ros2_ws/src
 ln -s /home/rsl/git/grand_tour_box/box_drivers_ros2/rosbag2_composable_recorder /workspaces/ros2_ws/src
 ln -s /home/rsl/git/grand_tour_box/box_drivers_ros2/ros1_bridge /workspaces/bridge_ws/src
+ln -s /home/rsl/git/grand_tour_box/box_calibration /workspaces/ros2_ws/src
+
 
 cd /workspaces/ros2_ws; colcon build --symlink-install --packages-select v4l2_camera; source install/setup.bash;
 cd /workspaces/ros2_ws; colcon build --symlink-install --packages-select rosbag2_composable_recorder; source install/setup.bash;
