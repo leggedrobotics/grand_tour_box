@@ -181,8 +181,9 @@ sudo vi /etc/chrony/chrony.conf
 
 chronyd -x
  
+# CREATE UDEV RULES FOR HDR cameras 
+# Important point when creating the simlink and then adding this to the docker container one needs to map in all /dev:/dev otherwise cannot be found!
 
-# CREATE UDEV RULES FOR HDR cameras
 sudo vi /etc/udev/rules.d/99-video-devices.rules
 #############################################
 # Rule for /dev/video2 (tier4_isx021 41-001b)

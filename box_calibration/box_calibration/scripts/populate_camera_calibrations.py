@@ -17,8 +17,8 @@ OUTPUT_FILE_MAPPINGS = {
     "/gt_box/hdr_front/image_raw": "hdr/hdr_front.yaml",
     "/gt_box/hdr_left/image_raw": "hdr/hdr_left.yaml",
     "/gt_box/hdr_right/image_raw": "hdr/hdr_right.yaml",
-    "/gt_box/zed2i_driver_node/left_raw/image_raw_gray": "zed2i/zed_left.yaml",
-    "/gt_box/zed2i_driver_node/right_raw/image_raw_gray": "zed2i/zed_right.yaml",
+    "/gt_box/zed2i_driver_node/left_raw/image_raw_color": "zed2i/zed_left.yaml",
+    "/gt_box/zed2i_driver_node/right_raw/image_raw_color": "zed2i/zed_right.yaml",
 }
 FRAMEID_MAPPINGS = {
     "/gt_box/alphasense_driver_node/cam1": "cam1_sensor_frame",
@@ -29,13 +29,13 @@ FRAMEID_MAPPINGS = {
     "/gt_box/hdr_front/image_raw": "hdr_front",
     "/gt_box/hdr_left/image_raw": "hdr_left",
     "/gt_box/hdr_right/image_raw": "hdr_right",
-    "/gt_box/zed2i_driver_node/left_raw/image_raw_gray": "zed2i_left_camera_optical_frame",
-    "/gt_box/zed2i_driver_node/right_raw/image_raw_gray": "zed2i_right_camera_optical_frame",
+    "/gt_box/zed2i_driver_node/left_raw/image_raw_color": "zed2i_left_camera_optical_frame",
+    "/gt_box/zed2i_driver_node/right_raw/image_raw_color": "zed2i_right_camera_optical_frame",
 }
 
-OUTPUT_BUNDLE_ORIGIN = "/gt_box/zed2i_driver_node/left_raw/image_raw_gray"
-ZED_LEFT_FRAME = "/gt_box/zed2i_driver_node/left_raw/image_raw_gray"
-ZED_RIGHT_FRAME = "/gt_box/zed2i_driver_node/right_raw/image_raw_gray"
+OUTPUT_BUNDLE_ORIGIN = "/gt_box/zed2i_driver_node/left_raw/image_raw_color"
+ZED_LEFT_FRAME = "/gt_box/zed2i_driver_node/left_raw/image_raw_color"
+ZED_RIGHT_FRAME = "/gt_box/zed2i_driver_node/right_raw/image_raw_color"
 ALPHASENSE_FRONTLEFTCAM = "/gt_box/alphasense_driver_node/cam3"
 ALPHASENSE_FRONTRIGHTCAM = "/gt_box/alphasense_driver_node/cam2"
 ALPHASENSE_FRONTMIDDLECAM = "/gt_box/alphasense_driver_node/cam1"

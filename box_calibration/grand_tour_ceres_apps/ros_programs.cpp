@@ -40,8 +40,11 @@ OnlineCameraCameraProgram::OnlineCameraCameraProgram(OnlineCameraCameraParser pa
                              + "\nPlease verify the file: " + parser.rostopic_frameid_mapping_path);
             return;
         } else {
-            this->camera_parameter_packs[frameid_mappings.at(rostopic)] = params;
-            ROS_INFO_STREAM(rostopic + "--->" + frameid_mappings.at(rostopic));
+            const std::string frame_id = frameid_mappings.at(rostopic);
+            frameid2rostopic_[frame_id] = rostopic;
+            rostopic2frameid_[rostopic] = frame_id;
+            this->camera_parameter_packs[frame_id] = params;
+            ROS_INFO_STREAM(rostopic + "--->" + frame_id);
 
             ros::Publisher added_detection_pub = nh_.advertise<grand_tour_camera_detection_msgs::CameraDetections>(
                     rostopic + "_corner_detections_added", 100);
@@ -758,7 +761,11 @@ bool OnlineCameraCameraProgram::stopOptimizationServiceCallback(
     std::filesystem::path relative_output_path =
             "calibration/raw_calibration_output/cameras-intrinsics-extrinsics_latest.yaml";
     std::filesystem::path output_path = calib_root_path / relative_output_path;
-    SerialiseCameraParameters(output_path.string(), camera_parameter_packs,
+    std::map<std::string, CameraParameterPack> camera_parameters_by_rostopic;
+    for (const auto& [frameid, params] : camera_parameter_packs) {
+        camera_parameters_by_rostopic[frameid2rostopic_.at(frameid)] = params;
+    }
+    SerialiseCameraParameters(output_path.string(), camera_parameters_by_rostopic,
                               GetTimeNowString().str());
     ROS_INFO_STREAM("Wrote output calibrations to: " + output_path.string());
     return true;
