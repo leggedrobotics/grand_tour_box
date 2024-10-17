@@ -145,7 +145,7 @@ def process_rosbag(input_bag, image_topics, camera_info_topics,  out_bag_path, o
 
 
 if __name__ == "__main__":
-    tasks = { 
+    tasks_hdr = { 
         "hdr_front":{
             "in": {
                 "camera_info_topics": ["/gt_box/hdr_front/camera_info"],
@@ -182,12 +182,24 @@ if __name__ == "__main__":
                 "pattern": "_jetson_hdr_right_rect.bag",
             }
         },
-        # "alphasense":{
-        #     "camera_info_topics": [f"/gt_box/alphasense_driver_node/cam{n}/color_corrected/camera_info" for n in [1,2,3,4,5]],
-        #     "image_topics": [f"/gt_box/alphasense_driver_node/cam{n}/color_corrected/image/compressed" for n in [1,2,3,4,5]],
-        #     "pattern": "_nuc_alphasense_color_corrected.bag",
-        # }
     }
+
+    tasks_alphasense= {
+        "alphasense":{
+            "in": {
+                "camera_info_topics": [f"/gt_box/alphasense_driver_node/cam{i}/color/camera_info" for i in range(1,6)],
+                "image_topics": [f"/gt_box/alphasense_driver_node/cam{i}/color_corrected/image/compressed" for i in range(1,6)],
+                "pattern": "_nuc_alphasense_color_corrected.bag",
+            },
+            "out": {
+                "camera_info_topics": [f"/gt_box/alphasense_driver_node/cam{i}/color_corrected_rect/camera_info" for i in range(1,6)],
+                "image_topics": [f"/gt_box/alphasense_driver_node/cam{i}/color_corrected_rect/image_rect/compressed" for i in range(1,6)],
+                "pattern": "_nuc_alphasense_color_corrected_rect.bag",
+            },
+        }
+    }
+
+    tasks = {**tasks_hdr, **tasks_alphasense}    
     for name, task in tasks.items():
 
         bags = [str(s) for s in Path(MISSION_DATA).rglob("*" + task["in"]["pattern"])]
