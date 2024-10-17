@@ -12,6 +12,11 @@ ln -s /home/rsl/git/grand_tour_box/box_drivers_ros2/hdr_camera_driver /workspace
 ln -s /home/rsl/git/grand_tour_box/box_drivers_ros2/isaac_ros_common /workspaces/ros2_ws/src
 ln -s /home/rsl/git/grand_tour_box/box_drivers_ros2/rosbag2_composable_recorder /workspaces/ros2_ws/src
 ln -s /home/rsl/git/grand_tour_box/box_drivers_ros2/ros1_bridge /workspaces/bridge_ws/src
+ln -s /home/rsl/git/grand_tour_box/box_calibration /workspaces/ros2_ws/src
+
+
+sudo apt install ros-rolling-rosbag2-storage-mcap -y
+
 
 cd /workspaces/ros2_ws; colcon build --symlink-install --packages-select v4l2_camera; source install/setup.bash;
 cd /workspaces/ros2_ws; colcon build --symlink-install --packages-select rosbag2_composable_recorder; source install/setup.bash;
@@ -65,9 +70,9 @@ cd /workspaces/bridge_ws; source /opt/ros/noetic/setup.bash; source /opt/ros/hum
 # cd /workspaces/ros2_ws; rm -r -f build install log
 
 # Set up common aliases
-# echo "alias hdr_start='cd /workspaces/isaac_ros-dev; source /opt/ros/humble/setup.bash; cd /workspaces/isaac_ros-dev; source install/setup.bash; ros2 launch rosbag2_composable_recorder recorder.launch.py'" >> ~/.bashrc
-# echo "alias hdr_build='cd /workspaces/isaac_ros-dev; colcon build --symlink-install --packages-select v4l2_camera; source install/setup.bash;'" >> ~/.bashrc
-# echo "alias recorder_build='cd /workspaces/isaac_ros-dev; colcon build --symlink-install --packages-select rosbag2_composable_recorder; source install/setup.bash;'" >> ~/.bashrc
+# echo "alias hdr_start='cd /workspaces/ros2_ws; source /opt/ros/humble/setup.bash; cd /workspaces/ros2_ws; source install/setup.bash; ros2 launch rosbag2_composable_recorder recorder.launch.py'" >> ~/.bashrc
+# echo "alias hdr_build='cd /workspaces/ros2_ws; colcon build --symlink-install --packages-select v4l2_camera; source install/setup.bash;'" >> ~/.bashrc
+# echo "alias recorder_build='cd /workspaces/ros2_ws; colcon build --symlink-install --packages-select rosbag2_composable_recorder; source install/setup.bash;'" >> ~/.bashrc
 
 # echo "alias ros1_bridge_start='source /opt/ros/noetic/setup.bash; source /opt/ros/humble/setup.bash; source install/setup.bash; ros2 run ros1_bridge dynamic_bridge --bridge-all-2to1-topics'" >> ~/.bashrc
 # echo "alias hdr_encoder='ros2 launch isaac_ros_h264_encoder isaac_ros_h264_encoder.launch.py'" >> ~/.bashrc
