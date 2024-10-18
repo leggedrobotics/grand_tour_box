@@ -70,7 +70,7 @@ nuc:
       width: 700
       height: 0
       left: 10
-      top: 400
+      top: 500
       text_size: 9
 
 pi:
