@@ -235,6 +235,10 @@ class RosbagRecordNode(object):
             if bag_name == "zed2i" and "svo" in topics:
                 # If we are recording svo files instead of rosbags for the zed, we need to call the svo recording service.
                 response = self.toggle_zed_recording(True, timestamp, response)
+                bag_path = bag_path = os.path.join(
+                    self.bag_base_path, timestamp + "_" + self.node + "_" + bag_name + ".svo2"
+                )
+                self.info_string += f"record_{self.node}_{bag_name}----{bag_path},"
                 continue
 
             # TODO: Replace with proper system after testing
@@ -244,6 +248,13 @@ class RosbagRecordNode(object):
                 rospy.loginfo(f"[RosbagRecordNode({self.node} HDR" + bash_command_hdr)
                 subprocess.Popen(bash_command_hdr, shell=True, stderr=subprocess.PIPE)
                 response.message += "hdr_ros2_started [SUC], "
+                for bag_name in ["hdr_left", "hdr_right", "hdr_front"]:
+                    bag_path = os.path.join(
+                        self.bag_base_path,
+                        f"{timestamp}_{self.node}_{bag_name}",
+                        f"{timestamp}_{self.node}_{bag_name}_0.mcap",
+                    )
+                    self.info_string += f"record_{self.node}_{bag_name}----{bag_path},"
                 continue
 
             bag_path = os.path.join(self.bag_base_path, timestamp + "_" + self.node + "_" + bag_name)

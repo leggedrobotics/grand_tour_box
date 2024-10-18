@@ -108,6 +108,9 @@ class FrequencyFinder:
 
 def get_file_size(file_path):
     """Return the size of the file at the given path."""
+    if os.path.exists(file_path):
+        return os.path.getsize(file_path), True, True
+
     si = 0
     n = file_path.split("/")[-1]
     ls = [str(s) for s in Path(file_path).parent.rglob(f"{n}*.bag*")]
@@ -212,9 +215,9 @@ class BoxStatus:
             size, suc, active = get_file_size(recorder_path)
             size_mb = size / 1e6
             if suc:
-                if size / 1e3 < 5:
+                if size < 4118:
                     self.recording_strings += add_color(
-                        f"{recorder_node_name}: {size_mb}MB - Bag Exists but very small", (255, 165, 0)
+                        f"{recorder_node_name}: {size_mb}MB - Bag Exists but no data added", (255, 165, 0)
                     )
                 else:
                     self.recording_strings += add_color(f"{recorder_node_name}: {size_mb}MB", (0, 255, 0))
@@ -385,7 +388,16 @@ class BoxStatus:
         sync_ele = self.cfg.get("ptp4l", []) + self.cfg.get("phc2sys", [])
         for service in sync_ele:
             val = getattr(health_msg, f"offset_{service}")
-            text.text += f"{service}:" + f"{val}ns\n"
+
+            try:
+                if float(val) < 1000:
+                    text.text += add_color(f"{service}: {val}ns", (0, 255, 0))
+                elif float(val) < 10000:
+                    text.text += add_color(f"{service}: {val}ns", (255, 165, 0))
+                else:
+                    text.text += add_color(f"{service}: {val}ns", (255, 0, 0))
+            except:
+                text.text += add_color(f"{service}: {val}", (255, 0, 0))
             offset += lineheight
 
         if self.cfg.get("chrony", False):
@@ -422,11 +434,12 @@ class BoxStatus:
                     pretty = pc.capitalize()
                     text.text += f"{pretty} ready: {ready}\n"
                     offset += lineheight
+
             text.text += self.recording_strings
             offset += self.recording_lines * lineheight
             offset += lineheight * 2
 
-        text.height = offset
+        text.height = int(offset)
         self.overlay_text_publisher.publish(text)
 
     def publish_health_status(self):
