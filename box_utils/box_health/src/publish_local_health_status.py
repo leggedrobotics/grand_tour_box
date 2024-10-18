@@ -108,6 +108,9 @@ class FrequencyFinder:
 
 def get_file_size(file_path):
     """Return the size of the file at the given path."""
+    if os.path.exists(file_path):
+        return os.path.getsize(file_path), True, True
+    
     si = 0
     n = file_path.split("/")[-1]
     ls = [str(s) for s in Path(file_path).parent.rglob(f"{n}*.bag*")]
@@ -422,6 +425,7 @@ class BoxStatus:
                     pretty = pc.capitalize()
                     text.text += f"{pretty} ready: {ready}\n"
                     offset += lineheight
+
             text.text += self.recording_strings
             offset += self.recording_lines * lineheight
             offset += lineheight * 2
