@@ -1,0 +1,113 @@
+x-common-config: &common-config
+  build:
+    context: "$HOME/git/grand_tour_box/box_utils/box_auto/docker"
+    dockerfile: "$HOME/git/grand_tour_box/box_utils/box_auto/docker/box.Dockerfile"
+    ssh:
+      default: "$HOME/.ssh/id_rsa_2"
+  image: rslethz/grand_tour_box
+  runtime: nvidia
+  # network_mode: host
+  privileged: true
+  environment:
+    QT_X11_NO_MITSHM: "1"
+    XAUTHORITY: "/root/.docker.xauth"
+    DISPLAY: "$DISPLAY"  
+  deploy:
+    resources:
+      reservations:
+        devices:
+          - driver: nvidia
+            count: all
+            capabilities:
+              - gpu
+              - utility # nvidia-smi
+              - compute # CUDA
+              - video   # encoding 
+  volumes:
+    - "${MISSION_DATA:-/mission/data}:/mission_data"
+    - "${GRAND_TOUR_BOX_PATH:-$HOME/git/grand_tour_box}:/home/catkin_ws/src/grand_tour_box"
+x-ros2-common-config: &ros2-common-config
+  build:
+    context: "$HOME/git/grand_tour_box/box_utils/box_auto/docker"
+    dockerfile: "$HOME/git/grand_tour_box/box_utils/box_auto/docker/box_ros2.Dockerfile"
+    ssh:
+      default: "$HOME/.ssh/id_rsa_2"
+  image: rslethz/grand_tour_box_ros2
+  runtime: nvidia
+  # network_mode: host
+  privileged: true
+  environment:
+    QT_X11_NO_MITSHM: "1"
+    XAUTHORITY: "/root/.docker.xauth"
+    DISPLAY: "$DISPLAY"  
+  deploy:
+    resources:
+      reservations:
+        devices:
+          - driver: nvidia
+            count: all
+            capabilities:
+              - gpu
+              - utility # nvidia-smi
+              - compute # CUDA
+              - video   # encoding 
+  volumes:
+    - "${MISSION_DATA:-/mission/data}:/mission_data"
+    - "${GRAND_TOUR_BOX_PATH:-$HOME/git/grand_tour_box}:/home/catkin_ws/src/grand_tour_box"
+
+
+services:
+  rectify:
+    <<: *common-config
+    container_name: rectify
+    command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/rectify.py"]
+
+  create_tf_static:
+    <<: *common-config
+    container_name: create_tf_static
+    command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/create_tf_static.py"]
+
+  ap20_python_online_matcher:
+    <<: *common-config
+    container_name: ap20_python_online_matcher
+    command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/ap20_python_online_matcher.py"]
+
+  hesai:
+    <<: *common-config
+    container_name: hesai
+    command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/hesai.py"]
+  
+  color_correction:
+    <<: *common-config
+    container_name: color_correction
+    command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/color_correction.py"]
+
+  # topic_freq:
+  #   <<: *common-config
+  #   container_name: topic_freq
+  #   command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/topic_freq.py"]
+  #   depends_on:
+  #     hesai:
+  #       condition: service_completed_successfully
+  #     cpt7:
+  #       condition: service_completed_successfully
+  #     ap20_python_online_matcher:
+  #       condition: service_completed_successfully
+  #     color_correction:
+  #       condition: service_completed_successfully
+  
+  # cpt7:
+  #   <<: *common-config
+  #   container_name: cpt7
+  #   command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/cpt7.py"]
+
+  # imu_timesync:
+  #   <<: *common-config
+  #   container_name: imu_timesync
+  #   command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/imu_timesync.py"]
+  #   depends_on:
+  #     cpt7:
+  #       condition: service_completed_successfully
+  #     create_tf_static:
+  #       condition: service_completed_successfully
+  

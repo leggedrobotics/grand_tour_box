@@ -26,7 +26,7 @@ def dump_camera_info(camera_info_msg, filename):
         yaml.dump(camera_info, file, default_flow_style=False)
 
 
-def process_rosbag(input_bag, output_bag, image_topics, camera_info_topics, config_file, use_gpu=False):
+def process_rosbag(input_bag, output_bag_path, image_topics, camera_info_topics, config_file, use_gpu=False):
     # Initialize ROS bag and CvBridge
     bag = rosbag.Bag(input_bag, "r")
     bridge = CvBridge()
@@ -44,7 +44,7 @@ def process_rosbag(input_bag, output_bag, image_topics, camera_info_topics, conf
             proc[camera_info_topic] = RawImagePipeline(use_gpu, config_file, calib_file)
             break  # We only need the first camera_info message
 
-    out_bag = rosbag.Bag(output_bag, "w", compression='lz4')
+    out_bag = rosbag.Bag(output_bag_path, "w", compression='lz4')
     total_messages = bag.get_message_count()
     try:
         for topic, msg, t in tqdm(bag.read_messages(), total=total_messages, desc="Processing Messages"):
@@ -86,7 +86,11 @@ def process_rosbag(input_bag, output_bag, image_topics, camera_info_topics, conf
         bag.close()
         out_bag.close()
 
-    print(f"Finished processing. Color corrected bag saved as: {output_bag}")
+    if os.environ.get("KLEINKRAM_ACTIVE", False):
+        os.system( f"klein mission upload --mission {os.environ["MISSION_UUID"]} --path {output_bag_path}")
+        print(f"Color corrected bag uploaded to kleinkram: {output_bag_path}")
+    else:
+        print(f"Finished processing. Color corrected bag saved as: {output_bag_path}")
 
 
 if __name__ == "__main__":
@@ -99,5 +103,5 @@ if __name__ == "__main__":
     bags = [str(s) for s in Path(MISSION_DATA).glob("*"+pattern) if output_pattern not in str(s)]
     print("Process bags:", bags)
     for input_bag in bags:
-        output_bag = input_bag.replace(pattern, output_pattern)
-        process_rosbag(input_bag, output_bag, image_topics, camera_info_topics, config_file)
+        output_bag_path = input_bag.replace(pattern, output_pattern)
+        process_rosbag(input_bag, output_bag_path, image_topics, camera_info_topics, config_file)

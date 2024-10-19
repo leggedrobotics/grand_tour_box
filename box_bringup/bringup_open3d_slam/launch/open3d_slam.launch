@@ -2,18 +2,18 @@
   <arg name="box_namespace" default="gt_box"/>
 
   <!-- <arg name="cloud_topic" default="/gt_box/livox/lidar"/> -->
-   <arg name="cloud_topic" default="/gt_box/hesai/points"/>
+   <arg name="cloud_topic" default="/gt_box/livox/lidar"/>
   
   <!-- The tracked frame of the External odometry. Transformation from this frame to tracked_sensor_Frame should exist. -->
   <arg name="assumed_external_odometry_tracked_frame" default="box_base"/>
 
   <!-- Currently only used for attitude initialization - ADIS -->
-  <arg name="imu_topic" default="/gt_box/livox/imu_si_compliant"/>
+  <arg name="imu_topic" default="/gt_box/cpt7/offline_from_novatel_logs/imu"/>
 
-  <!-- 3 Options to provide external odometry - disabled for the box -->
+  <!-- 3 Options to provide external odometry - disabled for the box gt_box/gt_poses_novatel-->
   <arg name="odometry_topic" default="/nan0"/> 
   <arg name="pose_stamped_topic" default="/nan1"/>
-  <arg name="pose_stamped_with_covariance_topic" default="/gt_box/gt_poses_novatel"/>
+  <arg name="pose_stamped_with_covariance_topic" default="/nan2"/>
 
   <arg name="parameter_filename" default="hesai_xt32.lua"/>
   <arg name="parameter_folder_path" default="$(find bringup_open3d_slam)/config/"/>

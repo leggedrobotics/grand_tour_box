@@ -23,7 +23,7 @@ catkin config --extend /home/opencv_gtsam_ws/devel
 catkin config --cmake-args -DCMAKE_BUILD_TYPE=RelWithDebInfo
 
 # Get the grand_tour_box repository
-cd /home/catkin_ws/src; git clone --recurse-submodules --shallow-submodules git@github.com:leggedrobotics/grand_tour_box.git
+cd /home/catkin_ws/src; git clone --recurse-submodules --shallow-submodules git@github.com:leggedrobotics/grand_tour_box.git --depth 1
 
 # Dependency for raw_image_pipeline
 cd /home/catkin_ws/src; git clone https://github.com/leggedrobotics/pybind11_catkin.git --depth 1
@@ -52,7 +52,7 @@ cd /home/catkin_ws/src/grand_tour_box/box_drivers/novatel_oem7_driver
 rosdep update
 rosdep install --from-paths src --ignore-src -r -y --reinstall
 
-cd /home/catkin_ws/src/grand_tour_box/box_drivers/tf_bag
+cd /home/catkin_ws/src/grand_tour_box/box_applications/tf_bag
 rosdep install --from-paths . --ignore-src -r -y --reinstall
 
 # Build workspace for postprocessing

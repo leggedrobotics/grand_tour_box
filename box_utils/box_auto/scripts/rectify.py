@@ -3,10 +3,8 @@ import cv2
 from cv_bridge import CvBridge
 from sensor_msgs.msg import CameraInfo
 import numpy as np
-import sys
 from pathlib import Path
 import os
-from pytictac import CpuTimer
 MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
 
 def undistort_image_fisheye(image, camera_info, new_camera_info=None):
@@ -141,7 +139,11 @@ def process_rosbag(input_bag, image_topics, camera_info_topics,  out_bag_path, o
         bag.close()
         out_bag.close()
 
-    print(f"Finished processing. Rectified bag saved as: {out_bag_path}")
+    if os.environ.get("KLEINKRAM_ACTIVE", False):
+        os.system( f"klein mission upload --mission {os.environ["MISSION_UUID"]} --path {out_bag}")
+        print(f"Rectified bag uploaded to kleinkram: {out_bag}")
+    else:
+        print(f"Finished processing. Rectified bag saved as: {out_bag_path}")
 
 
 if __name__ == "__main__":
