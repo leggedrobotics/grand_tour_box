@@ -103,7 +103,7 @@ def read_bag_file(bag_path):
                     if ref > 0 and ref != -1:
                         p1 = all_matches[ref-1]
                         p2 = all_matches[ref]
-                        if not ( delta > 0.005 + + 1e-5) :
+                        if not ( delta > 0.005 + 1e-5) :
                             
                             suc = True
                             rate = (t - p1.imu_time) / (p2.imu_time - p1.imu_time)
@@ -143,7 +143,7 @@ def read_bag_file(bag_path):
                             if candidate.get_line_delay() < 0.0:
                                 # Lets skip the IMU message
                                 timestamp_debug_data.appendleft(new_timestamp_msg)
-                                print(f"{new_imu_msg.header.seq} - ERROR - Skipping Inital IMU message poor matching")
+                                print(str(new_imu_msg.header.seq) + " --- " + f"{new_imu_msg.header.seq} - ERROR - Skipping Inital IMU message poor matching")
                                 matching_results["initial_skip"] += 1
                     else:
                         candidate = LastMatch(new_imu_msg, new_timestamp_msg)
@@ -154,10 +154,10 @@ def read_bag_file(bag_path):
                         #     ap20_reset in time , stopped streaming 
 
                         if  not res["HardwareTS_time_accuracy_check"]:
-                            print(f"{new_imu_msg.header.seq} ERROR - Hardware Accuracy bad")
+                            print(str(new_imu_msg.header.seq) + " --- " + f"{new_imu_msg.header.seq} ERROR - Hardware Accuracy bad")
 
                         if res["N_imu_messages"] == res["N_imu_count"] != res["N_imu_time"]:
-                            print(f"{new_imu_msg.header.seq} WARNING - We most likely lost some IMU messages however timestamps all look good")
+                            print(str(new_imu_msg.header.seq) + " --- " + f"{new_imu_msg.header.seq} WARNING - We most likely lost some IMU messages however timestamps all look good")
                             # ap20_resumed sync, ap20_reset
 
                         # This case can always happen.
@@ -166,12 +166,13 @@ def read_bag_file(bag_path):
 
                         if res["N_imu_time"] == res["N_imu_arrivial_ros_time"]  == res["N_timestamp_time"] :
                             # perfect match
-                        
                             matching_results["prefect_match"] += 1
                             last_match = candidate
                             last_match.publish(bag_out,counter)
                             all_matches.append(last_match)
                             line_delay.append( res["ROS_arrivial_line_delay"] )
+                            if line_delay[-1] > 0.01:
+                                print(str(new_imu_msg.header.seq) + " --- " + "Really high line delay:", line_delay[-1])
 
                         elif res["N_imu_time"] == res["N_timestamp_time"]:
                             # good match
@@ -180,42 +181,47 @@ def read_bag_file(bag_path):
                             last_match.publish(bag_out,counter)
                             all_matches.append(last_match)
                             line_delay.append( res["ROS_arrivial_line_delay"] )
-
+                            if line_delay[-1] > 0.01:
+                                print(str(new_imu_msg.header.seq) + " --- " + "Really high line delay:", line_delay[-1])
+                                
                         elif res["HardwareTS_shutdown_timestamp"] or (res["N_imu_time"] < 0 and res["N_timestamp_time"] == 0):
                             # ap20_reset
-                            print(f"{new_imu_msg.header.seq} WARNING - Throw away timestamp - detected double timestamp shut down behaviour by AP20 when reseting")
+                            print(str(new_imu_msg.header.seq) + " --- " + "WARNING - Throw away timestamp - detected double timestamp shut down behaviour by AP20 when reseting or debouncing of button")
                             matching_results["reset"] += 1
                             imu_debug_data.appendleft(new_imu_msg)
 
                         elif res["N_imu_time"] < 0 and res["N_timestamp_time"] > 10:
                             # ap20_resumed_sync
-                            print(f"{new_imu_msg.header.seq} WARNING - We assume it is now working again and we are synced == 1.005 ???" )
+                            print(str(new_imu_msg.header.seq) + " --- " + "WARNING - We assume it is now working again and we are synced == 1.005 ???" )
                             last_match = candidate
-                            last_match.publish(bag_out,counter)
+                            last_match.publish(bag_out, counter)
                             all_matches.append(last_match)
                             line_delay.append( res["ROS_arrivial_line_delay"] )
 
 
                         elif res["N_imu_messages"] == res["N_imu_count"] == res["N_imu_time"] and res["N_timestamp_time"] > res["N_imu_time"]:
-                            print("Skipping IMU message", res["N_imu_messages"] , "- we have to skip: ",  res["N_timestamp_time"])
+                            print(str(new_imu_msg.header.seq) + " --- " +"Skipping IMU message", res["N_imu_messages"] , "- we have to skip: ",  res["N_timestamp_time"])
                             matching_results["skipped_imu"] += 1
                             timestamp_debug_data.appendleft(new_timestamp_msg)
 
                         else:
                             # failed
                             matching_results["failed"] += 1
-                            print("ERROR - Case not understood", res["N_imu_messages"] , " ", res["N_imu_count"] , " ", res["N_imu_time"] , " ", res["N_imu_arrivial_ros_time"], " ", res["N_timestamp_time"])
+                            print(str(new_imu_msg.header.seq) + " --- " + "ERROR - Case not understood", res["N_imu_messages"] , " ", res["N_imu_count"] , " ", res["N_imu_time"] , " ", res["N_imu_arrivial_ros_time"], " ", res["N_timestamp_time"])
 
 
 
     if os.environ.get("KLEINKRAM_ACTIVE", False):
-        os.system( f"klein mission upload --mission {os.environ["MISSION_UUID"]} --path {output_bag_path}")
+        uuid = os.environ["MISSION_UUID"]
+        os.system( f"klein mission upload --mission {uuid} --path {output_bag_path}")
         print(f"AP20_synced bag uploaded to kleinkram: {output_bag_path}")
     else:
         print(f"Finished processing. AP20_synced bag saved as: {output_bag_path}")
     
     print ( matching_results)
     print("LINE DELAY min: ", np.array( line_delay).min(),  " max: ", np.array( line_delay).max(), " median: ", np.median(np.array( line_delay)))
+    
+    print( np.where( np.array( line_delay) == np.array( line_delay).max()) )
 
     return {
         'imu': imu_data,
