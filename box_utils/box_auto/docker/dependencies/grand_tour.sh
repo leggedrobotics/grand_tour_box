@@ -52,7 +52,7 @@ cd /home/catkin_ws/src/grand_tour_box/box_drivers/novatel_oem7_driver
 rosdep update
 rosdep install --from-paths src --ignore-src -r -y --reinstall
 
-cd /home/catkin_ws/src/grand_tour_box/box_drivers/tf_bag
+cd /home/catkin_ws/src/grand_tour_box/box_applications/tf_bag
 rosdep install --from-paths . --ignore-src -r -y --reinstall
 
 # Build workspace for postprocessing

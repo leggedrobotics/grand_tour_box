@@ -66,7 +66,9 @@ docker run --net=host \
     -v /Data/Projects/GrandTour/deployment_day_1/2024-10-01-11-29-55:/mission_data \
     --gpus all \
     --volume $SSH_AUTH_SOCK:/ssh-agent\
-    --volume /home/jonfrey/git/grand_tour_box:/home/catkin_ws/src/grand_tour_box\
     --env SSH_AUTH_SOCK=/ssh-agent \
     $IMAGE \
     $COMMAND
+
+# --volume /home/jonfrey/git/grand_tour_box:/home/catkin_ws/src/grand_tour_box\
+    

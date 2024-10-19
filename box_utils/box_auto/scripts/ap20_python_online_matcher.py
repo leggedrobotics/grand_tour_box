@@ -76,7 +76,8 @@ def read_bag_file(bag_path):
 
     all_matches = []
     counter_ts = 0
-    with rosbag.Bag(bag_path.replace("jetson_ap20_aux", "jetson_ap20_synced"), 'w') as bag_out:
+    output_bag_path = bag_path.replace("jetson_ap20_aux", "jetson_ap20_synced")
+    with rosbag.Bag(output_bag_path, 'w') as bag_out:
         with rosbag.Bag(bag_path, 'r') as bag:
             for topic, msg, t in bag.read_messages(topics=['/gt_box/ap20/imu_debug',
                                                         '/gt_box/ap20/position_debug', '/gt_box/ap20/timestamp_debug']):
@@ -206,6 +207,13 @@ def read_bag_file(bag_path):
                             print("ERROR - Case not understood", res["N_imu_messages"] , " ", res["N_imu_count"] , " ", res["N_imu_time"] , " ", res["N_imu_arrivial_ros_time"], " ", res["N_timestamp_time"])
 
 
+
+    if os.environ.get("KLEINKRAM_ACTIVE", False):
+        os.system( f"klein mission upload --mission {os.environ["MISSION_UUID"]} --path {output_bag_path}")
+        print(f"AP20_synced bag uploaded to kleinkram: {output_bag_path}")
+    else:
+        print(f"Finished processing. AP20_synced bag saved as: {output_bag_path}")
+    
     print ( matching_results)
     print("LINE DELAY min: ", np.array( line_delay).min(),  " max: ", np.array( line_delay).max(), " median: ", np.median(np.array( line_delay)))
 

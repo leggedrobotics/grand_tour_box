@@ -267,31 +267,26 @@ def process_all(directory, axis):
             "bag_pattern": "*_jetson_ap20_synced.bag",
             "max_offset_ms": 1,
         },
-        {
-            "topic": "/gt_box/adis16475_node/imu",
-            "bag_pattern": "*_jetson_adis.bag",
-            "max_offset_ms": 1,
-        },
-        {
-            "topic": "/gt_box/livox/imu",
-            "bag_pattern": "*_nuc_livox.bag",
-            "max_offset_ms": 1,
-        },
-        {
-            "topic": "/gt_box/alphasense_driver_node/imu",
-            "bag_pattern": "*_nuc_alphasense.bag",
-            "max_offset_ms": 1,
-        },
-        {
-            "topic": "/gt_box/cpt7/offline_from_novatel_logs/imu",
-            "bag_pattern": "*_cpt7_raw_imu.bag",
-            "max_offset_ms": 1,
-        },
+        # {
+        #     "topic": "/gt_box/adis16475_node/imu",
+        #     "bag_pattern": "*_jetson_adis.bag",
+        #     "max_offset_ms": 1,
+        # },
+        # {
+        #     "topic": "/gt_box/livox/imu",
+        #     "bag_pattern": "*_nuc_livox.bag",
+        #     "max_offset_ms": 1,
+        # },
+        # {
+        #     "topic": "/gt_box/alphasense_driver_node/imu",
+        #     "bag_pattern": "*_nuc_alphasense.bag",
+        #     "max_offset_ms": 1,
+        # },
         {
             "topic": "/gt_box/cpt7/offline_from_novatel_logs/imu",
             "bag_pattern": "*_cpt7_raw_imu.bag",
             "max_offset_ms": 1,
-        }
+        },
     ]
     
     reference_imu_file, suc = get_bag(directory, reference_imu["bag_pattern"])

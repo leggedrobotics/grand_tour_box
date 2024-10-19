@@ -32,7 +32,7 @@ else
     bash --rcfile /root/.bashrc
 fi
 
-klein mission tag $MISSION_UUID "8525480c-aa6c-4c8c-9229-8193f7c8de77" "true" 
+# klein mission tag $MISSION_UUID "8525480c-aa6c-4c8c-9229-8193f7c8de77" "true" 
 ## UUID of tagtype "processed". Thinking about allowing the tagtype name.
 
 figlet Exit GrandTour Docker + KK

@@ -56,7 +56,17 @@ def launch_nodes(input_rosbag_path):
     os.system("bash -c '" + PRE + f"rosrun hesai_ros_driver hesai_ros_driver_node _config_path:={WS}/src/grand_tour_box/box_drivers/hesai_lidar_ros_driver/config/packet_replay.yaml _use_sim_time:=True _input_rosbag_path:={input_rosbag_path} &' ")
     sleep(10)
     os.system("bash -c '" + PRE + f"rosbag play -r 5 -d 5 --wait-for-subscribers --clock {input_rosbag_path} --topics /gt_box/hesai/packets' ")
+    sleep(60)
     kill_rosmaster()
+    
+    output_bag_path = input_rosbag_path.replace("_nuc_hesai.bag", "_nuc_hesai_post_processed.bag")
+    if os.environ.get("KLEINKRAM_ACTIVE", False):
+        os.system( f"klein mission upload --mission {os.environ["MISSION_UUID"]} --path {output_bag_path}")
+        print(f"Hesai bag uploaded to kleinkram: {output_bag_path}")
+    else:
+        print(f"Finished processing. Hesai bag saved as: {output_bag_path}")
+    
+
 
 
 if __name__ == '__main__':
