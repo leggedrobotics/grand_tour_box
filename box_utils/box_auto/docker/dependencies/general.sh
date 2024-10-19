@@ -20,7 +20,6 @@ apt install -y python3-pip
 pip3 install tqdm
 pip3 install --upgrade pip
 # pip install rerun-sdk
-pip install numpy==1.2
 
 mkdir -p /root/.ssh
 ssh-keyscan github.com >> /root/.ssh/known_hosts
