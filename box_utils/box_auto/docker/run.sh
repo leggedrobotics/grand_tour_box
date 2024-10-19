@@ -63,12 +63,12 @@ docker run --net=host \
     --env="DISPLAY=$DISPLAY" \
     --ulimit rtprio=99 \
     --cap-add=sys_nice \
-    -v /Data/Projects/GrandTour/deployment_day_1/2024-10-01-11-29-55:/mission_data \
     --gpus all \
     --volume $SSH_AUTH_SOCK:/ssh-agent\
     --env SSH_AUTH_SOCK=/ssh-agent \
     $IMAGE \
     $COMMAND
 
+# -v /Data/Projects/GrandTour/deployment_day_1/2024-10-01-11-29-55:/mission_data \
 # --volume /home/jonfrey/git/grand_tour_box:/home/catkin_ws/src/grand_tour_box\
     

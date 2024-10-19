@@ -8,6 +8,8 @@ catkin config --cmake-args -DCMAKE_BUILD_TYPE=RelWithDebInfo
 cd /home/opencv_gtsam_ws/src; git clone https://github.com/ori-drs/opencv_catkin.git --depth 1
 cd /home/opencv_gtsam_ws/src; git clone https://github.com/catkin/catkin_simple.git --depth 1
 cd /home/opencv_gtsam_ws/src; git clone https://github.com/leggedrobotics/gtsam_catkin.git --depth 1
+
+cd /home/opencv_gtsam_ws
 catkin build opencv_catkin --cmake-args -DCUDA_ARCH_BIN=8.6
 catkin build gtsam_catkin
 
