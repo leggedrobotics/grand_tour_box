@@ -51,9 +51,9 @@ cp /home/catkin_ws/src/grand_tour_box/box_configuration/general/.tmux.conf ~/
 cd /home/catkin_ws/src/grand_tour_box/box_drivers/novatel_oem7_driver
 rosdep update
 rosdep install --from-paths src --ignore-src -r -y --reinstall
-
 cd /home/catkin_ws/src/grand_tour_box/box_applications/tf_bag
 rosdep install --from-paths . --ignore-src -r -y --reinstall
+sudo apt-get install ros-noetic-gps-common
 
 # Build workspace for postprocessing
 cd /home/catkin_ws

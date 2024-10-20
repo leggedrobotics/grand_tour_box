@@ -2,7 +2,7 @@
   <arg name="box_namespace" default="gt_box"/>
 
   <!-- <arg name="cloud_topic" default="/gt_box/livox/lidar"/> -->
-   <arg name="cloud_topic" default="/gt_box/livox/lidar"/>
+   <arg name="cloud_topic" default="/gt_box/hesai/points"/>
   
   <!-- The tracked frame of the External odometry. Transformation from this frame to tracked_sensor_Frame should exist. -->
   <arg name="assumed_external_odometry_tracked_frame" default="box_base"/>
@@ -11,7 +11,7 @@
   <arg name="imu_topic" default="/gt_box/cpt7/offline_from_novatel_logs/imu"/>
 
   <!-- 3 Options to provide external odometry - disabled for the box gt_box/gt_poses_novatel-->
-  <arg name="odometry_topic" default="/nan0"/> 
+  <arg name="odometry_topic" default="/gt_box/zed2i/zed_node/odom"/> 
   <arg name="pose_stamped_topic" default="/nan1"/>
   <arg name="pose_stamped_with_covariance_topic" default="/nan2"/>
 

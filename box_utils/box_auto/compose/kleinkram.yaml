@@ -26,6 +26,7 @@ x-common-config: &common-config
   volumes:
     - "${MISSION_DATA:-/mission/data}:/mission_data"
     - "${GRAND_TOUR_BOX_PATH:-$HOME/git/grand_tour_box}:/home/catkin_ws/src/grand_tour_box"
+
 x-ros2-common-config: &ros2-common-config
   build:
     context: "$HOME/git/grand_tour_box/box_utils/box_auto/docker"
@@ -57,16 +58,19 @@ x-ros2-common-config: &ros2-common-config
 
 
 services:
+  # minimal
   rectify:
     <<: *common-config
     container_name: rectify
     command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/rectify.py"]
 
+  # minimal
   create_tf_static:
     <<: *common-config
     container_name: create_tf_static
     command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/create_tf_static.py"]
 
+  # minimal
   ap20_python_online_matcher:
     <<: *common-config
     container_name: ap20_python_online_matcher
