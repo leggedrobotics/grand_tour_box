@@ -216,9 +216,6 @@ void OnlineCameraCameraProgram::optimizationCallback(const ros::TimerEvent &, bo
         const bool solve_succeeded = this->Solve();
         ROS_DEBUG_STREAM("Solve success: " + std::to_string(solve_succeeded));
         this->rebuildProblemFromLoggedROSAlignmentData();
-        if (ready_for_extrinsics_) {
-            this->setExtrinsicParametersVariableBeforeOpt();
-        }
         ROS_DEBUG_STREAM("Starting covariance computation...");
         ScopedTimer timer;
         const std::map<std::string, CameraCovariance> covariances = computeCovariances();
