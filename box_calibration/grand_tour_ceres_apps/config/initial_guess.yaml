@@ -190,7 +190,7 @@ cam5:
       - 0
       - 0
       - 1
-  rostopic: /gt_box/hdr_right/image_raw
+  rostopic: /gt_box/hdr_front/image_raw
   distortion_coeffs:
     - -0.06129863822544315
     - 0.002526270977915111
@@ -256,7 +256,7 @@ cam7:
       - 0
       - 0
       - 1
-  rostopic: /gt_box/hdr_front/image_raw
+  rostopic: /gt_box/hdr_right/image_raw
   distortion_coeffs:
     - -0.05944588809639628
     - 0.002099898204538727

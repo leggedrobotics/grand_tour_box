@@ -52,3 +52,11 @@ detector nodes to stop recording calibration data.
 Lastly, and aptly, this finalizes the calibration meaning that the solver performs and exhaustive optimization run,
 then writes the camera calibrations to 
 `box_calibration/box_calibration/calibration/raw_calibration_output/cameras-intrinsics-extrinsics_latest.yaml`
+
+### Fixes in progress
+Sometimes the front and right HDR cameras are swapped in their hardware mapping. As the calibrator node currently heavily
+relies on the initial guess of the camera transforms, this means that the extrinsic initial guess also need to be
+swapped.
+```bash
+ROS_NAMESPACE=/gt_box rosrun grand_tour_ceres_apps camera_camera_online_calibration -i /home/fu/catkin_ws/src/grand_tour_box/box_calibration/grand_tour_ceres_apps/config/initial_guess_hdr_front_right_swapped.yaml
+```
