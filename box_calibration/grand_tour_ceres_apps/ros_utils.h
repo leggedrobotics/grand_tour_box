@@ -9,6 +9,13 @@
 #include <string>
 #include <chrono>
 #include <utility>
+#include <iostream>
+#include <ctime>
+#include <sstream>
+#include <iomanip>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 struct ScopedTimer {
     std::string name;  // Optional name for the timer
@@ -45,6 +52,8 @@ buildObservationFromRosMSG(const grand_tour_camera_detection_msgs::CameraDetecti
 
 using stamp_t = unsigned long long;
 
-std::set<stamp_t> findWithinTolerance(const std::set<stamp_t>& s, stamp_t element, stamp_t tolerance);
+std::set<stamp_t> findWithinTolerance(const std::set<stamp_t> &s, stamp_t element, stamp_t tolerance);
+
+std::string getCurrentTimeFormatted();
 
 #endif //GRAND_TOUR_CERES_APPS_ROS_UTILS_H

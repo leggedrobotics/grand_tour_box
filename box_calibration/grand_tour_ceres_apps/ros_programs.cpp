@@ -17,6 +17,10 @@
 
 
 OnlineCameraCameraProgram::OnlineCameraCameraProgram(OnlineCameraCameraParser parser) {
+    run_id_ = getCurrentTimeFormatted();
+    start_recording_calibration_data_service_ = nh_.advertiseService(
+            "camera_detection_recording_id", &OnlineCameraCameraProgram::startRecordingCalibrationDataServiceCallback, this);
+
     const auto rostopic_camera_parameter_packs = PopulateCameraParameterPacks(parser.initial_guess_path,
                                                                               parser.initial_guess_path);
     for (const auto &[topic_name, _]: rostopic_camera_parameter_packs) {
@@ -765,6 +769,17 @@ bool OnlineCameraCameraProgram::stopOptimizationServiceCallback(
     SerialiseCameraParameters(output_path.string(), camera_parameters_by_rostopic,
                               GetTimeNowString().str());
     ROS_INFO_STREAM("Wrote output calibrations to: " + output_path.string());
+    start_recording_calibration_data_service_.shutdown();
+    ROS_INFO_STREAM("Stopped recording calibration data");
     return true;
 }
+
+bool OnlineCameraCameraProgram::startRecordingCalibrationDataServiceCallback(
+        grand_tour_camera_detection_msgs::StartRecordingCalibrationDataService::Request &req,
+        grand_tour_camera_detection_msgs::StartRecordingCalibrationDataService::Response &res) {
+    res.recording_id.data = run_id_;
+    return true;
+}
+
+
 
