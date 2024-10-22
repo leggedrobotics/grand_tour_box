@@ -47,6 +47,7 @@ Running the node above in the `/gt_box` namespace is required for smoothly inter
 if  the detectors are run with `record_pointcloud:=true`, the hesai and livox point clouds will also be recorded on the
 NUC.
 
+
 ### Available services
 #### gt_box/camera_camera_online_calibration/finalize
 This service notifies the calibrator to stop receiving new detections. This also makes the calibrator node notify the

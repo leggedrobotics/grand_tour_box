@@ -1,5 +1,5 @@
 <launch>
-  <include file="$(find box_rviz)/launch/replaz.launch"></include>
+  <include file="$(find box_rviz)/launch/replay.launch"></include>
   
   <!-- unpack hesai pointcloud packets -->
   <include file="$(find bringup_hesai)/launch/hesai_lidar_unpack.launch" />
