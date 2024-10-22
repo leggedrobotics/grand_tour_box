@@ -74,7 +74,7 @@ OnlineCameraCameraProgram::OnlineCameraCameraProgram(OnlineCameraCameraParser pa
     intrinsics_extrinsics_publisher_ = nh_.advertise<grand_tour_camera_detection_msgs::CameraIntrinsicsExtrinsics>(
             "camera_camera_online_calibration/intrinsics_extrinsics", 100);
     stopping_service_ = nh_.advertiseService(
-            "camera_camera_online_calibration/stop_optimizing",
+            "camera_camera_online_calibration/finalize",
             &OnlineCameraCameraProgram::stopOptimizationServiceCallback, this);
     ROS_INFO_STREAM("Started stopping service ");
 
