@@ -241,7 +241,7 @@ void OnlineCameraCameraProgram::optimizationCallback(const ros::TimerEvent &, bo
             this->getReprojectionResiduals(problem_->getProblem(),
                                            intrinsics_residuals_of_camera_at_time[frame_id][msg.header.stamp.toNSec()],
                                            residuals);
-            ROS_ERROR_COND(msg.corners2d.size() != residuals.cols(), "Corners2d %i does not match residuals %i",
+            ROS_ERROR_COND(msg.corners2d.size() != residuals.cols(), "Corners2d %ld does not match residuals %ld",
                            msg.corners2d.size(), residuals.cols());
 
             for (int col = 0; col < residuals.cols(); col++) {
