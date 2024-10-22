@@ -195,15 +195,3 @@ SUBSYSTEM=="video4linux", ATTR{name}=="vi-output, tier4_isx021 41-001c", SYMLINK
 # Rule for /dev/video4 (tier4_isx021 41-001c)
 SUBSYSTEM=="video4linux", ATTR{name}=="vi-output, tier4_isx021 42-001c", SYMLINK+="hdr_left"
 #############################################
-
-
-# For direct ethernet connection to eth
-sudo nmcli connection add type ethernet ifname mgbe0 con-name eth-peap
-sudo nmcli connection modify eth-peap \
-    802-1x.eap peap \
-    802-1x.identity "jonfrey@staff-net.ethz.ch" \
-    802-1x.password "xxx" \
-    802-1x.phase2-auth mschapv2 \
-    802-1x.domain-suffix-match radius-service.ethz.ch \
-    802-1x.altsubject-matches radius-service.ethz.ch \
-    802-1x.ca-cert "None"
