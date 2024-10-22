@@ -37,13 +37,15 @@ catkin build grand_tour_ceres_apps
 First start up the detectors and the viewers. Note that the detectors are to be separately called from
 the NUC and the Jetson, respectively. The viewer and the calibration node are run from the OPC.
 ```bash
-roslaunch grand_tour_camera_detectors detectors_on_nuc_generic.launch use_april_grid:=true
+roslaunch grand_tour_camera_detectors detectors_on_nuc_generic.launch use_april_grid:=true [record_pointcloud:=true (default: false)]
 roslaunch grand_tour_camera_detectors detectors_on_jetson_generic.launch use_april_grid:=true
 roslaunch grand_tour_calibration_viewers all_cameras.launch
 
 ROS_NAMESPACE=/gt_box rosrun grand_tour_ceres_apps camera_camera_online_calibration 
 ```
 Running the node above in the `/gt_box` namespace is required for smoothly interfacing with the detector and viewer nodes
+if  the detectors are run with `record_pointcloud:=true`, the hesai and livox point clouds will also be recorded on the
+NUC.
 
 ### Available services
 #### gt_box/camera_camera_online_calibration/finalize
