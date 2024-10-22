@@ -111,7 +111,7 @@ bool CameraDetectorNode::openNewBag(std::string recording_id) {
     recording_id += "_calibration";
     std::string topic_subdir = image_topic_;
     std::replace(topic_subdir.begin(), topic_subdir.end(), '/', '_');
-    fs::path full_bag_path = fs::path(output_root_folder_) / recording_id / topic_subdir/ "images_and_detections.bag";
+    fs::path full_bag_path = fs::path(output_root_folder_) / recording_id / topic_subdir / "images_and_detections.bag";
     createDirectoryIfNotExists(full_bag_path);
     if (bag_.isOpen()) {
         bag_.close();
@@ -128,9 +128,9 @@ void CameraDetectorNode::queryRecordingID(const ros::TimerEvent &event) {
     // Wait for the service to be available with the specified timeout
     if (!start_recording_service_client_.waitForExistence(ros::Duration(2.0))) {
         if (bag_.isOpen()) {
-            ROS_ERROR_STREAM("Service: '" + recording_id_service_name_ + "' not available within the timeout period."
-                                                                         " Closing bag with recording id: "
-                             + recording_id_);
+            ROS_WARN_STREAM("Service: '" + recording_id_service_name_ + "' not available within the timeout period."
+                                                                        " Closing bag with recording id: "
+                            + recording_id_);
             bag_.close();
         }
         return;
