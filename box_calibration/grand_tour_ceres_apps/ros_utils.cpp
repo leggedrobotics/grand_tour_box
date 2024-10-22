@@ -193,3 +193,15 @@ std::set<stamp_t> findWithinTolerance(const std::set<stamp_t> &s, stamp_t elemen
     return result;
 }
 
+std::string getCurrentTimeFormatted() {
+    // Get the current time
+    std::time_t now = std::time(nullptr);
+    std::tm *localTime = std::localtime(&now);
+
+    // Format the time as YYYY-MM-DD-HH-MM-SS
+    std::ostringstream oss;
+    oss << std::put_time(localTime, "%Y-%m-%d-%H-%M-%S");
+
+    return oss.str();
+}
+

@@ -8,9 +8,33 @@
 
 #include <opencv2/imgcodecs.hpp>
 #include <iostream>
+#include <filesystem>
+
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
 #include <grand_tour_camera_detection_msgs/CameraDetections.h>
+#include <grand_tour_camera_detection_msgs/StartRecordingCalibrationDataService.h>
+
+
+namespace fs = std::filesystem;
+
+void createDirectoryIfNotExists(const fs::path &filePath) {
+    // Extract the parent directory from the given file path
+    fs::path directory = filePath.parent_path();
+
+    // Check if the directory already exists
+    if (!fs::exists(directory)) {
+        // Create the directory
+        if (fs::create_directories(directory)) {
+            ROS_INFO_STREAM("Directory created: " + directory.string());
+        } else {
+            ROS_ERROR_STREAM("Failed to create directory: " + directory.string());
+        }
+    } else {
+        ROS_ERROR_STREAM("Directory already exists: " + directory.string());
+    }
+}
+
 
 CameraDetectorNode::CameraDetectorNode(ros::NodeHandle &nh) : nh_(nh) {
     // Use a private NodeHandle to get private parameters
@@ -23,25 +47,13 @@ CameraDetectorNode::CameraDetectorNode(ros::NodeHandle &nh) : nh_(nh) {
     int rows, cols;
     double row_spacing, column_spacing;
 
-    std::string output_folder;
     // Fetch parameters from the private parameter server
     private_nh.param<bool>("show_extraction_video", show_extraction_video_, false);
     private_nh.param<bool>("use_april_grid", use_april_grid, true);
     private_nh.param<double>("show_stats_every_n_sec", show_stats_every_n_sec, 30);
     private_nh.param<std::string>("image_topic", image_topic_, "/image");
-    private_nh.param<std::string>("output_folder", output_folder, "/data/");
+    private_nh.param<std::string>("output_folder", output_root_folder_, "/data/");
     private_nh.param<std::string>("output_suffix", output_suffix_, "_corner_detections");
-
-    std::string output_bag_name = image_topic_;
-    std::replace(output_bag_name.begin(), output_bag_name.end(), '/', '_');
-
-    // Get the current timestamp and format it
-    ros::Time current_time = ros::Time::now();
-    std::stringstream ss;
-    ss << output_folder << "/" << output_bag_name << "_" << current_time.sec << ".bag";
-
-    // Open the rosbag with the new name
-    bag_.open(ss.str(), rosbag::bagmode::Write);
 
     if (use_april_grid) {
         private_nh.param<int>("grid_size_x", grid_size_x_, 6);
@@ -58,14 +70,14 @@ CameraDetectorNode::CameraDetectorNode(ros::NodeHandle &nh) : nh_(nh) {
 
     // Choose between Aprilgrid or Checkerboard based on use_april_grid
     if (use_april_grid) {
-        ROS_ERROR_STREAM("USING APRILGRID");
+        ROS_INFO_STREAM("USING APRILGRID");
         auto options = cameras::GridCalibrationTargetAprilgrid::AprilgridOptions();
         options.showExtractionVideo = show_extraction_video_;
 
         calibration_target_model_ = std::make_unique<cameras::GridCalibrationTargetAprilgrid>(
                 grid_size_x_, grid_size_y_, tag_size_, tag_spacing_, options);
     } else {
-        ROS_ERROR_STREAM("USING CHECKERBOARD");
+        ROS_INFO_STREAM("USING CHECKERBOARD");
         auto options = cameras::GridCalibrationTargetCheckerboard::CheckerboardOptions();
         options.showExtractionVideo = show_extraction_video_;
 
@@ -78,9 +90,15 @@ CameraDetectorNode::CameraDetectorNode(ros::NodeHandle &nh) : nh_(nh) {
     image_sub_ = nh_.subscribe(image_topic_, 1, &CameraDetectorNode::imageCallback, this);
     // Initialize publisher for AprilGrid detections
     detections_pub_ = nh_.advertise<grand_tour_camera_detection_msgs::CameraDetections>(detection_topic_, 1);
+    recording_id_service_name_ = "camera_detection_recording_id";
+    start_recording_service_client_ =
+            nh_.serviceClient<grand_tour_camera_detection_msgs::StartRecordingCalibrationDataService>(
+                    recording_id_service_name_);
 
     // Set up a periodic timer for logging statistics (every 20 seconds, for example)
     log_timer_ = nh_.createTimer(ros::Duration(show_stats_every_n_sec), &CameraDetectorNode::logStatistics, this);
+    recording_id_service_timer_ = nh_.createTimer(ros::Duration(5.0),
+                                                  &CameraDetectorNode::queryRecordingID, this);
 }
 
 void CameraDetectorNode::logStatistics(const ros::TimerEvent &event) {
@@ -88,6 +106,48 @@ void CameraDetectorNode::logStatistics(const ros::TimerEvent &event) {
     ROS_INFO("Node [%s]: Images received: %d, Images with detections: %d",
              ros::this_node::getName().c_str(), images_received_, images_with_detections_);
 }
+
+bool CameraDetectorNode::openNewBag(std::string recording_id) {
+    recording_id += "_calibration";
+    std::string topic_subdir = image_topic_;
+    std::replace(topic_subdir.begin(), topic_subdir.end(), '/', '_');
+    fs::path full_bag_path = fs::path(output_root_folder_) / recording_id / topic_subdir / "images_and_detections.bag";
+    createDirectoryIfNotExists(full_bag_path);
+    if (bag_.isOpen()) {
+        bag_.close();
+    }
+
+    // Open the rosbag with the new name
+    bag_.open(full_bag_path.string(), rosbag::bagmode::Write);
+    return true;
+}
+
+void CameraDetectorNode::queryRecordingID(const ros::TimerEvent &event) {
+    grand_tour_camera_detection_msgs::StartRecordingCalibrationDataService srv;
+
+    // Wait for the service to be available with the specified timeout
+    if (!start_recording_service_client_.waitForExistence(ros::Duration(2.0))) {
+        if (bag_.isOpen()) {
+            ROS_WARN_STREAM("Service: '" + recording_id_service_name_ + "' not available within the timeout period."
+                                                                        " Closing bag with recording id: "
+                            + recording_id_);
+            bag_.close();
+        }
+        return;
+    }
+
+    // Call the service and check if it was successful
+    if (start_recording_service_client_.call(srv)) {
+        if (srv.response.recording_id.data != recording_id_) {
+            recording_id_ = srv.response.recording_id.data;
+            this->openNewBag(recording_id_);
+            ROS_INFO_STREAM("Recording id set to: " + recording_id_);
+        }
+    } else {
+        ROS_ERROR_STREAM("Failed to call recording id service " + recording_id_service_name_);
+    }
+}
+
 
 // The image callback function that processes the incoming images
 void CameraDetectorNode::imageCallback(const sensor_msgs::ImageConstPtr &msg) {
@@ -108,7 +168,9 @@ void CameraDetectorNode::imageCallback(const sensor_msgs::ImageConstPtr &msg) {
     // If there were valid detections, increment the count
     if (!validCorners.empty()) {
         images_with_detections_++;
-        bag_.write(image_topic_, msg->header.stamp, msg);
+        if (bag_.isOpen()) {
+            bag_.write(image_topic_, msg->header.stamp, msg);
+        }
         // Publish detections as AprilGridDetections message
         this->publishDetections(validCorners, msg->header);
     }
@@ -153,8 +215,9 @@ void CameraDetectorNode::publishDetections(const std::map<int, Eigen::Vector2d> 
         // Corner IDs
         detections_msg.cornerids.push_back(index);
     }
-
-    bag_.write(detection_topic_, header.stamp, detections_msg);
+    if (bag_.isOpen()) {
+        bag_.write(detection_topic_, header.stamp, detections_msg);
+    }
     // Publish the message
     detections_pub_.publish(detections_msg);
 }

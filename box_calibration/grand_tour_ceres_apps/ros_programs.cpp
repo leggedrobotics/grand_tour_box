@@ -17,6 +17,10 @@
 
 
 OnlineCameraCameraProgram::OnlineCameraCameraProgram(OnlineCameraCameraParser parser) {
+    run_id_ = getCurrentTimeFormatted();
+    start_recording_calibration_data_service_ = nh_.advertiseService(
+            "camera_detection_recording_id", &OnlineCameraCameraProgram::startRecordingCalibrationDataServiceCallback, this);
+
     const auto rostopic_camera_parameter_packs = PopulateCameraParameterPacks(parser.initial_guess_path,
                                                                               parser.initial_guess_path);
     for (const auto &[topic_name, _]: rostopic_camera_parameter_packs) {
@@ -70,7 +74,7 @@ OnlineCameraCameraProgram::OnlineCameraCameraProgram(OnlineCameraCameraParser pa
     intrinsics_extrinsics_publisher_ = nh_.advertise<grand_tour_camera_detection_msgs::CameraIntrinsicsExtrinsics>(
             "camera_camera_online_calibration/intrinsics_extrinsics", 100);
     stopping_service_ = nh_.advertiseService(
-            "camera_camera_online_calibration/stop_optimizing",
+            "camera_camera_online_calibration/finalize",
             &OnlineCameraCameraProgram::stopOptimizationServiceCallback, this);
     ROS_INFO_STREAM("Started stopping service ");
 
@@ -216,9 +220,6 @@ void OnlineCameraCameraProgram::optimizationCallback(const ros::TimerEvent &, bo
         const bool solve_succeeded = this->Solve();
         ROS_DEBUG_STREAM("Solve success: " + std::to_string(solve_succeeded));
         this->rebuildProblemFromLoggedROSAlignmentData();
-        if (ready_for_extrinsics_) {
-            this->setExtrinsicParametersVariableBeforeOpt();
-        }
         ROS_DEBUG_STREAM("Starting covariance computation...");
         ScopedTimer timer;
         const std::map<std::string, CameraCovariance> covariances = computeCovariances();
@@ -244,7 +245,7 @@ void OnlineCameraCameraProgram::optimizationCallback(const ros::TimerEvent &, bo
             this->getReprojectionResiduals(problem_->getProblem(),
                                            intrinsics_residuals_of_camera_at_time[frame_id][msg.header.stamp.toNSec()],
                                            residuals);
-            ROS_ERROR_COND(msg.corners2d.size() != residuals.cols(), "Corners2d %i does not match residuals %i",
+            ROS_ERROR_COND(msg.corners2d.size() != residuals.cols(), "Corners2d %ld does not match residuals %ld",
                            msg.corners2d.size(), residuals.cols());
 
             for (int col = 0; col < residuals.cols(); col++) {
@@ -768,6 +769,17 @@ bool OnlineCameraCameraProgram::stopOptimizationServiceCallback(
     SerialiseCameraParameters(output_path.string(), camera_parameters_by_rostopic,
                               GetTimeNowString().str());
     ROS_INFO_STREAM("Wrote output calibrations to: " + output_path.string());
+    start_recording_calibration_data_service_.shutdown();
+    ROS_INFO_STREAM("Stopped recording calibration data");
     return true;
 }
+
+bool OnlineCameraCameraProgram::startRecordingCalibrationDataServiceCallback(
+        grand_tour_camera_detection_msgs::StartRecordingCalibrationDataService::Request &req,
+        grand_tour_camera_detection_msgs::StartRecordingCalibrationDataService::Response &res) {
+    res.recording_id.data = run_id_;
+    return true;
+}
+
+
 
