@@ -20,10 +20,10 @@ windows:
       - roslaunch bringup_fkie fkie.launch
           autostart_launch_files:="
             $(rospack find box_rviz)/launch/camera.launch
-            $(rospack find grand_tour_ceres_apps)/launch/camera_camera_online_calibration.launch
             $(rospack find grand_tour_calibration_viewers)/launch/all_cameras.launch
             "
           load_launch_files:="
+            $(rospack find grand_tour_ceres_apps)/launch/camera_camera_online_calibration.launch
             $(rospack find box_rviz)/launch/multiplot.launch
             $(rospack find box_rviz)/launch/recording.launch
           "
