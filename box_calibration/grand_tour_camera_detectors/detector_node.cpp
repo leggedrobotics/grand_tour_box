@@ -108,6 +108,7 @@ void CameraDetectorNode::logStatistics(const ros::TimerEvent &event) {
 }
 
 bool CameraDetectorNode::openNewBag(std::string recording_id) {
+    recording_id += "_calibration";
     std::string topic_subdir = image_topic_;
     std::replace(topic_subdir.begin(), topic_subdir.end(), '/', '_');
     fs::path full_bag_path = fs::path(output_root_folder_) / recording_id / topic_subdir/ "images_and_detections.bag";
