@@ -9,6 +9,7 @@
 #include <ros/ros.h>
 #include <grand_tour_camera_detection_msgs/CameraDetections.h>
 #include <grand_tour_camera_detection_msgs/StopOptimizingService.h>
+#include <grand_tour_camera_detection_msgs/StartRecordingCalibrationDataService.h>
 #include "ros_parsers.h"
 #include "gtboxcalibration/voxel_2d.h"
 #include <gtboxcalibration/detectiongraphutils.h>
@@ -33,6 +34,11 @@ private:
 
     bool stopOptimizationServiceCallback(grand_tour_camera_detection_msgs::StopOptimizingService::Request &req,
                                          grand_tour_camera_detection_msgs::StopOptimizingService::Response &res);
+
+    bool startRecordingCalibrationDataServiceCallback(
+            grand_tour_camera_detection_msgs::StartRecordingCalibrationDataService::Request &req,
+            grand_tour_camera_detection_msgs::StartRecordingCalibrationDataService::Response &res);
+
 
     bool addAlignmentData(ros::Time timestamp, grand_tour_camera_detection_msgs::CameraDetections camera_detections,
                           bool force);
@@ -63,7 +69,7 @@ private:
                                   Eigen::Matrix2Xf &residuals);
 
     void resetCornerObservationVoxelMap() {
-        for (const auto& name: camera_parameter_packs) {
+        for (const auto &name: camera_parameter_packs) {
             corner_detection2d_voxel_map_[name.first] = VoxelMap2D(corner_detection2d_voxel_size_);
         }
     }
@@ -75,14 +81,15 @@ private:
                                                 const std::vector<unsigned int> &b) const;
 
     ros::NodeHandle nh_;
-    ros::ServiceServer stopping_service_;
+    ros::ServiceServer stopping_service_, start_recording_calibration_data_service_;
+    std::string run_id_;
     std::vector<ros::Subscriber> subscribers_;
     std::map<std::string, std::string> frameid2rostopic_, rostopic2frameid_;
     std::map<std::string, ros::Publisher> added_detections_publisher_;
     std::map<std::string, ros::Publisher> processed_detections_publisher_;
     std::map<std::string, ros::Publisher> extrinsics_detections_publisher_;
     double corner_detection2d_voxel_size_ = 3;
-    std::map<std::string, VoxelMap2D>     corner_detection2d_voxel_map_;
+    std::map<std::string, VoxelMap2D> corner_detection2d_voxel_map_;
     ros::Publisher output_sigma_publisher_, intrinsics_extrinsics_publisher_, adjacency_publisher_,
             calibration_data_collection_state_publisher_;
     ros::Timer timer_;

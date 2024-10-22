@@ -20,6 +20,7 @@
 class CameraDetectorNode {
 public:
     CameraDetectorNode(ros::NodeHandle &nh);
+
     ~CameraDetectorNode() {
         bag_.close();
     }
@@ -38,6 +39,9 @@ private:
     // Periodic log callback
     void logStatistics(const ros::TimerEvent &event);
 
+    void queryRecordingID(const ros::TimerEvent &event);
+
+    bool openNewBag(std::string recording_id);
 
     bool show_extraction_video_;
     int grid_size_x_;
@@ -50,6 +54,7 @@ private:
 
     ros::Subscriber image_sub_;  // Subscriber for the image topic
     ros::NodeHandle nh_;
+    ros::ServiceClient start_recording_service_client_;
     ros::Publisher detections_pub_;  // Publisher for the AprilGridDetections message
     std::unique_ptr<cameras::GridCalibrationTargetBase> calibration_target_model_;
 
@@ -58,8 +63,12 @@ private:
     int images_with_detections_ = 0;
 
     // Timer for logging statistics periodically
-    ros::Timer log_timer_;
+    ros::Timer log_timer_, recording_id_service_timer_;
+    std::string output_root_folder_;
     rosbag::Bag bag_;
+    bool is_recording_ = false;
+    std::string recording_id_;
+    std::string recording_id_service_name_;
 };
 
 
