@@ -77,5 +77,3 @@
 [submodule "box_applications/dlio"]
 	path = box_applications/dlio
 	url = git@github.com:leggedrobotics/dlio.git
-	branch = grandtour
-
