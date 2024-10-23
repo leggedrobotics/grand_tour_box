@@ -87,7 +87,8 @@ def process_rosbag(input_bag, output_bag_path, image_topics, camera_info_topics,
         out_bag.close()
 
     if os.environ.get("KLEINKRAM_ACTIVE", False):
-        os.system( f"klein mission upload --mission {os.environ["MISSION_UUID"]} --path {output_bag_path}")
+        uuid = os.environ["MISSION_UUID"]
+        os.system( f"klein mission upload --mission {uuid} --path {output_bag_path}")
         print(f"Color corrected bag uploaded to kleinkram: {output_bag_path}")
     else:
         print(f"Finished processing. Color corrected bag saved as: {output_bag_path}")

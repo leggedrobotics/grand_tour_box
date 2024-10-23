@@ -4,7 +4,7 @@ apt-get update -y
 apt-get install --no-install-recommends lsb-release wget less udev sudo zstd build-essential cmake python3 python3-pip libpng-dev libgomp1 -y
 python3 -m pip install numpy opencv-python
 cd /
-wget -q -O ZED_SDK_Linux_Ubuntu.run https://download.stereolabs.com/zedsdk/4.1/cu121/ubuntu20; chmod +x ZED_SDK_Linux_Ubuntu.run 
+wget -q -O ZED_SDK_Linux_Ubuntu.run https://download.stereolabs.com/zedsdk/4.1/cu124/ubuntu20; chmod +x ZED_SDK_Linux_Ubuntu.run 
 ./ZED_SDK_Linux_Ubuntu.run  -- silent
 ln -sf /lib/x86_64-linux-gnu/libusb-1.0.so.0 /usr/lib/x86_64-linux-gnu/libusb-1.0.so 
 rm ZED_SDK_Linux_Ubuntu.run 

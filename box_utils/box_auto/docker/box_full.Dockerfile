@@ -1,4 +1,4 @@
-FROM nvidia/cuda:12.2.1-cudnn-devel-ubuntu20.04
+FROM nvidia/cuda:12.4.1-cudnn-devel-ubuntu20.04
 
 # To avoid tzdata asking for geographic location...
 ARG DEBIAN_FRONTEND=noninteractive
@@ -34,8 +34,7 @@ RUN --mount=type=ssh /bin/bash -c '/grand_tour.sh'
 
 RUN pip3 install kleinkram --pre --force-reinstall
 
-COPY entrypoint_kleinkram.sh /entrypoint_kleinkram.sh
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+COPY entrypoint_full.sh /entrypoint_full.sh
+RUN chmod +x /entrypoint_full.sh
 
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["/entrypoint_full.sh"]
