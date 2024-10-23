@@ -28,6 +28,7 @@ lidar:
     ros:
       ros_frame_id: hesai_lidar                     #Frame id of packet message and point cloud message
       save_replayed_topics_to_rosbag: false
+      save_additional_last_point_timestamp_cloud: false
       output_rosbag_directory: /tmp/  #if left empty, it will save to /data in this driver.
       # Topic used to monitor packets loss condition through ROS
       ros_send_packet_loss_topic: /gt_box/hesai/lidar_packets_loss
