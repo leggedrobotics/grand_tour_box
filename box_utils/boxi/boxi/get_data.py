@@ -32,7 +32,6 @@ def main(args):
         hosts.append("npc")
         users.append("rsl")
 
-
     if args.directory:
         if args.post_only:
             keys = [
@@ -44,9 +43,9 @@ def main(args):
                 "_jetson_zed2i_proprioceptive.bag",
                 "_jetson_zed2i_images.bag",
                 "_jetson_zed2i_depth.bag",
-                "_jetson_hdr_right_raw.bag",
-                "_jetson_hdr_left_raw.bag",
-                "_jetson_hdr_front_raw.bag",
+                "_jetson_hdr_right.bag",
+                "_jetson_hdr_front.bag",
+                "_jetson_hdr_left.bag",
                 "_tf_static.bag",
                 "_nuc_hesai_post_processed.bag",
                 "_nuc_utils.bag",
@@ -56,7 +55,7 @@ def main(args):
                 "_nuc_cpt7.bag",
                 "_nuc_alphasense.bag",
             ]
-            include_patterns = ' '.join([f"--include='*{key}'" for key in keys])
+            include_patterns = " ".join([f"--include='*{key}'" for key in keys])
             rsync_part2 = f":/data/{args.directory}* . --include=*/ {include_patterns} --exclude='*' "
         else:
             rsync_part2 = f":/data/{args.directory} . {rsync_exclusions}"
