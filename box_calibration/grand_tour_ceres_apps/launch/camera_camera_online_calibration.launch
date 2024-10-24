@@ -4,7 +4,6 @@
   <group ns="$(arg box_namespace)">
     <node pkg="grand_tour_ceres_apps" type="camera_camera_online_calibration" name="camera_camera_online_calibration" output="screen">
       <param name="capability_group" value="Calibration"/>
-      <param name="initial_guess" value="initial_guess_hdr_front_right_swapped.yaml"/>
     </node>
   </group> 
 </launch>
