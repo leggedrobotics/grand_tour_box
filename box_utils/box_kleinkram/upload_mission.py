@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+
 MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
 
 folder = Path(MISSION_DATA)
@@ -7,8 +8,8 @@ files_to_upload = [str(s) for s in folder.rglob("*.bag")]
 keys = [
     "_lpc_",
     "_npc_",
-    "_nuc_hesai_post_processed.bag",
-    "_jetson_ap20_synced.bag",
+    "_nuc_hesai.bag",
+    "_jetson_ap20.bag",
     "_cpt7_raw_imu.bag",
     "_cpt7_gps_optimized_trajectory.bag",
     "_tf_static.bag",
