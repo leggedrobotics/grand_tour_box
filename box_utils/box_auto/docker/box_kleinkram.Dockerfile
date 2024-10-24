@@ -33,7 +33,7 @@ RUN /bin/bash -c '/opencv_gtsam.sh'
 
 COPY dependencies/grand_tour.sh /grand_tour.sh
 RUN sh -c "chmod +x /grand_tour.sh"
-RUN --mount=type=ssh /bin/bash -c '/grand_tour.sh'
+# RUN --mount=type=ssh /bin/bash -c '/grand_tour.sh'
 
 #==
 # Base image (save disk space)
