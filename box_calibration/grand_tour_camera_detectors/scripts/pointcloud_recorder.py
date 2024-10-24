@@ -52,8 +52,9 @@ class PointCloudRecorder:
     def setup_recording(self, recording_id):
         subdir = self.topic.replace("/", "_")
         # Use the recording ID to create the bag file path
-        bag_dir = os.path.join(self.root_dir, f"{recording_id}_calibration", subdir)
-        bag_file_path = os.path.join(bag_dir, "points.bag")
+        recording_id = recording_id + "_calibration"
+        bag_dir = os.path.join(self.root_dir, f"{recording_id}", subdir)
+        bag_file_path = os.path.join(bag_dir, f"{recording_id}_{subdir}_points.bag")
 
         # Create the output directory if it doesn't exist
         os.makedirs(bag_dir, exist_ok=True)
