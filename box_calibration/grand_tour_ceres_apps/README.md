@@ -22,11 +22,41 @@ You can install all the required dependencies using the following `apt` commands
 sudo apt-get update
 sudo apt-get install -y \
     libboost-all-dev \
-    libceres-dev \
     libeigen3-dev \
     libopencv-dev \
     libyaml-cpp-dev
 ```
+
+### Ceres version 2.20
+This app requires version 2.2 of the ceres-solver. The can be downloaded [here](http://ceres-solver.org/ceres-solver-2.2.0.tar.gz)
+The installation instructions can be found [here](http://ceres-solver.org/installation.html).
+These are summarized as follows:
+```bash
+# CMake
+sudo apt-get install cmake
+# google-glog + gflags
+sudo apt-get install libgoogle-glog-dev libgflags-dev
+# Use ATLAS for BLAS & LAPACK
+sudo apt-get install libatlas-base-dev
+# Eigen3
+sudo apt-get install libeigen3-dev
+# SuiteSparse (optional)
+sudo apt-get install libsuitesparse-dev
+
+tar zxf ceres-solver-2.2.0.tar.gz # Currently this has been untarred on the home folder
+mkdir ceres-bin
+cd ceres-bin
+cmake ../ceres-solver-2.2.0
+make -j3
+make test
+# Optionally install Ceres, it can also be exported using CMake which
+# allows Ceres to be used without requiring installation, see the documentation
+# for the EXPORT_BUILD_DIR option for more information.
+make install
+```
+
+TLDR; The ceres-solver build directory is right now in the home directory under `/home/rsl/ceres-solver-2.2.0/ceres-bin`
+
 
 ### Catkin Build
 ```bash
