@@ -14,6 +14,7 @@ apt install -y python3-rosbag
 apt install -y ros-noetic-cv-bridge
 apt install -y python3-catkin-tools
 apt install -y python3-rosdep
+apt install -y ros-noetic-xacro 
 
 echo "source /opt/ros/noetic/setup.bash" >> /root/.bashrc
 

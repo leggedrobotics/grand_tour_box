@@ -1,6 +1,9 @@
 import rosbag
 import numpy as np
+from sensor_msgs.msg import Imu
 from geometry_msgs.msg import PointStamped
+from ap20_driver_ros.msg import ImuDebug, PositionDebug, TimestampDebug
+import rosbag
 from collections import deque
 import rospy
 from pathlib import Path
@@ -8,15 +11,12 @@ import os
 
 MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
 
-
 def get_bag(directory, pattern):
     return [str(s) for s in Path(directory).rglob(pattern)][0]
 
-
 class LastMatch:
     """Class for keeping track of an item in inventory."""
-
-    def __init__(self, imu_debug_msg, timestamp_debug_msg):
+    def __init__( self, imu_debug_msg, timestamp_debug_msg):
         self.imu_arrivial_ros_time = imu_debug_msg.header.stamp.to_sec()
         self.imu_counter = imu_debug_msg.header.seq
         self.imu_time = imu_debug_msg.imu.header.stamp.to_sec()
@@ -29,24 +29,20 @@ class LastMatch:
 
     def get_line_delay(self):
         return self.imu_arrivial_ros_time - self.timestamp_time
-
+    
     def line_delay_valid(self):
-        delay = self.get_line_delay()  # timestamp arrives before imu but not more than 3ms
+        delay = self.get_line_delay() # timestamp arrives before imu but not more than 3ms
         return delay > 0 and delay < 0.005
-
+    
     def get_stats(self, other):
         res = {}
-        res["N_imu_messages"] = self.imu_seq - other.imu_seq
+        res["N_imu_messages"] = self.imu_seq - other.imu_seq 
         res["N_imu_count"] = self.imu_counter - other.imu_counter
-        res["N_imu_time"] = round(float(self.imu_time - other.imu_time) / 0.005)
-        res["AP20_time_accuracy_check"] = (
-            abs(float(other.imu_time + res["N_imu_time"] * 0.005) - self.imu_time) < 0.0005
-        )
-        res["N_imu_arrivial_ros_time"] = round(float(self.imu_arrivial_ros_time - other.imu_arrivial_ros_time) / 0.005)
-        res["N_timestamp_time"] = round(float(self.timestamp_time - other.timestamp_time) / 0.005)
-        res["HardwareTS_time_accuracy_check"] = (
-            abs((other.timestamp_time + res["N_timestamp_time"] * 0.005) - self.timestamp_time) < 0.001
-        )
+        res["N_imu_time"] = round( float(self.imu_time - other.imu_time) / 0.005 )
+        res["AP20_time_accuracy_check"] = abs( float(other.imu_time + res["N_imu_time"] * 0.005 ) - self.imu_time) < 0.0005
+        res["N_imu_arrivial_ros_time"] = round(  float(self.imu_arrivial_ros_time - other.imu_arrivial_ros_time) / 0.005 )
+        res["N_timestamp_time"] = round( float(self.timestamp_time - other.timestamp_time) / 0.005 )
+        res["HardwareTS_time_accuracy_check"] = abs( (other.timestamp_time + res["N_timestamp_time"] * 0.005 ) - self.timestamp_time) < 0.001
         res["HardwareTS_shutdown_timestamp"] = (self.timestamp_time - other.timestamp_time) < 0.001
         res["ROS_arrivial_time_check"] = self.line_delay_valid()
         res["ROS_arrivial_line_delay"] = self.get_line_delay()
@@ -57,9 +53,8 @@ class LastMatch:
         self.imu_debug_msg.imu.header.stamp = rospy.Time.from_sec(self.timestamp_time)
         self.imu_debug_msg.imu.header.seq = counter
         self.imu_debug_msg.imu.header.frame_id = "ap20_imu"
-        bag.write("/gt_box/ap20/imu", self.imu_debug_msg.imu, self.imu_debug_msg.imu.header.stamp)
+        bag.write('/gt_box/ap20/imu', self.imu_debug_msg.imu, self.imu_debug_msg.imu.header.stamp)
         counter += 1
-
 
 def read_bag_file(bag_path):
     last_match = None
@@ -76,59 +71,61 @@ def read_bag_file(bag_path):
         "failed": 0,
         "reset": 0,
         "skipped_imu": 0,
-        "initial_skip": 0,
+        "initial_skip" : 0
     }
 
     all_matches = []
     counter_ts = 0
     output_bag_path = bag_path.replace("jetson_ap20_aux", "jetson_ap20_synced")
-    with rosbag.Bag(output_bag_path, "w") as bag_out:
-        with rosbag.Bag(bag_path, "r") as bag:
-            for topic, msg, t in bag.read_messages(
-                topics=["/gt_box/ap20/imu_debug", "/gt_box/ap20/position_debug", "/gt_box/ap20/timestamp_debug"]
-            ):
-                if topic == "/gt_box/ap20/imu_debug":
+    with rosbag.Bag(output_bag_path, 'w') as bag_out:
+        with rosbag.Bag(bag_path, 'r') as bag:
+            for topic, msg, t in bag.read_messages(topics=['/gt_box/ap20/imu_debug',
+                                                        '/gt_box/ap20/position_debug', '/gt_box/ap20/timestamp_debug']):
+                if topic == '/gt_box/ap20/imu_debug':
                     imu_debug_data.append(msg)
-                elif topic == "/gt_box/ap20/position_debug":
+                elif topic == '/gt_box/ap20/position_debug':
                     position_debug_data.append(msg)
-                elif topic == "/gt_box/ap20/timestamp_debug":
+                elif topic == '/gt_box/ap20/timestamp_debug':
                     timestamp_debug_data.append(msg)
 
                 if len(position_debug_data) > 0:
                     position = position_debug_data.popleft()
                     t = position.position.header.stamp.to_sec()
+                    suc = False
                     ref = -1
                     for i in range(len(all_matches)):
-
+                        
                         if all_matches[i].imu_time > t:
                             ref = i
                             delta = all_matches[i].imu_time - t
                             break
-
+                    
                     if ref > 0 and ref != -1:
-                        p1 = all_matches[ref - 1]
+                        p1 = all_matches[ref-1]
                         p2 = all_matches[ref]
-                        if not (delta > 0.005 + +1e-5):
-
+                        if not ( delta > 0.005 + 1e-5) :
+                            
+                            suc = True
                             rate = (t - p1.imu_time) / (p2.imu_time - p1.imu_time)
                             new_ts = p1.timestamp_time + ((p2.timestamp_time - p1.timestamp_time) * rate)
-
+                            
                             new_msg = PointStamped()
                             new_msg.header.stamp = rospy.Time.from_sec(new_ts)
                             new_msg.header.seq = counter_ts
                             new_msg.header.frame_id = "leica_total_station"
                             new_msg.point.x = position.position.point.x
                             new_msg.point.y = position.position.point.y
-                            new_msg.point.z = position.position.point.z
+                            new_msg.point.z = position.position.point.z                            
                             counter_ts += 1
-                            bag_out.write("/gt_box/ap20/prism_position", new_msg, new_msg.header.stamp)
+                            bag_out.write('/gt_box/ap20/prism_position', new_msg, new_msg.header.stamp)
 
-                            all_matches = all_matches[i - 1 :]
+                            all_matches = all_matches[i-1:]
                         else:
                             print("delta to high - removing the timestamp")
                     else:
                         if ref == -1:
                             position_debug_data.appendleft(position)
+
 
                 if len(imu_debug_data) > 0 and len(timestamp_debug_data) > 0:
                     new_imu_msg = imu_debug_data.popleft()
@@ -146,120 +143,93 @@ def read_bag_file(bag_path):
                             if candidate.get_line_delay() < 0.0:
                                 # Lets skip the IMU message
                                 timestamp_debug_data.appendleft(new_timestamp_msg)
-                                print(f"{new_imu_msg.header.seq} - ERROR - Skipping Inital IMU message poor matching")
+                                print(str(new_imu_msg.header.seq) + " --- " + f"{new_imu_msg.header.seq} - ERROR - Skipping Inital IMU message poor matching")
                                 matching_results["initial_skip"] += 1
                     else:
                         candidate = LastMatch(new_imu_msg, new_timestamp_msg)
                         res = candidate.get_stats(last_match)
-
+                        
                         # if  not res["AP20_time_accuracy_check"]:
                         #     print(f"{new_imu_msg.header.seq} ERROR - AP20 Time Accuracy bad")
-                        #     ap20_reset in time , stopped streaming
+                        #     ap20_reset in time , stopped streaming 
 
-                        if not res["HardwareTS_time_accuracy_check"]:
-                            print(f"{new_imu_msg.header.seq} ERROR - Hardware Accuracy bad")
+                        if  not res["HardwareTS_time_accuracy_check"]:
+                            print(str(new_imu_msg.header.seq) + " --- " + f"{new_imu_msg.header.seq} ERROR - Hardware Accuracy bad")
 
                         if res["N_imu_messages"] == res["N_imu_count"] != res["N_imu_time"]:
-                            print(
-                                f"{new_imu_msg.header.seq} WARNING - We most likely lost some IMU messages however timestamps all look good"
-                            )
+                            print(str(new_imu_msg.header.seq) + " --- " + f"{new_imu_msg.header.seq} WARNING - We most likely lost some IMU messages however timestamps all look good")
                             # ap20_resumed sync, ap20_reset
 
                         # This case can always happen.
                         # if not res["ROS_arrivial_time_check"]:
                         #     print(f"{new_imu_msg.header.seq} INFO - Timestamp arrived after imu or with more then 5ms delay")
 
-                        if res["N_imu_time"] == res["N_imu_arrivial_ros_time"] == res["N_timestamp_time"]:
+                        if res["N_imu_time"] == res["N_imu_arrivial_ros_time"]  == res["N_timestamp_time"] :
                             # perfect match
-
                             matching_results["prefect_match"] += 1
                             last_match = candidate
-                            last_match.publish(bag_out, counter)
+                            last_match.publish(bag_out,counter)
                             all_matches.append(last_match)
-                            line_delay.append(res["ROS_arrivial_line_delay"])
+                            line_delay.append( res["ROS_arrivial_line_delay"] )
+                            if line_delay[-1] > 0.01:
+                                print(str(new_imu_msg.header.seq) + " --- " + "Really high line delay:", line_delay[-1])
 
                         elif res["N_imu_time"] == res["N_timestamp_time"]:
                             # good match
                             matching_results["prefect_match"] += 1
                             last_match = candidate
-                            last_match.publish(bag_out, counter)
+                            last_match.publish(bag_out,counter)
                             all_matches.append(last_match)
-                            line_delay.append(res["ROS_arrivial_line_delay"])
-
-                        elif res["HardwareTS_shutdown_timestamp"] or (
-                            res["N_imu_time"] < 0 and res["N_timestamp_time"] == 0
-                        ):
+                            line_delay.append( res["ROS_arrivial_line_delay"] )
+                            if line_delay[-1] > 0.01:
+                                print(str(new_imu_msg.header.seq) + " --- " + "Really high line delay:", line_delay[-1])
+                                
+                        elif res["HardwareTS_shutdown_timestamp"] or (res["N_imu_time"] < 0 and res["N_timestamp_time"] == 0):
                             # ap20_reset
-                            print(
-                                f"{new_imu_msg.header.seq} WARNING - Throw away timestamp - detected double timestamp shut down behaviour by AP20 when reseting"
-                            )
+                            print(str(new_imu_msg.header.seq) + " --- " + "WARNING - Throw away timestamp - detected double timestamp shut down behaviour by AP20 when reseting or debouncing of button")
                             matching_results["reset"] += 1
                             imu_debug_data.appendleft(new_imu_msg)
 
                         elif res["N_imu_time"] < 0 and res["N_timestamp_time"] > 10:
                             # ap20_resumed_sync
-                            print(
-                                f"{new_imu_msg.header.seq} WARNING - We assume it is now working again and we are synced == 1.005 ???"
-                            )
+                            print(str(new_imu_msg.header.seq) + " --- " + "WARNING - We assume it is now working again and we are synced == 1.005 ???" )
                             last_match = candidate
                             last_match.publish(bag_out, counter)
                             all_matches.append(last_match)
-                            line_delay.append(res["ROS_arrivial_line_delay"])
+                            line_delay.append( res["ROS_arrivial_line_delay"] )
 
-                        elif (
-                            res["N_imu_messages"] == res["N_imu_count"] == res["N_imu_time"]
-                            and res["N_timestamp_time"] > res["N_imu_time"]
-                        ):
-                            print(
-                                "Skipping IMU message",
-                                res["N_imu_messages"],
-                                "- we have to skip: ",
-                                res["N_timestamp_time"],
-                            )
+
+                        elif res["N_imu_messages"] == res["N_imu_count"] == res["N_imu_time"] and res["N_timestamp_time"] > res["N_imu_time"]:
+                            print(str(new_imu_msg.header.seq) + " --- " +"Skipping IMU message", res["N_imu_messages"] , "- we have to skip: ",  res["N_timestamp_time"])
                             matching_results["skipped_imu"] += 1
                             timestamp_debug_data.appendleft(new_timestamp_msg)
 
                         else:
                             # failed
                             matching_results["failed"] += 1
-                            print(
-                                "ERROR - Case not understood",
-                                res["N_imu_messages"],
-                                " ",
-                                res["N_imu_count"],
-                                " ",
-                                res["N_imu_time"],
-                                " ",
-                                res["N_imu_arrivial_ros_time"],
-                                " ",
-                                res["N_timestamp_time"],
-                            )
+                            print(str(new_imu_msg.header.seq) + " --- " + "ERROR - Case not understood", res["N_imu_messages"] , " ", res["N_imu_count"] , " ", res["N_imu_time"] , " ", res["N_imu_arrivial_ros_time"], " ", res["N_timestamp_time"])
+
+
 
     if os.environ.get("KLEINKRAM_ACTIVE", False):
         uuid = os.environ["MISSION_UUID"]
-        os.system(f"klein mission upload --mission {uuid} --path {output_bag_path}")
+        os.system( f"klein mission upload --mission {uuid} --path {output_bag_path}")
         print(f"AP20_synced bag uploaded to kleinkram: {output_bag_path}")
     else:
         print(f"Finished processing. AP20_synced bag saved as: {output_bag_path}")
-
-    print(matching_results)
-    print(
-        "LINE DELAY min: ",
-        np.array(line_delay).min(),
-        " max: ",
-        np.array(line_delay).max(),
-        " median: ",
-        np.median(np.array(line_delay)),
-    )
+    
+    print ( matching_results)
+    print("LINE DELAY min: ", np.array( line_delay).min(),  " max: ", np.array( line_delay).max(), " median: ", np.median(np.array( line_delay)))
+    
+    print( np.where( np.array( line_delay) == np.array( line_delay).max()) )
 
     return {
-        "imu": imu_data,
-        "tps": tps_data,
-        "imu_debug": imu_debug_data,
-        "position_debug": position_debug_data,
-        "timestamp_debug": timestamp_debug_data,
+        'imu': imu_data,
+        'tps': tps_data,
+        'imu_debug': imu_debug_data,
+        'position_debug': position_debug_data,
+        'timestamp_debug': timestamp_debug_data
     }
-
 
 ap20_bag = get_bag(MISSION_DATA, "*_jetson_ap20_aux.bag")
 

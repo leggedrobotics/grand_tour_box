@@ -1,4 +1,5 @@
-FROM nvidia/cuda:12.2.2-cudnn8-devel-ubuntu20.04 AS builder
+FROM nvidia/cuda:12.4.1-cudnn-devel-ubuntu20.04 AS builder 
+# FROM nvidia/cuda:12.2.2-cudnn8-devel-ubuntu20.04 AS builder
 
 # To avoid tzdata asking for geographic location...
 ARG DEBIAN_FRONTEND=noninteractive
@@ -8,7 +9,7 @@ ENV DEBIAN_frontend=noninteractive
 ENV NVIDIA_VISIBLE_DEVICES=${NVIDIA_VISIBLE_DEVICES:-all}
 ENV NVIDIA_DRIVER_CAPABILITIES=${NVIDIA_DRIVER_CAPABILITIES:+$NVIDIA_DRIVER_CAPABILITIES,}graphics,compute,video,utility
 
-RUN echo "Europe/Zurich" > /etc/localtime ; echo "CUDA Version 12.2.1" > /usr/local/cuda/version.txt
+RUN echo "Europe/Zurich" > /etc/localtime ; echo "CUDA Version 12.4.1" > /usr/local/cuda/version.txt
 
 # RUN rm /etc/apt/sources.list.d/cuda.list
 
@@ -32,13 +33,15 @@ RUN /bin/bash -c '/opencv_gtsam.sh'
 
 COPY dependencies/grand_tour.sh /grand_tour.sh
 RUN sh -c "chmod +x /grand_tour.sh"
-# RUN --mount=type=ssh /bin/bash -c '/grand_tour.sh'
+RUN --mount=type=ssh /bin/bash -c '/grand_tour.sh'
 
 #==
 # Base image (save disk space)
 #==
 
+# FROM nvidia/cuda:12.4.1-cudnn-runtime-ubuntu20.04 AS final
 # FROM nvidia/cuda:12.2.2-cudnn8-runtime-ubuntu20.04 AS final
+
 
 # COPY --from=builder /home/catkin_ws/install /home/catkin_ws/install
 # COPY --from=builder /home/opencv_gtsam_ws/install /home/opencv_gtsam_ws/install

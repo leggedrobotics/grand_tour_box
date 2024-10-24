@@ -170,8 +170,8 @@ class IMUSyncOptimizer:
 
         y2 = torch.from_numpy( imu2_data[:, nr])
 
-        t1 = torch.from_numpy( self.imu1_data[:, 0])
-        y1 = torch.from_numpy( self.imu1_data[:, nr])
+        t1 = torch.from_numpy( self.imu1_data[:, 0]).clone()
+        y1 = torch.from_numpy( self.imu1_data[:, nr]).clone()
 
         val = max( t1.min(), t2.min() )
         t1 = t1 - val
@@ -180,10 +180,10 @@ class IMUSyncOptimizer:
         return optimal_offset, True
         
     
-    def optimize_time_offset(self, t1, y1, t2, y2, num_iterations=5000, learning_rate=0.001):
+    def optimize_time_offset(self, t1, y1, t2, y2, num_iterations=5000, learning_rate=0.001, max_duration_in_s = 120):
         # Interpolate both signals to a common time grid
         t_min = max(t1.min(), t2.min())
-        t_max = min(t1.max(), t2.max())
+        t_max = min( min(t1.max(), t2.max()), t_min+max_duration_in_s)
         t_common = torch.linspace(t_min, t_max, 50000)
         t_common = t_common.to(t1.device)
         y1_interp = interpolate(t_common, t1, y1)
@@ -204,10 +204,10 @@ class IMUSyncOptimizer:
         optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
 
-        self.t1_original = t1[:min(20000, len(t1))]
-        self.t2_original = t2[:min(20000, len(t1))]
-        self.y1_original = y1[:min(20000, len(t1))]
-        self.y2_original = y2[:min(20000, len(t1))]
+        self.t1_original = t1
+        self.t2_original = t2
+        self.y1_original = y1
+        self.y2_original = y2
 
         smallest_loss, early_stopping_iter, patience, EPS = torch.inf, 0, 500, 0.0000001
         for i in range(num_iterations):
@@ -241,7 +241,7 @@ class IMUSyncOptimizer:
                     # print("Early stopping epoch: ", i)
                     break
         
-        self.t2_final =  self.t2_original.clone() + model.time_offset
+        self.t2_final = self.t2_original.clone() + model.time_offset
         
         
         print(f"Time FFT Guess: {time_offset_guess * 10**9}ns,   Final Time Offset: {model.time_offset.item() * 10**9}ns")
@@ -301,7 +301,6 @@ def process_all(directory, axis):
     
     sync_optimizer = IMUSyncOptimizer( reference_imu_file, reference_imu["topic"], tf_bag_file, axis)
 
-    ploted_reference_imu = False
 
     rr.init("rerun_example_minimal", spawn=True)
     # rr.save(os.path.join(directory, f"imu_timesync-{axis}.rrd"))
@@ -333,11 +332,11 @@ def process_all(directory, axis):
         print(log)
 
         if plot:
-            if not ploted_reference_imu:
-                for t in range(len(sync_optimizer.t1_original)):
-                    rr.set_time_seconds("time", float(sync_optimizer.t1_original[t]) )
-                    rr.log(reference_imu["bag_pattern"][2:] + f"-{axis}", rr.Scalar( float(sync_optimizer.y1_original[t]) ))
-                ploted_reference_imu = True
+            
+            for t in range(len(sync_optimizer.t1_original)):
+                rr.set_time_seconds("time", float(sync_optimizer.t1_original[t]) )
+                rr.log(pattern[2:] + "_reference_" + reference_imu["bag_pattern"][2:] + f"-{axis}", rr.Scalar( float(sync_optimizer.y1_original[t]) ))
+            
 
             for t in range(len(sync_optimizer.t2_original)):
                 rr.set_time_seconds("time", float(sync_optimizer.t2_original[t]) )
@@ -369,7 +368,7 @@ if __name__ == "__main__":
     # else: 
 
     master_summary = {}
-    for axis in ["x", "y"]:
+    for axis in ["x"]:
         print("Running for axis: ", axis)
 
         master_summary[axis] = process_all(MISSION_DATA, axis=axis)

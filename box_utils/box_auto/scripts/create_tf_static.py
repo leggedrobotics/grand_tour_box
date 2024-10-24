@@ -60,7 +60,8 @@ def process_bags(reference_bag_path, tf_static_bag_path, output_bag_path, start_
                 current_time = end_time
     
     if os.environ.get("KLEINKRAM_ACTIVE", False):
-        os.system( f"klein mission upload --mission {os.environ["MISSION_UUID"]} --path {output_bag_path}")
+        uuid = os.environ["MISSION_UUID"]
+        os.system( f"klein mission upload --mission {uuid} --path {output_bag_path}")
         print(f"TF Static bag uploaded to kleinkram: {output_bag_path}")
     else:
         print(f"Finished processing. TF Static bag saved as: {output_bag_path}")
