@@ -111,7 +111,8 @@ bool CameraDetectorNode::openNewBag(std::string recording_id) {
     recording_id += "_calibration";
     std::string topic_subdir = image_topic_;
     std::replace(topic_subdir.begin(), topic_subdir.end(), '/', '_');
-    fs::path full_bag_path = fs::path(output_root_folder_) / recording_id / topic_subdir / "images_and_detections.bag";
+    fs::path full_bag_path = fs::path(output_root_folder_) / recording_id / topic_subdir / (
+            topic_subdir + "_images_and_detections.bag");
     createDirectoryIfNotExists(full_bag_path);
     if (bag_.isOpen()) {
         bag_.close();
