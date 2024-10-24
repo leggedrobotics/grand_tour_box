@@ -55,6 +55,18 @@ cd /home/catkin_ws/src/grand_tour_box/box_applications/tf_bag
 rosdep install --from-paths . --ignore-src -r -y --reinstall
 sudo apt-get install ros-noetic-gps-common
 
+
+# FOR TF bag needed
+pip3 install importlib-metadata==4.13.0
+
+
+# FOR graph msf 
+apt install -y libeigen3-dev
+apt install -y ros-noetic-kdl-parser
+apt install -y ros-noetic-eigen-conversions
+apt install -y ros-noetic-image-transport
+apt install -y ros-noetic-compressed-depth-image-transport
+apt install -y ros-noetic-diagnostic-updater
 # Build workspace for postprocessing
 cd /home/catkin_ws
 catkin build box_auto
