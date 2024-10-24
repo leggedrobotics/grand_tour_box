@@ -330,6 +330,9 @@ OnlineCameraCameraProgram::publishAllParamsAndSigmas(const std::map<std::string,
 }
 
 std::map<std::string, CameraCovariance> OnlineCameraCameraProgram::computeCovariances() {
+    if (ready_for_extrinsics_) {
+        this->setExtrinsicParametersVariableBeforeOpt();
+    }
     std::map<std::string, CameraCovariance> covariances;
     std::map<std::string, bool> do_compute_extrinsics;
     std::vector<const double *> diagonal_covariance_blocks;
