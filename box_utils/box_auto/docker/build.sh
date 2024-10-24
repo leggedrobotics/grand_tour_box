@@ -29,7 +29,7 @@ fi
 # Parse arguments
 BUILD_TYPE=""
 TAG_SUFFIX=""
-
+NO_CACHE_FLAG=""
 while [[ $# -gt 0 ]]; do
     case $1 in
         --kleinkram)
@@ -50,6 +50,10 @@ while [[ $# -gt 0 ]]; do
         --full)
             BUILD_TYPE="full"
             TAG_SUFFIX=""
+            shift
+            ;;
+        --no-cache)
+            NO_CACHE_FLAG="--no-cache"
             shift
             ;;
         --help)
@@ -88,6 +92,7 @@ echo ""
 docker build \
     --progress=plain \
     --ssh default="$SSH_KEY" \
+    $NO_CACHE_FLAG\
     -t "$FULL_TAG" \
     -f "$DOCKER_PATH/$DOCKERFILE" \
     "$DOCKER_PATH"

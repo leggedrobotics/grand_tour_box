@@ -1,1 +1,2 @@
 docker image push rslethz/grand_tour_box:kleinkram_minimal
+docker image push rslethz/grand_tour_box:kleinkram

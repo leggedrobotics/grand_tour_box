@@ -21,6 +21,8 @@ pip3 install tqdm
 pip3 install --upgrade pip
 # pip install rerun-sdk
 
+apt install -y libeigen3-dev
+
 mkdir -p /root/.ssh
 ssh-keyscan github.com >> /root/.ssh/known_hosts
 ssh-keyscan bitbucket.org >> /root/.ssh/known_hosts
