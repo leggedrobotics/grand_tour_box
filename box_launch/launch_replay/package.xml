@@ -11,6 +11,7 @@
   <depend>launch_scripts</depend>
   <depend>bringup_hesai</depend>
   <depend>box_rviz</depend>
+  <depend>box_launch</depend>
   <depend>box_model</depend>
   <depend>box_throttling</depend>
 </package>
