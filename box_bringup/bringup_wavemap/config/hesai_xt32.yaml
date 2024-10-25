@@ -5,7 +5,7 @@ general:
 
 map:
   type: hashed_chunked_wavelet_octree
-  min_cell_width: { meters: 0.1 }
+  min_cell_width: { meters: 0.2 }
 
 map_operations:
   - type: threshold_map
@@ -40,14 +40,14 @@ measurement_integrators:
     integration_method:
       type: hashed_chunked_wavelet_integrator
       min_range: { meters: 1.0 }
-      max_range: { meters: 15.0 }
+      max_range: { meters: 75.0 }
 
 inputs:
   - type: pointcloud_topic
-    topic_name: "/gt_box/hesai/lidar"
-    topic_type: hesai
+    topic_name: /gt_box/hesai/points_last
+    topic_type: PointCloud2
     measurement_integrator_names: hesai_xt32
-    undistort_motion: true
+    undistort_motion: false
     topic_queue_length: 10
     max_wait_for_pose: { seconds: 1.0 }
     # reprojected_pointcloud_topic_name: "/wavemap/reprojected_pointcloud"
