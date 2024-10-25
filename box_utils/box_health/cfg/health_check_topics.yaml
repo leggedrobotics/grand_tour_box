@@ -14,9 +14,9 @@ jetson:
    #  rate: 10
    #/gt_box/zed2i_driver_node/zed_node/depth/depth_registered:
    #  rate: 10
-    /gt_box/ap20/imu:
+    /gt_box/ap20/imu_debug:
       rate: 200
-    /gt_box/ap20/prism_position:
+    /gt_box/ap20/position_debug:
       rate: 20
   ptp4l:
     - ptp4l_mgbe0
