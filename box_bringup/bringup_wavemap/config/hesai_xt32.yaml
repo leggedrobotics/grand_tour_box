@@ -18,13 +18,13 @@ map_operations:
 measurement_integrators:
   hesai_xt32:
     projection_model:
-      type: ouster_projector
-      lidar_origin_to_beam_origin: { millimeters: 27.67 }
-      lidar_origin_to_sensor_origin_z_offset: { millimeters: 36.18 }
+      type: spherical_projector
+      lidar_origin_to_beam_origin: { millimeters: 0.0 }
+      lidar_origin_to_sensor_origin_z_offset: { millimeters: 0.0 }
       elevation:
-        num_cells: 128
-        min_angle: { degrees: -45.73 }
-        max_angle: { degrees: 46.27 }
+        num_cells: 32
+        min_angle: { degrees: -16.0 }
+        max_angle: { degrees: 15.0 }
       azimuth:
         num_cells: 1024
         min_angle: { degrees: -180.0 }
