@@ -1,8 +1,5 @@
 jetson:
   bags:
-    ap20:
-      - /gt_box/ap20/imu
-      - /gt_box/ap20/prism_position
     ap20_aux:
       - /ap20/tps
       - /ap20/imu
