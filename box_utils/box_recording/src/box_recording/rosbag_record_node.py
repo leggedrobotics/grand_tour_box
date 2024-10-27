@@ -22,6 +22,7 @@ import time
 
 
 RUN_RECORDING = "/data/workspaces/ros2_ws/src/isaac_ros_common/scripts/run_recording.sh"
+IMAGE_NAME = "isaac_ros_dev-aarch64:grand_tour_box"
 
 
 def start_hdr():
@@ -314,10 +315,9 @@ class RosbagRecordNode(object):
             client = docker.from_env()
             # List all running containers
             containers = client.containers.list()
-            image_name = "isaac_ros_dev-aarch64:recording"
             # Filter containermessages by image name and stop them
             for container in containers:
-                if container.image.tags and image_name in container.image.tags[0]:
+                if container.image.tags and IMAGE_NAME in container.image.tags[0]:
                     print(f"Stopping container {container.id} ({container.name}) with image {container.image.tags[0]}")
                     container.stop()
             time.sleep(1)
