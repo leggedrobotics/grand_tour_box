@@ -181,6 +181,8 @@ class CornerVisualizer:
         if self.image_sub is None:
             rospy.loginfo("Subscribing to image topic...")
             self.setup_image_subscriber()
+        rr.log(f"{self.image_topic}/image/keypoints",
+               rr.Clear(recursive=False))
 
     def setup_image_subscriber(self):
         self.image_sub = rospy.Subscriber(self.image_topic, Image, self.image_callback)
