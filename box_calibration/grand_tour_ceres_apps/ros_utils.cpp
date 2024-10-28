@@ -118,7 +118,7 @@ std::string getMatType(const cv::Mat &mat) {
 bool solvePnP(const CameraParameterPack &camera_parameters, const Eigen::Matrix2Xd &corners2d,
               const Eigen::Matrix3Xd &modelpoints3d, Eigen::Affine3d &output) {
     if (corners2d.cols() < 16) {
-        ROS_ERROR("Only %i points received", corners2d.cols());
+        ROS_ERROR("Only %ld points received", corners2d.cols());
         return false;
     }
     // Convert Eigen matrices to cv::Mat using cv::eigen2cv

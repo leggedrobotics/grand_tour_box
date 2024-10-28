@@ -19,7 +19,8 @@
 OnlineCameraCameraProgram::OnlineCameraCameraProgram(OnlineCameraCameraParser parser) {
     run_id_ = getCurrentTimeFormatted();
     start_recording_calibration_data_service_ = nh_.advertiseService(
-            "camera_detection_recording_id", &OnlineCameraCameraProgram::startRecordingCalibrationDataServiceCallback, this);
+            "camera_detection_recording_id", &OnlineCameraCameraProgram::startRecordingCalibrationDataServiceCallback,
+            this);
 
     const auto rostopic_camera_parameter_packs = PopulateCameraParameterPacks(parser.initial_guess_path,
                                                                               parser.initial_guess_path);
@@ -94,6 +95,7 @@ bool OnlineCameraCameraProgram::addAlignmentData(ros::Time current_ros_time,
                                                  bool force) {
     const unsigned long stamp = camera_detections.header.stamp.toNSec();
     Observations2dModelPoints3dPointIDsPose3dSensorName observation = buildObservationFromRosMSG(camera_detections);
+    ScopedTimer timer;
     if (!this->computeAndPopulateInitialGuessModelPose(observation)) {
         ROS_ERROR_STREAM("Failed to initialize pose for observation from frame: " + observation.sensor_name);
         return false;
@@ -109,6 +111,9 @@ bool OnlineCameraCameraProgram::addAlignmentData(ros::Time current_ros_time,
         this->handleAddIntrinsicsCost(stamp, observation, true);
         this->handleStationarityRequirement(stamp, observation, true);
         this->handleAddExtrinsicsCost(stamp, observation, true);
+    }
+    if (!force) {
+        ROS_DEBUG("Add detection callback executed in: %f seconds", timer.elapsed().count());
     }
     added_detections_publisher_[camera_detections.header.frame_id].publish(camera_detections);
     this->parsed_alignment_data.unique_timestamps.insert(stamp);
@@ -232,48 +237,19 @@ void OnlineCameraCameraProgram::optimizationCallback(const ros::TimerEvent &, bo
         this->publishAllParamsAndSigmas(covariances);
         ROS_DEBUG("Covariance and ros publishing executed in: %f seconds", timer.elapsed().count());
         this->publishPercentageDataAccumulated(0.0f);
-    } else {
-        ROS_DEBUG_STREAM("Not enough new samples received since last solve. Not optimizing");
-    }
-
-    for (const auto &[frame_id, data]: logged_ros_alignment_data_) {
-//        ROS_DEBUG_STREAM("Publishing for frame_id: " + frame_id);
-        grand_tour_camera_detection_msgs::CameraDetections output_msg;
-        for (const auto &[_, msg]: data) {
-            Eigen::Matrix2Xf residuals;
-            output_msg.header = msg.header;
-            this->getReprojectionResiduals(problem_->getProblem(),
-                                           intrinsics_residuals_of_camera_at_time[frame_id][msg.header.stamp.toNSec()],
-                                           residuals);
-            ROS_ERROR_COND(msg.corners2d.size() != residuals.cols(), "Corners2d %ld does not match residuals %ld",
-                           msg.corners2d.size(), residuals.cols());
-
-            for (int col = 0; col < residuals.cols(); col++) {
-                // 2D corners
-                geometry_msgs::Point residual;
-                residual.x = residuals.col(col).x();
-                residual.y = residuals.col(col).y();
-                residual.z = 0.0;  // Since it's a 2D corner, the z-component is 0
-                output_msg.residuals2d.push_back(residual);
-                output_msg.corners2d.push_back(msg.corners2d[col]);
-                output_msg.modelpoint3d.push_back(msg.modelpoint3d[col]);
-                output_msg.cornerids.push_back(msg.cornerids[col]);
-            }
-            processed_detections_publisher_[frame_id].publish(output_msg);
-        }
-    }
-
-    if (ready_for_extrinsics_) {
-        for (const auto &[cam_a, cam_b_data]: extrinsics_residuals_of_cameras_at_time) {
-            for (const auto &[cam_b, residual_block_at_time]: cam_b_data) {
+        {
+            for (const auto &[frame_id, data]: logged_ros_alignment_data_) {
                 grand_tour_camera_detection_msgs::CameraDetections output_msg;
-                for (const auto &[time, residual_block]: residual_block_at_time) {
-                    output_msg.header.stamp.fromNSec(time);
-                    output_msg.header.frame_id = cam_a;
+                for (const auto &[_, msg]: data) {
                     Eigen::Matrix2Xf residuals;
+                    output_msg.header = msg.header;
                     this->getReprojectionResiduals(problem_->getProblem(),
-                                                   residual_block,
+                                                   intrinsics_residuals_of_camera_at_time[frame_id][msg.header.stamp.toNSec()],
                                                    residuals);
+                    ROS_ERROR_COND(msg.corners2d.size() != residuals.cols(),
+                                   "Corners2d %ld does not match residuals %ld",
+                                   msg.corners2d.size(), residuals.cols());
+
                     for (int col = 0; col < residuals.cols(); col++) {
                         // 2D corners
                         geometry_msgs::Point residual;
@@ -281,12 +257,42 @@ void OnlineCameraCameraProgram::optimizationCallback(const ros::TimerEvent &, bo
                         residual.y = residuals.col(col).y();
                         residual.z = 0.0;  // Since it's a 2D corner, the z-component is 0
                         output_msg.residuals2d.push_back(residual);
+                        output_msg.corners2d.push_back(msg.corners2d[col]);
+                        output_msg.modelpoint3d.push_back(msg.modelpoint3d[col]);
+                        output_msg.cornerids.push_back(msg.cornerids[col]);
+                    }
+                    processed_detections_publisher_[frame_id].publish(output_msg);
+                }
+            }
+
+            if (ready_for_extrinsics_) {
+                for (const auto &[cam_a, cam_b_data]: extrinsics_residuals_of_cameras_at_time) {
+                    for (const auto &[cam_b, residual_block_at_time]: cam_b_data) {
+                        grand_tour_camera_detection_msgs::CameraDetections output_msg;
+                        for (const auto &[time, residual_block]: residual_block_at_time) {
+                            output_msg.header.stamp.fromNSec(time);
+                            output_msg.header.frame_id = cam_a;
+                            Eigen::Matrix2Xf residuals;
+                            this->getReprojectionResiduals(problem_->getProblem(),
+                                                           residual_block,
+                                                           residuals);
+                            for (int col = 0; col < residuals.cols(); col++) {
+                                // 2D corners
+                                geometry_msgs::Point residual;
+                                residual.x = residuals.col(col).x();
+                                residual.y = residuals.col(col).y();
+                                residual.z = 0.0;  // Since it's a 2D corner, the z-component is 0
+                                output_msg.residuals2d.push_back(residual);
+                            }
+                        }
+                        extrinsics_detections_publisher_[cam_a].publish(output_msg);
                     }
                 }
-                extrinsics_detections_publisher_[cam_a].publish(output_msg);
+                logEdgeCapacities();
             }
         }
-        logEdgeCapacities();
+    } else {
+        ROS_DEBUG_STREAM("Not enough new samples received since last solve. Not optimizing");
     }
 
 }
@@ -766,7 +772,7 @@ bool OnlineCameraCameraProgram::stopOptimizationServiceCallback(
             "calibration/raw_calibration_output/cameras-intrinsics-extrinsics_latest.yaml";
     std::filesystem::path output_path = calib_root_path / relative_output_path;
     std::map<std::string, CameraParameterPack> camera_parameters_by_rostopic;
-    for (const auto& [frameid, params] : camera_parameter_packs) {
+    for (const auto &[frameid, params]: camera_parameter_packs) {
         camera_parameters_by_rostopic[frameid2rostopic_.at(frameid)] = params;
     }
     SerialiseCameraParameters(output_path.string(), camera_parameters_by_rostopic,
