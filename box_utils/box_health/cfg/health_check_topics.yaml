@@ -24,6 +24,7 @@ jetson:
     - phc2sys_mgbe0
   chrony: False
   recording: True
+  devices: True
   memory: /data
   cpu: True
   fsk:

@@ -439,6 +439,32 @@ class BoxStatus:
             offset += self.recording_lines * lineheight
             offset += lineheight * 2
 
+        if self.cfg.get("devices", False):
+            text.text += '\n<span style="color: rgb(0,255,0);">' + "Devices:" + "</span>\n"
+            # If on jetson, run ls /dev/video* and check if the devices are present
+            if self.hostname == "jetson":
+                p = Popen("ls /dev/video*", stdout=PIPE, stderr=PIPE, shell=True)
+                out, err = p.communicate()
+                if err or not out:
+                    text.text += (
+                        '<span style="color: rgb(255,0,0);">JETSON: Error running ls /dev/video*: '
+                        + f"{err}"
+                        + "</span>\n"
+                    )
+                else:
+                    # Check if all 5 video devices are present. Print in red if not.
+                    out = out.decode()
+                    devices = out.split()
+                    if len(devices) < 5:
+                        text.text += (
+                            '<span style="color: rgb(255,0,0);">JETSON: Not enough devices: ' + f"{out}" + "</span>\n"
+                        )
+                    elif len(devices) == 5:
+                        text.text += (
+                            '<span style="color: rgb(0,255,0);">JETSON: All devices present: ' + f"{out}" + "</span>\n"
+                        )
+                    offset += lineheight * 3
+
         text.height = int(offset)
         self.overlay_text_publisher.publish(text)
 
