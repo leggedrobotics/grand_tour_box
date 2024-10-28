@@ -81,7 +81,7 @@ class CornerVisualizer:
         self.heatmap_subblock_size = rospy.get_param('~heatmap_subblock_size', [64, 64])
         self.heatmap_alpha = rospy.get_param('~heatmap_alpha', 0.5)
         self.heatmap_clip_value = rospy.get_param('~heatmap_clip_value', 100)
-        self.timer_interval = rospy.get_param('~timer_interval', 10)
+        self.timer_interval = rospy.get_param('~timer_interval', 1)
         self.recording_id_service_name = 'camera_camera_calibration_viewer/recording_id_service'
         rospy.wait_for_service(self.recording_id_service_name)
         self.fetch_recording_service = rospy.ServiceProxy(self.recording_id_service_name,
