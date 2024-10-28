@@ -453,7 +453,7 @@ class BoxStatus:
                     )
                 else:
                     # Check if all 5 video devices are present. Print in red if not.
-                    out = out.decode()
+                    out = out.decode().replace("\n", " ")
                     devices = out.split()
                     if len(devices) < 5:
                         text.text += (
