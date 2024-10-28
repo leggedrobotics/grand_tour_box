@@ -76,6 +76,7 @@ bool CeresProblem::ComputeAndFetchCovariance(const std::vector<const double *> &
 std::shared_ptr<ceres::Covariance>
 CeresProblem::ComputeCovariance(const std::vector<const double *> &parameter_blocks) {
     ceres::Covariance::Options covariance_options;
+    covariance_options.algorithm_type = ceres::SPARSE_QR;
     covariance_options.sparse_linear_algebra_library_type = ceres::SparseLinearAlgebraLibraryType::SUITE_SPARSE;
     covariance_options.apply_loss_function = false;
     covariance_options.num_threads = 4;
@@ -124,6 +125,7 @@ CeresProblem::ComputeSubBlockCovariance(const std::vector<const double *> &param
         covariance_blocks.push_back(std::make_pair(param, param));
     }
     ceres::Covariance::Options covariance_options;
+    covariance_options.algorithm_type = ceres::SPARSE_QR;
     covariance_options.sparse_linear_algebra_library_type = ceres::SparseLinearAlgebraLibraryType::SUITE_SPARSE;
     covariance_options.apply_loss_function = false;
     covariance_options.num_threads = 4;
