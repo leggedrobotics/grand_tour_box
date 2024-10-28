@@ -4,7 +4,7 @@ After=ptp4l_mgbe0.service
 
 [Service]
 Type=forking
-ExecStartPre=/bin/sleep 15
+ExecStartPre=/bin/sleep 25
 ExecStart=/usr/bin/tmuxp load /home/rsl/git/grand_tour_box/box_launch/tmux/jetson_recording.yaml -d
 User=rsl
 
