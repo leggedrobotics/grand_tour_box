@@ -5,4 +5,4 @@ processed_extrinsics_detections_topic: "/gt_box/alphasense_driver_node/cam2_corn
 heatmap_subblock_size: [64, 64]
 heatmap_alpha: 0.5
 heatmap_clip_value: 100
-timer_interval: 10
+timer_interval: 1
