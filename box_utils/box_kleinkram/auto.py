@@ -2,7 +2,33 @@ import argparse
 import os
 from pathlib import Path
 import glob
-from boxi import shell_run, LOCAL_HOSTNAME
+import copy
+import subprocess
+import socket
+
+LOCAL_HOSTNAME = socket.gethostname()
+
+
+def shell_run(cmd, cwd=None, env={}, time=True, continue_on_error=True):
+    """Execute shell command."""
+    # Support both list and str format for commands
+    # if isinstance(cmd, str):
+    #     cmd = shlex.split(cmd)
+
+    # Set up environmental variables
+    env_variables = copy.deepcopy(os.environ)
+    env_variables.update(env)
+
+    # Execute command
+    try:
+        p = subprocess.Popen(cmd, cwd=cwd, env=env_variables, shell=True, executable="/bin/bash")
+    except Exception as e:
+        raise RuntimeError(f"{e} --- while executing {cmd}")
+
+    if p.wait() != 0:
+        print()
+        if not continue_on_error:
+            raise RuntimeError(f"Error Return non 0 --- while executing {cmd}")
 
 
 def process_mission_data(mission_name):
@@ -10,6 +36,7 @@ def process_mission_data(mission_name):
     cmds = []
 
     if LOCAL_HOSTNAME == "jetson":
+        upload_kk = True
         cmds.append(
             f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/mcap_to_rosbag.py"
         )
@@ -26,7 +53,7 @@ def process_mission_data(mission_name):
             "_jetson_ap20_aux.bag",
             "_jetson_adis.bag",
             "_jetson_zed2i_tf.bag",
-            "_jetson_zed2i_proprioceptive.bag",
+            "_jetson_zed2i_prop.bag",
             "_jetson_zed2i_images.bag",
             "_jetson_zed2i_depth.bag",
             "_jetson_hdr_right_raw.bag",
@@ -35,6 +62,7 @@ def process_mission_data(mission_name):
         ]
 
     elif LOCAL_HOSTNAME == "nuc":
+        upload_kk = True
         cmds.append(
             f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/merge_mission.py"
         )
@@ -51,6 +79,23 @@ def process_mission_data(mission_name):
             "_nuc_cpt7.bag",
             "_nuc_alphasense.bag",
         ]
+    elif LOCAL_HOSTNAME == "anymal-d039-lpc" or LOCAL_HOSTNAME == "anymal-d039-npc":
+        upload_kk = False
+        cmds.append(
+            f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/merge_mission.py"
+        )
+        keys = [
+            "_npc_depth_cameras.bag",
+            "_npc_elevation_mapping.bag",
+            "_npc_velodyne.bag",
+            "_lpc_anymal_imu.bag",
+            "_lpc_depth_cameras.bag",
+            "_lpc_general.bag",
+            "_lpc_locomotion.bag",
+            "_lpc_state_estimator.bag",
+            "_lpc_tf.bag",
+        ]
+    print(LOCAL_HOSTNAME)
 
     for cmd in cmds:
         shell_run(cmd)
@@ -66,9 +111,12 @@ def process_mission_data(mission_name):
 
     upload.sort()
 
-    project = "GrandTourDev"
-    files_to_upload_str = " --path " + " --path ".join(upload)
-    print(f"klein upload {files_to_upload_str} --project {project} --mission {mission_name}")
+    if upload_kk:
+        project = "GrandTour"
+        files_to_upload_str = " --path " + " --path ".join(upload)
+        os.system(f"klein upload {files_to_upload_str} --project {project} --mission {mission_name} --create-mission")
+
+    return upload_kk
 
 
 if __name__ == "__main__":
@@ -77,4 +125,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     for mission_name in args.mission_names:
-        process_mission_data(mission_name)
+        upload_kk = process_mission_data(mission_name)
+
+    if not upload_kk:
+        print("boxi get_data --lpc --npc --directory ", " ".join(args.mission_names))

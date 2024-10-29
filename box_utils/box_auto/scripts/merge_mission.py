@@ -8,6 +8,7 @@ import os
 
 MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
 
+
 def merge_bags_single(input_bag, output_bag, topics="*", verbose=False):
     # From https://www.clearpathrobotics.com/assets/downloads/support/merge_bag.py
     topics = topics.split(" ")
@@ -19,8 +20,8 @@ def merge_bags_single(input_bag, output_bag, topics="*", verbose=False):
         print("Writing bag file: " + output_bag)
         print("Matching topics against patters: '%s'" % " ".join(topics))
 
-    with Bag(output_bag, "w", compression='lz4') as o:
-        with tqdm.tqdm(total=len(input_bag), desc=f"Merging {prefix}", unit="subbags", colour = "green") as pbar:
+    with Bag(output_bag, "w", compression="lz4") as o:
+        with tqdm.tqdm(total=len(input_bag), desc=f"Merging {prefix}", unit="subbags", colour="green") as pbar:
             for ifile in input_bag:
                 matchedtopics = []
                 included_count = 0
@@ -45,17 +46,11 @@ def merge_bags_single(input_bag, output_bag, topics="*", verbose=False):
                 total_included_count += included_count
                 total_skipped_count += skipped_count
                 if verbose:
-                    print(
-                        "< Included %d messages and skipped %d"
-                        % (included_count, skipped_count)
-                    )
+                    print("< Included %d messages and skipped %d" % (included_count, skipped_count))
                 pbar.update(1)
 
     if verbose:
-        print(
-            "Total: Included %d messages and skipped %d"
-            % (total_included_count, total_skipped_count)
-        )
+        print("Total: Included %d messages and skipped %d" % (total_included_count, total_skipped_count))
 
     if os.environ.get("KLEINKRAM_ACTIVE", False):
         uuid = os.environ["MISSION_UUID"]
@@ -64,37 +59,32 @@ def merge_bags_single(input_bag, output_bag, topics="*", verbose=False):
 
     return total_included_count, total_skipped_count
 
-# write the following code. 
+
+# write the following code.
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Fix, reindex, and merge ROS bag files.")
     parser.add_argument(
-        "--overwrite",
-        type=bool,
-        default=True,
-        help="Whether to overwrite existing bag files (default: True)."
+        "--overwrite", type=bool, default=True, help="Whether to overwrite existing bag files (default: True)."
     )
     args = parser.parse_args()
-    bag_files =sorted( Path(MISSION_DATA).rglob("*.bag"))
+    bag_files = sorted(Path(MISSION_DATA).rglob("*.bag"))
     print("Found files: ", bag_files)
     # Group bags
     grouped_files = {}
     pattern = re.compile(r"(.*?_\d+)\.bag$")
-    
+
     for file in bag_files:
         match = pattern.search(file.name)
         if match:
-            prefix = match.group(1).rsplit('_', 1)[0]  # Extract prefix before the last '_'
+            prefix = match.group(1).rsplit("_", 1)[0]  # Extract prefix before the last '_'
             if prefix not in grouped_files:
                 grouped_files[prefix] = []
             grouped_files[prefix].append(file)
-    
-    
+
     # Merge bags
     with tqdm.tqdm(total=len(grouped_files), desc=f"Merging {prefix}", unit="bags") as pbar:
 
         for prefix, files in grouped_files.items():
-            if prefix.find("lpc") != -1 or prefix.find("npc") != -1:
-                continue
 
             output_bag = Path(MISSION_DATA) / f"{prefix}.bag"
 

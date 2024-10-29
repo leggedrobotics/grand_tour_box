@@ -24,7 +24,7 @@ keys = [
     "_jetson_ap20_aux.bag",
     "_jetson_adis.bag",
     "_jetson_zed2i_tf.bag",
-    "_jetson_zed2i_proprioceptive.bag",
+    "_jetson_zed2i_prop.bag",
     "_jetson_zed2i_images.bag",
     "_jetson_zed2i_depth.bag",
     "_jetson_hdr_right_raw.bag",

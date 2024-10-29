@@ -43,7 +43,7 @@ def main(args):
                     "_jetson_ap20_aux.bag",
                     "_jetson_adis.bag",
                     "_jetson_zed2i_tf.bag",
-                    "_jetson_zed2i_proprioceptive.bag",
+                    "_jetson_zed2i_prop.bag",
                     "_jetson_zed2i_images.bag",
                     "_jetson_zed2i_depth.bag",
                     "_jetson_hdr_right.bag",
@@ -57,6 +57,15 @@ def main(args):
                     "_nuc_hesai.bag",
                     "_nuc_cpt7.bag",
                     "_nuc_alphasense.bag",
+                    "_npc_depth_cameras.bag",
+                    "_npc_elevation_mapping.bag",
+                    "_npc_velodyne.bag",
+                    "_lpc_anymal_imu.bag",
+                    "_lpc_depth_cameras.bag",
+                    "_lpc_general.bag",
+                    "_lpc_locomotion.bag",
+                    "_lpc_state_estimator.bag",
+                    "_lpc_tf.bag",
                 ]
                 include_patterns = " ".join([f"--include='*{key}'" for key in keys])
                 rsync_part2 = f":/data/{directory}* . --include=*/ {include_patterns} --exclude='*' "
