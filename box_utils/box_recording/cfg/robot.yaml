@@ -12,10 +12,16 @@ jetson:
     hdr:
       - /gt_box/hdr_front/image_raw/compressed
       - /gt_box/hdr_front/camera_info
+      - /gt_box/hdr_front/kernel_timestamp
+      - /gt_box/hdr_front/v4l2_timestamp
       - /gt_box/hdr_left/image_raw/compressed
       - /gt_box/hdr_left/camera_info
+      - /gt_box/hdr_left/kernel_timestamp
+      - /gt_box/hdr_left/v4l2_timestamp
       - /gt_box/hdr_right/image_raw/compressed
       - /gt_box/hdr_right/camera_info
+      - /gt_box/hdr_right/kernel_timestamp
+      - /gt_box/hdr_right/v4l2_timestamp
     utils:
       - /gt_box/health_status/jetson/status
     adis:
