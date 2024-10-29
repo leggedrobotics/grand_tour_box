@@ -231,7 +231,7 @@ void AP20Node::monitor(const ros::TimerEvent&) {
 
         case RESTARTING_STREAMING: {
             ROS_INFO("STATE: RESTARTING_STREAMING");
-            if (restart_streaming_attempts_ <= 10) {
+            if (restart_streaming_attempts_ <= 20) {
                 ROS_INFO_STREAM("Restarting Streaming - attempt: " << restart_streaming_attempts_);
                 changeImuMode(false);
                 imu_counter_ = 0;
@@ -268,7 +268,8 @@ void AP20Node::monitor(const ros::TimerEvent&) {
                     changeImuMode(true);
                 }
                 if (steps_without_imu_messages_ >= 20000) {  // 20 seconds timeout
-                    ROS_INFO("No IMU message received for 20 seconds. Restarting AP20.");
+                    ROS_INFO("No IMU message received for 20 seconds. Restarting AP20, resetting timer.");
+                    steps_without_imu_messages_ = 0;
                     state_ = RESTARTING_AP20;
                 }
             }
@@ -277,7 +278,7 @@ void AP20Node::monitor(const ros::TimerEvent&) {
 
         case RUNNING: {
             ROS_INFO_THROTTLE(5.0, "STATE: RUNNING");
-            if (imu_counter_ > last_imu_counter_ || timestamp_counter_ > last_timestamp_counter_) {
+            if (imu_counter_ > last_imu_counter_) {
                 last_imu_counter_ = imu_counter_.load();
                 last_timestamp_counter_ = timestamp_counter_.load();
                 steps_without_imu_messages_ = 0;
