@@ -1,4 +1,4 @@
-#Generated with data of ROS time: 2024-10-10 10:11:23.535735369 
+#Generated with data of ROS time: 2024-10-10 10:11:23.535735369
 cam0:
   intrinsics: [706.8245284163328, 704.3733061977565, 758.7024518109201, 554.4257644444958]
   resolution: [1440, 1080]

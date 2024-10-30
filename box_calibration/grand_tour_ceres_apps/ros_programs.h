@@ -13,6 +13,7 @@
 #include "ros_parsers.h"
 #include "gtboxcalibration/voxel_2d.h"
 #include <gtboxcalibration/detectiongraphutils.h>
+#include <ros/callback_queue.h>
 
 struct CameraCovariance {
     Eigen::VectorXd rtvec_sigma;
@@ -24,6 +25,17 @@ struct OnlineCameraCameraProgram : public CameraCameraProgram {
     bool is_valid = false;
 
     OnlineCameraCameraProgram(OnlineCameraCameraParser);
+    ~OnlineCameraCameraProgram() {
+        recording_service_spinner_->stop();
+        general_work_spinner_->stop();
+    }
+
+    void run() {
+        while (ros::ok()) {
+            // Sleep to maintain the loop rate
+            loop_rate_.sleep();
+        }
+    }
 
 private:
     // Timer callback (runs every 5 seconds)
@@ -81,6 +93,16 @@ private:
                                                 const std::vector<unsigned int> &b) const;
 
     ros::NodeHandle nh_;
+    ros::NodeHandle recording_service_nh_;      // NodeHandle for service with dedicated queue
+
+    ros::CallbackQueue recording_service_queue_;
+    ros::CallbackQueue general_work_queue_;
+
+    std::unique_ptr<ros::AsyncSpinner> recording_service_spinner_;
+    std::unique_ptr<ros::AsyncSpinner> general_work_spinner_;
+
+    ros::Rate loop_rate_;
+
     ros::ServiceServer stopping_service_, start_recording_calibration_data_service_;
     std::string run_id_;
     std::vector<ros::Subscriber> subscribers_;
