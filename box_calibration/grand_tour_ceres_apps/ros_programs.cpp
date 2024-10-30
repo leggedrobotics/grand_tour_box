@@ -16,11 +16,13 @@
 #include <filesystem>  // C++17 and later
 
 
-OnlineCameraCameraProgram::OnlineCameraCameraProgram(OnlineCameraCameraParser parser) {
+OnlineCameraCameraProgram::OnlineCameraCameraProgram(OnlineCameraCameraParser parser) : loop_rate_(30.0) {
     run_id_ = getCurrentTimeFormatted();
-    start_recording_calibration_data_service_ = nh_.advertiseService(
+    recording_service_nh_.setCallbackQueue(&recording_service_queue_);
+    start_recording_calibration_data_service_ = recording_service_nh_.advertiseService(
             "camera_detection_recording_id", &OnlineCameraCameraProgram::startRecordingCalibrationDataServiceCallback,
             this);
+    nh_.setCallbackQueue(&general_work_queue_);
 
     const auto rostopic_camera_parameter_packs = PopulateCameraParameterPacks(parser.initial_guess_path,
                                                                               parser.initial_guess_path);
@@ -88,6 +90,12 @@ OnlineCameraCameraProgram::OnlineCameraCameraProgram(OnlineCameraCameraParser pa
         ROS_INFO_STREAM("Using " + first_frameid + " as the origin");
     }
     is_valid = true;
+
+    recording_service_spinner_ = std::make_unique<ros::AsyncSpinner>(1, &recording_service_queue_);
+    general_work_spinner_ = std::make_unique<ros::AsyncSpinner>(1, &general_work_queue_);
+
+    recording_service_spinner_->start();
+    general_work_spinner_->start();
 }
 
 bool OnlineCameraCameraProgram::addAlignmentData(ros::Time current_ros_time,

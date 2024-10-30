@@ -24,13 +24,7 @@ int main(int argc, char **argv) {
         ros::console::notifyLoggerLevelsChanged();
     }
 
-    ros::Rate loop_rate(30);
-
-    while (ros::ok())
-    {
-        ros::spinOnce();
-        loop_rate.sleep();
-    }
+    program.run();
 
     return 0;
 }
