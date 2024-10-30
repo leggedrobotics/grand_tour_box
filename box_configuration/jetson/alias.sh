@@ -11,6 +11,6 @@ alias l-calib-lidar='tmuxp load $(rospack find box_launch)/../tmux/jetson_calib_
 
 
 alias attach-jetson='tmux attach-session -t jetson'
-alias l-docker='/home/rsl/git/grand_tour_box/box_drivers_ros2/isaac_ros_common/scripts/run_recording.sh'
+alias l-docker='/data/workspaces/ros2_ws/src/isaac_ros_common/scripts/run_recording.sh'
 alias stop_recording='rosservice call /gt_box/rosbag_record_coordinator/stop_recording "verbose: false"'
 alias sync-clocks='/home/rsl/git/grand_tour_box/box_configuration/jetson/sync_clocks_jetson.sh'
