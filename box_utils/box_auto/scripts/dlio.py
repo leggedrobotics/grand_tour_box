@@ -11,7 +11,6 @@ import shutil
 MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
 
 WS = "/home/catkin_ws"
-# WS = "/home/jonfrey/workspaces/box_ws"
 PRE = f"source /opt/ros/noetic/setup.bash; source {WS}/devel/setup.bash;"
 PATTERNS = ["*_jetson_stim.bag", "*_tf_static.bag", "*_nuc_hesai_post_processed.bag"]
 
@@ -79,7 +78,7 @@ def launch_nodes():
     inputs = ",".join(inputs)
 
     merged_rosbag_path = os.path.join(MISSION_DATA, "merged.bag")
-    os.system(
+    print(
         f"python3 /home/jonfrey/git/grand_tour_box/box_utils/box_auto/scripts/merge_bags.py --input={inputs} --output={merged_rosbag_path}"
     )
 
