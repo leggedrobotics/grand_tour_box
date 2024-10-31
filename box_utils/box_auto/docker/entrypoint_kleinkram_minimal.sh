@@ -6,9 +6,11 @@ export HOME=/home/$HOST_USERNAME
 export USER=$HOST_USERNAME
 cd $HOME
 
+echo  $APIKEY
+
 klein endpoint set $ENDPOINT
 klein login --key $APIKEY
-mkdir "/mission_data"
+mkdir -p "/mission_data"
 export KLEINKRAM_ACTIVE=ACTIVE
 
 # Enable sudo access without password
@@ -24,13 +26,9 @@ export DISPLAY=:0.0
 
 if [ $# -gt 0 ]; then
     source /opt/ros/noetic/setup.bash || { echo "Failed to source ROS"; exit 1; }
-    source /home/catkin_ws/devel/setup.bash || { echo "Failed to source Catkin workspace"; exit 1; }
     "$@"
 else
     bash --rcfile /root/.bashrc
 fi
-
-# klein mission tag $MISSION_UUID "8525480c-aa6c-4c8c-9229-8193f7c8de77" "true" 
-## UUID of tagtype "processed". Thinking about allowing the tagtype name.
 
 figlet Exit GrandTour Docker + KK

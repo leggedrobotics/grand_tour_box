@@ -139,7 +139,7 @@ def process_rosbag(input_bag, image_topics, camera_info_topics, out_bag_path, ou
 
     if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
         uuid = os.environ["MISSION_UUID"]
-        os.system(f"klein mission upload --mission {uuid} --path {out_bag}")
+        os.system(f"klein mission upload --mission-uuid {uuid} --path {out_bag}")
         print(f"Rectified bag uploaded to kleinkram: {out_bag}")
     else:
         print(f"Finished processing. Rectified bag saved as: {out_bag_path}")

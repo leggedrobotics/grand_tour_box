@@ -22,6 +22,7 @@ pip3 install --upgrade pip
 # pip install rerun-sdk
 
 apt install -y libeigen3-dev
+pip3 install kleinkram
 
 mkdir -p /root/.ssh
 ssh-keyscan github.com >> /root/.ssh/known_hosts
