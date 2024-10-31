@@ -10,6 +10,22 @@ import shutil
 MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
 
 
+def fetch_multiple_files_kleinkram(patterns):
+    tmp_dir = "/mission_data/tmp"
+    os.makedirs(tmp_dir, exist_ok=True)
+
+    for pattern in patterns:
+        if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
+            uuid = os.environ["MISSION_UUID"]
+            os.system(f"klein mission download --mission-uuid {uuid} --local-path {tmp_dir} --pattern {pattern}")
+
+            # Move all files from /mission_data/tmp to /mission_data/
+            for file_name in os.listdir(tmp_dir):
+                source_file = os.path.join(tmp_dir, file_name)
+                destination_file = os.path.join("/mission_data", file_name)
+                shutil.move(source_file, destination_file)
+
+
 def undistort_image_fisheye(image, camera_info, new_camera_info=None):
     K = np.array(camera_info.K).reshape((3, 3))
     D = np.array(camera_info.D)
@@ -211,21 +227,13 @@ if __name__ == "__main__":
     tasks = {**tasks_hdr, **tasks_alphasense}
 
     # Make this folder with partents if exists okay
+    patterns = ["*" + task["in"]["pattern"] for task in tasks.values()]
+    fetch_multiple_files_kleinkram(patterns)
+
     tmp_dir = "/mission_data/tmp"
     os.makedirs(tmp_dir, exist_ok=True)
 
     for name, task in tasks.items():
-        if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
-            uuid = os.environ["MISSION_UUID"]
-            pattern = "*" + task["in"]["pattern"]
-            os.system(f"klein mission download --mission-uuid {uuid} --local-path {tmp_dir} --pattern {pattern}")
-
-            # Move all files from /mission_data/tmp to /mission_data/
-            for file_name in os.listdir(tmp_dir):
-                source_file = os.path.join(tmp_dir, file_name)
-                destination_file = os.path.join("/mission_data", file_name)
-                shutil.move(source_file, destination_file)
-
         bags = [str(s) for s in Path(MISSION_DATA).rglob("*" + task["in"]["pattern"])]
         print(f"\nProcess for {name} the following bags: \n", bags)
 

@@ -34,4 +34,5 @@
   <depend>tf_bag</depend>
   <depend>atn_position3_fuser</depend>
   <depend>ap20_driver_ros</depend>
+  <depend>direct_lidar_inertial_odometry</depend>
 </package>
