@@ -120,9 +120,6 @@ bool OnlineCameraCameraProgram::addAlignmentData(ros::Time current_ros_time,
         this->handleStationarityRequirement(stamp, observation, true);
         this->handleAddExtrinsicsCost(stamp, observation, true);
     }
-    if (!force) {
-        ROS_DEBUG("Add detection callback executed in: %f seconds", timer.elapsed().count());
-    }
     added_detections_publisher_[camera_detections.header.frame_id].publish(camera_detections);
     this->parsed_alignment_data.unique_timestamps.insert(stamp);
     this->parsed_alignment_data.observations[stamp][camera_detections.header.frame_id] = observation;
