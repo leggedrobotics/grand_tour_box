@@ -24,10 +24,12 @@ pip3 install --upgrade pip
 apt install -y libeigen3-dev
 pip3 install kleinkram
 
+# Required for hesai auto
+pip3 install psutil
+
 mkdir -p /root/.ssh
 ssh-keyscan github.com >> /root/.ssh/known_hosts
 ssh-keyscan bitbucket.org >> /root/.ssh/known_hosts
-
 
 custom_ps1="\[\e[0;34m\](box_auto) \[\e[0;32m\]\u@\h:\[\e[0;34m\]\W\$ \[\e[0m\]"$
 echo "PS1='$custom_ps1'" >> /root/.bashrc
