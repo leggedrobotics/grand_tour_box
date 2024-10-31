@@ -33,7 +33,7 @@ RUN /bin/bash -c '/opencv_gtsam.sh'
 
 COPY dependencies/grand_tour.sh /grand_tour.sh
 RUN sh -c "chmod +x /grand_tour.sh"
-# RUN --mount=type=ssh /bin/bash -c '/grand_tour.sh'
+RUN --mount=type=ssh /bin/bash -c '/grand_tour.sh'
 
 #==
 # Base image (save disk space)
@@ -51,7 +51,6 @@ RUN sh -c "chmod +x /grand_tour.sh"
 # RUN sh -c "chmod +x /ros.sh"
 # RUN /bin/bash -c '/ros.sh'
 
-RUN pip3 install kleinkram --pre --force-reinstall
 COPY entrypoint_kleinkram.sh /entrypoint_kleinkram.sh
 RUN chmod +x /entrypoint_kleinkram.sh
 

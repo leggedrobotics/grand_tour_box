@@ -13,11 +13,12 @@ print_usage() {
     echo "Options:"
     echo "  --kleinkram         Build kleinkram configuration"
     echo "  --kleinkram_minimal Build kleinkram minimal configuration"
-    echo "  --ros2             Build ROS2 configuration"
-    echo "  --full             Build full configuration"
-    echo "  --help             Show this help message"
+    echo "  --ros2              Build ROS2 configuration"
+    echo "  --full              Build full configuration"
+    echo "  --help              Show this help message"
+    echo "  --no-cache          Build without using cache"
     echo ""
-    echo "Example: $0 --kleinkram v1.0"
+    echo "Example: $0 --kleinkram"
 }
 
 # Check if we have at least one argument
