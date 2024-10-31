@@ -16,6 +16,7 @@ Optional:
   --command=CMD            Run specific command in container
   --mission-data=PATH      Mount mission data directory to /mission_data
   --debug                  Mount grand_tour_box repo for development
+  --env
 "
 
 # Default values
@@ -27,6 +28,7 @@ COMMAND=""
 MISSION_DATA_MOUNT=""
 DEBUG_MOUNT=""
 REPO_PATH="$HOME/git/grand_tour_box"  # Default repo path
+ENV_VARS=()
 
 # Read arguments
 for i in "$@"; do
@@ -80,6 +82,10 @@ for i in "$@"; do
             fi
             shift
             ;;
+        --env=*)
+            ENV_VARS+=("--env=${i#*=}")
+            shift
+            ;;
         *)
             echo "$__usage"
             exit 0
@@ -131,6 +137,7 @@ docker run --net=host \
     --gpus all \
     --volume $SSH_AUTH_SOCK:/ssh-agent \
     --env SSH_AUTH_SOCK=/ssh-agent \
+    "${ENV_VARS[@]}" \
     $MISSION_DATA_MOUNT \
     $DEBUG_MOUNT \
     $FULL_IMAGE \
