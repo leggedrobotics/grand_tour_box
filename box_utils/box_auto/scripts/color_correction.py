@@ -1,6 +1,5 @@
 import rosbag
 from cv_bridge import CvBridge
-import sys
 from pathlib import Path
 import os
 import yaml
@@ -44,7 +43,7 @@ def process_rosbag(input_bag, output_bag_path, image_topics, camera_info_topics,
             proc[camera_info_topic] = RawImagePipeline(use_gpu, config_file, calib_file)
             break  # We only need the first camera_info message
 
-    out_bag = rosbag.Bag(output_bag_path, "w", compression='lz4')
+    out_bag = rosbag.Bag(output_bag_path, "w", compression="lz4")
     total_messages = bag.get_message_count()
     try:
         for topic, msg, t in tqdm(bag.read_messages(), total=total_messages, desc="Processing Messages"):
@@ -86,9 +85,9 @@ def process_rosbag(input_bag, output_bag_path, image_topics, camera_info_topics,
         bag.close()
         out_bag.close()
 
-    if os.environ.get("KLEINKRAM_ACTIVE", False):
+    if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
         uuid = os.environ["MISSION_UUID"]
-        os.system( f"klein mission upload --mission {uuid} --path {output_bag_path}")
+        os.system(f"klein mission upload --mission {uuid} --path {output_bag_path}")
         print(f"Color corrected bag uploaded to kleinkram: {output_bag_path}")
     else:
         print(f"Finished processing. Color corrected bag saved as: {output_bag_path}")
@@ -96,12 +95,18 @@ def process_rosbag(input_bag, output_bag_path, image_topics, camera_info_topics,
 
 if __name__ == "__main__":
     config_file = str(Path(__file__).parent / "color_calib_file.yaml")
-    pattern = "_nuc_alphasense.bag" # "_nuc_alphasense_updated_intrinsics.bag"
-    camera_info_topics = [f"/gt_box/alphasense_driver_node/cam{n}/color/camera_info" for n in [1,2,3,4,5]]
-    image_topics = [f"/gt_box/alphasense_driver_node/cam{n}/color/image/compressed" for n in [1,2,3,4,5]]
+    pattern = "_nuc_alphasense.bag"  # "_nuc_alphasense_updated_intrinsics.bag"
+    camera_info_topics = [f"/gt_box/alphasense_driver_node/cam{n}/color/camera_info" for n in [1, 2, 3, 4, 5]]
+    image_topics = [f"/gt_box/alphasense_driver_node/cam{n}/color/image/compressed" for n in [1, 2, 3, 4, 5]]
 
-    output_pattern = "_nuc_alphasense_color_corrected.bag"
-    bags = [str(s) for s in Path(MISSION_DATA).glob("*"+pattern) if output_pattern not in str(s)]
+    if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
+        uuid = os.environ["MISSION_UUID"]
+        os.system(
+            f"klein mission download --mission-uuid {uuid} --local-path /mission_data --pattern *_nuc_alphasense.bag"
+        )
+
+    output_pattern = "_nuc_alphasense_cor.bag"
+    bags = [str(s) for s in Path(MISSION_DATA).glob("*" + pattern) if output_pattern not in str(s)]
     print("Process bags:", bags)
     for input_bag in bags:
         output_bag_path = input_bag.replace(pattern, output_pattern)

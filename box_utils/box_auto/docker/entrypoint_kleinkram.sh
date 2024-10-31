@@ -9,7 +9,7 @@ cd $HOME
 klein endpoint set $ENDPOINT
 klein login --key $APIKEY
 mkdir "/mission_data"
-klein mission download $MISSION_UUID "/mission_data"
+export KLEINKRAM_ACTIVE=ACTIVE
 
 # Enable sudo access without password
 # echo "root ALL=(ALL) NOPASSWD:ALL" >> sudo /etc/sudoers
@@ -21,7 +21,7 @@ export DISPLAY=:0.0
 # Proceed as host user with superuser permissions
 # Maybe add sourcing of .bashrc
 
-export KLEINKRAM_ACTIVE=true
+
 
 if [ $# -gt 0 ]; then
     source /opt/ros/noetic/setup.bash || { echo "Failed to source ROS"; exit 1; }
