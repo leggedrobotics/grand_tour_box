@@ -110,7 +110,7 @@ private:
     std::map<std::string, ros::Publisher> added_detections_publisher_;
     std::map<std::string, ros::Publisher> processed_detections_publisher_;
     std::map<std::string, ros::Publisher> extrinsics_detections_publisher_;
-    double corner_detection2d_voxel_size_ = 3;
+    double corner_detection2d_voxel_size_ = 8;
     std::map<std::string, VoxelMap2D> corner_detection2d_voxel_map_;
     ros::Publisher output_sigma_publisher_, intrinsics_extrinsics_publisher_, adjacency_publisher_,
             calibration_data_collection_state_publisher_;

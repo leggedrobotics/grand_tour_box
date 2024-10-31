@@ -136,14 +136,22 @@ class CornerVisualizer:
         y_residuals = np.array([corner.y for corner in msg.residuals2d])[:, None]
         residuals = np.hstack((x_residuals, y_residuals))
 
+        num_points = len(residuals)
+
+        # If there are more than 1000 points, randomly sample 1000; otherwise, use all points
+        if num_points > 1000:
+            indices = np.random.choice(num_points, 1000, replace=False)
+            sampled_residuals = residuals[indices]
+        else:
+            sampled_residuals = residuals
+
         x_coords = np.array([corner.x for corner in msg.corners2d])[:, None]
         y_coords = np.array([corner.y for corner in msg.corners2d])[:, None]
         points2d = np.hstack((x_coords, y_coords))
-        # self.accumulated_residuals[header.stamp.to_nsec()] = residuals
         self.accumulated_coords = points2d
 
         rr.log(f"{self.image_topic}_residuals",
-               rr.Points2D(residuals, colors=[34, 138, 167]))
+               rr.Points2D(sampled_residuals, colors=[34, 138, 167]))
         rr.log(f"{self.image_topic}_residuals/1px", rr.Boxes2D(mins=[-1, -1], sizes=[2, 2], colors=[0, 255, 0]))
         rr.log(f"{self.image_topic}_residuals/3px", rr.Boxes2D(mins=[-3, -3], sizes=[6, 6], colors=[255, 0, 0]))
 
@@ -154,7 +162,6 @@ class CornerVisualizer:
         x_residuals = np.array([corner.x for corner in msg.residuals2d])[:, None]
         y_residuals = np.array([corner.y for corner in msg.residuals2d])[:, None]
         residuals = np.hstack((x_residuals, y_residuals))
-        # self.accumulated_extrinsics_residuals[header.stamp.to_nsec()] = residuals
 
         rr.log(f"{self.image_topic}_residuals/extrinsic_alignment",
                rr.Points2D(residuals, colors=[255, 165, 0]))
