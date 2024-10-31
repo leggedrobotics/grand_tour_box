@@ -174,7 +174,7 @@ bool OnlineCameraCameraProgram::handleAddIntrinsicsCost(unsigned long long stamp
                                                         bool force) {
     const bool added_to_observation_voxel_map =
             corner_detection2d_voxel_map_[new_observation.sensor_name].addToMapIfAnyIsBelowCapacity(
-                    new_observation.observations2d, 10);
+                    new_observation.observations2d, 1);
     if (added_to_observation_voxel_map) {
         const auto tentative_residual_block =
                 addBoardPoseParameterAndCameraIntrinsicsResidualFromObservation(stamp, new_observation);
