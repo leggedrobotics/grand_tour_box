@@ -67,6 +67,11 @@ apt install -y ros-noetic-eigen-conversions
 apt install -y ros-noetic-image-transport
 apt install -y ros-noetic-compressed-depth-image-transport
 apt install -y ros-noetic-diagnostic-updater
+apt install -y libgflags-dev
+apt install -y ros-noetic-interactive-markers
+apt install -y ros-noetic-tf2-eigen
+
+apt update -y
 # Build workspace for postprocessing
 cd /home/catkin_ws
 catkin build box_auto
