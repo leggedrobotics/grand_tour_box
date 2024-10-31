@@ -60,7 +60,7 @@ def process_bags(reference_bag_path, tf_static_bag_path, output_bag_path, start_
             else:
                 current_time = end_time
 
-    if os.environ.get("KLEINKRAM_ACTIVE", False):
+    if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
         uuid = os.environ["MISSION_UUID"]
         os.system(f"klein mission upload --mission {uuid} --path {output_bag_path}")
         print(f"TF Static bag uploaded to kleinkram: {output_bag_path}")
@@ -69,6 +69,9 @@ def process_bags(reference_bag_path, tf_static_bag_path, output_bag_path, start_
 
 
 def main():
+    if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
+        uuid = os.environ["MISSION_UUID"]
+        os.system(f"klein mission download --mission-uuid {uuid} --local-path /mission_data --pattern *_nuc_livox")
 
     reference_bag_path, suc = get_bag(MISSION_DATA, "*_nuc_livox.bag")
     tf_static_bag_path = os.path.join(get_package_path("box_calibration"), "calibration/tf_static.bag")

@@ -52,7 +52,7 @@ def merge_bags_single(input_bag, output_bag, topics="*", verbose=False):
     if verbose:
         print("Total: Included %d messages and skipped %d" % (total_included_count, total_skipped_count))
 
-    if os.environ.get("KLEINKRAM_ACTIVE", False):
+    if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
         uuid = os.environ["MISSION_UUID"]
         os.system(f"klein mission upload --mission {uuid} --path {output_bag}")
         os.system(f"cp {output_bag} /out")

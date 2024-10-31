@@ -5,19 +5,22 @@ from sensor_msgs.msg import CameraInfo
 import numpy as np
 from pathlib import Path
 import os
+import shutil
+
 MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
+
 
 def undistort_image_fisheye(image, camera_info, new_camera_info=None):
     K = np.array(camera_info.K).reshape((3, 3))
     D = np.array(camera_info.D)
-    
+
     h, w = image.shape[:2]
-    
+
     if new_camera_info is None:
         new_camera_matrix = cv2.fisheye.estimateNewCameraMatrixForUndistortRectify(
             K, D, (w, h), np.eye(3), balance=0.0, fov_scale=1.0
         )
-        
+
         new_camera_info = CameraInfo()
         new_camera_info.header = camera_info.header
         new_camera_info.width = camera_info.width
@@ -28,25 +31,21 @@ def undistort_image_fisheye(image, camera_info, new_camera_info=None):
         new_camera_info.distortion_model = "plumb_bob"
         new_P = np.eye(4)
         new_P[:3, :3] = new_camera_matrix
-        new_camera_info.P = new_P[:3,:4].flatten().tolist()
+        new_camera_info.P = new_P[:3, :4].flatten().tolist()
         # Initialize undistortion map
 
-        
     else:
         new_camera_info.header = camera_info.header
         new_camera_matrix = np.array(new_camera_info.K).reshape((3, 3))
 
-    map1, map2 = cv2.fisheye.initUndistortRectifyMap(
-        K, D, np.eye(3), new_camera_matrix, (w, h), cv2.CV_16SC2
-    )
+    map1, map2 = cv2.fisheye.initUndistortRectifyMap(K, D, np.eye(3), new_camera_matrix, (w, h), cv2.CV_16SC2)
     # Apply undistortion
-    undistorted_image = cv2.remap(
-        image, map1, map2, interpolation=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT
-    )
+    undistorted_image = cv2.remap(image, map1, map2, interpolation=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
 
     return undistorted_image, new_camera_info
 
-def undistort_image(image, camera_info, new_camera_info = None):
+
+def undistort_image(image, camera_info, new_camera_info=None):
     # Get camera intrinsic parameters
     K = np.array(camera_info.K).reshape((3, 3))  # Intrinsic matrix
     D = np.array(camera_info.D)  # Distortion coefficients
@@ -75,7 +74,7 @@ def undistort_image(image, camera_info, new_camera_info = None):
     return undistorted_image, new_camera_info
 
 
-def process_rosbag(input_bag, image_topics, camera_info_topics,  out_bag_path, out_image_topics, out_camera_info_topics ):
+def process_rosbag(input_bag, image_topics, camera_info_topics, out_bag_path, out_image_topics, out_camera_info_topics):
     # Initialize ROS bag and CvBridge
     bag = rosbag.Bag(input_bag, "r")
 
@@ -99,7 +98,7 @@ def process_rosbag(input_bag, image_topics, camera_info_topics,  out_bag_path, o
 
     print("Camera info obtained for all topics. Starting image undistortion...")
 
-    out_bag = rosbag.Bag(out_bag_path, "w", compression='lz4')
+    out_bag = rosbag.Bag(out_bag_path, "w", compression="lz4")
     try:
         new_camera_info = None
         for topic, msg, t in bag.read_messages():
@@ -121,9 +120,8 @@ def process_rosbag(input_bag, image_topics, camera_info_topics,  out_bag_path, o
                 # Undistort the image
                 if "equidistant" in camera_info.distortion_model:
                     undistorted_image, new_camera_info = undistort_image_fisheye(cv_image, camera_info, new_camera_info)
-                else:   
+                else:
                     undistorted_image, new_camera_info = undistort_image(cv_image, camera_info, new_camera_info)
-
 
                 if not compressed:
                     # Convert back to ROS Image message
@@ -139,17 +137,18 @@ def process_rosbag(input_bag, image_topics, camera_info_topics,  out_bag_path, o
         bag.close()
         out_bag.close()
 
-    if os.environ.get("KLEINKRAM_ACTIVE", False):
+    if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
         uuid = os.environ["MISSION_UUID"]
-        os.system( f"klein mission upload --mission {uuid} --path {out_bag}")
+        os.system(f"klein mission upload --mission {uuid} --path {out_bag}")
         print(f"Rectified bag uploaded to kleinkram: {out_bag}")
     else:
         print(f"Finished processing. Rectified bag saved as: {out_bag_path}")
 
 
 if __name__ == "__main__":
-    tasks_hdr = { 
-        "hdr_front":{
+
+    tasks_hdr = {
+        "hdr_front": {
             "in": {
                 "camera_info_topics": ["/gt_box/hdr_front/camera_info"],
                 "image_topics": ["/gt_box/hdr_front/image_raw/compressed"],
@@ -159,9 +158,9 @@ if __name__ == "__main__":
                 "camera_info_topics": ["/gt_box/hdr_front_rect/camera_info"],
                 "image_topics": ["/gt_box/hdr_front_rect/image_rect/compressed"],
                 "pattern": "_jetson_hdr_front_rect.bag",
-            }
+            },
         },
-        "hdr_left":{
+        "hdr_left": {
             "in": {
                 "camera_info_topics": ["/gt_box/hdr_left/camera_info"],
                 "image_topics": ["/gt_box/hdr_left/image_raw/compressed"],
@@ -171,9 +170,9 @@ if __name__ == "__main__":
                 "camera_info_topics": ["/gt_box/hdr_left_rect/camera_info"],
                 "image_topics": ["/gt_box/hdr_left_rect/image_rect/compressed"],
                 "pattern": "_jetson_hdr_left_rect.bag",
-            }
+            },
         },
-        "hdr_right":{
+        "hdr_right": {
             "in": {
                 "camera_info_topics": ["/gt_box/hdr_right/camera_info"],
                 "image_topics": ["/gt_box/hdr_right/image_raw/compressed"],
@@ -183,31 +182,59 @@ if __name__ == "__main__":
                 "camera_info_topics": ["/gt_box/hdr_right_rect/camera_info"],
                 "image_topics": ["/gt_box/hdr_right_rect/image_rect/compressed"],
                 "pattern": "_jetson_hdr_right_rect.bag",
-            }
+            },
         },
     }
 
-    tasks_alphasense= {
-        "alphasense":{
+    tasks_alphasense = {
+        "alphasense": {
             "in": {
-                "camera_info_topics": [f"/gt_box/alphasense_driver_node/cam{i}/color/camera_info" for i in range(1,6)],
-                "image_topics": [f"/gt_box/alphasense_driver_node/cam{i}/color_corrected/image/compressed" for i in range(1,6)],
+                "camera_info_topics": [f"/gt_box/alphasense_driver_node/cam{i}/color/camera_info" for i in range(1, 6)],
+                "image_topics": [
+                    f"/gt_box/alphasense_driver_node/cam{i}/color_corrected/image/compressed" for i in range(1, 6)
+                ],
                 "pattern": "_nuc_alphasense_color_corrected.bag",
             },
             "out": {
-                "camera_info_topics": [f"/gt_box/alphasense_driver_node/cam{i}/color_corrected_rect/camera_info" for i in range(1,6)],
-                "image_topics": [f"/gt_box/alphasense_driver_node/cam{i}/color_corrected_rect/image_rect/compressed" for i in range(1,6)],
+                "camera_info_topics": [
+                    f"/gt_box/alphasense_driver_node/cam{i}/color_corrected_rect/camera_info" for i in range(1, 6)
+                ],
+                "image_topics": [
+                    f"/gt_box/alphasense_driver_node/cam{i}/color_corrected_rect/image_rect/compressed"
+                    for i in range(1, 6)
+                ],
                 "pattern": "_nuc_alphasense_color_corrected_rect.bag",
             },
         }
     }
 
-    tasks = {**tasks_hdr, **tasks_alphasense}    
+    tasks = {**tasks_hdr, **tasks_alphasense}
+
+    # Make this folder with partents if exists okay
+    tmp_dir = "/mission_data/tmp"
+    os.makedirs(tmp_dir, exist_ok=True)
+
     for name, task in tasks.items():
+        if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
+            uuid = os.environ["MISSION_UUID"]
+            pattern = "*" + task["in"]["pattern"]
+            os.system(f"klein mission download --mission-uuid {uuid} --local-path {tmp_dir} --pattern {pattern}")
+
+            # Move all files from /mission_data/tmp to /mission_data/
+            for file_name in os.listdir(tmp_dir):
+                source_file = os.path.join(tmp_dir, file_name)
+                destination_file = os.path.join("/mission_data", file_name)
+                shutil.move(source_file, destination_file)
 
         bags = [str(s) for s in Path(MISSION_DATA).rglob("*" + task["in"]["pattern"])]
         print(f"\nProcess for {name} the following bags: \n", bags)
 
         for input_bag in bags:
-            process_rosbag(str(input_bag), task["in"]["image_topics"], task["in"]["camera_info_topics"], 
-                           str(input_bag).replace(task["in"]["pattern"],task["out"]["pattern"]), task["out"]["image_topics"], task["out"]["camera_info_topics"])
+            process_rosbag(
+                str(input_bag),
+                task["in"]["image_topics"],
+                task["in"]["camera_info_topics"],
+                str(input_bag).replace(task["in"]["pattern"], task["out"]["pattern"]),
+                task["out"]["image_topics"],
+                task["out"]["camera_info_topics"],
+            )
