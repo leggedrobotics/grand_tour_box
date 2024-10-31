@@ -13,8 +13,8 @@ cd /home/opencv_gtsam_ws
 
 
 # Install OpenCV optionally
-# cd /home/opencv_gtsam_ws/src; git clone https://github.com/ori-drs/opencv_catkin.git --depth 1
-# catkin build opencv_catkin --cmake-args -DCUDA_ARCH_BIN=8.6
+cd /home/opencv_gtsam_ws/src; git clone https://github.com/ori-drs/opencv_catkin.git --depth 1
+catkin build opencv_catkin --cmake-args -DCUDA_ARCH_BIN=8.6
 
 catkin build gtsam_catkin
 echo "source /home/opencv_gtsam_ws/devel/setup.bash" >> /root/.bashrc

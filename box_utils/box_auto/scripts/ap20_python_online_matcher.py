@@ -284,7 +284,7 @@ if __name__ == "__main__":
     if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
         uuid = os.environ["MISSION_UUID"]
         os.system(
-            f"klein mission download --mission-uuid {uuid} --local-path /mission_data --pattern *_jetson_ap20_aux"
+            f"klein mission download --mission-uuid {uuid} --local-path /mission_data --pattern *_jetson_ap20_aux.bag"
         )
 
     ap20_bag = get_bag(MISSION_DATA, "*_jetson_ap20_aux.bag")
