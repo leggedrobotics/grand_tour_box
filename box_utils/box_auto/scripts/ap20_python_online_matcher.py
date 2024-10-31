@@ -253,7 +253,7 @@ def read_bag_file(bag_path):
 
     if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
         uuid = os.environ["MISSION_UUID"]
-        os.system(f"klein mission upload --mission {uuid} --path {output_bag_path}")
+        os.system(f"klein mission upload --mission-uuid {uuid} --path {output_bag_path}")
         print(f"AP20_synced bag uploaded to kleinkram: {output_bag_path}")
     else:
         print(f"Finished processing. AP20_synced bag saved as: {output_bag_path}")
