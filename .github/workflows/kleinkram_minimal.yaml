@@ -43,7 +43,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v4
         with:
-          context: .
+          context: box_utils/box_auto/docker/
           file: box_utils/box_auto/docker/box_kleinkram_minimal.Dockerfile
           push: true
           tags: rslethz/grand_tour_box:kleinkram_minimal
