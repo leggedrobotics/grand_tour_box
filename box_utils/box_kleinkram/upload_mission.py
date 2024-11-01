@@ -42,4 +42,4 @@ upload.sort()
 mission_name = folder.name
 project = "GrandTourDev"
 files_to_upload = " --path " + " --path ".join(files_to_upload)
-os.system(f"klein upload {files_to_upload} --project {project} --mission {mission_name}")
+os.system(f"klein upload --create-mision {files_to_upload} --project {project} --mission {mission_name}")
