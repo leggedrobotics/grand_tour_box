@@ -101,6 +101,7 @@ sudo systemctl enable pigpiod
 sudo systemctl start pigpiod
 
 
+# Instructions are outdated and need to be updated.
 # Installing ADIS timestamping - kernel modules add persistent
 sudo apt install -y raspberrypi-kernel-headers
 make
