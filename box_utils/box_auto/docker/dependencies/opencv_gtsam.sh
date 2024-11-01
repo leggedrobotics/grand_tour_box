@@ -16,5 +16,7 @@ cd /home/opencv_gtsam_ws
 cd /home/opencv_gtsam_ws/src; git clone https://github.com/ori-drs/opencv_catkin.git --depth 1
 catkin build opencv_catkin --cmake-args -DCUDA_ARCH_BIN=8.6
 
+
+apt install -y libeigen3-dev
 catkin build gtsam_catkin
 echo "source /home/opencv_gtsam_ws/devel/setup.bash" >> /root/.bashrc
