@@ -7,3 +7,7 @@ rm ~/.bashrc; ln -s /home/rsl/git/grand_tour_box/box_configuration/anymal/npc/.b
 ln -s /data /home/rsl/git/grand_tour_box/box_utils/box_recording/
 
 catkin build launch_anymal
+
+sudo cp /home/rsl/git/grand_tour_box/box_configuration/anymal/lpc/powerline.service /etc/systemd/system/powerline.service
+sudo systemctl daemon-reload
+sudo systemctl enable powerline

@@ -104,7 +104,8 @@ lpc:
       - /pdb/intrinsic_state                                                            
       - /pdb/power_state                                                               
       - /twist_mux/selected_input                                                             
-      - /twist_mux/twist 
+      - /twist_mux/twist
+      - /anyjoy/rcu
     anymal_imu:
       - /sensors/imu
     state_estimator:
@@ -115,8 +116,16 @@ lpc:
     depth_cameras:
       - /depth_camera_front_upper/depth/camera_info
       - /depth_camera_front_upper/depth/image_rect_raw
+      - /depth_camera_front_upper/camera_timestamping_info
       - /depth_camera_rear_upper/depth/camera_info
       - /depth_camera_rear_upper/depth/image_rect_raw
+      - /depth_camera_rear_upper/camera_timestamping_info
+      - /depth_camera_front_lower/depth/camera_info
+      - /depth_camera_front_lower/depth/image_rect_raw
+      - /depth_camera_front_lower/camera_timestamping_info
+      - /depth_camera_rear_lower/depth/camera_info
+      - /depth_camera_rear_lower/depth/image_rect_raw
+      - /depth_camera_rear_lower/camera_timestamping_info
     tf:
       - /tf
       - /tf_static
@@ -128,8 +137,10 @@ npc:
     depth_cameras:
       - /depth_camera_left/depth/camera_info
       - /depth_camera_left/depth/image_rect_raw
+      - /depth_camera_left/depth/camera_timestamping_info
       - /depth_camera_right/depth/camera_info
       - /depth_camera_right/depth/image_rect_raw
+      - /depth_camera_right/depth/camera_timestamping_info
     velodyne:
       - /lidar/packets
       - /lidar/time_sync_status

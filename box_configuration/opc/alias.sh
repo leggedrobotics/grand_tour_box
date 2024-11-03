@@ -3,7 +3,7 @@
 alias tk='tmux kill-server'
 alias tk_dev='tmux kill-session -a'
 alias box='terminator -l box && exit'
-alias robot='terminator -l box_robot_new && exit'
+alias robot='terminator -l box_robot && exit'
 alias auto='terminator -l box_auto && exit'
 alias reset_chrony='sudo systemctl restart chrony.service'
 

@@ -1,0 +1,13 @@
+[Unit]
+Description=ROS Power Line Activation Service
+After=anymal-customer-12V-startup.target
+
+[Service]
+Type=simple
+User=rsl
+ExecStart=/bin/bash -c 'source /opt/ros/noetic/setup.bash && source /home/rsl/catkin_ws/devel/setup.bash && python3 /home/rsl/git/grand_tour_box/box_configuration/anymal/lpc/powerline.py'
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

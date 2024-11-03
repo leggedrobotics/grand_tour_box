@@ -21,7 +21,7 @@ def merge_bags_single(input_bag, output_bag, topics="*", verbose=False):
         print("Matching topics against patters: '%s'" % " ".join(topics))
 
     with Bag(output_bag, "w", compression="lz4") as o:
-        with tqdm.tqdm(total=len(input_bag), desc=f"Merging {prefix}", unit="subbags", colour="green") as pbar:
+        with tqdm.tqdm(total=len(input_bag), desc="Merging", unit="subbags", colour="green") as pbar:
             for ifile in input_bag:
                 matchedtopics = []
                 included_count = 0
@@ -82,7 +82,7 @@ if __name__ == "__main__":
             grouped_files[prefix].append(file)
 
     # Merge bags
-    with tqdm.tqdm(total=len(grouped_files), desc=f"Merging {prefix}", unit="bags") as pbar:
+    with tqdm.tqdm(total=len(grouped_files), desc="Merging", unit="bags") as pbar:
 
         for prefix, files in grouped_files.items():
 
