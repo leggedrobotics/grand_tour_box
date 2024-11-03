@@ -66,6 +66,8 @@ def main(args):
                     "_lpc_locomotion.bag",
                     "_lpc_state_estimator.bag",
                     "_lpc_tf.bag",
+                    ".log",
+                    ".yaml",
                 ]
                 include_patterns = " ".join([f"--include='*{key}'" for key in keys])
                 rsync_part2 = f":/data/{directory}* . --include=*/ {include_patterns} --exclude='*' "

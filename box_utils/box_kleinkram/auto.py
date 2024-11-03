@@ -114,7 +114,7 @@ def process_mission_data(mission_name):
     if upload_kk:
         project = "GrandTour"
         files_to_upload_str = " --path " + " --path ".join(upload)
-        os.system(f"klein upload {files_to_upload_str} --project {project} --mission {mission_name} --create-mission")
+        print(f"klein upload {files_to_upload_str} --project {project} --mission {mission_name} --create-mission")
 
     return upload_kk
 

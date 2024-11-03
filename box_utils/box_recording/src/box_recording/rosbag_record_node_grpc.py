@@ -19,6 +19,7 @@ import stop_recording_pb2
 import stop_recording_pb2_grpc
 from box_recording_helper.store_debug_logs_to_folder import store_debug_logs_to_folder
 
+
 class StartRecordingServicer(start_recording_pb2_grpc.StartRecordingServicer):
     def __init__(self, recorder_node):
         self.recorder_node = recorder_node
@@ -27,12 +28,14 @@ class StartRecordingServicer(start_recording_pb2_grpc.StartRecordingServicer):
         self.recorder_node.start_recording_time = rospy.Time.now()
         message = ""
         timestamp = request.timestamp
-        bag_base_path = os.path.join(self.recorder_node.data_path, timestamp)
-        Path(bag_base_path).mkdir(parents=True, exist_ok=True)
+        self.recorder_node.bag_base_path = os.path.join(self.recorder_node.data_path, timestamp)
+        Path(self.recorder_node.bag_base_path).mkdir(parents=True, exist_ok=True)
 
         # Check if we're on lpc. If so, dump rosparams to yaml file.
         if self.recorder_node.node.find("lpc") != -1:
-            yaml_file_path = os.path.join(bag_base_path, f"{timestamp}_{self.recorder_node.node}.yaml")
+            yaml_file_path = os.path.join(
+                self.recorder_node.bag_base_path, f"{timestamp}_{self.recorder_node.node}.yaml"
+            )
             rosparam.dump_params(yaml_file_path, "/")
 
         topic_cfgs = request.topics.split(" ")
@@ -47,7 +50,9 @@ class StartRecordingServicer(start_recording_pb2_grpc.StartRecordingServicer):
             bag_configs[bag_name] += topic_name + " "
 
         for bag_name, topics in bag_configs.items():
-            bag_path = os.path.join(bag_base_path, timestamp + "_" + self.recorder_node.node + "_" + bag_name)
+            bag_path = os.path.join(
+                self.recorder_node.bag_base_path, timestamp + "_" + self.recorder_node.node + "_" + bag_name
+            )
             bash_command = f"rosrun box_recording record_bag.sh {bag_path} {topics} __name:=record_{self.recorder_node.node}_{bag_name}"
             self.recorder_node.processes.append(subprocess.Popen(bash_command, shell=True, stderr=subprocess.PIPE))
             self.recorder_node.bag_running = True
@@ -64,7 +69,11 @@ class StopRecordingServicer(stop_recording_pb2_grpc.StopRecordingServicer):
     def SendMessage(self, request, context):
 
         if self.recorder_node.store_debug_logs:
-            store_debug_logs_to_folder(self.recorder_node.start_recording_time, directory="/home/rsl/.ros", copy_to=os.path.join( self.bag_base_path, "ros_logs_" + self.recorder_node.node))
+            store_debug_logs_to_folder(
+                self.recorder_node.start_recording_time,
+                directory="/home/rsl/.ros",
+                copy_to=os.path.join(self.recorder_node.bag_base_path, "ros_logs_" + self.recorder_node.node),
+            )
 
         def terminate_process_and_children(p):
             process = psutil.Process(p.pid)
