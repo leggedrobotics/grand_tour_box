@@ -17,7 +17,7 @@
 
 
 OnlineCameraCameraProgram::OnlineCameraCameraProgram(OnlineCameraCameraParser parser) : loop_rate_(30.0) {
-    run_id_ = getCurrentTimeFormatted();
+    run_id_ = getCurrentTimeFormatted() + "_camera_calibration";
     recording_service_nh_.setCallbackQueue(&recording_service_queue_);
     start_recording_calibration_data_service_ = recording_service_nh_.advertiseService(
             "camera_detection_recording_id", &OnlineCameraCameraProgram::startRecordingCalibrationDataServiceCallback,
