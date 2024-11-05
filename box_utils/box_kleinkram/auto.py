@@ -31,12 +31,15 @@ def shell_run(cmd, cwd=None, env={}, time=True, continue_on_error=True):
             raise RuntimeError(f"Error Return non 0 --- while executing {cmd}")
 
 
-def process_mission_data(mission_name):
-    MISSION_DATA = f"/data/{mission_name}"
+def process_mission_data(data_folder, mission_name):
+    MISSION_DATA = os.path.join(data_folder, mission_name)
     cmds = []
 
     if LOCAL_HOSTNAME == "jetson":
         upload_kk = True
+        cmds.append(
+            f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/repair_bags.py"
+        )
         cmds.append(
             f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/mcap_to_rosbag.py"
         )
@@ -64,6 +67,9 @@ def process_mission_data(mission_name):
     elif LOCAL_HOSTNAME == "nuc":
         upload_kk = True
         cmds.append(
+            f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/repair_bags.py"
+        )
+        cmds.append(
             f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/merge_mission.py"
         )
         cmds.append(
@@ -82,6 +88,9 @@ def process_mission_data(mission_name):
     elif LOCAL_HOSTNAME == "anymal-d039-lpc" or LOCAL_HOSTNAME == "anymal-d039-npc":
         upload_kk = False
         cmds.append(
+            f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/repair_bags.py"
+        )
+        cmds.append(
             f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/merge_mission.py"
         )
         keys = [
@@ -95,6 +104,48 @@ def process_mission_data(mission_name):
             "_lpc_state_estimator.bag",
             "_lpc_tf.bag",
         ]
+    elif LOCAL_HOSTNAME == "opc":
+        upload_kk = False
+        cmds.append(
+            f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/repair_bags.py"
+        )
+        cmds.append(
+            f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/merge_mission.py"
+        )
+        cmds.append(
+            f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/export_raw_imu_bag.py"
+        )
+        keys = [
+            "_npc_depth_cameras.bag",
+            "_npc_elevation_mapping.bag",
+            "_npc_velodyne.bag",
+            "_lpc_anymal_imu.bag",
+            "_lpc_depth_cameras.bag",
+            "_lpc_general.bag",
+            "_lpc_locomotion.bag",
+            "_lpc_state_estimator.bag",
+            "_lpc_tf.bag",
+            "_tf_static.bag",
+            "_nuc_hesai_post_processed.bag",
+            "_nuc_utils.bag",
+            "_nuc_tf.bag",
+            "_nuc_livox.bag",
+            "_nuc_hesai.bag",
+            "_nuc_cpt7.bag",
+            "_nuc_alphasense.bag",
+            "_jetson_utils.bag",
+            "_jetson_stim.bag",
+            "_jetson_ap20_aux.bag",
+            "_jetson_adis.bag",
+            "_jetson_zed2i_tf.bag",
+            "_jetson_zed2i_prop.bag",
+            "_jetson_zed2i_images.bag",
+            "_jetson_zed2i_depth.bag",
+            "_jetson_hdr_right_raw.bag",
+            "_jetson_hdr_left_raw.bag",
+            "_jetson_hdr_front_raw.bag",
+        ]
+
     print(LOCAL_HOSTNAME)
 
     for cmd in cmds:
@@ -121,11 +172,13 @@ def process_mission_data(mission_name):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Process and upload mission data.")
-    parser.add_argument("mission_names", nargs="+", help="One or more mission names to process.")
+    parser.add_argument("--data_folder", default="/data", help="Base path")
+    parser.add_argument("--mission_names", nargs="+", help="One or more mission names to process.")
+
     args = parser.parse_args()
 
     for mission_name in args.mission_names:
-        upload_kk = process_mission_data(mission_name)
+        upload_kk = process_mission_data(args.data_folder, mission_name)
 
     if not upload_kk:
         print("boxi get_data --lpc --npc --directory ", " ".join(args.mission_names))
