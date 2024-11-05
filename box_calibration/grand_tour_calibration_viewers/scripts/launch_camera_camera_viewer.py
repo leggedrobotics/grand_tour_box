@@ -199,12 +199,19 @@ class CameraCameraViewerBlueprintNode:
                rr.LineStrips2D([[self.node_positions[name_a], self.node_positions[name_b]]],
                                labels=[f"{str(msg.capacity.data)}"]))
 
+    def sort_sigmas(self):
+        # Sort each dictionary by keys
+        self.rotation_sigma = dict(sorted(self.rotation_sigma.items()))
+        self.camera_position_sigma = dict(sorted(self.camera_position_sigma.items()))
+        self.projection_sigma = dict(sorted(self.projection_sigma.items()))
+
     def sigma_callback(self, msg: CameraIntrinsicsExtrinsicsSigma):
         stamp = msg.header.stamp.to_nsec()
         rr.set_time_nanos("camera_calibration_time", stamp)
         self.rotation_sigma[msg.header.frame_id] = np.array(msg.rvectvec_sigma[:3])
         self.camera_position_sigma[msg.header.frame_id] = np.array(msg.rvectvec_sigma[-3:])
         self.projection_sigma[msg.header.frame_id] = np.array(msg.fxfycxcy_sigma)
+        self.sort_sigmas()
 
         header = f"| **Index**       | **Camera Name** |\n| ----------------- | --------------- |\n"
         camera_names = "\n".join([f"| {k}  | {v} |" for k, v in enumerate(self.rotation_sigma.keys())])
@@ -213,18 +220,16 @@ class CameraCameraViewerBlueprintNode:
         red = (255, 0, 0)
         green = (0, 255, 0)
 
-        rotation_sigmas = np.rad2deg(np.array([np.max(x) for x in self.rotation_sigma.values()
-                                               if len(x)]))
+        rotation_sigmas = np.rad2deg(np.array([np.max(x) if len(x) else 0 for x in self.rotation_sigma.values()]))
         if len(rotation_sigmas):
             rr.log(f"sigma_rotation",
                    rr.BarChart(rotation_sigmas, color=[red if rotation_sigmas.max() > 0.1 else green]))
-        position_sigmas = np.array([np.max(x) for x in self.camera_position_sigma.values()
-                                    if len(x)])
+        position_sigmas = np.array([np.max(x) if len(x) else 0 for x in self.camera_position_sigma.values()])
         if len(position_sigmas):
             rr.log(f"sigma_position",
                    rr.BarChart(position_sigmas, color=[red if position_sigmas.max() > 0.001 else green]))
 
-        projection_sigmas = np.array([np.max(x) for x in self.projection_sigma.values()])
+        projection_sigmas = np.array([np.max(x) if len(x) else 0 for x in self.projection_sigma.values()])
         if len(projection_sigmas):
             rr.log(f"sigma_focal",
                    rr.BarChart(projection_sigmas, color=[red if projection_sigmas.max() > 2.0 else green]))

@@ -14,6 +14,7 @@
 #include <iomanip>  // Include for setting precision
 #include <ros/package.h>
 #include <filesystem>  // C++17 and later
+#include <random>
 
 
 OnlineCameraCameraProgram::OnlineCameraCameraProgram(OnlineCameraCameraParser parser) : loop_rate_(30.0) {
@@ -171,7 +172,7 @@ bool OnlineCameraCameraProgram::handleAddIntrinsicsCost(unsigned long long stamp
                                                         bool force) {
     const bool added_to_observation_voxel_map =
             corner_detection2d_voxel_map_[new_observation.sensor_name].addToMapIfAnyIsBelowCapacity(
-                    new_observation.observations2d, 1);
+                    new_observation.observations2d, 5);
     if (added_to_observation_voxel_map) {
         const auto tentative_residual_block =
                 addBoardPoseParameterAndCameraIntrinsicsResidualFromObservation(stamp, new_observation);
@@ -193,11 +194,66 @@ void OnlineCameraCameraProgram::cameraDetectionsCallback(
             this->logged_ros_alignment_data_[msg->header.frame_id][msg->header.stamp.toNSec()] = *msg;
         } else {
             total_n_samples_rejected_++;
-//            ROS_DEBUG("Camera %s callback rejected new sample", topic_name.c_str());
         }
-        // Calculate duration in milliseconds
-//        ROS_DEBUG("Camera %s callback executed in: %f seconds", topic_name.c_str(), timer.elapsed().count());
     }
+}
+
+std::map<std::string, std::vector<unsigned long long>> getKeysToRemove(
+        const std::map<std::string, std::map<unsigned long long, ceres::ResidualBlockId>>& data,
+        size_t bound = 20) {
+
+    std::map<std::string, std::vector<unsigned long long>> keys_to_remove;
+
+    // Random number generator for shuffling
+    std::random_device rd;
+    std::mt19937 gen(rd());
+
+    for (const auto& [frame_id, stamp_map] : data) {
+        // Check if the inner map size exceeds the specified bound
+        if (stamp_map.size() > bound) {
+            std::vector<unsigned long long> keys;
+
+            // Collect all timestamps (keys) into a vector
+            for (const auto& [timestamp, _] : stamp_map) {
+                keys.push_back(timestamp);
+            }
+
+            // Calculate how many keys need to be removed to stay within bound
+            size_t excess_count = stamp_map.size() - bound;
+
+            // Shuffle the keys to randomly select the excess ones
+            std::shuffle(keys.begin(), keys.end(), gen);
+
+            // Resize the keys vector to keep only the first `excess_count` keys for removal
+            keys.resize(excess_count);
+
+            // Store the keys to remove for this frame_id
+            keys_to_remove[frame_id] = std::move(keys);
+        }
+    }
+
+    return keys_to_remove;
+}
+
+void eraseKeys(
+        std::map<std::string, std::map<unsigned long long, ceres::ResidualBlockId>>& data,
+        const std::map<std::string, std::vector<unsigned long long>>& keys_to_remove) {
+
+    for (const auto& [frame_id, keys] : keys_to_remove) {
+        for (const auto& key : keys) {
+            data[frame_id].erase(key);
+        }
+    }
+}
+
+template <typename OuterMap>
+auto getTotalItemCount(const OuterMap& data) -> typename OuterMap::mapped_type::size_type {
+    using InnerMap = typename OuterMap::mapped_type;
+    return std::accumulate(data.begin(), data.end(), 0,
+                           [](auto sum, const std::pair<typename OuterMap::key_type, InnerMap>& pair) {
+                               return sum + pair.second.size();
+                           }
+    );
 }
 
 void OnlineCameraCameraProgram::optimizationCallback(const ros::TimerEvent &, bool force_finalise) {
@@ -209,6 +265,8 @@ void OnlineCameraCameraProgram::optimizationCallback(const ros::TimerEvent &, bo
         for (auto &sub: subscribers_) {
             sub.shutdown();
         }
+    } else {
+        problem_->solver_options_.max_num_iterations = 5;
     }
 
     unsigned int n_samples_now = parsed_alignment_data.unique_timestamps.size();
@@ -226,7 +284,21 @@ void OnlineCameraCameraProgram::optimizationCallback(const ros::TimerEvent &, bo
         if (ready_for_extrinsics_) {
             this->setExtrinsicParametersVariableBeforeOpt();
         }
-        problem_->solver_options_.max_num_iterations = 5;
+        {
+            // Subsample intrinsic residuals
+            int n_intrinsic_residuals = getTotalItemCount(intrinsics_residuals_of_camera_at_time);
+            ROS_DEBUG_STREAM("N intrinsic residuals before downsample: " + std::to_string(n_intrinsic_residuals));
+            const auto keys_to_remove = getKeysToRemove(intrinsics_residuals_of_camera_at_time,
+                                                        force_finalise ? 100 : 30);
+            for (const auto& [frame_id, stamp_pack] : keys_to_remove) {
+                for (const auto& stamp : stamp_pack) {
+                    problem_->getProblem().RemoveResidualBlock(intrinsics_residuals_of_camera_at_time.at(frame_id).at(stamp));
+                }
+            }
+            eraseKeys(intrinsics_residuals_of_camera_at_time, keys_to_remove);
+            n_intrinsic_residuals = getTotalItemCount(intrinsics_residuals_of_camera_at_time);
+            ROS_DEBUG_STREAM("N intrinsic residuals after downsample: " + std::to_string(n_intrinsic_residuals));
+        }
         const bool solve_succeeded = this->Solve();
         ROS_DEBUG_STREAM("Solve success: " + std::to_string(solve_succeeded));
         this->rebuildProblemFromLoggedROSAlignmentData();
@@ -634,6 +706,7 @@ bool OnlineCameraCameraProgram::resetProblem() {
 
 bool OnlineCameraCameraProgram::rebuildProblemFromLoggedROSAlignmentData() {
     // Compute covariance of board poses
+    this->resetStateFromLoggedObservations();
     this->filterOutOutliersFromLoggedObservations(3.0);
     this->resetStateFromLoggedObservations();
     return true;
