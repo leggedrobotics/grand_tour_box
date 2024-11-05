@@ -40,6 +40,6 @@ for f in files_to_upload:
 upload.sort()
 
 mission_name = folder.name
-project = "GrandTourDev"
+project = "GrandTour"
 files_to_upload = " --path " + " --path ".join(files_to_upload)
-os.system(f"klein upload --create-mision {files_to_upload} --project {project} --mission {mission_name}")
+os.system(f"klein upload --ignore-tags --create-mision {files_to_upload} --project {project} --mission {mission_name}")
