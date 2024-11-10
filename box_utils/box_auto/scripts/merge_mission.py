@@ -9,7 +9,7 @@ import os
 MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
 
 
-def merge_bags_single(input_bag, output_bag, topics="*", verbose=False):
+def merge_bags_single(input_bag, output_bag, topics="*", upload="No", verbose=False):
     # From https://www.clearpathrobotics.com/assets/downloads/support/merge_bag.py
     topics = topics.split(" ")
 
@@ -52,7 +52,7 @@ def merge_bags_single(input_bag, output_bag, topics="*", verbose=False):
     if verbose:
         print("Total: Included %d messages and skipped %d" % (total_included_count, total_skipped_count))
 
-    if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
+    if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE" and upload == "Yes":
         uuid = os.environ["MISSION_UUID"]
         os.system(f"klein mission upload --mission-uuid {uuid} --path {output_bag}")
         os.system(f"cp {output_bag} /out")
@@ -66,6 +66,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--overwrite", type=bool, default=True, help="Whether to overwrite existing bag files (default: True)."
     )
+    parser.add_argument("--upload", default="No", help="(default: No or Yes).")
     args = parser.parse_args()
     bag_files = sorted(Path(MISSION_DATA).rglob("*.bag"))
     print("Found files: ", bag_files)
@@ -97,5 +98,5 @@ if __name__ == "__main__":
             filelist.sort(key=lambda x: int(x.split(".")[-2].split("_")[-1]))
             print(f"Merging files: {[str(file) for file in files]} into {output_bag}")
 
-            merge_bags_single(filelist, str(output_bag), "*", verbose=True)
+            merge_bags_single(filelist, str(output_bag), "*", upload=args.upload, verbose=True)
             pbar.update(1)

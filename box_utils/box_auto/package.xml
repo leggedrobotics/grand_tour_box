@@ -13,7 +13,7 @@
   <build_depend>python3</build_depend>
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>cmake_clang_tools</build_depend>
-  
+  <depend>direct_lidar_inertial_odometry</depend>
   <depend>roscpp</depend>
   <depend>roslib</depend>
   <depend>eigen_conversions</depend>
@@ -34,5 +34,4 @@
   <depend>tf_bag</depend>
   <depend>atn_position3_fuser</depend>
   <depend>ap20_driver_ros</depend>
-  <depend>direct_lidar_inertial_odometry</depend>
 </package>

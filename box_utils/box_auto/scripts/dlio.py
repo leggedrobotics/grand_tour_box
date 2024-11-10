@@ -78,8 +78,8 @@ def launch_nodes():
     inputs = ",".join(inputs)
 
     merged_rosbag_path = os.path.join(MISSION_DATA, "merged.bag")
-    print(
-        f"python3 /home/jonfrey/git/grand_tour_box/box_utils/box_auto/scripts/merge_bags.py --input={inputs} --output={merged_rosbag_path}"
+    os.system(
+        f"python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/merge_bags.py --input={inputs} --output={merged_rosbag_path}"
     )
 
     os.system("bash -c '" + PRE + "roscore&' ")
@@ -89,10 +89,11 @@ def launch_nodes():
         + PRE
         + f"roslaunch direct_lidar_inertial_odometry dlio_replay.launch input_rosbag_path:={merged_rosbag_path}  output_rosbag_path:={MISSION_DATA} &' "
     )
+    sleep(5)
+    os.system("bash -c '" + PRE + f"rosbag play -r 0.5 --clock {merged_rosbag_path}' ")
+    print("Waiting for 10s before uploading!")
     sleep(10)
-    os.system("bash -c '" + PRE + f"rosbag play -r 5 -d 5 --wait-for-subscribers --clock {merged_rosbag_path}' ")
-    sleep(60)
-    kill_rosmaster()
+    print("Moving and uploading bag!")
 
     output_bag_path = os.path.join(MISSION_DATA, f"{timestamp}_dlio.bag")
     shutil.move(f"{WS}/src/grand_tour_box/box_applications/dlio/data/dlio_replayed.bag", output_bag_path)
@@ -105,7 +106,7 @@ def launch_nodes():
 
 
 def fetch_multiple_files_kleinkram(patterns):
-    tmp_dir = os.path.join(MISSION_DATA, "/tmp")
+    tmp_dir = os.path.join(MISSION_DATA, "tmp")
     os.makedirs(tmp_dir, exist_ok=True)
 
     for pattern in patterns:

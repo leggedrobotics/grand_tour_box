@@ -50,6 +50,7 @@ def kill_rosmaster():
 
 def launch_nodes(input_rosbag_path):
     os.environ["ROS_MASTER_URI"] = "http://localhost:11311"
+    kill_rosmaster()
 
     os.system("bash -c '" + PRE + "roscore&' ")
     sleep(1)
@@ -59,14 +60,7 @@ def launch_nodes(input_rosbag_path):
         + f"rosrun hesai_ros_driver hesai_ros_driver_node _config_path:={WS}/src/grand_tour_box/box_drivers/hesai_lidar_ros_driver/config/packet_replay.yaml _use_sim_time:=True _input_rosbag_path:={input_rosbag_path} &' "
     )
     sleep(10)
-    os.system(
-        "bash -c '"
-        + PRE
-        + f"rosbag play -r 5 -d 5 --wait-for-subscribers --clock {input_rosbag_path} --topics /gt_box/hesai/packets' "
-    )
-    sleep(60)
-    kill_rosmaster()
-
+    os.system("bash -c '" + PRE + f"rosbag play -r 5 --clock {input_rosbag_path} --topics /gt_box/hesai/packets' ")
     output_bag_path = input_rosbag_path.replace("_nuc_hesai.bag", "_nuc_hesai_post_processed.bag")
     if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
         uuid = os.environ["MISSION_UUID"]
