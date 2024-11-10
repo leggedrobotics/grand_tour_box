@@ -36,7 +36,10 @@ def process_mission_data(data_folder, mission_name):
     cmds = []
 
     if LOCAL_HOSTNAME == "jetson":
-        upload_kk = True
+        upload_kk = False
+        cmds.append(
+            f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/repair_ros2_jetson.py"
+        )
         cmds.append(
             f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/repair_bags.py"
         )
@@ -65,7 +68,7 @@ def process_mission_data(data_folder, mission_name):
         ]
 
     elif LOCAL_HOSTNAME == "nuc":
-        upload_kk = True
+        upload_kk = False
         cmds.append(
             f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/repair_bags.py"
         )
@@ -105,16 +108,16 @@ def process_mission_data(data_folder, mission_name):
             "_lpc_tf.bag",
         ]
     elif LOCAL_HOSTNAME == "opc":
-        upload_kk = False
-        cmds.append(
-            f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/repair_bags.py"
-        )
-        cmds.append(
-            f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/merge_mission.py"
-        )
-        cmds.append(
-            f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/export_raw_imu_bag.py"
-        )
+        upload_kk = True
+        # cmds.append(
+        #    f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/repair_bags.py"
+        # )
+        # cmds.append(
+        #    f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/merge_mission.py"
+        # )
+        # cmds.append(
+        #    f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/export_raw_imu_bag.py"
+        # )
         keys = [
             "_npc_depth_cameras.bag",
             "_npc_elevation_mapping.bag",
@@ -137,19 +140,19 @@ def process_mission_data(data_folder, mission_name):
             "_jetson_stim.bag",
             "_jetson_ap20_aux.bag",
             "_jetson_adis.bag",
-            "_jetson_zed2i_tf.bag",
-            "_jetson_zed2i_prop.bag",
-            "_jetson_zed2i_images.bag",
-            "_jetson_zed2i_depth.bag",
-            "_jetson_hdr_right_raw.bag",
-            "_jetson_hdr_left_raw.bag",
-            "_jetson_hdr_front_raw.bag",
+            # "_jetson_zed2i_tf.bag",
+            # "_jetson_zed2i_prop.bag",
+            # "_jetson_zed2i_images.bag",
+            # "_jetson_zed2i_depth.bag",
+            "_jetson_hdr_right.bag",
+            "_jetson_hdr_left.bag",
+            "_jetson_hdr_front.bag",
         ]
 
     print(LOCAL_HOSTNAME)
 
     for cmd in cmds:
-        shell_run(cmd)
+        os.system(cmd)
 
     folder = Path(MISSION_DATA)
     files_to_upload = [str(s) for s in folder.rglob("*.bag")]
@@ -165,7 +168,9 @@ def process_mission_data(data_folder, mission_name):
     if upload_kk:
         project = "GrandTour"
         files_to_upload_str = " --path " + " --path ".join(upload)
-        print(f"klein upload {files_to_upload_str} --project {project} --mission {mission_name} --create-mission")
+        os.system(
+            f"klein upload {files_to_upload_str} --ignore-tags --project {project} --mission {mission_name} --create-mission"
+        )
 
     return upload_kk
 
