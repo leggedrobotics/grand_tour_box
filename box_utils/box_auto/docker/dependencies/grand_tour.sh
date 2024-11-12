@@ -84,8 +84,12 @@ apt install -y ros-noetic-tf2-eigen
 apt update -y
 
 # Build workspace
+source /opt/ros/noetic/setup.bash
+source /home/opencv_gtsam_ws/devel/setup.bash
 cd /home/catkin_ws
+catkin build direct_lidar_inertial_odometry
 catkin build box_auto
+
 echo "source /home/catkin_ws/devel/setup.bash" >> /root/.bashrc
 
 # Install boxi
