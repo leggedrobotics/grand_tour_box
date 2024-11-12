@@ -38,10 +38,11 @@ keys=(
     # "_nuc_utils.bag"
     # "_nuc_tf.bag"
     "_nuc_livox.bag"
+    "_gt_tf.bag"
     # "_nuc_hesai.bag"
     # "_nuc_cpt7.bag"
     # "_nuc_alphasense.bag"
-    # "_jetson_utils.bag"
+    # "_jetson_utils.bag"d
     # "_jetson_stim.bag"
     # "_jetson_ap20_aux.bag"
     # "_jetson_adis.bag"
