@@ -8,7 +8,9 @@ MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
 
 def main(overwrite: bool, directory: str):
     # Get all .bag.active files
-    bag_files = [str(s) for s in Path(directory).rglob("*.bag") if str(s).find(".orig") == -1]
+    bag_files = [
+        str(s) for s in Path(directory).rglob("*.bag") if str(s).find(".orig") == -1 and str(s).find("zed2i") != -1
+    ]
 
     if len(bag_files) == 0:
         print("No bag files found. --- Finished cleanly!")
@@ -24,5 +26,6 @@ if __name__ == "__main__":
         "--overwrite", type=bool, default=True, help="Whether to overwrite existing bag files (default: True)."
     )
     args = parser.parse_args()
+
     # Run main function with the parsed argument
     main(True, MISSION_DATA)
