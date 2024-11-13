@@ -338,14 +338,14 @@ void OnlineCameraCameraProgram::optimizationCallback(const ros::TimerEvent &, bo
                         output_msg.modelpoint3d.push_back(msg.modelpoint3d[col]);
                         output_msg.cornerids.push_back(msg.cornerids[col]);
                     }
-                    processed_detections_publisher_[frame_id].publish(output_msg);
                 }
+                processed_detections_publisher_[frame_id].publish(output_msg);
             }
 
             if (ready_for_extrinsics_) {
                 for (const auto &[cam_a, cam_b_data]: extrinsics_residuals_of_cameras_at_time) {
+                    grand_tour_camera_detection_msgs::CameraDetections output_msg;
                     for (const auto &[cam_b, residual_block_at_time]: cam_b_data) {
-                        grand_tour_camera_detection_msgs::CameraDetections output_msg;
                         for (const auto &[time, residual_block]: residual_block_at_time) {
                             output_msg.header.stamp.fromNSec(time);
                             output_msg.header.frame_id = cam_a;
@@ -362,8 +362,8 @@ void OnlineCameraCameraProgram::optimizationCallback(const ros::TimerEvent &, bo
                                 output_msg.residuals2d.push_back(residual);
                             }
                         }
-                        extrinsics_detections_publisher_[cam_a].publish(output_msg);
                     }
+                    extrinsics_detections_publisher_[cam_a].publish(output_msg);
                 }
                 logEdgeCapacities();
             }
