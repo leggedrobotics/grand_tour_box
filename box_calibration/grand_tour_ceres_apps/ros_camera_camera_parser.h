@@ -13,7 +13,6 @@ struct ROSCameraCameraParser {
     std::string initial_guess_path;
     std::string rostopic_frameid_mapping_path;
     std::vector<std::string> bag_paths;
-    std::string output_path;
     bool is_valid = false;
 };
 

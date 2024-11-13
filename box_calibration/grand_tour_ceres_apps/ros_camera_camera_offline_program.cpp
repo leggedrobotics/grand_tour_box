@@ -14,7 +14,7 @@ ROSCameraCameraOfflineProgram::ROSCameraCameraOfflineProgram(ROSCameraCameraPars
     std::cout << parser.bag_paths.size() << std::endl;
 
     bool all_paths_valid = true;
-    for (const auto &bag: parser.bag_paths) {
+    for (const auto& bag : parser.bag_paths) {
         if (!fs::exists(bag)) {
             std::cerr << "Error: File path does not exist: " << bag << std::endl;
             all_paths_valid = false;
@@ -28,7 +28,6 @@ ROSCameraCameraOfflineProgram::ROSCameraCameraOfflineProgram(ROSCameraCameraPars
     is_valid = !parser.bag_paths.empty() && all_paths_valid;
     std::cout << is_valid << std::endl;
     bag_paths = parser.bag_paths;
-    output_path = parser.output_path;
 }
 
 bool ROSCameraCameraOfflineProgram::publishDetectionsUsed(
@@ -55,12 +54,12 @@ void ROSCameraCameraOfflineProgram::run() {
 }
 
 bool ROSCameraCameraOfflineProgram::loadRosbagsIntoProgram() {
-    std::map<std::string, std::string> detectiontopic2imagetopic;
-    for (const auto &[image_topic, _]: rostopic2frameid_) {
+    std::map <std::string, std::string> detectiontopic2imagetopic;
+    for (const auto& [image_topic, _ ]: rostopic2frameid_) {
         const std::string detection_topic = image_topic + detection_suffix;
         detectiontopic2imagetopic[detection_topic] = image_topic;
     }
-    for (const auto &bag_path: bag_paths) {
+    for (const auto& bag_path : bag_paths) {
         try {
             rosbag::Bag bag;
             bag.open(bag_path, rosbag::bagmode::Read);
@@ -68,12 +67,12 @@ bool ROSCameraCameraOfflineProgram::loadRosbagsIntoProgram() {
 
             // Set up a view for predefined topics only
             rosbag::View view(bag);
-            for (const auto &connection_info: view.getConnections()) {
-                const std::string &detection_topic = connection_info->topic;
+            for (const auto& connection_info : view.getConnections()) {
+                const std::string& detection_topic = connection_info->topic;
                 // Process only if the topic is in the predefined list
-                if (detectiontopic2imagetopic.find(detection_topic) != detectiontopic2imagetopic.end()) {
+                if (detectiontopic2imagetopic.find(detection_topic) != rostopic2frameid_.end()) {
                     rosbag::View topic_view(bag, rosbag::TopicQuery(detection_topic));
-                    for (const auto &m: topic_view) {
+                    for (const auto& m : topic_view) {
                         // Check if the message type is sensor_msgs/Image
                         grand_tour_camera_detection_msgs::CameraDetectionsConstPtr detection_msg =
                                 m.instantiate<grand_tour_camera_detection_msgs::CameraDetections>();
@@ -81,18 +80,17 @@ bool ROSCameraCameraOfflineProgram::loadRosbagsIntoProgram() {
                             this->addAlignmentData(detection_msg->header.stamp,
                                                    *detection_msg,
                                                    true);
+                            calibration_time = detection_msg->header.stamp;
                         }
                     }
                 }
             }
 
             bag.close();
-        } catch (const rosbag::BagException &e) {
+        } catch (const rosbag::BagException& e) {
             std::cerr << "Error reading bag file " << bag_path << ": " << e.what() << std::endl;
         }
     }
     ROS_INFO_STREAM("Size: " + std::to_string(parsed_alignment_data.unique_timestamps.size()));
-    calibration_time.fromNSec(*std::min_element(parsed_alignment_data.unique_timestamps.begin(),
-                                                parsed_alignment_data.unique_timestamps.end()));
     return true;
 }

@@ -10,7 +10,6 @@ find_package(catkin REQUIRED COMPONENTS
         roslib
         rosbag
         sensor_msgs
-        ap20_driver_ros
 )
 find_package(Boost 1.70 REQUIRED COMPONENTS graph)
 find_package(Ceres 2.2 REQUIRED)
@@ -76,12 +75,3 @@ add_executable(camera_camera_offline_calibration ros_camera_camera_offline_calib
 target_link_libraries(camera_camera_offline_calibration gtboxcalibration ${catkin_LIBRARIES}
 )
 target_include_directories(camera_camera_offline_calibration PRIVATE ${catkin_INCLUDE_DIRS})
-
-add_executable(camera_prism_offline_calibration ros_camera_prism_offline_calibration.cpp
-        ros_camera_prism_parser.cpp
-        ros_camera_prism_program.cpp
-        ros_utils.cpp
-)
-target_link_libraries(camera_prism_offline_calibration gtboxcalibration ${catkin_LIBRARIES}
-)
-target_include_directories(camera_prism_offline_calibration PRIVATE ${catkin_INCLUDE_DIRS})

@@ -66,12 +66,6 @@ protected:
                           const grand_tour_camera_detection_msgs::CameraDetections &camera_detections,
                           bool force);
 
-    fs::path fetchOutputPath();
-
-    bool writeCalibrationOutput();
-
-    void setExtrinsicParametersVariableBeforeOpt();
-
     virtual bool publishDetectionsUsed(const grand_tour_camera_detection_msgs::CameraDetections &camera_detections) = 0;
 
     bool setOriginCameraFrame(const std::string &camera_name);
@@ -108,7 +102,10 @@ protected:
     gt_box::graph_utils::Graph codetection_graph_;
     bool is_valid = false;
     ros::Time calibration_time;
-    std::string output_path;
+
+    bool writeCalibrationOutput();
+
+    void setExtrinsicParametersVariableBeforeOpt();
 };
 
 
