@@ -96,9 +96,9 @@ class CornerVisualizer:
         # Subscribe to the CameraDetections topic
         self.subscriber = rospy.Subscriber(self.detections_topic, CameraDetections,
                                            self.added_detection_callback)
-        self.subscriber_post = rospy.Subscriber(self.processed_detections_topic, CameraDetections,
+        self.subscriber_for_intrinsics = rospy.Subscriber(self.processed_detections_topic, CameraDetections,
                                                 self.intrinsics_residuals_callback)
-        self.subscriber_post = rospy.Subscriber(self.extrinsics_detections_topic, CameraDetections,
+        self.subscriber_for_extrinsics = rospy.Subscriber(self.extrinsics_detections_topic, CameraDetections,
                                                 self.extrinsics_residuals_callback)
 
         # Store all detected points across messages
