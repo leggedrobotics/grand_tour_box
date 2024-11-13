@@ -400,11 +400,6 @@ void OnlineCameraCameraProgram::setExtrinsicParametersVariableBeforeOpt() {// Fr
     }
 }
 
-void OnlineCameraCameraProgram::computeAndPublishParametersAndCovariances() {
-    const std::map<std::string, CameraCovariance> covariances = computeCovariances();
-    this->publishAllParamsAndSigmas(covariances);
-}
-
 void
 OnlineCameraCameraProgram::publishAllParamsAndSigmas(const std::map<std::string, CameraCovariance> &covariances) const {
     for (const auto &[name, covariance]: covariances) {
@@ -463,14 +458,6 @@ std::map<std::string, CameraCovariance> OnlineCameraCameraProgram::computeCovari
     return covariances;
 }
 
-void OnlineCameraCameraProgram::extractRvecTvecIntrinsicsSigma(
-        const Eigen::MatrixXd &extrinsics_and_intrinsics_covariance,
-        Eigen::VectorXd &rvectvec_sigma,
-        Eigen::VectorXd &fxfycxcy_sigma) const {
-    rvectvec_sigma = extrinsics_and_intrinsics_covariance.block<6, 6>(0, 0).diagonal().array().sqrt();
-    fxfycxcy_sigma = extrinsics_and_intrinsics_covariance.bottomRightCorner<4, 4>().diagonal().array().sqrt();
-}
-
 void OnlineCameraCameraProgram::publishParamsAndSigmas(const std::string &name,
                                                        const Eigen::VectorXd &rvectvec_sigma,
                                                        const Eigen::VectorXd &fxfycxcy_sigma) const {
@@ -509,38 +496,6 @@ void OnlineCameraCameraProgram::publishParamsAndSigmas(const std::string &name,
     intrinsics_extrinsics_msg.T_bundle_camera.translation.y = position.y();
     intrinsics_extrinsics_msg.T_bundle_camera.translation.z = position.z();
     intrinsics_extrinsics_publisher_.publish(intrinsics_extrinsics_msg);
-}
-
-Eigen::MatrixXd
-OnlineCameraCameraProgram::extractXCorrelationFromFullCovariance(
-        const Eigen::MatrixXd &sensor_board_pose_covariances) const {// Step 1: Extract the diagonal elements (variances)
-    Eigen::VectorXd variances = sensor_board_pose_covariances.diagonal();
-    // Step 2: Compute the standard deviations (square roots of the variances)
-    Eigen::VectorXd std_devs = variances.array().sqrt();
-
-    // Step 3: Construct the correlation matrix
-    Eigen::MatrixXd correlation_matrix(sensor_board_pose_covariances.rows(),
-                                       sensor_board_pose_covariances.cols());
-    for (int i = 0; i < sensor_board_pose_covariances.rows(); ++i) {
-        for (int j = 0; j < sensor_board_pose_covariances.cols(); ++j) {
-            // Corr(X_i, X_j) = Cov(X_i, X_j) / (std(X_i) * std(X_j))
-            correlation_matrix(i, j) = sensor_board_pose_covariances(i, j) / (std_devs(i) * std_devs(j));
-        }
-    }
-    int step = 6;
-    int new_size = correlation_matrix.rows() / step;
-    Eigen::MatrixXd smaller_matrix(new_size, new_size);
-    // Extract every 6th row and column
-    int row_index = 0, col_index = 0;
-    for (int i = 0; i < correlation_matrix.rows(); i += step) {
-        col_index = 0;
-        for (int j = 0; j < correlation_matrix.cols(); j += step) {
-            smaller_matrix(row_index, col_index) = correlation_matrix(i, j);
-            col_index++;
-        }
-        row_index++;
-    }
-    return smaller_matrix;
 }
 
 bool OnlineCameraCameraProgram::getReprojectionResiduals(ceres::Problem &problem,
@@ -710,50 +665,6 @@ bool OnlineCameraCameraProgram::rebuildProblemFromLoggedROSAlignmentData() {
     this->filterOutOutliersFromLoggedObservations(3.0);
     this->resetStateFromLoggedObservations();
     return true;
-}
-
-void OnlineCameraCameraProgram::pruneRedundantSamplesFromLoggedObservations() {
-    for (const auto &[frame_id, board_poses_at_time]: board_pose_parameter_packs) {
-        std::vector<const double *> parameter_blocks;
-        for (const auto &[stamp, pose_param]: board_poses_at_time) {
-            parameter_blocks.push_back(pose_param->T_sensor_board);
-        }
-        Eigen::MatrixXd sensor_board_pose_covariances;
-        if (!problem_->ComputeAndFetchCovariance(parameter_blocks, sensor_board_pose_covariances)) { continue; }
-        Eigen::MatrixXd correlation_in_x = extractXCorrelationFromFullCovariance(sensor_board_pose_covariances);
-
-        // Vector to store indices of elements greater than 0.8
-        std::map<unsigned int, bool> is_redundant;
-        // Loop over the matrix to find elements greater than 0.8
-        for (int i = 0; i < correlation_in_x.rows(); ++i) {
-            if (is_redundant.contains(i)) {
-                continue;
-            }
-            for (int j = i + 1; j < correlation_in_x.cols(); ++j) {
-                if (correlation_in_x(i, j) > 0.8) {
-                    is_redundant[j] = true;
-                }
-            }
-        }
-
-        if (!is_redundant.empty()) {
-            std::cout << "Redundant indices: ";
-            for (const auto &[idx, _]: is_redundant) {
-                std::cout << idx << " ";
-            }
-            std::cout << std::endl;
-        }
-
-        for (const auto &[idx, _]: is_redundant) {
-            // Iterate over the map to reach the specified index
-            auto it = board_pose_parameter_packs.at(frame_id).begin();
-            std::advance(it, idx);
-            logged_ros_alignment_data_.at(frame_id).erase(it->first);
-        }
-        ROS_DEBUG_STREAM(
-                "Camera sample size after pruning: " +
-                std::__cxx11::to_string(logged_ros_alignment_data_.at(frame_id).size()));
-    }
 }
 
 void OnlineCameraCameraProgram::filterOutOutliersFromLoggedObservations(double max_reprojection_error) {

@@ -120,7 +120,6 @@ private:
     unsigned int min_new_samples_for_solve_ = 300;
     std::mutex ceres_problem_mutex_;
 
-    bool has_sufficient_data_for_full_ba = false;
     std::map<std::string, std::map<unsigned long long, Eigen::Affine3d>> board_pose_in_sensor_at_time_;
     double max_intersample_displacement_m = 1e-4;
     double association_time_tolerance_secs_ = 0.5;
@@ -136,25 +135,14 @@ private:
 
     void filterOutOutliersFromLoggedObservations(double max_reprojection_error);
 
-    Eigen::MatrixXd extractXCorrelationFromFullCovariance(const Eigen::MatrixXd &sensor_board_pose_covariances) const;
-
-    void pruneRedundantSamplesFromLoggedObservations();
-
     void manageObservationHistoryBuffer(const std::string &new_observation_name);
 
     void AddNewSensorVertexToObservationGraph(const std::string &name);
-
-    void computeAndPublishParametersAndCovariances();
 
     void setExtrinsicParametersVariableBeforeOpt();
 
     void publishParamsAndSigmas(const std::string &name,
                                 const Eigen::VectorXd &rvectvec_sigma, const Eigen::VectorXd &fxfycxcy_sigma) const;
-
-    void
-    extractRvecTvecIntrinsicsSigma(const Eigen::MatrixXd &extrinsics_and_intrinsics_covariance,
-                                   Eigen::VectorXd &rvectvec_sigma,
-                                   Eigen::VectorXd &fxfycxcy_sigma) const;
 
     std::map<std::string, CameraCovariance> computeCovariances();
 
