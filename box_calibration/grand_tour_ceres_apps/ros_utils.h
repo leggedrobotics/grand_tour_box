@@ -14,6 +14,12 @@
 #include <sstream>
 #include <iomanip>
 #include <filesystem>
+#include <gtboxcalibration/parameterhelpers.h>
+#include <gtboxcalibration/datatypes.h>
+#include <grand_tour_camera_detection_msgs/CameraDetections.h>
+
+#include <opencv2/opencv.hpp>
+#include <opencv2/core/eigen.hpp>
 
 namespace fs = std::filesystem;
 

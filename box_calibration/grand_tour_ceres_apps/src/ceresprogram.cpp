@@ -173,8 +173,6 @@ ceres::ResidualBlockId CameraCameraProgram::addBoardPoseParameterAndCameraIntrin
         assert(!board_pose_parameter_packs.at(camera_name).contains(stamp));
     }
     board_pose_parameter_packs[camera_name][stamp] = std::make_unique<BoardPoseParameterPack>();
-//    std::cout << "Adding board pose at time " << stamp << " camera: " << camera_name <<
-//              " location: " << &board_pose_parameter_packs.at(camera_name).at(stamp)->T_sensor_board[0] << std::endl;
     SE3Transform se3board;
     se3board.assignToData(observation_i.T_sensor_model,
                           board_pose_parameter_packs[camera_name][stamp]->T_sensor_board);
@@ -193,7 +191,6 @@ ceres::ResidualBlockId CameraCameraProgram::addBoardPoseParameterAndCameraIntrin
             board_pose_parameter_packs.at(camera_name).at(stamp)->T_sensor_board,
             camera_parameter_packs.at(camera_name).dist_coeffs,
             camera_parameter_packs.at(camera_name).fxfycxcy);
-//    std::cout << "Successfully added board pose at time " << stamp << " camera: " << camera_name << std::endl;
     se3board.handleSetParameterization(problem_->getProblem(),
                                        board_pose_parameter_packs.at(camera_name).at(stamp)->T_sensor_board);
     return residual_block_id;

@@ -3,10 +3,8 @@
 //
 
 #include <Eigen/Core>
-#include "ros_programs.h"
-#include "ros_utils.h"
-#include <opencv2/opencv.hpp>
-#include <opencv2/core/eigen.hpp>  // Include the conversion header
+#include "ros_utils.h" // Include the conversion header
+#include <ros/ros.h>
 
 std::chrono::duration<double> ScopedTimer::elapsed() const {
     auto end_time = std::chrono::high_resolution_clock::now();

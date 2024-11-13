@@ -2,20 +2,20 @@
 // Created by fu on 27/09/24.
 //
 
-#include "ros_programs.h"
-#include "ros_parsers.h"
+#include "ros_camera_camera_online_program.h"
+#include "ros_camera_camera_parser.h"
 #include <ros/ros.h>
 
 int main(int argc, char **argv) {
 
     // Initialize the ROS node
     ros::init(argc, argv, "camera_camera_online_calibration");
-    OnlineCameraCameraParser parser(argc, argv);
+    ROSCameraCameraParser parser("camera_camera_online_calibration", argc, argv);
     if (!parser.is_valid) {
         return -1;
     }
-    OnlineCameraCameraProgram program(parser);
-    if (!program.is_valid) {
+    ROSCameraCameraOnlineProgram program(parser);
+    if (!program.isValid()) {
         return -1;
     }
 
