@@ -11,3 +11,4 @@ box_utils/box_mission_report/reports*
 *_pb2.py
 box_model/box_model/urdf/box/box.urdf
 box_bringup/bringup_open3d_slam/data/maps/*
+.idea/
