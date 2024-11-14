@@ -31,6 +31,7 @@ protected:
 
     bool is_valid = false;
     std::vector<std::string> bag_paths;
+
 };
 
 

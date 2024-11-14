@@ -17,7 +17,7 @@ ROSCameraCameraProgram::ROSCameraCameraProgram(ROSCameraCameraParser parser) {
                                                                               parser.initial_guess_path);
 
     const auto frameid_mappings = LoadRostopicFrameIDMapping(parser.rostopic_frameid_mapping_path);
-    for (const auto& [rostopic, params]: rostopic_camera_parameter_packs) {
+    for (const auto &[rostopic, params]: rostopic_camera_parameter_packs) {
         if (!frameid_mappings.contains(rostopic)) {
             ROS_ERROR_STREAM("Could not find ROSTOPIC to frameid mapping for " + rostopic
                              + "\nPlease verify the file: " + parser.rostopic_frameid_mapping_path);
@@ -365,22 +365,18 @@ std::stringstream GetTimeNowString(ros::Time time) {
 }
 
 bool ROSCameraCameraProgram::writeCalibrationOutput() {
-    std::string calib_package_name = "box_calibration";
-    std::filesystem::path calib_root_path = ros::package::getPath(calib_package_name);
-    if (calib_root_path.empty()) {
-        ROS_ERROR_STREAM("Failed to write output calibration");
-        return true;
+    const auto write_path = this->fetchOutputPath();
+    if (write_path.string() == "") {
+        return false;
     }
-    std::filesystem::path relative_output_path =
-            "calibration/raw_calibration_output/cameras-intrinsics-extrinsics_latest.yaml";
-    std::filesystem::path output_path = calib_root_path / relative_output_path;
     std::map<std::string, CameraParameterPack> camera_parameters_by_rostopic;
     for (const auto &[frameid, params]: camera_parameter_packs) {
         camera_parameters_by_rostopic[frameid2rostopic_.at(frameid)] = params;
     }
-    SerialiseCameraParameters(output_path.string(), camera_parameters_by_rostopic,
+    SerialiseCameraParameters(write_path.string(), camera_parameters_by_rostopic,
                               GetTimeNowString(calibration_time).str());
-    ROS_INFO_STREAM("Wrote output calibrations to: " + output_path.string());
+    ROS_INFO_STREAM("Wrote output calibrations to: " + write_path.string());
+    return true;
 }
 
 void ROSCameraCameraProgram::setExtrinsicParametersVariableBeforeOpt() {// Free up camera transforms before solve
@@ -394,4 +390,20 @@ void ROSCameraCameraProgram::setExtrinsicParametersVariableBeforeOpt() {// Free 
             problem_->getProblem().SetParameterBlockVariable(params.T_bundle_sensor);
         }
     }
+}
+
+fs::path ROSCameraCameraProgram::fetchOutputPath() {
+    if (output_path == "") {
+        std::string calib_package_name = "box_calibration";
+        std::filesystem::path calib_root_path = ros::package::getPath(calib_package_name);
+        if (calib_root_path.empty()) {
+            ROS_ERROR_STREAM("Failed to write output calibration");
+            return "";
+        }
+        std::filesystem::path relative_output_path =
+                "calibration/raw_calibration_output/cameras-intrinsics-extrinsics_latest.yaml";
+        std::filesystem::path path = calib_root_path / relative_output_path;
+        return path;
+    }
+    return output_path;
 }

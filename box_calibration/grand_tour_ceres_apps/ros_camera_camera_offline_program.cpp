@@ -28,6 +28,7 @@ ROSCameraCameraOfflineProgram::ROSCameraCameraOfflineProgram(ROSCameraCameraPars
     is_valid = !parser.bag_paths.empty() && all_paths_valid;
     std::cout << is_valid << std::endl;
     bag_paths = parser.bag_paths;
+    output_path = parser.output_path;
 }
 
 bool ROSCameraCameraOfflineProgram::publishDetectionsUsed(
