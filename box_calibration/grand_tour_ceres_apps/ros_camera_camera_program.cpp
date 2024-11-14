@@ -48,7 +48,6 @@ bool ROSCameraCameraProgram::addAlignmentData(ros::Time current_ros_time,
     Observations2dModelPoints3dPointIDsPose3dSensorName observation = buildObservationFromRosMSG(camera_detections);
     ScopedTimer timer;
     if (!this->computeAndPopulateInitialGuessModelPose(observation)) {
-        ROS_ERROR_STREAM("Failed to initialize pose for observation from frame: " + observation.sensor_name);
         return false;
     }
     if (!force) {
@@ -220,6 +219,16 @@ bool ROSCameraCameraProgram::handleAddExtrinsicsCost(unsigned long long stamp,
     return information_added;
 }
 
+/**
+ * @brief Adds a new sensor vertex to the observation graph if it doesn't already exist.
+ *
+ * This method checks if a sensor with the given name exists in the frame_id_to_vertex_mapping_ map.
+ * If the sensor does not exist, it adds a new vertex to the codetection_graph_ and updates the
+ * mapping between frame IDs and vertex indices. It also assigns the name to the newly created vertex
+ * in the graph.
+ *
+ * @param name The name of the sensor to be added to the observation graph.
+ */
 void ROSCameraCameraProgram::AddNewSensorVertexToObservationGraph(
         const std::string &name) {
     if (!frame_id_to_vertex_mapping_.contains(name)) {
