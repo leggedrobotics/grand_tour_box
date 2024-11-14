@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import os
+import shutil
 import subprocess
 import yaml
 from rosbag import Bag
@@ -234,7 +235,60 @@ with PdfPages('calibration_reports.pdf') as pdf:
         plt.grid(True)
 
         # Save the plot to the PDF file
-        pdf.savefig()
+        pdf.savefig(dpi=300)
+        plt.close()
 
-        # Close the plot to free memory
+        # Define the path to the diffcal-calib.yaml file
+        diffcal_calib_path = os.path.join(calib_output_folder, '04_alignment', 'diffcal-calib.yaml')
+
+        # Copy diffcal_calib_path file into the current folder with the new name
+        new_calib_file_name = f"{k}_calibration.yaml"
+        shutil.copy(diffcal_calib_path, new_calib_file_name)
+
+        # Read the YAML file
+        with open(diffcal_calib_path, 'r') as file:
+            diffcal_calib_data = yaml.load(file, Loader=yaml.FullLoader)
+
+        # Extract the T_cam_lidar for cam0
+        T_cam_lidar = np.array(diffcal_calib_data['cam0']['T_cam_lidar'])
+        rotation_matrix = T_cam_lidar[:3, :3]
+        translation_vector = T_cam_lidar[:3, 3]
+
+        # Convert rotation matrix to roll, pitch, yaw in degrees
+        from scipy.spatial.transform import Rotation as R
+
+        r = R.from_matrix(rotation_matrix)
+        roll, pitch, yaw = r.as_euler('xyz', degrees=True)
+
+        # Convert translation to millimeters
+        translation_vector_mm = translation_vector * 1000
+
+        # Add a single page for T_cam_lidar contents
+        plt.figure()
+        plt.title(f'T_cam_lidar for cam0 to {k}')
+        plt.axis('off')
+        text = (f"Rotation (Roll, Pitch, Yaw) in degrees:\n"
+                f"{roll:.4f} {pitch:.4f} {yaw:.4f}\n\n"
+                f"Translation (x, y, z) in mm:\n"
+                f"{translation_vector_mm[0]:.2f} {translation_vector_mm[1]:.2f} {translation_vector_mm[2]:.2f}")
+        plt.text(0.0, 0.8, text, ha='left', va='center', wrap=True)
+        pdf.savefig(dpi=300)
+        plt.close()
+
+        # Define the path to the homography-merged-cloud.txt file
+        homography_merged_cloud_path = os.path.join(calib_output_folder, '04_alignment', 'homography-merged-cloud.txt')
+        # Load the homography-merged-cloud data as a numpy array
+        homography_merged_cloud = np.loadtxt(homography_merged_cloud_path)
+        homography_merged_cloud = homography_merged_cloud[
+            np.linspace(0, len(homography_merged_cloud) - 1, 20000, dtype=int)]
+        # Create a scatter plot of the xy coordinates, showing intensity as color
+        plt.scatter(homography_merged_cloud[:, 0], homography_merged_cloud[:, 1], c=homography_merged_cloud[:, 3],
+                    cmap='viridis', s=0.1)
+        plt.colorbar(label='Intensity')
+        plt.xlabel('X Coordinate (m)')
+        plt.ylabel('Y Coordinate (m)')
+        plt.title(f'{k} Reconstructed LiDAR board model')
+        plt.grid(True)
+        # Save the plot to the PDF file
+        pdf.savefig(dpi=300)
         plt.close()
