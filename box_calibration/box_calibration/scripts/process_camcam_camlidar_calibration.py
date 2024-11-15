@@ -217,6 +217,7 @@ reports = {
 
 from matplotlib.backends.backend_pdf import PdfPages
 
+T_cam_lidar_for_lidarname = dict()
 with PdfPages('calibration_reports.pdf') as pdf:
     for k, v in reports.items():
         calib_output_folder, output_report = v
@@ -251,6 +252,7 @@ with PdfPages('calibration_reports.pdf') as pdf:
 
         # Extract the T_cam_lidar for cam0
         T_cam_lidar = np.array(diffcal_calib_data['cam0']['T_cam_lidar'])
+        T_cam_lidar_for_lidarname[k] = T_cam_lidar
         rotation_matrix = T_cam_lidar[:3, :3]
         translation_vector = T_cam_lidar[:3, 3]
 
@@ -292,3 +294,25 @@ with PdfPages('calibration_reports.pdf') as pdf:
         # Save the plot to the PDF file
         pdf.savefig(dpi=300)
         plt.close()
+
+    T_cam_hesai = T_cam_lidar_for_lidarname["hesai"]
+    T_cam_livox = T_cam_lidar_for_lidarname["livox"]
+    T_hesai_livox = np.linalg.inv(T_cam_hesai) @ T_cam_livox
+
+
+    r = R.from_matrix(T_hesai_livox[:3, :3])
+    roll, pitch, yaw = r.as_euler('xyz', degrees=True)
+
+    # Convert translation to millimeters
+    translation_vector_mm = T_hesai_livox[:3, -1] * 1000
+    # Add a single page for T_cam_lidar contents
+    plt.figure()
+    plt.title(f'T_hesai_livox for hesai to livox')
+    plt.axis('off')
+    text = (f"Rotation (Roll, Pitch, Yaw) in degrees:\n"
+            f"{roll:.4f} {pitch:.4f} {yaw:.4f}\n\n"
+            f"Translation (x, y, z) in mm:\n"
+            f"{translation_vector_mm[0]:.2f} {translation_vector_mm[1]:.2f} {translation_vector_mm[2]:.2f}")
+    plt.text(0.0, 0.8, text, ha='left', va='center', wrap=True)
+    pdf.savefig(dpi=300)
+    plt.close()
