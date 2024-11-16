@@ -8,6 +8,7 @@ from rosbag import Bag
 
 import numpy as np
 import matplotlib.pyplot as plt
+from yaml import MappingNode, SequenceNode
 
 # Initialize parser
 parser = argparse.ArgumentParser(description="Process input folder paths")
@@ -16,6 +17,25 @@ parser = argparse.ArgumentParser(description="Process input folder paths")
 parser.add_argument('-cc', '--cameracamerafolderpath', type=str, required=True, help='Path to the camera camera folder')
 parser.add_argument('-cl', '--cameralidarfolderpath', type=str, required=True, help='Path to the camera lidar folder')
 parser.add_argument("--dry_run", action="store_true", help="If set, do not run commands, only print them.")
+
+
+def mutate_sequence_flowstyle_to_inline(node):
+    if isinstance(node, MappingNode):
+        node.flow_style = False
+        for _, child in node.value:
+            mutate_sequence_flowstyle_to_inline(child)
+    elif isinstance(node, SequenceNode):
+        node.flow_style = True
+    else:
+        node.flow_style = False
+
+
+def pretty_write_yaml_array_with_comment(data, output_path, comment=""):
+    with open(output_path, 'w') as outfile:
+        outfile.write('# Created using ' + comment + '\n')
+        yaml_composition = yaml.compose(yaml.safe_dump(data))
+        mutate_sequence_flowstyle_to_inline(yaml_composition)
+        yaml.serialize(yaml_composition, outfile)
 
 
 def safe_subprocess_run(command):
@@ -211,8 +231,8 @@ if livox_bag_file:
     safe_subprocess_run(livox_command)
 
 reports = {
-    "hesai" : [hesai_calib_output_folder, "hesai_calib_report.pdf"],
-    "livox" : [livox_calib_output_folder, "livox_calib_report.pdf"],
+    "hesai": [hesai_calib_output_folder, "hesai_calib_report.pdf"],
+    "livox": [livox_calib_output_folder, "livox_calib_report.pdf"],
 }
 
 from matplotlib.backends.backend_pdf import PdfPages
@@ -299,7 +319,6 @@ with PdfPages('calibration_reports.pdf') as pdf:
     T_cam_livox = T_cam_lidar_for_lidarname["livox"]
     T_hesai_livox = np.linalg.inv(T_cam_hesai) @ T_cam_livox
 
-
     r = R.from_matrix(T_hesai_livox[:3, :3])
     roll, pitch, yaw = r.as_euler('xyz', degrees=True)
 
@@ -316,3 +335,16 @@ with PdfPages('calibration_reports.pdf') as pdf:
     plt.text(0.0, 0.8, text, ha='left', va='center', wrap=True)
     pdf.savefig(dpi=300)
     plt.close()
+
+assert (os.path.exists(camcam_calibration_path))
+with open(camcam_calibration_path, 'r') as file:
+    camcam_calibration_data = yaml.load(file, Loader=yaml.FullLoader)
+
+# Add the new fields for each key in reports
+for key in camcam_calibration_data.keys():
+    camcam_calibration_data[key]['T_bundle_hesai'] = T_cam_hesai.tolist()
+    camcam_calibration_data[key]['T_bundle_livox'] = T_cam_livox.tolist()
+
+camcamlidar_calibration_path = "cameracameralidar_calibration.yaml"
+
+pretty_write_yaml_array_with_comment(camcam_calibration_data, camcamlidar_calibration_path)
