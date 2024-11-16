@@ -7,30 +7,91 @@
         <arg name="name" value="zed_left_detector"/>
         <arg name="image_topic" value="/gt_box/zed2i_driver_node/left_raw/image_raw_color"/>
         <arg name="use_april_grid" value="$(arg use_april_grid)"/>
+        <arg name="recording_bag_name" value="zedleft"/>
     </include>
 
     <include file="$(find grand_tour_camera_detectors)/launch/generic_detector.launch">
         <arg name="name" value="zed_right_detector"/>
         <arg name="image_topic" value="/gt_box/zed2i_driver_node/right_raw/image_raw_color"/>
         <arg name="use_april_grid" value="$(arg use_april_grid)"/>
+        <arg name="recording_bag_name" value="zedright"/>
     </include>
 
     <include file="$(find grand_tour_camera_detectors)/launch/generic_detector.launch">
         <arg name="name" value="hdr_left_detector"/>
         <arg name="image_topic" value="/gt_box/hdr_left/image_raw"/>
         <arg name="use_april_grid" value="$(arg use_april_grid)"/>
+        <arg name="recording_bag_name" value="hdrleft"/>
     </include>
 
     <include file="$(find grand_tour_camera_detectors)/launch/generic_detector.launch">
         <arg name="name" value="hdr_front_detector"/>
         <arg name="image_topic" value="/gt_box/hdr_front/image_raw"/>
         <arg name="use_april_grid" value="$(arg use_april_grid)"/>
+        <arg name="recording_bag_name" value="hdrfront"/>
     </include>
 
     <include file="$(find grand_tour_camera_detectors)/launch/generic_detector.launch">
         <arg name="name" value="hdr_right_detector"/>
         <arg name="image_topic" value="/gt_box/hdr_right/image_raw"/>
         <arg name="use_april_grid" value="$(arg use_april_grid)"/>
+        <arg name="recording_bag_name" value="hdrright"/>
     </include>
+
+    <node pkg="grand_tour_camera_detectors" type="generic_recorder.py"
+          name="ap20tps_recorder" output="screen"
+          ns="gt_box">
+        <param name="topic" value="/ap20/tps"/>
+        <param name="recording_bag_name" value="ap20tps"/>
+    </node>
+
+    <node pkg="grand_tour_camera_detectors" type="generic_recorder.py"
+          name="ap20imu_recorder" output="screen"
+          ns="gt_box">
+        <param name="topic" value="/ap20/imu"/>
+        <param name="recording_bag_name" value="ap20imu"/>
+    </node>
+
+    <node pkg="grand_tour_camera_detectors" type="generic_recorder.py"
+          name="ap20imudebug_recorder" output="screen"
+          ns="gt_box">
+        <param name="topic" value="/gt_box/ap20/imu_debug"/>
+        <param name="recording_bag_name" value="ap20imudebug"/>
+    </node>
+
+    <node pkg="grand_tour_camera_detectors" type="generic_recorder.py"
+          name="ap20positiondebug_recorder" output="screen"
+          ns="gt_box">
+        <param name="topic" value="/gt_box/ap20/position_debug"/>
+        <param name="recording_bag_name" value="ap20positiondebug"/>
+    </node>
+
+    <node pkg="grand_tour_camera_detectors" type="generic_recorder.py"
+          name="ap20timestampdebug_recorder" output="screen"
+          ns="gt_box">
+        <param name="topic" value="/gt_box/ap20/timestamp_debug"/>
+        <param name="recording_bag_name" value="ap20timestampdebug"/>
+    </node>
+
+    <node pkg="grand_tour_camera_detectors" type="generic_recorder.py"
+          name="ap20timestampdebug_recorder" output="screen"
+          ns="gt_box">
+        <param name="topic" value="/gt_box/ap20/timestamp_debug"/>
+        <param name="recording_bag_name" value="ap20timestampdebug"/>
+    </node>
+
+    <node pkg="grand_tour_camera_detectors" type="generic_recorder.py"
+          name="adis16475imu_recorder" output="screen"
+          ns="gt_box">
+        <param name="topic" value="/gt_box/adis16475_node/imu"/>
+        <param name="recording_bag_name" value="adis16475imu"/>
+    </node>
+
+    <node pkg="grand_tour_camera_detectors" type="generic_recorder.py"
+          name="stim320imu_recorder" output="screen"
+          ns="gt_box">
+        <param name="topic" value="/gt_box/stim320/imu"/>
+        <param name="recording_bag_name" value="stim320imu"/>
+    </node>
 
 </launch>
