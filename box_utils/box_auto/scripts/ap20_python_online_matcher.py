@@ -293,13 +293,13 @@ def read_bag_file(bag_path):
 
 if __name__ == "__main__":
 
-    # if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
-    #     uuid = os.environ["MISSION_UUID"]
-    #     os.system(
-    #         f"klein mission download --mission-uuid {uuid} --local-path /mission_data --pattern *_jetson_ap20_aux.bag"
-    #     )
+    if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
+        uuid = os.environ["MISSION_UUID"]
+        os.system(
+            f"klein mission download --mission-uuid {uuid} --local-path /mission_data --pattern *_jetson_ap20_aux.bag"
+    )
 
-    # ap20_bag = get_bag("/home/tutuna/Downloads/2024-10-21-14-01-40_jetson_ap20_aux.bag")
+    ap20_bag = get_bag("/home/tutuna/Downloads/2024-10-21-14-01-40_jetson_ap20_aux.bag")
 
     # Usage example
-    data = read_bag_file("/home/tutuna/Downloads/2024-10-21-14-01-40_jetson_ap20_aux.bag")
+    data = read_bag_file(ap20_bag)
