@@ -8,7 +8,14 @@ cd $HOME
 
 klein endpoint set $ENDPOINT
 klein login --key $APIKEY
-mkdir "/mission_data"
+
+if [ ! -d "/mission_data" ]; then
+    mkdir "/mission_data"
+    echo "Directory /mission_data created."
+else
+    echo "Directory /mission_data already exists."
+fi
+
 export KLEINKRAM_ACTIVE=ACTIVE
 
 # Enable sudo access without password
