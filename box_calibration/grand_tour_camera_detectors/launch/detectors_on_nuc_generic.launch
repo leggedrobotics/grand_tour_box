@@ -34,13 +34,13 @@
         <arg name="use_april_grid" value="$(arg use_april_grid)"/>
     </include>
 
-    <node if="$(arg record_pointcloud)" pkg="grand_tour_camera_detectors" type="pointcloud_recorder.py"
+    <node if="$(arg record_pointcloud)" pkg="grand_tour_camera_detectors" type="generic_recorder.py"
            name="hesai_recorder" output="screen"
            ns="gt_box">
         <param name="topic" value="/gt_box/hesai/points"/>
     </node>
 
-    <node if="$(arg record_pointcloud)" pkg="grand_tour_camera_detectors" type="pointcloud_recorder.py"
+    <node if="$(arg record_pointcloud)" pkg="grand_tour_camera_detectors" type="generic_recorder.py"
           name="livox_recorder" output="screen"
           ns="gt_box">
         <param name="topic" value="/gt_box/livox/lidar"/>
