@@ -299,7 +299,7 @@ if __name__ == "__main__":
             f"klein mission download --mission-uuid {uuid} --local-path /mission_data --pattern *_jetson_ap20_aux.bag"
     )
 
-    ap20_bag = get_bag("/home/tutuna/Downloads/2024-10-21-14-01-40_jetson_ap20_aux.bag")
+    ap20_bag = get_bag(MISSION_DATA, "*_jetson_ap20_aux.bag")
 
     # Usage example
     data = read_bag_file(ap20_bag)
