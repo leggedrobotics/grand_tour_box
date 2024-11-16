@@ -69,6 +69,7 @@ private:
     bool is_recording_ = false;
     std::string recording_id_;
     std::string recording_id_service_name_;
+    std::string recording_bag_name_;
 };
 
 

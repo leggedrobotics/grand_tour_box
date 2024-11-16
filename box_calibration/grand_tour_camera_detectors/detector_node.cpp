@@ -54,6 +54,7 @@ CameraDetectorNode::CameraDetectorNode(ros::NodeHandle &nh) : nh_(nh) {
     private_nh.param<std::string>("image_topic", image_topic_, "/image");
     private_nh.param<std::string>("output_folder", output_root_folder_, "/data/");
     private_nh.param<std::string>("output_suffix", output_suffix_, "_corner_detections");
+    private_nh.param<std::string>("recording_bag_name", recording_bag_name_, "");
 
     if (use_april_grid) {
         private_nh.param<int>("grid_size_x", grid_size_x_, 6);
@@ -109,10 +110,20 @@ void CameraDetectorNode::logStatistics(const ros::TimerEvent &event) {
 
 bool CameraDetectorNode::openNewBag(std::string recording_id) {
     recording_id += "_calibration";
-    std::string topic_name_as_path = image_topic_;
-    std::replace(topic_name_as_path.begin(), topic_name_as_path.end(), '/', '_');
-    fs::path full_bag_path = fs::path(output_root_folder_) / recording_id / (
-            recording_id + "_" + topic_name_as_path + "_images_and_detections.bag");
+    fs::path full_bag_path;
+    if (recording_bag_name_.empty()) {
+        std::string topic_name_as_path = image_topic_;
+        std::replace(topic_name_as_path.begin(), topic_name_as_path.end(), '/', '_');
+        full_bag_path = fs::path(output_root_folder_) / recording_id / (
+                recording_id + "_" + topic_name_as_path + "_images_and_detections.bag");
+    } else {
+        std::string bag_name = recording_bag_name_;
+        if (bag_name.size() < 4 || bag_name.substr(bag_name.size() - 4) != ".bag") {
+            bag_name += ".bag";
+        }
+        full_bag_path = fs::path(output_root_folder_) / recording_id / bag_name;
+    }
+
     if (fs::exists(full_bag_path)) {
         ROS_ERROR_STREAM("File path already exists " + full_bag_path.string());
     }

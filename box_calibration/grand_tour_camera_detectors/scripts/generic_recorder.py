@@ -9,7 +9,8 @@ import os
 
 
 class GenericRecorder:
-    def __init__(self, topic, service_timeout=5.0, query_interval=2.0, root_dir="/data"):
+    def __init__(self, topic, service_timeout=5.0, query_interval=2.0, root_dir="/data",
+                 recording_bag_name=""):
         self.topic = topic
         self.service_timeout = service_timeout
         self.query_interval = query_interval
@@ -19,6 +20,7 @@ class GenericRecorder:
         self.recording_service_name = "camera_detection_recording_id"
         self.root_dir = root_dir
         self.message_class = None
+        self.recording_bag_name = recording_bag_name
 
         # Determine the message type dynamically
         self.message_class = self.get_message_class()
@@ -71,7 +73,12 @@ class GenericRecorder:
         # Use the recording ID to create the bag file path
         recording_id = recording_id + "_calibration"
         bag_dir = os.path.join(self.root_dir, f"{recording_id}")
-        bag_file_path = os.path.join(bag_dir, f"{recording_id}_{topic_name_as_path}.bag")
+        if self.recording_bag_name:
+            if ".bag" not in self.recording_bag_name:
+                self.recording_bag_name += ".bag"
+            bag_file_path = os.path.join(bag_dir, self.recording_bag_name)
+        else:
+            bag_file_path = os.path.join(bag_dir, f"{recording_id}_{topic_name_as_path}.bag")
 
         # Create the output directory if it doesn't exist
         os.makedirs(bag_dir, exist_ok=True)
@@ -106,10 +113,12 @@ def main():
 
     # Get the topic and root directory from the parameter server
     topic = rospy.get_param('~topic', '/default_topic')
+    recording_bag_name = rospy.get_param('~recording_bag_name', '')
     root_dir = rospy.get_param('~root_dir', '/data')
 
     # Create the recorder object
-    recorder = GenericRecorder(topic, service_timeout=5.0, query_interval=2.0, root_dir=root_dir)
+    recorder = GenericRecorder(topic, service_timeout=5.0, query_interval=2.0, root_dir=root_dir,
+                               recording_bag_name=recording_bag_name)
 
     # Ensure the recording is stopped on shutdown
     rospy.on_shutdown(recorder.shutdown)
