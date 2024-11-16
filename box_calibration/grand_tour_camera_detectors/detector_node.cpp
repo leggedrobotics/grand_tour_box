@@ -31,7 +31,7 @@ void createDirectoryIfNotExists(const fs::path &filePath) {
             ROS_ERROR_STREAM("Failed to create directory: " + directory.string());
         }
     } else {
-        ROS_ERROR_STREAM("Directory already exists: " + directory.string());
+        ROS_WARN_STREAM("Directory already exists: " + directory.string());
     }
 }
 
@@ -113,6 +113,9 @@ bool CameraDetectorNode::openNewBag(std::string recording_id) {
     std::replace(topic_name_as_path.begin(), topic_name_as_path.end(), '/', '_');
     fs::path full_bag_path = fs::path(output_root_folder_) / recording_id / (
             recording_id + "_" + topic_name_as_path + "_images_and_detections.bag");
+    if (fs::exists(full_bag_path)) {
+        ROS_ERROR_STREAM("File path already exists " + full_bag_path.string());
+    }
     createDirectoryIfNotExists(full_bag_path);
     if (bag_.isOpen()) {
         bag_.close();
