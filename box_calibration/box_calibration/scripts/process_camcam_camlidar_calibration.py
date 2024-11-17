@@ -3,12 +3,17 @@ import argparse
 import os
 import shutil
 import subprocess
+from datetime import datetime
 
 import matplotlib.pyplot as plt
 import numpy as np
+import rosbag
+import rospkg
 import yaml
 from rosbag import Bag
 from yaml import MappingNode, SequenceNode
+
+rospack = rospkg.RosPack()
 
 # Initialize parser
 parser = argparse.ArgumentParser(description="Process input folder paths")
@@ -30,6 +35,108 @@ def mutate_sequence_flowstyle_to_inline(node):
         node.flow_style = False
 
 
+def write_raw_img_pipeline_format(camera_parameters, out_filename, comment_header):
+    data = dict()
+
+    data["image_width"] = camera_parameters['resolution'][0]
+    data["image_height"] = camera_parameters['resolution'][1]
+
+    data["rostopic"] = camera_parameters["rostopic"]
+
+    data["camera_matrix"] = dict()
+    data["camera_matrix"]["rows"] = 3
+    data["camera_matrix"]["cols"] = 3
+    fx = camera_parameters['intrinsics'][0]
+    fy = camera_parameters['intrinsics'][1]
+    cx = camera_parameters['intrinsics'][2]
+    cy = camera_parameters['intrinsics'][3]
+    data["camera_matrix"]["data"] = [fx, 0.0, cx, 0.0, fy, cy, 0.0, 0.0, 1.0]
+
+    data["distortion_model"] = camera_parameters['distortion_model']
+
+    data["distortion_coefficients"] = dict()
+    data["distortion_coefficients"]["rows"] = 1
+    data["distortion_coefficients"]["cols"] = 4
+    data["distortion_coefficients"]["data"] = camera_parameters['distortion_coeffs']
+
+    data["rectification_matrix"] = dict()
+    data["rectification_matrix"]["rows"] = 3
+    data["rectification_matrix"]["cols"] = 3
+    data["rectification_matrix"]["data"] = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
+
+    data["projection_matrix"] = dict()
+    data["projection_matrix"]["rows"] = 3
+    data["projection_matrix"]["cols"] = 4
+    data["projection_matrix"]["data"] = [fx, 0.0, cx, 0.0, 0.0, fy, cy, 0.0, 0.0, 0.0, 1.0, 0.0]
+
+    with open(out_filename, 'w') as outfile:
+        outfile.write('#Calibration program comments:' + comment_header + '\n')
+        yaml_composition = yaml.compose(yaml.safe_dump(data))
+        mutate_sequence_flowstyle_to_inline(yaml_composition)
+        yaml.serialize(yaml_composition, outfile)  # , default_flow_style=False)
+
+def add_comment_to_yaml(file_path, comment):
+    # Load the YAML data
+    with open(file_path, 'r') as file:
+        data = yaml.safe_load(file)
+
+    # Prepare the comment to prepend
+    comment_lines = [f"# {line}" for line in comment.splitlines()]
+    full_comment = '\n'.join(comment_lines) + '\n'
+
+    # Write the comment and YAML data back to the file
+    with open(file_path, 'w') as file:
+        file.write(full_comment)
+        yaml.dump(data, file, default_flow_style=False)
+
+def extract_bag_start_time(bag_file_path):
+    """
+    Extracts the start time of a ROS bag file.
+
+    Args:
+        bag_file_path (str): Path to the ROS bag file.
+
+    Returns:
+        str: The start time of the bag file in human-readable format (ISO 8601).
+    """
+    with rosbag.Bag(bag_file_path, 'r') as bag:
+        # Get the start time as a ROS time
+        start_time_ros = bag.get_start_time()
+        # Convert to a datetime object
+        start_time = datetime.fromtimestamp(start_time_ros)
+    return start_time.isoformat()
+
+
+def read_yaml_with_comment_header(yaml_file_path):
+    """
+    Reads a YAML file and extracts the comment header and the YAML content.
+
+    Args:
+        yaml_file_path (str): Path to the YAML file.
+
+    Returns:
+        tuple: A tuple containing:
+            - comment_header_text (str): The extracted comment header.
+            - yaml_content (dict): The parsed YAML content.
+    """
+    # Read the file and separate the comment header and YAML content
+    with open(yaml_file_path, "r") as file:
+        lines = file.readlines()
+
+    # Extract the comment header
+    comment_header = []
+    for line in lines:
+        if line.startswith("#"):
+            comment_header.append(line.strip())
+        else:
+            break
+
+    # Join the comment header lines
+    comment_header_text = "\n".join(comment_header)
+
+    return comment_header_text
+
+
 def pretty_write_yaml_array_with_comment(data, output_path, comment=""):
     with open(output_path, 'w') as outfile:
         outfile.write('# Created using ' + comment + '\n')
@@ -38,8 +145,8 @@ def pretty_write_yaml_array_with_comment(data, output_path, comment=""):
         yaml.serialize(yaml_composition, outfile)
 
 
-def safe_subprocess_run(command):
-    if args.dry_run:
+def safe_subprocess_run(command, force=False):
+    if args.dry_run and not force:
         print("Dry run mode: would run command:", ' '.join(command))
     else:
         subprocess.run(command)
@@ -65,6 +172,8 @@ camcam_calibration_path = "cameracamera_calibration.yaml"
 command = ["rosrun", "grand_tour_ceres_apps", "camera_camera_offline_calibration", "--bags"] + bag_files + [
     "--output_path", camcam_calibration_path]
 
+camcam_calibration_comment_header = read_yaml_with_comment_header(camcam_calibration_path)
+
 # Run the command
 safe_subprocess_run(command)
 
@@ -82,7 +191,7 @@ safe_subprocess_run(convert_command)
 
 # YAML configuration data
 data = {'target_type': 'checkerboard', 'targetCols': 7, 'targetRows': 8, 'rowSpacingMeters': 0.08,
-    'colSpacingMeters': 0.08}
+        'colSpacingMeters': 0.08}
 
 # Output file path
 default_grand_tour_lidar_board_path = 'grand_tour_default_lidar_board.yaml'
@@ -94,10 +203,13 @@ with open(default_grand_tour_lidar_board_path, 'w') as file:
 hesai_calib_output_folder = "./hesai_calib_output"
 # New configuration data for grand_tour_default_hesai_calib_config.yaml
 hesai_calib_config_data = {'logging_dir': hesai_calib_output_folder,
-    'stationarity': {'max_rotation_deg': 0.01, 'max_translation_m': 0.001, 'longest_outage_secs': 0.50},
-    'lidar_topic': '/gt_box/hesai/points',
-    'pointcloud_plane_segmenter': {'board_inflation': 0.5, 'ksearch': 50, 'normal_distance_weight': 0.005,
-        'max_iterations_ransac': 100, 'plane_distance_threshold_m': 0.25}}
+                           'stationarity': {'max_rotation_deg': 0.01, 'max_translation_m': 0.001,
+                                            'longest_outage_secs': 0.50},
+                           'lidar_topic': '/gt_box/hesai/points',
+                           'pointcloud_plane_segmenter': {'board_inflation': 0.5, 'ksearch': 50,
+                                                          'normal_distance_weight': 0.005,
+                                                          'max_iterations_ransac': 100,
+                                                          'plane_distance_threshold_m': 0.25}}
 
 # Output file path for the new YAML configuration
 hesai_calib_settings_path = 'grand_tour_default_hesai_calib_config.yaml'
@@ -109,10 +221,13 @@ with open(hesai_calib_settings_path, 'w') as file:
 livox_calib_output_folder = "livox_calib_output"
 # New configuration data for grand_tour_default_livox_calib_config.yaml
 livox_calib_config_data = {'logging_dir': livox_calib_output_folder,
-    'stationarity': {'max_rotation_deg': 0.01, 'max_translation_m': 0.001, 'longest_outage_secs': 0.50},
-    'lidar_topic': '/gt_box/livox/lidar',
-    'pointcloud_plane_segmenter': {'board_inflation': 0.5, 'ksearch': 50, 'normal_distance_weight': 0.005,
-        'max_iterations_ransac': 100, 'plane_distance_threshold_m': 0.25}}
+                           'stationarity': {'max_rotation_deg': 0.01, 'max_translation_m': 0.001,
+                                            'longest_outage_secs': 0.50},
+                           'lidar_topic': '/gt_box/livox/lidar',
+                           'pointcloud_plane_segmenter': {'board_inflation': 0.5, 'ksearch': 50,
+                                                          'normal_distance_weight': 0.005,
+                                                          'max_iterations_ransac': 100,
+                                                          'plane_distance_threshold_m': 0.25}}
 
 # Output file path for the new YAML configuration
 livox_calib_settings_path = 'grand_tour_default_livox_calib_config.yaml'
@@ -169,9 +284,10 @@ if hesai_bag_file:
 
     # Construct the command
     hesai_command = ["rosrun", "diffcal_gui_ros", "offline_calibrator.py", "--bag_path", hesai_bag_file,
-        "--intrinsic_calibrations_path", intrinsic_calibrations_path, "--initial_guess_config_path",
-        initial_guess_config_path, "--target_config_path", target_config_path, "--application_parameters_path",
-        application_parameters_path]
+                     "--intrinsic_calibrations_path", intrinsic_calibrations_path, "--initial_guess_config_path",
+                     initial_guess_config_path, "--target_config_path", target_config_path,
+                     "--application_parameters_path",
+                     application_parameters_path]
 
     # Run the command
     safe_subprocess_run(hesai_command)
@@ -188,15 +304,16 @@ if livox_bag_file:
 
     # Construct the command
     livox_command = ["rosrun", "diffcal_gui_ros", "offline_calibrator.py", "--bag_path", livox_bag_file,
-        "--intrinsic_calibrations_path", intrinsic_calibrations_path, "--initial_guess_config_path",
-        initial_guess_config_path, "--target_config_path", target_config_path, "--application_parameters_path",
-        application_parameters_path]
+                     "--intrinsic_calibrations_path", intrinsic_calibrations_path, "--initial_guess_config_path",
+                     initial_guess_config_path, "--target_config_path", target_config_path,
+                     "--application_parameters_path",
+                     application_parameters_path]
 
     # Run the command
     safe_subprocess_run(livox_command)
 
 reports = {"hesai": [hesai_calib_output_folder, "hesai_calib_report.pdf"],
-    "livox": [livox_calib_output_folder, "livox_calib_report.pdf"], }
+           "livox": [livox_calib_output_folder, "livox_calib_report.pdf"], }
 
 from matplotlib.backends.backend_pdf import PdfPages
 
@@ -303,7 +420,7 @@ assert (os.path.exists(camcam_calibration_path))
 with open(camcam_calibration_path, 'r') as file:
     camcam_calibration_data = yaml.load(file, Loader=yaml.FullLoader)
 
-camcamlidar_calibration_data = camcam_calibration_data.co
+camcamlidar_calibration_data = camcam_calibration_data.copy()
 
 # Add the new fields for each key in reports
 for key in camcam_calibration_data.keys():
@@ -312,4 +429,57 @@ for key in camcam_calibration_data.keys():
 
 camcamlidar_calibration_path = "cameracameralidar_calibration.yaml"
 
-pretty_write_yaml_array_with_comment(camcamlidar_calibration_data, camcamlidar_calibration_path)
+hesai_bag_start_time = extract_bag_start_time(hesai_bag_file)
+calibration_comment = (f"#Camera calibration: {camcam_calibration_comment_header}\n"
+                       f"#LiDAR calibration: Hesai bag start time: {hesai_bag_start_time}")
+pretty_write_yaml_array_with_comment(camcamlidar_calibration_data, camcamlidar_calibration_path,
+                                     comment=calibration_comment)
+
+# Get the package path
+box_calibration_package = rospack.get_path("box_calibration")
+
+# Construct the full path to the file
+tf_calibration_output_path = os.path.join(box_calibration_package, "calibration/tf/calibration_latest.yaml")
+
+conversion_command = ["rosrun", "box_calibration", "convert_graph.py", "-i", camcamlidar_calibration_path,
+                 "-o", tf_calibration_output_path, ]
+
+# Run the command
+safe_subprocess_run(conversion_command, force=True)
+add_comment_to_yaml(tf_calibration_output_path, calibration_comment)
+
+# Define the path to the diffcal-calib.yaml file
+raw_image_pipeline_calib_files = [os.path.join(calib_output_folder, '04_alignment', x)
+                                  for x in os.listdir(os.path.join(calib_output_folder, '04_alignment'))
+                                  if "calib_cam" in x]
+for k, camera_params in camcam_calibration_data.items():
+    rostopic = camera_params["rostopic"]
+    output_path = None
+
+    if "alphasense" in rostopic:
+        output_path = os.path.join(box_calibration_package, "calibration", "alphasense",
+                                   rostopic.split("/")[-1] + ".yaml")
+    elif "hdr" in rostopic:
+        if "front" in rostopic:
+            output_path = os.path.join(box_calibration_package, "calibration", "hdr",
+                                       "hdr_front.yaml")
+        elif "left" in rostopic:
+            output_path = os.path.join(box_calibration_package, "calibration", "hdr",
+                                       "hdr_left.yaml")
+        elif "right" in rostopic:
+            output_path = os.path.join(box_calibration_package, "calibration", "hdr",
+                                       "hdr_right.yaml")
+        else:
+            raise ValueError(f"Unexpected rostopic name: {rostopic}")
+    elif "zed" in rostopic:
+        if "left" in rostopic:
+            output_path = os.path.join(box_calibration_package, "calibration", "zed2i",
+                                       "zed_left.yaml")
+        elif "right" in rostopic:
+            output_path = os.path.join(box_calibration_package, "calibration", "zed2i",
+                                       "zed_right.yaml")
+    else:
+        raise ValueError(f"Unexpected rostopic name: {rostopic}")
+
+    if output_path is not None:
+        write_raw_img_pipeline_format(camera_params, output_path, comment_header=camcam_calibration_comment_header)
