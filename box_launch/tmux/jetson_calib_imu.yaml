@@ -26,7 +26,6 @@ windows:
             $(rospack find bringup_zed2i_visualization)/launch/zed2i_visualization.launch
             $(rospack find box_throttling)/launch/throttle_jetson.launch
             $(rospack find box_relaying)/launch/relay_jetson.launch
-            $(rospack find grand_tour_camera_detectors)/launch/detectors_on_jetson_imu.launch
             "
           use_gui:=false
     - shell_command:
