@@ -10,6 +10,8 @@ alias reset_chrony='sudo systemctl restart chrony.service'
 alias l-opc='tmuxp load $(rospack find box_launch)/../tmux/opc_recording.yaml'
 alias l-calib-camera='tmuxp load $(rospack find box_launch)/../tmux/opc_calib_camera.yaml'
 alias l-calib-lidar='tmuxp load $(rospack find box_launch)/../tmux/opc_calib_lidar.yaml'
+alias l-calib-imu='tmuxp load $(rospack find box_launch)/../tmux/opc_calib_imu.yaml'
+
 
 alias l-replay='tmuxp load $(rospack find box_launch)/../tmux/opc_replay.yaml'
 alias l-replay-zsh='tmuxp load $(rospack find box_launch)/../tmux/opc_replay_zsh.yaml'

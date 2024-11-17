@@ -8,6 +8,7 @@ alias l-jetson='tmuxp load $(rospack find box_launch)/../tmux/jetson_recording.y
 alias l-viz='tmuxp load $(rospack find box_launch)/../tmux/jetson_visualization.yaml'
 alias l-calib-camera='tmuxp load $(rospack find box_launch)/../tmux/jetson_calib_camera.yaml'
 alias l-calib-lidar='tmuxp load $(rospack find box_launch)/../tmux/jetson_calib_lidar.yaml'
+alias l-calib-imu='tmuxp load $(rospack find box_launch)/../tmux/jetson_calib_imu.yaml'
 
 
 alias attach-jetson='tmux attach-session -t jetson'
