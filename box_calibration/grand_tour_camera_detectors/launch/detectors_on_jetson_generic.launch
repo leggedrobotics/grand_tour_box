@@ -7,30 +7,84 @@
         <arg name="name" value="zed_left_detector"/>
         <arg name="image_topic" value="/gt_box/zed2i_driver_node/left_raw/image_raw_color"/>
         <arg name="use_april_grid" value="$(arg use_april_grid)"/>
+        <arg name="recording_bag_name" value="zed_left"/>
     </include>
 
     <include file="$(find grand_tour_camera_detectors)/launch/generic_detector.launch">
         <arg name="name" value="zed_right_detector"/>
         <arg name="image_topic" value="/gt_box/zed2i_driver_node/right_raw/image_raw_color"/>
         <arg name="use_april_grid" value="$(arg use_april_grid)"/>
+        <arg name="recording_bag_name" value="zed_right"/>
     </include>
 
     <include file="$(find grand_tour_camera_detectors)/launch/generic_detector.launch">
         <arg name="name" value="hdr_left_detector"/>
         <arg name="image_topic" value="/gt_box/hdr_left/image_raw"/>
         <arg name="use_april_grid" value="$(arg use_april_grid)"/>
+        <arg name="recording_bag_name" value="hdr_left"/>
     </include>
 
     <include file="$(find grand_tour_camera_detectors)/launch/generic_detector.launch">
         <arg name="name" value="hdr_front_detector"/>
         <arg name="image_topic" value="/gt_box/hdr_front/image_raw"/>
         <arg name="use_april_grid" value="$(arg use_april_grid)"/>
+        <arg name="recording_bag_name" value="hdr_front"/>
     </include>
 
     <include file="$(find grand_tour_camera_detectors)/launch/generic_detector.launch">
         <arg name="name" value="hdr_right_detector"/>
         <arg name="image_topic" value="/gt_box/hdr_right/image_raw"/>
         <arg name="use_april_grid" value="$(arg use_april_grid)"/>
+        <arg name="recording_bag_name" value="hdr_right"/>
     </include>
+
+    <node pkg="grand_tour_camera_detectors" type="generic_recorder.py"
+          name="ap20_tps_recorder" output="screen"
+          ns="gt_box">
+        <param name="topic" value="/ap20/tps"/>
+        <param name="recording_bag_name" value="ap20_tps"/>
+    </node>
+
+    <node pkg="grand_tour_camera_detectors" type="generic_recorder.py"
+          name="ap20_imu_recorder" output="screen"
+          ns="gt_box">
+        <param name="topic" value="/ap20/imu"/>
+        <param name="recording_bag_name" value="ap20_imu"/>
+    </node>
+
+    <node pkg="grand_tour_camera_detectors" type="generic_recorder.py"
+          name="ap20_imu_debug_recorder" output="screen"
+          ns="gt_box">
+        <param name="topic" value="/gt_box/ap20/imu_debug"/>
+        <param name="recording_bag_name" value="ap20_imu_debug"/>
+    </node>
+
+    <node pkg="grand_tour_camera_detectors" type="generic_recorder.py"
+          name="ap20_position_debug_recorder" output="screen"
+          ns="gt_box">
+        <param name="topic" value="/gt_box/ap20/position_debug"/>
+        <param name="recording_bag_name" value="ap20_position_debug"/>
+    </node>
+
+    <node pkg="grand_tour_camera_detectors" type="generic_recorder.py"
+          name="ap20_timestamp_debug_recorder" output="screen"
+          ns="gt_box">
+        <param name="topic" value="/gt_box/ap20/timestamp_debug"/>
+        <param name="recording_bag_name" value="ap20_timestamp_debug"/>
+    </node>
+
+    <node pkg="grand_tour_camera_detectors" type="generic_recorder.py"
+          name="adis16475_imu_recorder" output="screen"
+          ns="gt_box">
+        <param name="topic" value="/gt_box/adis16475_node/imu"/>
+        <param name="recording_bag_name" value="adis16475_imu"/>
+    </node>
+
+    <node pkg="grand_tour_camera_detectors" type="generic_recorder.py"
+          name="stim320_imu_recorder" output="screen"
+          ns="gt_box">
+        <param name="topic" value="/gt_box/stim320/imu"/>
+        <param name="recording_bag_name" value="stim320_imu"/>
+    </node>
 
 </launch>
