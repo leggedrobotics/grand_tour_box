@@ -6,6 +6,7 @@ on:
       - "box_utils/box_auto/docker/kleinkram_minimal.Dockerfile"
       - "box_utils/box_auto/docker/entrypoint_kleinkram_minimal.sh"
       - "box_utils/box_auto/docker/dependencies/minimal.sh"
+      - "box_utils/box_auto/scripts/*"
   workflow_dispatch:
     inputs:
         logLevel:

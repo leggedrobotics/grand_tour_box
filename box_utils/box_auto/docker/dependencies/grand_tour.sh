@@ -57,6 +57,7 @@ pip3 install pandas
 pip3 install scipy
 pip3 install colorlog
 pip3 install rosbags
+pip3 install matplotlib # graph_msf
 
 # Dependencies: box_auto - hesai.py
 mkdir -p /home/rsl/git/grand_tour_box/box_bringup/bringup_hesai/config
