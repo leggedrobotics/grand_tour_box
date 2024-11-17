@@ -1,23 +1,23 @@
-# Created using
+#Calibration program comments:#Generated with data of ROS time: 2024-11-10 20:28:04.856192133
 camera_matrix:
   cols: 3
-  data: [1061.619434370338, 0.0, 954.7316952422145, 0.0, 1062.564034642899, 551.8137916747991,
+  data: [1063.744141484902, 0.0, 954.7425199760194, 0.0, 1064.088575748562, 550.199914267397,
     0.0, 0.0, 1.0]
   rows: 3
-camera_name: zed2i_right_camera_optical_frame
 distortion_coefficients:
   cols: 4
-  data: [-0.05270016318924178, 0.01958680970879651, 2.182241090992012e-06, -0.0001737404573674523]
+  data: [-0.06280793538292988, 0.02808696344243457, 5.383249669434691e-06, -1.797416179061692e-05]
   rows: 1
 distortion_model: radtan
-image_height: 1080
+image_height: 1280
 image_width: 1920
 projection_matrix:
   cols: 4
-  data: [1061.619434370338, 0.0, 954.7316952422145, 0.0, 0.0, 1062.564034642899, 551.8137916747991,
+  data: [1063.744141484902, 0.0, 954.7425199760194, 0.0, 0.0, 1064.088575748562, 550.199914267397,
     0.0, 0.0, 0.0, 1.0, 0.0]
   rows: 3
 rectification_matrix:
   cols: 3
   data: [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
   rows: 3
+rostopic: /gt_box/zed2i_driver_node/right_raw/image_raw_color

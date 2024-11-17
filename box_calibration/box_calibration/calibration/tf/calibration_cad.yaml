@@ -1,205 +1,273 @@
-box_base_to_prism:
-  x: 0.303281493778
-  y: -0.036500000014
-  z: -0.17645647715600002
-  roll: 3.141592653589793
-  pitch: 0.0
-  yaw: 0.0
-
-box_base_to_alphasense_base:
-  x: 0.362281493778
-  y: -0.091500000014
-  z: 0.07454352284400001
-  roll: 1.3965926535897932
-  pitch: 2.220446049250313e-16
-  yaw: 1.571
-
-alphasense_base_to_alphasense_front_right:
-  x: 0.110
-  y: -0.000
-  z: -0.000
-  roll: 0.000
-  pitch: 0.000
-  yaw: 0.000
-
+alphasense_base_to_alphasense_front_left:
+  pitch: 0.0009078749675786035
+  roll: -0.000952258961668107
+  x: 0.0549427643615819
+  y: 0.0002135381979232123
+  yaw: 0.01719960135252997
+  z: 0.0007110962558664978
 alphasense_base_to_alphasense_front_middle:
-  x: 0.055
-  y: -0.000
-  z: -0.000
-  roll: 0.000
-  pitch: 0.000
-  yaw: 0.000
-
-alphasense_base_to_alphasense_left:
-  x: -0.045
-  y: 0.011
-  z: -0.065
-  roll: 1.396
-  pitch: -1.396
-  yaw: -1.571
-
-alphasense_base_to_alphasense_right:
-  x: 0.155
-  y: 0.011
-  z: -0.065
-  roll: -1.396
-  pitch: -1.396
-  yaw: -1.571
-
-box_base_to_hdr_base:
-  x: 0.349281493778
-  y: -0.036500000014
-  z: 0.10954352284400001
-  roll: 1.5705926535897934
   pitch: 0.0
-  yaw: 1.571
-
-hdr_base_to_hdr_left:
-  x: -0.087
-  y: 0.000
-  z: -0.055
-  roll: 3.142
-  pitch: -1.396
-  yaw: 3.142
-
-hdr_base_to_hdr_right:
-  x: 0.087
-  y: 0.000
-  z: -0.055
-  roll: 3.142
-  pitch: 1.396
-  yaw: 3.142
-
-zed_left_optical_to_zed_right_optical:
-  x: 0.12
+  roll: 0.0
+  x: 0.0
   y: 0.0
+  yaw: 0.0
   z: 0.0
+alphasense_base_to_alphasense_front_right:
+  pitch: -0.0015361463682490584
+  roll: -0.0011949593212542157
+  x: -0.05504577058287112
+  y: -0.001140268866503648
+  yaw: -0.0033404410780152527
+  z: -0.0001790137910794059
+alphasense_base_to_alphasense_left:
+  pitch: -1.4016591993144576
+  roll: 1.4414405508630788
+  x: 0.1038139086628064
+  y: -0.01137669331489176
+  yaw: 1.5335718735868733
+  z: -0.06938471757216885
+alphasense_base_to_alphasense_right:
+  pitch: -1.4104156855779046
+  roll: -1.4103415515516369
+  x: -0.1034110352638009
+  y: -0.01379790231111747
+  yaw: 1.6014085182017668
+  z: -0.06872488173391333
+alphasense_cam1_helper_joint:
+  pitch: 0.0
   roll: 0.0
-  pitch: 0.0
+  x: 0.0
+  y: 0.0
   yaw: 0.0
-
-zed_left_camera_frame_to_zed_imu_link:
-  x: -0.002000
-  y: -0.023061
-  z: 0.000217
-  roll: -0.0036674
-  pitch: 0.0004468
-  yaw: -0.0130214
-
-box_base_to_imu_stim320:
-  x: 0.290281493778
-  y: -0.058500000014
-  z: 0.163543522844
-  roll: 3.141592653589793
+  z: 0.0
+alphasense_cam2_helper_joint:
   pitch: 0.0
+  roll: 0.0
+  x: 0.0
+  y: 0.0
   yaw: 0.0
+  z: 0.0
+alphasense_cam3_helper_joint:
+  pitch: 0.0
+  roll: 0.0
+  x: 0.0
+  y: 0.0
+  yaw: 0.0
+  z: 0.0
+alphasense_cam4_helper_joint:
+  pitch: 0.0
+  roll: 0.0
+  x: 0.0
+  y: 0.0
+  yaw: 0.0
+  z: 0.0
+alphasense_cam5_helper_joint:
+  pitch: 0.0
+  roll: 0.0
+  x: 0.0
+  y: 0.0
+  yaw: 0.0
+  z: 0.0
+base_to_boxbase:
+  pitch: 0.0
+  roll: 3.1415126
+  x: -0.07640380000000001
+  y: -0.03612243722439489
+  yaw: 0.0
+  z: -0.28027610916731677
 box_base_to_adis16475_imu:
-  x: 0.32228149377799997
-  y: -0.002500000013999998
-  z: 0.161543522844
-  roll: 3.141592653589793
-  pitch: 0.0
-  yaw: -1.571
-
-box_base_to_imu_alphasense:
-  x: 0.290281493778
-  y: -0.058500000014
-  z: 0.163543522844
-  roll: -3.5897930298416118e-09
-  pitch: 0.0
-  yaw: 0.0
-
-box_base_to_hesai:
-  x: 0.303281493778
-  y: -0.036500000014
-  z: -0.005456477156000006
-  roll: 3.141592653589793
-  pitch: 0.0
-  yaw: -1.571
-box_base_to_livox:
-  x: 0.303281493778
-  y: -0.036500000014
-  z: -0.100456477156
-  roll: 0.00040734641020666556
-  pitch: 0.0
-  yaw: 0.0
+  pitch: 0.0007843304436456755
+  roll: 3.141185361181927
+  x: 0.32280410224170003
+  y: -0.0030828170267117594
+  yaw: -1.5706586237690443
+  z: 0.16226215768043345
+box_base_to_alphasense_base:
+  pitch: 0.0007843304436458975
+  roll: -1.3969999459976594
+  x: 0.3625290417401755
+  y: -0.03700874786229595
+  yaw: -1.5706586237690443
+  z: 0.07478667312172056
 box_base_to_ap20_imu_frame:
-  x: -0.0027185062219999834
-  y: -0.092500000014
-  z: 0.008543522844000007
-  roll: -1.5705926535897934
-  pitch: 0.0
-  yaw: 0.0
-
+  pitch: 2.220446049250313e-16
+  roll: -1.5689999999999995
+  x: -0.0025284330291618917
+  y: -0.09300713745305722
+  yaw: -2.277680242538363e-17
+  z: 0.008618550296028024
 box_base_to_cpt7_imu_frame:
-  x: -0.0
-  y: -0.0
+  pitch: 0.0
+  roll: 0.0
+  x: 0.0
+  y: 0.0
+  yaw: 0.0
   z: 0.0
-  roll: 0.0
+box_base_to_hdr_base:
+  pitch: -0.0044165724315849975
+  roll: 1.5697314118422072
+  x: 0.3643043842742707
+  y: -0.037204538507981784
+  yaw: 1.5778932425318684
+  z: 0.10944779632890846
+box_base_to_hesai_lidar:
+  pitch: 0.010812667719835911
+  roll: -3.1389775262232433
+  x: 0.2986212627484697
+  y: -0.033052700375560615
+  yaw: -1.5640770471613459
+  z: -0.006865955318008515
+box_base_to_imu_alphasense:
   pitch: 0.0
-  yaw: 0.0
-
-box_base_to_zed_base:
-  x: 0.365281493778
+  roll: -1.777830018057729e-20
+  x: 0.291068357693992
+  y: -0.059088373557869625
+  yaw: 1.9695870281052712e-20
+  z: 0.16375217635075254
+box_base_to_imu_stim320:
+  pitch: 0.0
+  roll: -3.14
+  x: 0.291068357693992
+  y: -0.059088373557869625
+  yaw: -8.121254772918303e-17
+  z: 0.16375217635075254
+box_base_to_livox_lidar:
+  pitch: -0.002139049374584312
+  roll: 0.011937478315227703
+  x: 0.29574050545266073
+  y: -0.03622855308991629
+  yaw: 0.006619055563879176
+  z: -0.10226897411238085
+box_base_to_prism:
+  pitch: 0.0
+  roll: 3.141592653589793
+  x: 0.303281493778
   y: -0.036500000014
-  z: 0.135543522844
-  roll: 0.0004073464102066656
-  pitch: -0.17499999999999982
-  yaw: -6.881365851650507e-21
-
-zed2i_base_to_camera_center:
-  x: 0
-  y: 0
-  z: 0.015
+  yaw: 0.0
+  z: -0.17645647715600002
+box_base_to_zed_base:
+  pitch: -0.17556553765998228
+  roll: 0.012561407811986463
+  x: 0.3813989664224207
+  y: -0.037953567138976366
+  yaw: 0.0022312429177207696
+  z: 0.13856103594617258
+cpt7_imu_frame_to_cpt7_antenna_back:
+  pitch: 0.0
   roll: 0.0
-  pitch: 0.0
+  x: -0.4404038
+  y: -0.0361
   yaw: 0.0
-
-zed2i_camera_to_zed2i_optical:
-  x: 0
-  y: 0
-  z: 0
-  roll: -1.570796325
+  z: -0.048868
+cpt7_imu_frame_to_cpt7_antenna_front:
   pitch: 0.0
-  yaw: -1.570796325
-
-
-zed2i_optical_to_zed2i_camera:
-  x: 0
-  y: 0
-  z: 0
-  roll: 1.570796325
-  pitch: -1.570796325
+  roll: 0.0
+  x: 0.13924890003
+  y: -0.0361
   yaw: 0.0
-
+  z: -0.193298
+hdr_base_to_hdr_front:
+  pitch: 0.0
+  roll: 0.0
+  x: 0.0
+  y: 0.0
+  yaw: 0.0
+  z: 0.0
+hdr_base_to_hdr_left:
+  pitch: -1.3868272956332077
+  roll: 3.136393503585714
+  x: -0.10537005172998366
+  y: -0.0016689016646408428
+  yaw: -3.1233283616191696
+  z: -0.07933027225672996
+hdr_base_to_hdr_right:
+  pitch: 1.4022873406814167
+  roll: -3.118391434491618
+  x: 0.10499445317970008
+  y: -1.914823834430618e-05
+  yaw: -3.1156328547343186
+  z: -0.07808631275875064
+hesai_lidar_to_hesai_model:
+  pitch: 0.0
+  roll: 0.0
+  x: 0.0
+  y: 0.0
+  yaw: 0.0
+  z: 0.0
+livox_lidar_to_livox_imu:
+  pitch: 0.0020598375579912176
+  roll: -0.011951400531294013
+  x: 0.01891977628723123
+  y: 0.02176176798877014
+  yaw: -0.006644132270838644
+  z: -0.04180962547509162
+livox_lidar_to_livox_model:
+  pitch: 0.0
+  roll: 0.0
+  x: 0.0
+  y: 0.0
+  yaw: 0.0
+  z: 0.0
+prism_to_prism_model:
+  pitch: 0.0
+  roll: 0.0
+  x: 0.0
+  y: 0.0
+  yaw: 0.0
+  z: 0.0
+stim320_imu_to_box_base_model:
+  pitch: 0.0
+  roll: 0.0
+  x: 0.0
+  y: 0.0
+  yaw: 0.0
+  z: 0.0
+zed2i_base_helper_joint:
+  pitch: 0.0
+  roll: 0.0
+  x: 0.0
+  y: 0.0
+  yaw: 0.0
+  z: 0.0
+zed2i_base_to_camera_center:
+  pitch: 0.0
+  roll: 0.0
+  x: 0.0
+  y: 0.0
+  yaw: 0.0
+  z: 0.015
 zed_camera_center_to_zed_left:
+  pitch: 0.0
+  roll: 0.0
   x: -0.01
   y: 0.06
-  z: 0.0
-  roll: 0.0
-  pitch: 0.0
   yaw: 0.0
-
-hdr_base_to_hdr_front:
+  z: 0.0
+zed_left_camera_frame_to_zed_imu:
+  pitch: 0.001252786725399968
+  roll: -0.014970258188379632
+  x: -0.01750296006602218
+  y: -0.02185648972930214
+  yaw: -0.015006700995595186
+  z: 3.496705094856167e-05
+zed_left_optical_to_zed_right_optical:
+  pitch: -0.001525874342925837
+  roll: 0.000550546472072088
+  x: 0.11992214182685931
+  y: -0.00011712771919814013
+  yaw: -0.002289290122721761
+  z: 6.645630999367949e-05
+zed_left_to_left_optical:
+  pitch: 1.7948966757330709e-09
+  roll: -1.5707963267948968
   x: 0.0
   y: 0.0
+  yaw: -1.570796325
   z: 0.0
-  roll: 0.0
-  pitch: 0.0
-  yaw: 0.0
-
-box_base_to_model_base:
+zed_right_to_right_optical:
+  pitch: -1.5707963267948966
+  roll: 1.570796325
   x: 0.0
   y: 0.0
-  z: 0.0
-  roll: 0.0
-  pitch: 0.0
   yaw: 0.0
-
-alphasense_base_to_alphasense_front_left:
-  x: 0.0
-  y: 0.0
   z: 0.0
-  roll: 0.0
-  pitch: 0.0
-  yaw: 0.0

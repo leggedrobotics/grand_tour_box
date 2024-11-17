@@ -68,14 +68,14 @@ zed_left_optical_to_zed_right_optical:
   roll: 0.0015141712684178022
   pitch: -0.0016352315604488687
   yaw: -0.0024298021850438245
-box_base_to_hesai:
+box_base_to_hesai_lidar:
   x: 0.303281493778
   y: -0.036500000014
   z: -0.005456477156000006
   roll: 3.141592653589793
   pitch: 0.0
   yaw: -1.571
-box_base_to_livox:
+box_base_to_livox_lidar:
   x: 0.303281493778
   y: -0.036500000014
   z: -0.100456477156

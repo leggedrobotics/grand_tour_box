@@ -1,23 +1,23 @@
-# Created using 
+#Calibration program comments:#Generated with data of ROS time: 2024-11-10 20:28:04.856192133
 camera_matrix:
   cols: 3
-  data: [700.650073228541, 0.0, 756.5124889007354, 0.0, 700.4750086945457, 556.1420162050858,
+  data: [698.4603880996106, 0.0, 756.362731036159, 0.0, 698.5001485475685, 555.9743820527079,
     0.0, 0.0, 1.0]
   rows: 3
-camera_name: cam1_sensor_frame
 distortion_coefficients:
   cols: 4
-  data: [-0.03738442817706632, -0.006774113720122332, 0.006366368490133227, -0.002667974108643327]
+  data: [-0.03687755026708886, -0.005178671983344871, 0.002996984620063019, -0.0009785982403726354]
   rows: 1
 distortion_model: equidistant
 image_height: 1080
 image_width: 1440
 projection_matrix:
   cols: 4
-  data: [700.650073228541, 0.0, 756.5124889007354, 0.0, 0.0, 700.4750086945457, 556.1420162050858,
+  data: [698.4603880996106, 0.0, 756.362731036159, 0.0, 0.0, 698.5001485475685, 555.9743820527079,
     0.0, 0.0, 0.0, 1.0, 0.0]
   rows: 3
 rectification_matrix:
   cols: 3
   data: [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
   rows: 3
+rostopic: /gt_box/alphasense_driver_node/cam1
