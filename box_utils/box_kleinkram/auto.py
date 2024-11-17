@@ -107,17 +107,17 @@ def process_mission_data(data_folder, mission_name):
             "_lpc_state_estimator.bag",
             "_lpc_tf.bag",
         ]
-    elif LOCAL_HOSTNAME == "opc":
-        upload_kk = True
-        # cmds.append(
-        #    f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/repair_bags.py"
-        # )
-        # cmds.append(
-        #    f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/merge_mission.py"
-        # )
-        # cmds.append(
-        #    f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/export_raw_imu_bag.py"
-        # )
+    elif LOCAL_HOSTNAME == "opc" or LOCAL_HOSTNAME == "mavt-rsl-ws":
+        upload_kk = False
+        cmds.append(
+            f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/repair_bags.py"
+        )
+        cmds.append(
+            f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/merge_mission.py"
+        )
+        cmds.append(
+            f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/export_raw_imu_bag.py"
+        )
         keys = [
             "_npc_depth_cameras.bag",
             "_npc_elevation_mapping.bag",

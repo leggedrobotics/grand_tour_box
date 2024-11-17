@@ -6,21 +6,38 @@ from time import sleep
 import psutil
 from pathlib import Path
 import shutil
-
-# General Packages
-from scipy.spatial.transform import Rotation as R
 import copy
 import rosbag
 from tf.msg import tfMessage
 import numpy as np
+from scipy.spatial.transform import Rotation as R
 from geometry_msgs.msg import PoseWithCovarianceStamped, PoseStamped, TransformStamped
+from tf_bag import BagTfTransformer
+from rosbag import Bag
+import matplotlib.pyplot as plt
 
 
 MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
 WS = "/home/catkin_ws"
 PRE = f"source /opt/ros/noetic/setup.bash; source {WS}/devel/setup.bash;"
-PATTERNS = ["*_jetson_ap20_synced.bag", "*_cpt7_raw_imu.bag", "*_cpt7_gps_ie.bag", "*_tf_static_start_end.bag"]
+PATTERNS = ["*_jetson_ap20_synced.bag", "*_cpt7_raw_imu.bag", "*_cpt7_gps_ie.bag", "*_tf_static.bag"]
 OUT = MISSION_DATA  # "/out"
+
+
+class BagTfTransformerWrapper:
+    def __init__(self, bag):
+        self.tf_listener = BagTfTransformer(bag)
+
+    def waitForTransform(self, parent_frame, child_frame, time, duration):
+        return self.tf_listener.waitForTransform(parent_frame, child_frame, time)
+
+    def lookupTransform(self, parent_frame, child_frame, time, latest=False):
+        if latest:
+            time = self.tf_listener.getStartTime()
+        try:
+            return self.tf_listener.lookupTransform(parent_frame, child_frame, time)
+        except Exception:
+            return (None, None)
 
 
 def invert_transform(tf_msg):
@@ -228,7 +245,8 @@ def convert_csv_to_bag(
 def get_bag(directory, pattern):
     files = [str(s) for s in Path(directory).rglob(pattern)]
     if len(files) != 1:
-        print(f"Error: More or less matching bag files found: {pattern} in directory {directory}")
+        n = len(files)
+        print(f"Error: More or less matching bag files found: {pattern} in directory {directory} - {n}")
         return [], False
 
     return files[0], True
@@ -262,50 +280,206 @@ def launch_nodes():
             timestamp = timestamp.split("_")[0]
 
         else:
-            raise ValueError("Pattern not found: ", pattern, " in Directory")
+            raise ValueError("Pattern not found: ", pattern, " in Directory ", MISSION_DATA)
 
     assert len(inputs) == len(PATTERNS), "Failure did not find all the bags required"
 
     os.makedirs("/out", exist_ok=True)
 
     inputs = ",".join(inputs)
-
     merged_rosbag_path = os.path.join(MISSION_DATA, "merged.bag")
-    os.system(
-        f"python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/merge_bags.py --input={inputs} --output={merged_rosbag_path}"
-    )
 
-    os.system("bash -c '" + PRE + "roscore&' ")
-    sleep(1)
+    if True:
+        os.system(
+            f"python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/merge_bags.py --input={inputs} --output={merged_rosbag_path}"
+        )
+        os.system("bash -c '" + PRE + "roscore&' ")
+        sleep(1)
 
-    os.system(
-        "bash -c '" + PRE + f"roslaunch atn_position3_fuser position3_fuser.launch  logging_dir_location:={OUT} &' "
-    )
-    sleep(5)
-    os.system("bash -c '" + PRE + f"rosbag play -r 1 --clock {merged_rosbag_path}' ")
-    print("Waiting 10s before starting optimization!")
-    sleep(10)
-    os.system('rosservice call /graph_msf/trigger_offline_optimization "max_optimization_iterations: 1000"')
+        os.system(
+            "bash -c '" + PRE + f"roslaunch atn_position3_fuser position3_fuser.launch  logging_dir_location:={OUT} &' "
+        )
+        sleep(5)
+        os.system("bash -c '" + PRE + f"rosbag play -r 1 --clock {merged_rosbag_path}' ")
+        print("Waiting 10s before starting optimization!")
+        sleep(5)
+        os.system(
+            'rosservice call /graph_msf/trigger_offline_optimization "max_optimization_iterations: 1000, save_covariance: True"'
+        )
 
-    tf_static_path, _ = get_bag(MISSION_DATA, "*_tf_static_start_end.bag")
-    gt_tf_static_path = tf_static_path.replace("_tf_static_start_end.bag", "_gt_tf_static.bag")
+    # Prepare data for plotting
+    tf_static_path, _ = get_bag(MISSION_DATA, "*_tf_static.bag")
+    tf_static_gt_path = tf_static_path.replace("_tf_static.bag", "_tf_static_gt.bag")
     csv_file_world, _ = get_bag(OUT, "*_transform_enu_origin_to_world.csv")
 
-    write_tf_static_bag(csv_file_world, gt_tf_static_path, "enu_origin", "world")
+    write_tf_static_bag(csv_file_world, tf_static_gt_path, "enu_origin", "world")
 
-    tf_gt = tf_static_path.replace("_tf_static_start_end.bag", "_gt_tf.bag")
-    pose_gt = tf_static_path.replace("_tf_static_start_end.bag", "_gt_pose.bag")
+    tf_gt = tf_static_path.replace("_tf_static.bag", "_gt_tf.bag")
+    pose_gt = tf_static_path.replace("_tf_static.bag", "_gt_pose.bag")
     csv_cov_file, _ = get_bag(OUT, "*_X_state_6D_pose_covariance.csv")
     csv_pose_file, _ = get_bag(OUT, "*_X_state_6D_pose.csv")
     convert_csv_to_bag(csv_cov_file, csv_pose_file, tf_gt, pose_gt, "world", "box_base")
 
+    tf_static_path, _ = get_bag(MISSION_DATA, "*_tf_static.bag")
+    tf_static_gt_path = tf_static_path.replace("_tf_static.bag", "_tf_static_gt.bag")
+    csv_file_world, _ = get_bag(OUT, "*_transform_enu_origin_to_world.csv")
+
+    write_tf_static_bag(csv_file_world, tf_static_gt_path, "enu_origin", "world")
+
+    tf_gt = tf_static_path.replace("_tf_static.bag", "_gt_tf.bag")
+    pose_gt = tf_static_path.replace("_tf_static.bag", "_gt_pose.bag")
+    csv_cov_file, _ = get_bag(OUT, "*_X_state_6D_pose_covariance.csv")
+    csv_pose_file, _ = get_bag(OUT, "*_X_state_6D_pose.csv")
+    convert_csv_to_bag(csv_cov_file, csv_pose_file, tf_gt, pose_gt, "world", "box_base")
+
+    pose_gt_path = pose_gt
+    ap20_gps_bag = merged_rosbag_path
+
+    # Get the correct tf_statics
+    tf_transformer = BagTfTransformerWrapper(tf_static_gt_path)
+    t_enu_origin_world, q_enu_origin_world = tf_transformer.lookupTransform("enu_origin", "world", 0, latest=True)
+    del tf_transformer
+    tf_transformer = BagTfTransformerWrapper(merged_rosbag_path)
+    t_prism_enu_origin, q_prism_enu_origin = tf_transformer.lookupTransform("prism", "enu_origin", 0, latest=True)
+    del tf_transformer
+
+    # Read in the full paths
+    gps_ie = np.array(
+        [
+            t.pose.pose
+            for _, t, _ in Bag(ap20_gps_bag).read_messages(topics="/gt_box/inertial_explorer/gt_poses_novatel")
+        ]
+    )
+    ap20 = np.array([t.point for _, t, _ in Bag(ap20_gps_bag).read_messages(topics="/gt_box/ap20/prism_position")])
+    pose_gt = np.array(
+        [t.pose.pose for _, t, _ in Bag(pose_gt_path).read_messages(topics="/gt_box/ground_truth/pose_with_covariance")]
+    )
+
+    # Convert the paths to 4x4 numpy arrays
+    gps_ie_path_arr = np.array([np.eye(4) for _ in range(len(gps_ie))])
+    ap20_path_arr = np.array([np.eye(4) for _ in range(len(ap20))])
+    pose_gt_path_arr = np.array([np.eye(4) for _ in range(len(pose_gt))])
+
+    for i in range(len(gps_ie)):
+        gps_ie_path_arr[i, :3, :3] = R.from_quat(
+            [gps_ie[i].orientation.x, gps_ie[i].orientation.y, gps_ie[i].orientation.z, gps_ie[i].orientation.w]
+        ).as_matrix()
+        gps_ie_path_arr[i, :3, 3] = [gps_ie[i].position.x, gps_ie[i].position.y, gps_ie[i].position.z]
+
+    for i in range(len(ap20)):
+        ap20_path_arr[i, :3, 3] = [ap20[i].x, ap20[i].y, ap20[i].z]
+
+    for i in range(len(pose_gt)):
+        pose_gt_path_arr[i, :3, :3] = R.from_quat(
+            [pose_gt[i].orientation.x, pose_gt[i].orientation.y, pose_gt[i].orientation.z, pose_gt[i].orientation.w]
+        ).as_matrix()
+        pose_gt_path_arr[i, :3, 3] = [pose_gt[i].position.x, pose_gt[i].position.y, pose_gt[i].position.z]
+
+    # Transform the paths to the correct frames
+    T_enu_origin_world = np.eye(4)
+    T_enu_origin_world[:3, :3] = R.from_quat(q_enu_origin_world).as_matrix()
+    T_enu_origin_world[:3, 3] = t_enu_origin_world
+
+    T_prism_enu_origin = np.eye(4)
+    T_prism_enu_origin[:3, :3] = R.from_quat(q_prism_enu_origin).as_matrix()
+    T_prism_enu_origin[:3, 3] = t_prism_enu_origin
+
+    colors = {
+        "gray": "#cecece",
+        "purple": "#a559aa",
+        "teal": "#59a89c",
+        "gold": "#f0c571",
+        "red": "#e02b35",
+        "dark_blue": "#082a54",
+    }
+
+    gps_ie_path_world = gps_ie_path_arr
+    ap20_path_world = ap20_path_arr
+    pose_gt_path_world = pose_gt_path_arr
+
+    x_min = min(
+        np.min(gps_ie_path_world[:, 0, 3]), np.min(ap20_path_world[:, 0, 3]), np.min(pose_gt_path_world[:, 0, 3])
+    )
+    x_max = max(
+        np.max(gps_ie_path_world[:, 0, 3]), np.max(ap20_path_world[:, 0, 3]), np.max(pose_gt_path_world[:, 0, 3])
+    )
+    y_min = min(
+        np.min(gps_ie_path_world[:, 1, 3]), np.min(ap20_path_world[:, 1, 3]), np.min(pose_gt_path_world[:, 1, 3])
+    )
+    y_max = max(
+        np.max(gps_ie_path_world[:, 1, 3]), np.max(ap20_path_world[:, 1, 3]), np.max(pose_gt_path_world[:, 1, 3])
+    )
+
+    # Calculate aspect ratio based on data ranges
+    x_range = x_max - x_min
+    y_range = y_max - y_min
+    aspect_ratio = y_range / x_range
+
+    # Set base width and calculate height
+    width = 10
+    height = width * aspect_ratio
+
+    # Create figure with computed size
+    fig, ax = plt.subplots(figsize=(width, height))
+
+    # Plot trajectories
+    ax.plot(
+        gps_ie_path_world[:, 0, 3], gps_ie_path_world[:, 1, 3], "-", color=colors["red"], label="GPS-IE", linewidth=2
+    )
+    ax.plot(ap20_path_world[:, 0, 3], ap20_path_world[:, 1, 3], "-", color=colors["purple"], label="AP20", linewidth=2)
+    ax.plot(
+        pose_gt_path_world[:, 0, 3],
+        pose_gt_path_world[:, 1, 3],
+        "-",
+        color=colors["dark_blue"],
+        label="Ground Truth",
+        linewidth=2,
+    )
+
+    # Style settings
+    ax.set_xlabel("Distance in [m]", fontsize=12)
+    ax.set_ylabel("Distance in [m]", fontsize=12)
+    ax.set_title("Comparision of AP20 - GPS - GraphMSF", fontsize=14, pad=20)
+    ax.legend(fontsize=10)
+
+    # Add padding and round to nearest 10m for grid alignment
+    padding = 10  # 10m padding
+    x_min_grid = np.floor((x_min - padding) / 10.0) * 10
+    x_max_grid = np.ceil((x_max + padding) / 10.0) * 10
+    y_min_grid = np.floor((y_min - padding) / 10.0) * 10
+    y_max_grid = np.ceil((y_max + padding) / 10.0) * 10
+
+    # Set grid lines every 10 meters
+    ax.set_xticks(np.arange(x_min_grid, x_max_grid + 1, 10))
+    ax.set_yticks(np.arange(y_min_grid, y_max_grid + 1, 10))
+    ax.grid(True, which="major", alpha=0.3)
+
+    # Set equal aspect ratio for x and y
+    ax.set_aspect("equal")
+
+    # Add some padding to the limits
+    padding = 0.05  # 5% padding
+    x_padding = x_range * padding
+    y_padding = y_range * padding
+    ax.set_xlim(x_min - x_padding, x_max + x_padding)
+    ax.set_ylim(y_min - y_padding, y_max + y_padding)
+
+    # Style spines
+    for spine in ax.spines.values():
+        spine.set_color("gray")
+        spine.set_linewidth(0.5)
+
+    # Adjust layout
+    plt.tight_layout()
+    plt.savefig("/out/graph_msf_result.png")
+
     if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
         uuid = os.environ["MISSION_UUID"]
         os.system(
-            f"klein mission upload --mission-uuid {uuid} --path {tf_gt} --path {pose_gt} --path {gt_tf_static_path}"
+            f"klein mission upload --mission-uuid {uuid} --path {tf_gt} --path {pose_gt} --path {tf_static_gt_path}"
         )
     else:
-        print(f"Finished processing - Generated: {tf_gt}, {pose_gt}, {gt_tf_static_path} - and multiple csv files.")
+        print(f"Finished processing - Generated: {tf_gt}, {pose_gt}, {tf_static_gt_path} - and multiple csv files.")
 
 
 def fetch_multiple_files_kleinkram(patterns):
