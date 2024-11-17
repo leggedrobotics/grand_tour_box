@@ -87,19 +87,6 @@
     <child link="cpt7_imu" />
   </joint>
 
-  <link name="ap20_imu"/>
-  <!-- Basilisk IMU Frame -->
-  <joint name="base_to_basilisk_imu_frame" type="fixed">
-    <origin xyz=" ${calib['box_base_to_basilisk_imu_frame']['x']}
-                  ${calib['box_base_to_basilisk_imu_frame']['y']}
-                  ${calib['box_base_to_basilisk_imu_frame']['z']}"
-            rpy=" ${calib['box_base_to_basilisk_imu_frame']['roll']}
-                  ${calib['box_base_to_basilisk_imu_frame']['pitch']}
-                  ${calib['box_base_to_basilisk_imu_frame']['yaw']}" />
-    <parent link="box_base" />
-    <child link="ap20_imu" />
-  </joint>
-
   <xacro:include filename="$(find box_model)/urdf/cameras/cameras.urdf.xacro" />
   <xacro:include filename="$(find box_model)/urdf/lidars/lidars.urdf.xacro" />
   <xacro:include filename="$(find box_model)/urdf/imus/imus.urdf.xacro" />

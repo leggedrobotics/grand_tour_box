@@ -103,7 +103,7 @@ box_base_to_livox_imu_frame:
   roll: 0.003492617205404023
   pitch: -0.004026887772243137
   yaw: 0.0036738010315851472
-box_base_to_basilisk_imu_frame:
+box_base_to_ap20_imu_frame:
   x: 0.002796843097054358
   y: -0.09189316349020228
   z: 0.009801833465373888

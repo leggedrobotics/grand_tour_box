@@ -2,6 +2,19 @@
 
 <robot name="imus" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
+  <link name="ap20_imu"/>
+  <!-- Basilisk IMU Frame -->
+  <joint name="base_to_basilisk_imu_frame" type="fixed">
+    <origin xyz=" ${calib['box_base_to_ap20_imu_frame']['x']}
+                  ${calib['box_base_to_ap20_imu_frame']['y']}
+                  ${calib['box_base_to_ap20_imu_frame']['z']}"
+            rpy=" ${calib['box_base_to_ap20_imu_frame']['roll']}
+                  ${calib['box_base_to_ap20_imu_frame']['pitch']}
+                  ${calib['box_base_to_ap20_imu_frame']['yaw']}" />
+    <parent link="box_base" />
+    <child link="ap20_imu" />
+  </joint>
+  
   <!-- IMU STIM320 -->
   <link name="stim320_imu" />
   <joint name="box_base_to_imu_stim320" type="fixed">

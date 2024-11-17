@@ -112,12 +112,12 @@
     <!--  <link name="ap20_imu"/>-->
     <!--  &lt;!&ndash; Basilisk IMU Frame &ndash;&gt;-->
     <!--  <joint name="base_to_basilisk_imu_frame" type="fixed">-->
-    <!--    <origin xyz=" ${calib['box_base_to_basilisk_imu_frame']['x']}-->
-    <!--                  ${calib['box_base_to_basilisk_imu_frame']['y']}-->
-    <!--                  ${calib['box_base_to_basilisk_imu_frame']['z']}"-->
-    <!--            rpy=" ${calib['box_base_to_basilisk_imu_frame']['roll']}-->
-    <!--                  ${calib['box_base_to_basilisk_imu_frame']['pitch']}-->
-    <!--                  ${calib['box_base_to_basilisk_imu_frame']['yaw']}" />-->
+    <!--    <origin xyz=" ${calib['box_base_to_ap20_imu_frame']['x']}-->
+    <!--                  ${calib['box_base_to_ap20_imu_frame']['y']}-->
+    <!--                  ${calib['box_base_to_ap20_imu_frame']['z']}"-->
+    <!--            rpy=" ${calib['box_base_to_ap20_imu_frame']['roll']}-->
+    <!--                  ${calib['box_base_to_ap20_imu_frame']['pitch']}-->
+    <!--                  ${calib['box_base_to_ap20_imu_frame']['yaw']}" />-->
     <!--    <parent link="box_base" />-->
     <!--    <child link="ap20_imu" />-->
     <!--  </joint>-->
