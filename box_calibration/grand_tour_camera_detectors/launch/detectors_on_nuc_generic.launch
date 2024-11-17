@@ -9,7 +9,7 @@
         <arg name="name" value="cam1_detector"/>
         <arg name="image_topic" value="/gt_box/alphasense_driver_node/cam1"/>
         <arg name="use_april_grid" value="$(arg use_april_grid)"/>
-        <arg name="recording_bag_name" value="alphasense_front_middle"/>
+        <arg name="recording_bag_name" value="alphasense_front_center"/>
     </include>
 
     <include file="$(find grand_tour_camera_detectors)/launch/generic_detector.launch">
