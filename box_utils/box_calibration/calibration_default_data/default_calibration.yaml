@@ -126,7 +126,7 @@ box_base_to_imu_alphasense:
   pitch: 0.0
   yaw: 0.0
 
-box_base_to_hesai:
+box_base_to_hesai_lidar:
   x: 0.013
   y: -0.022
   z: 0.169
@@ -134,7 +134,7 @@ box_base_to_hesai:
   pitch: 0.000
   yaw: 1.571
 
-box_base_to_livox:
+box_base_to_livox_lidar:
   x: 0.013
   y: -0.022
   z: 0.264
