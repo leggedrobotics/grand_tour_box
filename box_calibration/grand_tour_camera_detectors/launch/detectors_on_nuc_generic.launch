@@ -130,14 +130,4 @@
         <param name="topic" value="/gt_box/stim320/imu"/>
         <param name="recording_bag_name" value="stim320_imu"/>
     </node>
-
 </launch>
-
-
-
-/gt_box/adis16475_node/imu /gt_box/stim320/imu /gt_box/ap20/timestamp_debug /gt_box/ap20/position_debug /gt_box/ap20/imu_debug /ap20/imu /ap20/tps /gt_box/cpt7/gps/imu /gt_box/cpt7/imu/data_raw
-
-2024-11-17-20-39-06_camera_calibration_calibration - Camera Intrinsic Calibration
-2024-11-17-21-02-20_camera_calibration_calibration - LIDAR caliration
-2024-11-17-22-51-59_camera_calibration_calibration - IMU Extrinsic Intrinsic
-2024-11-17-22-57-52_camera_calibration_calibration - AP20 - The last part of the data may be good How many poses are needed
