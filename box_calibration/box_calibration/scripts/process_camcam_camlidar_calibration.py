@@ -3,11 +3,11 @@ import argparse
 import os
 import shutil
 import subprocess
+
+import matplotlib.pyplot as plt
+import numpy as np
 import yaml
 from rosbag import Bag
-
-import numpy as np
-import matplotlib.pyplot as plt
 from yaml import MappingNode, SequenceNode
 
 # Initialize parser
@@ -81,13 +81,8 @@ convert_command = ["rosrun", "box_calibration", "convert_ceres_camera_output_to_
 safe_subprocess_run(convert_command)
 
 # YAML configuration data
-data = {
-    'target_type': 'checkerboard',
-    'targetCols': 7,
-    'targetRows': 8,
-    'rowSpacingMeters': 0.08,
-    'colSpacingMeters': 0.08
-}
+data = {'target_type': 'checkerboard', 'targetCols': 7, 'targetRows': 8, 'rowSpacingMeters': 0.08,
+    'colSpacingMeters': 0.08}
 
 # Output file path
 default_grand_tour_lidar_board_path = 'grand_tour_default_lidar_board.yaml'
@@ -98,22 +93,11 @@ with open(default_grand_tour_lidar_board_path, 'w') as file:
 
 hesai_calib_output_folder = "./hesai_calib_output"
 # New configuration data for grand_tour_default_hesai_calib_config.yaml
-hesai_calib_config_data = {
-    'logging_dir': hesai_calib_output_folder,
-    'stationarity': {
-        'max_rotation_deg': 0.01,
-        'max_translation_m': 0.001,
-        'longest_outage_secs': 0.50
-    },
+hesai_calib_config_data = {'logging_dir': hesai_calib_output_folder,
+    'stationarity': {'max_rotation_deg': 0.01, 'max_translation_m': 0.001, 'longest_outage_secs': 0.50},
     'lidar_topic': '/gt_box/hesai/points',
-    'pointcloud_plane_segmenter': {
-        'board_inflation': 0.5,
-        'ksearch': 50,
-        'normal_distance_weight': 0.005,
-        'max_iterations_ransac': 100,
-        'plane_distance_threshold_m': 0.25
-    }
-}
+    'pointcloud_plane_segmenter': {'board_inflation': 0.5, 'ksearch': 50, 'normal_distance_weight': 0.005,
+        'max_iterations_ransac': 100, 'plane_distance_threshold_m': 0.25}}
 
 # Output file path for the new YAML configuration
 hesai_calib_settings_path = 'grand_tour_default_hesai_calib_config.yaml'
@@ -124,22 +108,11 @@ with open(hesai_calib_settings_path, 'w') as file:
 
 livox_calib_output_folder = "livox_calib_output"
 # New configuration data for grand_tour_default_livox_calib_config.yaml
-livox_calib_config_data = {
-    'logging_dir': livox_calib_output_folder,
-    'stationarity': {
-        'max_rotation_deg': 0.01,
-        'max_translation_m': 0.001,
-        'longest_outage_secs': 0.50
-    },
+livox_calib_config_data = {'logging_dir': livox_calib_output_folder,
+    'stationarity': {'max_rotation_deg': 0.01, 'max_translation_m': 0.001, 'longest_outage_secs': 0.50},
     'lidar_topic': '/gt_box/livox/lidar',
-    'pointcloud_plane_segmenter': {
-        'board_inflation': 0.5,
-        'ksearch': 50,
-        'normal_distance_weight': 0.005,
-        'max_iterations_ransac': 100,
-        'plane_distance_threshold_m': 0.25
-    }
-}
+    'pointcloud_plane_segmenter': {'board_inflation': 0.5, 'ksearch': 50, 'normal_distance_weight': 0.005,
+        'max_iterations_ransac': 100, 'plane_distance_threshold_m': 0.25}}
 
 # Output file path for the new YAML configuration
 livox_calib_settings_path = 'grand_tour_default_livox_calib_config.yaml'
@@ -195,14 +168,10 @@ if hesai_bag_file:
     application_parameters_path = hesai_calib_settings_path
 
     # Construct the command
-    hesai_command = [
-        "rosrun", "diffcal_gui_ros", "offline_calibrator.py",
-        "--bag_path", hesai_bag_file,
-        "--intrinsic_calibrations_path", intrinsic_calibrations_path,
-        "--initial_guess_config_path", initial_guess_config_path,
-        "--target_config_path", target_config_path,
-        "--application_parameters_path", application_parameters_path
-    ]
+    hesai_command = ["rosrun", "diffcal_gui_ros", "offline_calibrator.py", "--bag_path", hesai_bag_file,
+        "--intrinsic_calibrations_path", intrinsic_calibrations_path, "--initial_guess_config_path",
+        initial_guess_config_path, "--target_config_path", target_config_path, "--application_parameters_path",
+        application_parameters_path]
 
     # Run the command
     safe_subprocess_run(hesai_command)
@@ -218,22 +187,16 @@ if livox_bag_file:
     application_parameters_path = livox_calib_settings_path
 
     # Construct the command
-    livox_command = [
-        "rosrun", "diffcal_gui_ros", "offline_calibrator.py",
-        "--bag_path", livox_bag_file,
-        "--intrinsic_calibrations_path", intrinsic_calibrations_path,
-        "--initial_guess_config_path", initial_guess_config_path,
-        "--target_config_path", target_config_path,
-        "--application_parameters_path", application_parameters_path
-    ]
+    livox_command = ["rosrun", "diffcal_gui_ros", "offline_calibrator.py", "--bag_path", livox_bag_file,
+        "--intrinsic_calibrations_path", intrinsic_calibrations_path, "--initial_guess_config_path",
+        initial_guess_config_path, "--target_config_path", target_config_path, "--application_parameters_path",
+        application_parameters_path]
 
     # Run the command
     safe_subprocess_run(livox_command)
 
-reports = {
-    "hesai": [hesai_calib_output_folder, "hesai_calib_report.pdf"],
-    "livox": [livox_calib_output_folder, "livox_calib_report.pdf"],
-}
+reports = {"hesai": [hesai_calib_output_folder, "hesai_calib_report.pdf"],
+    "livox": [livox_calib_output_folder, "livox_calib_report.pdf"], }
 
 from matplotlib.backends.backend_pdf import PdfPages
 
@@ -340,11 +303,13 @@ assert (os.path.exists(camcam_calibration_path))
 with open(camcam_calibration_path, 'r') as file:
     camcam_calibration_data = yaml.load(file, Loader=yaml.FullLoader)
 
+camcamlidar_calibration_data = camcam_calibration_data.co
+
 # Add the new fields for each key in reports
 for key in camcam_calibration_data.keys():
-    camcam_calibration_data[key]['T_bundle_hesai'] = T_cam_hesai.tolist()
-    camcam_calibration_data[key]['T_bundle_livox'] = T_cam_livox.tolist()
+    camcamlidar_calibration_data[key]['T_bundle_hesai'] = T_cam_hesai.tolist()
+    camcamlidar_calibration_data[key]['T_bundle_livox'] = T_cam_livox.tolist()
 
 camcamlidar_calibration_path = "cameracameralidar_calibration.yaml"
 
-pretty_write_yaml_array_with_comment(camcam_calibration_data, camcamlidar_calibration_path)
+pretty_write_yaml_array_with_comment(camcamlidar_calibration_data, camcamlidar_calibration_path)
