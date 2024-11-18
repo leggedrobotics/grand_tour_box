@@ -1,6 +1,6 @@
 import rosbag
 import numpy as np
-from geometry_msgs.msg import PointStamped
+from geometry_msgs.msg import PointStamped, PoseStamped
 from collections import deque
 import rospy
 from pathlib import Path
@@ -111,6 +111,18 @@ def read_bag_file(bag_path):
                         if not (delta > 0.005 + 1e-5):
                             rate = (t - p1.imu_time) / (p2.imu_time - p1.imu_time)
                             new_ts = p1.timestamp_time + ((p2.timestamp_time - p1.timestamp_time) * rate)
+
+                            new_pose_stamped_msgs = PoseStamped()
+                            new_pose_stamped_msgs.header.stamp = rospy.Time.from_sec(new_ts)
+                            new_pose_stamped_msgs.header.seq = counter_ts
+                            new_pose_stamped_msgs.header.frame_id = "leica_total_station"
+                            new_pose_stamped_msgs.pose.position = position.position.point
+                            new_pose_stamped_msgs.pose.orientation.x = 0
+                            new_pose_stamped_msgs.pose.orientation.y = 0
+                            new_pose_stamped_msgs.pose.orientation.z = 0
+                            new_pose_stamped_msgs.pose.orientation.w = 1
+
+                            bag_out.write("/gt_box/ap20/prism_position_posestamped", new_pose_stamped_msgs, new_pose_stamped_msgs.header.stamp)
 
                             new_msg = PointStamped()
                             new_msg.header.stamp = rospy.Time.from_sec(new_ts)
@@ -285,7 +297,7 @@ if __name__ == "__main__":
         uuid = os.environ["MISSION_UUID"]
         os.system(
             f"klein mission download --mission-uuid {uuid} --local-path /mission_data --pattern *_jetson_ap20_aux.bag"
-        )
+    )
 
     ap20_bag = get_bag(MISSION_DATA, "*_jetson_ap20_aux.bag")
 
