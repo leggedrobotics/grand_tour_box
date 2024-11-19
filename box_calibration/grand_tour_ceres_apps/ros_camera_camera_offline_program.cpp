@@ -71,7 +71,7 @@ bool ROSCameraCameraOfflineProgram::loadRosbagsIntoProgram() {
             for (const auto& connection_info : view.getConnections()) {
                 const std::string& detection_topic = connection_info->topic;
                 // Process only if the topic is in the predefined list
-                if (detectiontopic2imagetopic.find(detection_topic) != rostopic2frameid_.end()) {
+                if (detectiontopic2imagetopic.find(detection_topic) != detectiontopic2imagetopic.end()) {
                     rosbag::View topic_view(bag, rosbag::TopicQuery(detection_topic));
                     for (const auto& m : topic_view) {
                         // Check if the message type is sensor_msgs/Image

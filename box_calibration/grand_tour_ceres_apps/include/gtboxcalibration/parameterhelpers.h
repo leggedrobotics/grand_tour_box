@@ -24,7 +24,7 @@ struct BoardPoseParameterPack {
 struct PrismBoardInTotalStationParameterPack {
     double T_totalstation_board[SE3Transform::NUM_PARAMETERS]{};
     double t_cam0_prism[3]{};
-    double t_offset[0]{};
+    double t_offset[1]{};
 };
 
 #endif //GRAND_TOUR_CERES_APPS_PARAMETER_HELPERS_H

@@ -361,16 +361,20 @@ if __name__ == "__main__":
                                    xyz=[-0.023, 0.207, -0.085],
                                    rpy=[0.00, -1.397, 1.570])
         calibration_graph.add_edge("cam1_sensor_frame", "cpt7_imu",
-                                   xyz=[-0.037, 0.011, -0.370],
+                                   xyz=[-0.046, 0.0031, -0.375],
                                    rpy=[0.00, -1.397, 1.570])
 
-    has_prism_calibration = False
+
+    has_prism_calibration = "t_cam_prism" in calibration_data_by_topic[camera_bundle_topic]
     if has_prism_calibration:
-        pass
+        t_cam1_prism = calibration_data_by_topic[camera_bundle_topic]["t_cam_prism"]
+        calibration_graph.add_edge("cam1_sensor_frame", "prism",
+                                   xyz=t_cam1_prism,
+                                   rpy=[3.142, -1.397, 1.570])
     else:
-        calibration_graph.add_edge("box_base", "prism",
-                                   xyz=[0.303281493778, -0.036500000014, -0.17645647715600002],
-                                   rpy=[3.141592653589793, 0.0, 0.0])
+        calibration_graph.add_edge("cam1_sensor_frame", "prism",
+                                   xyz=[-0.009, 0.347, -0.128],
+                                   rpy=[3.142, -1.397, 1.570])
 
     calibration_graph.add_edge("cam1_sensor_frame", "alphasense_base", transform=identity)
     calibration_graph.add_edge("cam1_sensor_frame", "alphasense_front_center", transform=identity)

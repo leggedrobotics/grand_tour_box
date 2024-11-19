@@ -169,7 +169,7 @@ ceres::ResidualBlockId CameraCameraProgram::addBoardPoseParameterAndCameraIntrin
         const unsigned long long stamp,
         const Observations2dModelPoints3dPointIDsPose3dSensorName &observation_i) {
     const auto &camera_name = observation_i.sensor_name;
-    if (board_pose_parameter_packs.contains(camera_name)){
+    if (board_pose_parameter_packs.contains(camera_name)) {
         assert(!board_pose_parameter_packs.at(camera_name).contains(stamp));
     }
     board_pose_parameter_packs[camera_name][stamp] = std::make_unique<BoardPoseParameterPack>();
@@ -219,9 +219,12 @@ CameraCameraProgram::CameraCameraProgram() {}
 
 
 CameraPrismProgram::CameraPrismProgram(CameraPrismCalibrationAppParser argparser) {
+    output_yaml_path = argparser.output_yaml_path;
+    solve_time_offset = argparser.solve_time_offset;
     camera_detections = FetchMulticamera2D3DDetectionData(
             argparser.camera_corner_detections_path);
     T_bundle_cam = FetchExtrinsicsFromYamlPath(argparser.extrinsics_path);
+    cameras_calibration_path = argparser.extrinsics_path;
     for (const auto &[name, transform]: T_bundle_cam) {
         std::cout << name << "\n" << transform.matrix() << std::endl;
     }
@@ -239,6 +242,7 @@ bool CameraPrismProgram::PopulateProblem() {
     SE3Transform se3Transform;
     unsigned int n_camera_samples_used = 0;
     for (const auto &[camera_stamp, detections_at_stamp]: camera_detections.observations) {
+        calibration_time_nsec = camera_stamp;
         for (const auto &[camera_name, detection]: detections_at_stamp) {
             n_camera_samples_used++;
             Eigen::Affine3d T_board_camera = detection.T_sensor_model.inverse();
@@ -247,7 +251,7 @@ bool CameraPrismProgram::PopulateProblem() {
                     PrismInCam0InBoardInTotalStationConsistencyError::Create(
                             T_cam_cam0, T_board_camera,
                             camera_stamp, prism_detections),
-                    new ceres::HuberLoss(0.003),
+                    new ceres::HuberLoss(1.0),
                     prism_board_in_total_station_params.T_totalstation_board,
                     prism_board_in_total_station_params.t_cam0_prism,
                     prism_board_in_total_station_params.t_offset
@@ -257,10 +261,66 @@ bool CameraPrismProgram::PopulateProblem() {
         }
     }
     std::cout << "Added " << n_camera_samples_used << " camera samples" << std::endl;
+    problem_->solver_options_.minimizer_progress_to_stdout = true;
+    problem_->solver_options_.max_num_iterations = 200;
+    if (!solve_time_offset) {
+        problem_->getProblem().SetParameterBlockConstant(prism_board_in_total_station_params.t_offset);
+    }
     return true;
 }
 
 void CameraPrismProgram::WriteOutputParameters() {
+    Eigen::Map<Eigen::Vector3d> t_cam0_prism(prism_board_in_total_station_params.t_cam0_prism);
+    std::cout << "t_cam0_prism: " << t_cam0_prism.transpose() << std::endl;
+    std::cout << "time offset: " << prism_board_in_total_station_params.t_offset[0] << std::endl;
+    Eigen::Affine3d T_totalstation_board = SE3Transform::toEigenAffine(
+            prism_board_in_total_station_params.T_totalstation_board);
+    std::cout << "T_totalstation_board:\n" << T_totalstation_board.matrix() << std::endl;
+    {
+        std::vector<const double *> covariance_block = {prism_board_in_total_station_params.t_cam0_prism};
+        Eigen::MatrixXd prism_position_covariance;
+        problem_->ComputeAndFetchCovariance(
+                covariance_block, prism_position_covariance);
+        std::cout << "Prism position sigma:" << "\n" << prism_position_covariance.diagonal().array().sqrt().transpose()
+                  << std::endl;
+    }
+
+    {
+        std::vector<const double *> covariance_block = {prism_board_in_total_station_params.T_totalstation_board};
+        Eigen::MatrixXd board_pose_covariance;
+        problem_->ComputeAndFetchCovariance(
+                covariance_block, board_pose_covariance);
+        std::cout << "Board pose sigma:" << "\n" << board_pose_covariance.diagonal().array().sqrt().transpose()
+                  << std::endl;
+    }
+
+    {
+        std::vector<const double *> covariance_block = {prism_board_in_total_station_params.t_offset};
+        Eigen::MatrixXd t_offset_covariance;
+        problem_->ComputeAndFetchCovariance(
+                covariance_block, t_offset_covariance);
+        std::cout << "T-offset sigma:" << "\n" << t_offset_covariance.array().sqrt() << std::endl;
+    }
+
+    YAML::Node output_calibration = YAML::LoadFile(cameras_calibration_path);
+    for (YAML::const_iterator it = output_calibration.begin(); it != output_calibration.end(); ++it) {
+        std::string key = it->first.as<std::string>();
+        std::string rostopic = it->second["rostopic"].as<std::string>();
+        Eigen::Affine3d T_cam_cam0 = T_bundle_cam.at(rostopic).inverse() * T_bundle_cam.at(cam0_name);
+        Eigen::Vector3d t_cam_prism = T_cam_cam0 * t_cam0_prism;
+        // Convert t_cam_prism to a std::vector for YAML
+        std::vector<double> t_cam_prism_vec = {t_cam_prism.x(), t_cam_prism.y(), t_cam_prism.z()};
+        // Add t_cam_prism to the cameras_calibration node
+        output_calibration[key]["t_cam_prism"] = t_cam_prism_vec;
+    }
+
+
+    std::ofstream fout(output_yaml_path);
+    fout << "#Prism Calibration Data Time: " << GetHumanReadableTime(calibration_time_nsec) << std::endl;
+    fout << output_calibration;
+    fout.close();
+    std::cout << "Prism calibration written to: " << output_yaml_path << std::endl;
+
 
 }
 

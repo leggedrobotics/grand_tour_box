@@ -25,7 +25,9 @@ struct CameraPrismCalibrationAppParser {
     std::string prism_positions_path;
     std::string intrinsics_path;
     std::string extrinsics_path;
+    std::string output_yaml_path;
     std::string camera_corner_detections_path;
+    bool solve_time_offset = false;
     bool is_valid_ = false;
 };
 

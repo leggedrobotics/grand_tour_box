@@ -21,6 +21,11 @@ parser = argparse.ArgumentParser(description="Process input folder paths")
 # Adding arguments with shorthands
 parser.add_argument('-cc', '--cameracamerafolderpath', type=str, required=True, help='Path to the camera camera folder')
 parser.add_argument('-cl', '--cameralidarfolderpath', type=str, required=True, help='Path to the camera lidar folder')
+parser.add_argument('-cp', '--cameraprismfolderpath', type=str, required=True, help='Path to the camera prism folder')
+parser.add_argument('-pt', '--prismtopic', type=str,
+                    required=False, default="/gt_box/ap20/position_debug", help='The prism topic name')
+parser.add_argument('--solve_ap20_time_offset', action='store_true',
+                    required=False, default=True, help='Solve AP20 time offset')
 parser.add_argument("--dry_run", action="store_true", help="If set, do not run commands, only print them.")
 
 
@@ -75,6 +80,7 @@ def write_raw_img_pipeline_format(camera_parameters, out_filename, comment_heade
         mutate_sequence_flowstyle_to_inline(yaml_composition)
         yaml.serialize(yaml_composition, outfile)  # , default_flow_style=False)
 
+
 def add_comment_to_yaml(file_path, comment):
     # Load the YAML data
     with open(file_path, 'r') as file:
@@ -88,6 +94,17 @@ def add_comment_to_yaml(file_path, comment):
     with open(file_path, 'w') as file:
         file.write(full_comment)
         yaml.dump(data, file, default_flow_style=False)
+
+
+def filter_for_bags_with_rostopics(bag_paths, rostopics):
+    filtered_camera_bag_paths = []
+    for bag_path in bag_paths:
+        with rosbag.Bag(bag_path, 'r') as bag:
+            bag_topics = bag.get_type_and_topic_info()[1].keys()
+            if any(topic in bag_topics for topic in rostopics):
+                filtered_camera_bag_paths.append(bag_path)
+    return filtered_camera_bag_paths
+
 
 def extract_bag_start_time(bag_file_path):
     """
@@ -158,6 +175,9 @@ args = parser.parse_args()
 # Access the folder paths
 camera_camera_folder_path = args.cameracamerafolderpath
 camera_lidar_folder_path = args.cameralidarfolderpath
+camera_prism_folder_path = args.cameraprismfolderpath
+prism_topic = args.prismtopic
+solve_ap20_time_offset = args.solve_ap20_time_offset
 
 # Access the folder paths
 camera_camera_folder_path = args.cameracamerafolderpath
@@ -430,10 +450,34 @@ for key in camcam_calibration_data.keys():
 camcamlidar_calibration_path = "cameracameralidar_calibration.yaml"
 
 hesai_bag_start_time = extract_bag_start_time(hesai_bag_file)
-calibration_comment = (f"#Camera calibration: {camcam_calibration_comment_header}\n"
-                       f"#LiDAR calibration: Hesai bag start time: {hesai_bag_start_time}")
+camlidar_calibration_comment = (f"{camcam_calibration_comment_header}\n"
+                       f"#LiDAR Calibration Data Time: {hesai_bag_start_time}")
 pretty_write_yaml_array_with_comment(camcamlidar_calibration_data, camcamlidar_calibration_path,
-                                     comment=calibration_comment)
+                                     comment=camlidar_calibration_comment)
+
+camera_prism_folder_bag_paths = [os.path.join(camera_prism_folder_path, x) for x in os.listdir(camera_prism_folder_path)
+                                 if ".bag" in x]
+camera_topics = [v["rostopic"] for v in camcamlidar_calibration_data.values()]
+camera_prism_camera_bag_paths = filter_for_bags_with_rostopics(camera_prism_folder_bag_paths, camera_topics)
+camera_prism_prism_bag_path = filter_for_bags_with_rostopics(camera_prism_folder_bag_paths, [prism_topic])[0]
+
+camcamlidarprism_calibration_path = os.path.join(os.path.dirname(camcamlidar_calibration_path),
+                                       "camcamlidarprism_calib.yaml")
+# Construct the command
+prism_command = ["rosrun", "grand_tour_ceres_apps", "camera_prism_offline_calibration", "-c", camcamlidar_calibration_path,
+                 "--camera_bags", *camera_prism_camera_bag_paths, "-p", camera_prism_prism_bag_path,
+                 "-t", prism_topic, "--solve_time_offset" if solve_ap20_time_offset else "",
+                 "-o", camcamlidarprism_calibration_path]
+# Run the command
+safe_subprocess_run(prism_command, force=True)
+
+# Append a comment to the top of the prism_calib_output_path YAML file
+with open(camcamlidarprism_calibration_path, 'r') as file:
+    yaml_content = file.read()
+
+# Write the comment followed by the original content back to the file
+with open(camcamlidarprism_calibration_path, 'w') as file:
+    file.write(camlidar_calibration_comment + "\n" + yaml_content)
 
 # Get the package path
 box_calibration_package = rospack.get_path("box_calibration")
@@ -441,12 +485,12 @@ box_calibration_package = rospack.get_path("box_calibration")
 # Construct the full path to the file
 tf_calibration_output_path = os.path.join(box_calibration_package, "calibration/tf/calibration_latest.yaml")
 
-conversion_command = ["rosrun", "box_calibration", "convert_graph.py", "-i", camcamlidar_calibration_path,
-                 "-o", tf_calibration_output_path, ]
+conversion_command = ["rosrun", "box_calibration", "convert_graph.py", "-i", camcamlidarprism_calibration_path,
+                      "-o", tf_calibration_output_path, ]
 
 # Run the command
 safe_subprocess_run(conversion_command, force=True)
-add_comment_to_yaml(tf_calibration_output_path, calibration_comment)
+add_comment_to_yaml(tf_calibration_output_path, camlidar_calibration_comment)
 
 # Define the path to the diffcal-calib.yaml file
 raw_image_pipeline_calib_files = [os.path.join(calib_output_folder, '04_alignment', x)
