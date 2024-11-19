@@ -357,10 +357,7 @@ std::stringstream GetTimeNowString(ros::Time time) {
     std::tm *time_info = std::localtime(&raw_time);
     // Convert ROS time to human-readable format
     std::stringstream time_stream;
-    time_stream << "Camera Calibration Data Time: ";
-    time_stream << std::put_time(time_info, "%Y-%m-%d %H:%M:%S");
-    // Add nanoseconds for precision
-    time_stream << "." << std::setw(9) << std::setfill('0') << current_time.nsec << std::endl;
+    time_stream << std::put_time(time_info, "%Y-%m-%d-%H-%M-%S") << std::endl;
     return time_stream;
 }
 
