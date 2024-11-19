@@ -5,7 +5,7 @@ alphasense_base_to_alphasense_front_left:
   y: 0.0002135381979232123
   yaw: 0.01719960135252997
   z: 0.0007110962558664978
-alphasense_base_to_alphasense_front_middle:
+alphasense_base_to_alphasense_front_center:
   pitch: 0.0
   roll: 0.0
   x: 0.0

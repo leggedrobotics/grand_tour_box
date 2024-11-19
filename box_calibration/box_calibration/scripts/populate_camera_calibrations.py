@@ -206,7 +206,7 @@ def main(args):
     output_extrinsics["box_base_to_alphasense_base"] = (
         T_boxbase_alphasensebase
     )
-    output_extrinsics["alphasense_base_to_alphasense_front_middle"] = (
+    output_extrinsics["alphasense_base_to_alphasense_front_center"] = (
         T_alphasensebase_alphasensefrontmiddle
     )
     output_extrinsics["alphasense_base_to_alphasense_front_right"] = (

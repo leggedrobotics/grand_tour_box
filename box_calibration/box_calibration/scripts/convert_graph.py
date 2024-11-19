@@ -417,7 +417,7 @@ if __name__ == "__main__":
     new_structure = [
         ("base", "box_base", "base_to_boxbase"),
         ("box_base", "alphasense_base", "box_base_to_alphasense_base"),
-        ("alphasense_base", "cam1_sensor_frame", "alphasense_base_to_alphasense_front_middle"),
+        ("alphasense_base", "cam1_sensor_frame", "alphasense_base_to_alphasense_front_center"),
         ("alphasense_base", "cam2_sensor_frame", "alphasense_base_to_alphasense_front_right"),
         ("alphasense_base", "cam3_sensor_frame", "alphasense_base_to_alphasense_front_left"),
         ("alphasense_base", "cam4_sensor_frame", "alphasense_base_to_alphasense_left"),

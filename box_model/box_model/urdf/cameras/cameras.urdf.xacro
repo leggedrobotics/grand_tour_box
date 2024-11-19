@@ -30,13 +30,13 @@
 
     <!-- Alphasense Cam1/ front center (should be identity)-->
     <link name="cam1_sensor_frame"/>
-    <joint name="alphasense_base_to_alphasense_front_middle" type="fixed">
-        <origin xyz=" ${calib['alphasense_base_to_alphasense_front_middle']['x']}
-                  ${calib['alphasense_base_to_alphasense_front_middle']['y']}
-                  ${calib['alphasense_base_to_alphasense_front_middle']['z']}"
-                rpy=" ${calib['alphasense_base_to_alphasense_front_middle']['roll']}
-                  ${calib['alphasense_base_to_alphasense_front_middle']['pitch']}
-                  ${calib['alphasense_base_to_alphasense_front_middle']['yaw']}"/>
+    <joint name="alphasense_base_to_alphasense_front_center" type="fixed">
+        <origin xyz=" ${calib['alphasense_base_to_alphasense_front_center']['x']}
+                  ${calib['alphasense_base_to_alphasense_front_center']['y']}
+                  ${calib['alphasense_base_to_alphasense_front_center']['z']}"
+                rpy=" ${calib['alphasense_base_to_alphasense_front_center']['roll']}
+                  ${calib['alphasense_base_to_alphasense_front_center']['pitch']}
+                  ${calib['alphasense_base_to_alphasense_front_center']['yaw']}"/>
         <parent link="alphasense_base"/>
         <child link="cam1_sensor_frame"/>
     </joint>
