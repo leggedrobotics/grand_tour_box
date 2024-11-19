@@ -31,11 +31,11 @@ def shell_run(cmd, cwd=None, env={}, time=True, continue_on_error=True):
             raise RuntimeError(f"Error Return non 0 --- while executing {cmd}")
 
 
-def process_mission_data(data_folder, mission_name):
+def process_mission_data(data_folder, mission_name, local_hostname):
     MISSION_DATA = os.path.join(data_folder, mission_name)
     cmds = []
 
-    if LOCAL_HOSTNAME == "jetson":
+    if local_hostname == "jetson":
         upload_kk = False
         cmds.append(
             f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/repair_ros2_jetson.py"
@@ -67,7 +67,7 @@ def process_mission_data(data_folder, mission_name):
             "_jetson_hdr_front_raw.bag",
         ]
 
-    elif LOCAL_HOSTNAME == "nuc":
+    elif local_hostname == "nuc":
         upload_kk = False
         cmds.append(
             f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/repair_bags.py"
@@ -88,7 +88,7 @@ def process_mission_data(data_folder, mission_name):
             "_nuc_cpt7.bag",
             "_nuc_alphasense.bag",
         ]
-    elif LOCAL_HOSTNAME == "anymal-d039-lpc" or LOCAL_HOSTNAME == "anymal-d039-npc":
+    elif local_hostname == "anymal-d039-lpc" or local_hostname == "anymal-d039-npc":
         upload_kk = False
         cmds.append(
             f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/repair_bags.py"
@@ -107,7 +107,7 @@ def process_mission_data(data_folder, mission_name):
             "_lpc_state_estimator.bag",
             "_lpc_tf.bag",
         ]
-    elif LOCAL_HOSTNAME == "opc" or LOCAL_HOSTNAME == "mavt-rsl-ws":
+    elif local_hostname == "opc" or local_hostname == "mavt-rsl-ws":
         upload_kk = False
         cmds.append(
             f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/repair_bags.py"
@@ -116,8 +116,12 @@ def process_mission_data(data_folder, mission_name):
             f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/merge_mission.py"
         )
         cmds.append(
+            f"python3 /home/rsl/git/grand_tour_box/box_utils/boxi/boxi/move_cpt7_files.py --data_folder={data_folder}"
+        )
+        cmds.append(
             f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/export_raw_imu_bag.py"
         )
+
         keys = [
             "_npc_depth_cameras.bag",
             "_npc_elevation_mapping.bag",
@@ -140,16 +144,16 @@ def process_mission_data(data_folder, mission_name):
             "_jetson_stim.bag",
             "_jetson_ap20_aux.bag",
             "_jetson_adis.bag",
-            # "_jetson_zed2i_tf.bag",
-            # "_jetson_zed2i_prop.bag",
-            # "_jetson_zed2i_images.bag",
-            # "_jetson_zed2i_depth.bag",
+            "_jetson_zed2i_tf.bag",
+            "_jetson_zed2i_prop.bag",
+            "_jetson_zed2i_images.bag",
+            "_jetson_zed2i_depth.bag",
             "_jetson_hdr_right.bag",
             "_jetson_hdr_left.bag",
             "_jetson_hdr_front.bag",
         ]
 
-    print(LOCAL_HOSTNAME)
+    print(local_hostname)
 
     for cmd in cmds:
         os.system(cmd)
@@ -177,13 +181,14 @@ def process_mission_data(data_folder, mission_name):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Process and upload mission data.")
+    parser.add_argument("--local_hostname", default=LOCAL_HOSTNAME, help="T the hostname of the local machine.")
     parser.add_argument("--data_folder", default="/data", help="Base path")
     parser.add_argument("--mission_names", nargs="+", help="One or more mission names to process.")
 
     args = parser.parse_args()
 
     for mission_name in args.mission_names:
-        upload_kk = process_mission_data(args.data_folder, mission_name)
+        upload_kk = process_mission_data(args.data_folder, mission_name, args.local_hostname)
 
     if not upload_kk:
         print("boxi get_data --lpc --npc --directory ", " ".join(args.mission_names))
