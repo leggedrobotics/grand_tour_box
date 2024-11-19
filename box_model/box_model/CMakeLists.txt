@@ -13,7 +13,14 @@ set(xacro_files
 )
 xacro_add_files(${xacro_files} INSTALL DESTINATION urdf)
 
-install(DIRECTORY config launch urdf
+catkin_install_python(
+  PROGRAMS
+  DESTINATION
+    ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+
+install(DIRECTORY config launch urdf scripts
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 
