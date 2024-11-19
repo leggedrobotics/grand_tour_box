@@ -4,6 +4,7 @@
     <arg name="image_topic"/>
     <arg name="box_namespace" default="gt_box"/>
     <arg name="use_april_grid" default="true"/>
+    <arg name="recording_bag_name" default=""/>
 
     <group ns="$(arg box_namespace)">
         <node name="$(arg name)" pkg="grand_tour_camera_detectors" type="grand_tour_camera_detector"
@@ -12,6 +13,7 @@
             
             <param name="image_topic" value="$(arg image_topic)"/>
             <param name="show_extraction_video" value="false"/>
+            <param name="recording_bag_name" value="$(arg recording_bag_name)"/>
 
             <!-- Parameters for apriltag -->
             <param name="grid_size_x" value="6" if="$(arg use_april_grid)"/>

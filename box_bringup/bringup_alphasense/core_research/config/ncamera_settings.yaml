@@ -46,12 +46,13 @@ camera_config: &standard_camera_config_rotated
   # Extra configuration.
   rotate_image: true               # true/false
 
-camera_config: &camera_1_config
+
+camera_config: &camera_config_follower
   # Exposure control.
   manual_exp_time_us: 10000         # 10 - 65000
   auto_exposure_enabled: true       # true/false
   min_exp_time_us: 50               # 10 - 65000
-  max_exp_time_us: 10000            # 10 - 65000
+  max_exp_time_us: 30000            # 10 - 65000
   autoexp_speed: 10                 # 1 - 10
   autoexp_target_median: 70         # 0 - 255
 
@@ -68,10 +69,8 @@ camera_config: &camera_1_config
   autoexp_end_col: -1               # -1 - 719/1439
 
   # Extra configuration.
-  rotate_image: false               # true/false
-
-  # Force exposure parameters of stereo-pairs to be equal.
-  autoexp_master_camera_index: 0
+  rotate_image: true               # true/false
+  autoexp_master_camera_index: 2
 
 ncamera:
   # Measurement rates.
@@ -91,9 +90,10 @@ ncamera:
   # Number of enabled cameras and individual camera configuration.
   num_cams: 6                     # 1 - 8
   cams:
-#   0: *standard_camera_config      # Port broken?
-    1: *standard_camera_config      # Front middle
-    2: *standard_camera_config      # Front right
-    3: *standard_camera_config      # Front left
+    0: *standard_camera_config            # Broken
+    1: *standard_camera_config            # Front middle
+    2: *standard_camera_config            # Front right
+    3: *camera_config_follower            # Front left
     4: *standard_camera_config_rotated      # Left 
-    5: *standard_camera_config_rotated      # Right
+    5: *standard_camera_config_rotated     # Right
+      

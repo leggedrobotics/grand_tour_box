@@ -44,16 +44,8 @@ for f in files_to_upload:
             upload.append(f)
 
 upload.sort()
+
 mission_name = folder.name
 project = "GrandTour"
-files_to_upload_str = " --path " + " --path ".join(files_to_upload)
-
-metadata = ""
-p = os.path.join(MISSION_DATA, folder.name + ".yaml")
-if os.path.exists(p):
-    metadata = "--metadata " + str(p)
-
-metadata = ""
-os.system(
-    f"klein upload {files_to_upload_str} --ignore-missing-tags --project {project} --mission {mission_name} --create {metadata}"
-)
+files_to_upload = " --path " + " --path ".join(files_to_upload)
+os.system(f"klein upload --ignore-tags --create-mission {files_to_upload} --project {project} --mission {mission_name}")

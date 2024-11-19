@@ -67,6 +67,7 @@ def main(args):
                     "_lpc_state_estimator.bag",
                     "_lpc_tf.bag",
                     ".log",
+                    ".svo",
                     ".yaml",
                 ]
                 include_patterns = " ".join([f"--include='*{key}'" for key in keys])
@@ -78,6 +79,7 @@ def main(args):
                 print("No host specified. Specify host with --hostname")
             for host, user in zip(hosts, users):
                 if args.check:
+                    # We want maximum speed of 1.5 Gbit/s -> 1.5 * 10 **6 / 8 = 187500 KB/s -> --bwlimit 187500
                     rsync_part1 = "rsync -r --progress -Pv --size-only -n " + user + "@"
                 else:
                     rsync_part1 = "rsync -r --progress -Pv --size-only " + user + "@"
