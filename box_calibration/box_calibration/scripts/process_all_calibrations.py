@@ -95,6 +95,17 @@ def add_comment_to_yaml(file_path, comment):
         file.write(full_comment)
         yaml.dump(data, file, default_flow_style=False)
 
+def add_tuple_to_yaml(file_path, kv):
+    # Load the YAML data
+    with open(file_path, 'r') as file:
+        data = yaml.safe_load(file)
+
+    for k, v in kv.items():
+        data[k] = v
+    # Write the comment and YAML data back to the file
+    with open(file_path, 'w') as file:
+        yaml.dump(data, file, default_flow_style=False)
+
 
 def filter_for_bags_with_rostopics(bag_paths, rostopics):
     filtered_camera_bag_paths = []
@@ -114,14 +125,14 @@ def extract_bag_start_time(bag_file_path):
         bag_file_path (str): Path to the ROS bag file.
 
     Returns:
-        str: The start time of the bag file in human-readable format (ISO 8601).
+        str: The start time of the bag file in human-readable format (YYYY-MM-DD-HH-MM-SS).
     """
     with rosbag.Bag(bag_file_path, 'r') as bag:
         # Get the start time as a ROS time
         start_time_ros = bag.get_start_time()
         # Convert to a datetime object
         start_time = datetime.fromtimestamp(start_time_ros)
-    return start_time.isoformat()
+    return start_time.strftime("%Y-%m-%d-%H-%M-%S")
 
 
 def read_yaml_with_comment_header(yaml_file_path):
@@ -144,7 +155,7 @@ def read_yaml_with_comment_header(yaml_file_path):
     comment_header = []
     for line in lines:
         if line.startswith("#"):
-            comment_header.append(line.strip())
+            comment_header.append(line[1:].strip())
         else:
             break
 
@@ -192,7 +203,7 @@ camcam_calibration_path = "cameracamera_calibration.yaml"
 command = ["rosrun", "grand_tour_ceres_apps", "camera_camera_offline_calibration", "--bags"] + bag_files + [
     "--output_path", camcam_calibration_path]
 
-camcam_calibration_comment_header = read_yaml_with_comment_header(camcam_calibration_path)
+camcam_calibration_time_header = read_yaml_with_comment_header(camcam_calibration_path)
 
 # Run the command
 safe_subprocess_run(command)
@@ -288,6 +299,8 @@ if not args.dry_run:
 
     with Bag(merged_bag_path, 'w') as merged_bag:
         for bag_file in lidar_bag_files:
+            if bag_file == merged_bag_path:
+                continue
             with Bag(bag_file, 'r') as bag:
                 for topic, msg, t in bag.read_messages():
                     merged_bag.write(topic, msg, t)
@@ -449,9 +462,9 @@ for key in camcam_calibration_data.keys():
 
 camcamlidar_calibration_path = "cameracameralidar_calibration.yaml"
 
-hesai_bag_start_time = extract_bag_start_time(hesai_bag_file)
-camlidar_calibration_comment = (f"{camcam_calibration_comment_header}\n"
-                       f"#LiDAR Calibration Data Time: {hesai_bag_start_time}")
+camlidar_calibration_time_header = extract_bag_start_time(hesai_bag_file)
+camlidar_calibration_comment = (f"{camcam_calibration_time_header}\n"
+                       f"#LiDAR Calibration Data Time: {camlidar_calibration_time_header}")
 pretty_write_yaml_array_with_comment(camcamlidar_calibration_data, camcamlidar_calibration_path,
                                      comment=camlidar_calibration_comment)
 
@@ -463,7 +476,8 @@ camera_prism_prism_bag_path = filter_for_bags_with_rostopics(camera_prism_folder
 
 camcamlidarprism_calibration_path = os.path.join(os.path.dirname(camcamlidar_calibration_path),
                                        "camcamlidarprism_calib.yaml")
-# Construct the command
+
+prism_calibration_time_header = extract_bag_start_time(camera_prism_prism_bag_path)
 prism_command = ["rosrun", "grand_tour_ceres_apps", "camera_prism_offline_calibration", "-c", camcamlidar_calibration_path,
                  "--camera_bags", *camera_prism_camera_bag_paths, "-p", camera_prism_prism_bag_path,
                  "-t", prism_topic, "--solve_time_offset" if solve_ap20_time_offset else "",
@@ -488,9 +502,16 @@ tf_calibration_output_path = os.path.join(box_calibration_package, "calibration/
 conversion_command = ["rosrun", "box_calibration", "convert_graph.py", "-i", camcamlidarprism_calibration_path,
                       "-o", tf_calibration_output_path, ]
 
+calibration_metadata = {
+    "camera" : camcam_calibration_time_header,
+    "lidar" : camlidar_calibration_time_header,
+    "prism" : prism_calibration_time_header,
+    "imu" : "cad"
+}
+
 # Run the command
 safe_subprocess_run(conversion_command, force=True)
-add_comment_to_yaml(tf_calibration_output_path, camlidar_calibration_comment)
+add_tuple_to_yaml(tf_calibration_output_path, {"calibration_metadata" : calibration_metadata})
 
 # Define the path to the diffcal-calib.yaml file
 raw_image_pipeline_calib_files = [os.path.join(calib_output_folder, '04_alignment', x)
@@ -526,4 +547,4 @@ for k, camera_params in camcam_calibration_data.items():
         raise ValueError(f"Unexpected rostopic name: {rostopic}")
 
     if output_path is not None:
-        write_raw_img_pipeline_format(camera_params, output_path, comment_header=camcam_calibration_comment_header)
+        write_raw_img_pipeline_format(camera_params, output_path, comment_header=camcam_calibration_time_header)
