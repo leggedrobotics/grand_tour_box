@@ -1,7 +1,7 @@
 <launch>
   <arg name="rviz" default="false" />
   <arg name="model" default="$(find box_model)/urdf/box/box.urdf.xacro" />
-  <arg name="calibration_file" default="$(find box_calibration)/calibration/tf/calibration_cad.yaml" />
+  <arg name="calibration_file" default="$(find box_calibration)/calibration/tf/calibration_latest.yaml" />
 
   <arg name="use_sim_time" default="false" />
 
