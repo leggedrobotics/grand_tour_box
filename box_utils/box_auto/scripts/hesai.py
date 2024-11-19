@@ -64,7 +64,7 @@ def launch_nodes(input_rosbag_path):
     output_bag_path = input_rosbag_path.replace("_nuc_hesai.bag", "_nuc_hesai_post_processed.bag")
     if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
         uuid = os.environ["MISSION_UUID"]
-        os.system(f"klein mission upload --mission-uuid {uuid} --path {output_bag_path}")
+        os.system(f"klein upload --mission {uuid} {output_bag_path}")
         print(f"Hesai bag uploaded to kleinkram: {output_bag_path}")
     else:
         print(f"Finished processing. Hesai bag saved as: {output_bag_path}")
@@ -73,7 +73,7 @@ def launch_nodes(input_rosbag_path):
 if __name__ == "__main__":
     if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
         uuid = os.environ["MISSION_UUID"]
-        os.system(f"klein mission download --mission-uuid {uuid} --local-path /mission_data --pattern *_nuc_hesai.bag")
+        os.system(f"klein download --mission {uuid} --dest /mission_data '*_nuc_hesai.bag'")
 
     input_rosbag_paths = sorted(glob.glob(os.path.join(MISSION_DATA, "*_nuc_hesai.bag")))
 
