@@ -1,3 +1,9 @@
+calibration_metadata:
+  camera:  cad
+  lidar: cad
+  imu: cad
+  prism: cad
+
 alphasense_base_to_alphasense_front_left:
   pitch: 0.0009078749675786035
   roll: -0.000952258961668107
