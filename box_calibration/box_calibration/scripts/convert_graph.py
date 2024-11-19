@@ -6,6 +6,14 @@ import numpy as np
 import yaml
 from matplotlib import pyplot as plt
 from scipy.spatial.transform import Rotation as R
+from collections import OrderedDict
+
+# Custom YAML Dumper to handle OrderedDict cleanly
+class OrderedDumper(yaml.Dumper):
+    def represent_dict(self, data):
+        return super().represent_dict(data.items())
+
+OrderedDumper.add_representer(OrderedDict, OrderedDumper.represent_dict)
 
 
 class Graph:
@@ -250,7 +258,7 @@ class Graph:
         Parameters:
         - output_file (str): Path to the YAML file where edges will be saved.
         """
-        tagged_edges = {}
+        tagged_edges = OrderedDict()
 
         for (node1, node2), tag in self.input_edge_tags.items():
             transform = self.get_transform(node1, node2)
@@ -261,18 +269,18 @@ class Graph:
             rpy = self.extract_rotation_as_euler(transform, order="xyz").tolist()
 
             # Save fields in a dictionary using the tag as the key
-            tagged_edges[tag] = {
-                "x": xyz[0],
-                "y": xyz[1],
-                "z": xyz[2],
-                "roll": rpy[0],
-                "pitch": rpy[1],
-                "yaw": rpy[2]
-            }
+            tagged_edges[tag] = OrderedDict([
+                ('x', xyz[0]),
+                ('y', xyz[1]),
+                ('z', xyz[2]),
+                ('roll', rpy[0]),
+                ('pitch', rpy[1]),
+                ('yaw', rpy[2])
+            ])
 
         # Write to a YAML file
         with open(output_file, 'w') as f:
-            yaml.dump(tagged_edges, f, default_flow_style=False)
+            yaml.dump(tagged_edges, f, Dumper=OrderedDumper, default_flow_style=False)
 
 
 if __name__ == "__main__":

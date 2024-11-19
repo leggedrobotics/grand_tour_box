@@ -167,7 +167,7 @@ def read_yaml_with_comment_header(yaml_file_path):
 
 def pretty_write_yaml_array_with_comment(data, output_path, comment=""):
     with open(output_path, 'w') as outfile:
-        outfile.write('# Created using ' + comment + '\n')
+        outfile.write('#' + comment + '\n')
         yaml_composition = yaml.compose(yaml.safe_dump(data))
         mutate_sequence_flowstyle_to_inline(yaml_composition)
         yaml.serialize(yaml_composition, outfile)
@@ -203,10 +203,9 @@ camcam_calibration_path = "cameracamera_calibration.yaml"
 command = ["rosrun", "grand_tour_ceres_apps", "camera_camera_offline_calibration", "--bags"] + bag_files + [
     "--output_path", camcam_calibration_path]
 
-camcam_calibration_time_header = read_yaml_with_comment_header(camcam_calibration_path)
-
 # Run the command
 safe_subprocess_run(command)
+camcam_calibration_time_header = read_yaml_with_comment_header(camcam_calibration_path)
 
 # Run the second command using the output of the previous step
 livox_input_path = "kalibr_camcam_livox_initial_guess.yaml"
@@ -463,7 +462,7 @@ for key in camcam_calibration_data.keys():
 camcamlidar_calibration_path = "cameracameralidar_calibration.yaml"
 
 camlidar_calibration_time_header = extract_bag_start_time(hesai_bag_file)
-camlidar_calibration_comment = (f"{camcam_calibration_time_header}\n"
+camlidar_calibration_comment = (f"#Camera Calibration Data Time: {camcam_calibration_time_header}\n"
                        f"#LiDAR Calibration Data Time: {camlidar_calibration_time_header}")
 pretty_write_yaml_array_with_comment(camcamlidar_calibration_data, camcamlidar_calibration_path,
                                      comment=camlidar_calibration_comment)
