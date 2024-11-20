@@ -302,10 +302,12 @@ def launch_nodes():
         os.system(
             "bash -c '" + PRE + f"roslaunch atn_position3_fuser position3_fuser.launch  logging_dir_location:={OUT} &' "
         )
-        # sleep(5)
+        print("Waiting 3s for graph_msf to startup")
+        sleep(3)
         os.system("bash -c '" + PRE + f"rosbag play -r 4 --clock {merged_rosbag_path}' ")
-        print("Waiting 5s before starting optimization!")
-        # sleep(5)
+        print("Waiting 3s for all messages to be consumed by graph_msf before starting optimization!")  #
+
+        sleep(3)
         os.system(
             'rosservice call /graph_msf/trigger_offline_optimization "max_optimization_iterations: 100\nsave_covariance: true"'
         )
