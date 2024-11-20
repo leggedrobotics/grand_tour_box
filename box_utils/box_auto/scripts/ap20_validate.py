@@ -1,0 +1,101 @@
+import rosbag
+import numpy as np
+from pathlib import Path
+import os
+
+
+def process_prism_position_bag(input_bag_path, output_bag_path):
+    # Read the input bag file
+    input_bag = rosbag.Bag(input_bag_path)
+    output_bag = rosbag.Bag(output_bag_path, "w")
+
+    # Extract prism positions
+    prism_positions = []
+    for topic, msg, t in input_bag.read_messages(topics=["/gt_box/ap20/prism_position"]):
+        prism_positions.append((msg, t))
+
+    # Get the first position as reference
+    if not prism_positions:
+        print("No prism position messages found!")
+        return False
+
+    first_position = prism_positions[0][0]
+
+    # Write filtered messages to new bag
+    valid_positions = []
+    for msg, t in prism_positions:
+        # Calculate distance from the first position
+        distance = np.sqrt(
+            (msg.point.x - first_position.point.x) ** 2
+            + (msg.point.y - first_position.point.y) ** 2
+            + (msg.point.z - first_position.point.z) ** 2
+        )
+
+        # Only write messages beyond 20 cm (0.2 m) from the first position
+        if distance > 0.2:
+            output_bag.write("/gt_box/ap20/prism_position", msg, t)
+
+        valid_positions.append(msg)
+
+    # Verify median of first and last 20 messages
+    if len(prism_positions) < 40:
+        return False
+
+    # Extract first and last 20 messages
+    first_20_msgs = [msg for msg, t in prism_positions[:20]]
+    last_20_msgs = [msg for msg, t in prism_positions[-20:]]
+
+    # Compute medians for x, y, and z
+    first_20_medians = np.median([[msg.point.x, msg.point.y, msg.point.z] for msg in first_20_msgs], axis=0)
+    last_20_medians = np.median([[msg.point.x, msg.point.y, msg.point.z] for msg in last_20_msgs], axis=0)
+
+    # Calculate absolute differences
+    median_diff = np.abs(first_20_medians - last_20_medians)
+    print(f"Median difference (x, y, z): {median_diff}")
+
+    # Check if median differences are smaller than 3 mm (0.003 m)
+    if not np.all(median_diff < 0.003):
+        print("Warning: Median differences exceed 3 mm!")
+        return False
+
+    # Close bags
+    input_bag.close()
+    output_bag.close()
+
+    return True
+
+
+def main():
+    # Define input and output paths
+    if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
+        uuid = os.environ["MISSION_UUID"]
+        os.system(f"kleim download --mission {uuid} --dest /mission_data --pattern *_jetson_ap20_synced")
+
+    mission_data = os.environ.get("MISSION_DATA", "/mission_data")
+    input_bag_pattern = "*_jetson_ap20_synced.bag"
+
+    # Find input bag
+    input_bags = list(Path(mission_data).rglob(input_bag_pattern))
+    if not input_bags:
+        print(f"No input bag found matching {input_bag_pattern}")
+        return
+
+    input_bag_path = str(input_bags[0])
+    output_bag_path = input_bag_path.replace("_synced.bag", "_robot.bag")
+
+    # Process the bag
+    success = process_prism_position_bag(input_bag_path, output_bag_path)
+
+    if success:
+        print(f"Successfully created {output_bag_path}")
+        if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
+            uuid = os.environ["MISSION_UUID"]
+            os.system(f"klein upload --mission {uuid} {output_bag_path}")
+            print(f"AP20_robot bag uploaded to kleinkram: {output_bag_path}")
+
+    else:
+        print("Bag processing failed")
+
+
+if __name__ == "__main__":
+    main()

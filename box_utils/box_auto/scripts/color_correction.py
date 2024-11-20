@@ -87,7 +87,7 @@ def process_rosbag(input_bag, output_bag_path, image_topics, camera_info_topics,
 
     if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
         uuid = os.environ["MISSION_UUID"]
-        os.system(f"klein mission upload --mission-uuid {uuid} --path {output_bag_path}")
+        os.system(f"klein upload --mission {uuid} {output_bag_path}")
         print(f"Color corrected bag uploaded to kleinkram: {output_bag_path}")
     else:
         print(f"Finished processing. Color corrected bag saved as: {output_bag_path}")
@@ -101,9 +101,7 @@ if __name__ == "__main__":
 
     if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
         uuid = os.environ["MISSION_UUID"]
-        os.system(
-            f"klein mission download --mission-uuid {uuid} --local-path /mission_data --pattern *_nuc_alphasense.bag"
-        )
+        os.system(f"klein download --mission {uuid} --dest /mission_data '*_nuc_alphasense.bag'")
 
     output_pattern = "_nuc_alphasense_cor.bag"
     bags = [str(s) for s in Path(MISSION_DATA).glob("*" + pattern) if output_pattern not in str(s)]

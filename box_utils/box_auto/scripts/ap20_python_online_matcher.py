@@ -122,7 +122,11 @@ def read_bag_file(bag_path):
                             new_pose_stamped_msgs.pose.orientation.z = 0
                             new_pose_stamped_msgs.pose.orientation.w = 1
 
-                            bag_out.write("/gt_box/ap20/prism_position_posestamped", new_pose_stamped_msgs, new_pose_stamped_msgs.header.stamp)
+                            bag_out.write(
+                                "/gt_box/ap20/prism_position_posestamped",
+                                new_pose_stamped_msgs,
+                                new_pose_stamped_msgs.header.stamp,
+                            )
 
                             new_msg = PointStamped()
                             new_msg.header.stamp = rospy.Time.from_sec(new_ts)
@@ -265,7 +269,7 @@ def read_bag_file(bag_path):
 
     if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
         uuid = os.environ["MISSION_UUID"]
-        os.system(f"klein mission upload --mission-uuid {uuid} --path {output_bag_path}")
+        os.system(f"klein upload --mission {uuid} {output_bag_path}")
         print(f"AP20_synced bag uploaded to kleinkram: {output_bag_path}")
     else:
         print(f"Finished processing. AP20_synced bag saved as: {output_bag_path}")
@@ -295,9 +299,7 @@ if __name__ == "__main__":
 
     if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
         uuid = os.environ["MISSION_UUID"]
-        os.system(
-            f"klein mission download --mission-uuid {uuid} --local-path /mission_data --pattern *_jetson_ap20_aux.bag"
-    )
+        os.system(f"klein download --mission {uuid} --dest /mission_data '*_jetson_ap20_aux.bag'")
 
     ap20_bag = get_bag(MISSION_DATA, "*_jetson_ap20_aux.bag")
 

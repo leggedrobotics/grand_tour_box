@@ -16,7 +16,7 @@ def create_mission_yaml(directory, missions):
     # Loop over the missions and create YAML files
     for mission in missions:
         mission_filename = f"{mission}.yaml"
-        mission_path = os.path.join(directory, mission_filename)
+        mission_path = os.path.join(directory, mission, mission_filename)
 
         mission_data = {
             "Description": "",

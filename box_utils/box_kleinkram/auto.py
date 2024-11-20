@@ -171,7 +171,7 @@ def process_mission_data(data_folder, mission_name, local_hostname):
 
     if upload_kk:
         project = "GrandTour"
-        files_to_upload_str = " --path " + " --path ".join(upload)
+        files_to_upload_str = " ".join(upload)
 
         metadata = ""
         p = os.path.join(folder, folder.name + ".yaml")
@@ -179,7 +179,7 @@ def process_mission_data(data_folder, mission_name, local_hostname):
             metadata = "--metadata " + str(p)
 
         os.system(
-            f"klein upload {files_to_upload_str} --ignore-missing-tags --project {project} --mission {mission_name} --create {metadata}"
+            f"klein upload {files_to_upload_str} --ignore-missing-tags --project {project} --mission {mission_name} --create {metadata} "
         )
 
     return upload_kk

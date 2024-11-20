@@ -475,9 +475,7 @@ def launch_nodes():
 
     if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
         uuid = os.environ["MISSION_UUID"]
-        os.system(
-            f"klein mission upload --mission-uuid {uuid} --path {tf_gt} --path {pose_gt} --path {tf_static_gt_path}"
-        )
+        os.system(f"klein upload --mission {uuid} {tf_gt} {pose_gt} {tf_static_gt_path}")
     else:
         print(f"Finished processing - Generated: {tf_gt}, {pose_gt}, {tf_static_gt_path} - and multiple csv files.")
 
@@ -489,7 +487,7 @@ def fetch_multiple_files_kleinkram(patterns):
     for pattern in patterns:
         if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
             uuid = os.environ["MISSION_UUID"]
-            os.system(f"klein mission download --mission-uuid {uuid} --local-path {tmp_dir} --pattern {pattern}")
+            os.system(f"klein download --mission {uuid} --dest {tmp_dir} '{pattern}'")
 
             # Move all files from /mission_data/tmp to /mission_data/
             for file_name in os.listdir(tmp_dir):

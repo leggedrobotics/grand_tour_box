@@ -268,7 +268,7 @@ def validate_mission_folder(reference_data: Dict, mission_folder: str, time_tole
 if __name__ == "__main__":
     if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
         uuid = os.environ["MISSION_UUID"]
-        os.system(f"klein mission download --mission-uuid {uuid} --local-path /mission_data --pattern *.bag")
+        os.system(f"klein download --mission {uuid} --dest /mission_data '*.bag'")
 
     validation_passed = validate_bags(
         reference_folder=None, yaml_file=YAML_FILE, mission_folder=MISSION_DATA, time_tolerance=20
