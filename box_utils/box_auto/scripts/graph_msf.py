@@ -5,7 +5,6 @@ import os
 from time import sleep
 import psutil
 from pathlib import Path
-import shutil
 import copy
 import rosbag
 from tf.msg import tfMessage
@@ -20,8 +19,8 @@ import matplotlib.pyplot as plt
 MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
 WS = "/home/catkin_ws"
 PRE = f"source /opt/ros/noetic/setup.bash; source {WS}/devel/setup.bash;"
-PATTERNS = ["*_jetson_ap20_synced.bag", "*_cpt7_raw_imu.bag", "*_cpt7_gps_ie.bag", "*_tf_static.bag"]
-OUT = MISSION_DATA  # "/out"
+PATTERNS = ["*_jetson_ap20_robot.bag", "*_cpt7_raw_imu.bag", "*_cpt7_gps_ie.bag", "*_tf_static.bag"]
+OUT = "/out"
 
 
 class BagTfTransformerWrapper:
@@ -267,11 +266,13 @@ def kill_rosmaster():
 
 
 def launch_nodes():
+
     os.environ["ROS_MASTER_URI"] = "http://localhost:11311"
     kill_rosmaster()
 
     inputs = []
 
+    # GPS bag is optional
     for pattern in PATTERNS:
         f, suc = get_bag(MISSION_DATA, pattern)
         if suc:
@@ -280,39 +281,44 @@ def launch_nodes():
             timestamp = timestamp.split("_")[0]
 
         else:
-            raise ValueError("Pattern not found: ", pattern, " in Directory ", MISSION_DATA)
+            if pattern == "*_cpt7_gps_ie.bag":
+                print("The GPS postprocessed Bag is optional!")
+                continue
+            else:
+                raise ValueError("Pattern not found: ", pattern, " in Directory ", MISSION_DATA)
 
-    assert len(inputs) == len(PATTERNS), "Failure did not find all the bags required"
-
-    os.makedirs("/out", exist_ok=True)
+    os.makedirs(OUT, exist_ok=True)
 
     inputs = ",".join(inputs)
     merged_rosbag_path = os.path.join(MISSION_DATA, "merged.bag")
 
-    if True:
+    if False:
         os.system(
             f"python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/merge_bags.py --input={inputs} --output={merged_rosbag_path}"
         )
-        os.system("bash -c '" + PRE + "roscore&' ")
+        os.system("bash -c '" + PRE + "roscore &' ")
         sleep(1)
 
         os.system(
             "bash -c '" + PRE + f"roslaunch atn_position3_fuser position3_fuser.launch  logging_dir_location:={OUT} &' "
         )
-        sleep(5)
-        os.system("bash -c '" + PRE + f"rosbag play -r 1 --clock {merged_rosbag_path}' ")
-        print("Waiting 10s before starting optimization!")
-        sleep(5)
+        print("Waiting 3s for graph_msf to startup")
+        sleep(3)
+        os.system("bash -c '" + PRE + f"rosbag play -r 4 --clock {merged_rosbag_path}' ")
+        print("Waiting 3s for all messages to be consumed by graph_msf before starting optimization!")  #
+
+        sleep(3)
         os.system(
-            'rosservice call /graph_msf/trigger_offline_optimization "max_optimization_iterations: 1000, save_covariance: True"'
+            'rosservice call /graph_msf/trigger_offline_optimization "max_optimization_iterations: 100\nsave_covariance: true"'
         )
 
     # Prepare data for plotting
     tf_static_path, _ = get_bag(MISSION_DATA, "*_tf_static.bag")
     tf_static_gt_path = tf_static_path.replace("_tf_static.bag", "_tf_static_gt.bag")
-    csv_file_world, _ = get_bag(OUT, "*_transform_enu_origin_to_world.csv")
 
-    write_tf_static_bag(csv_file_world, tf_static_gt_path, "enu_origin", "world")
+    csv_file_world, gps_is_available = get_bag(OUT, "*_transform_enu_origin_to_world.csv")
+    if gps_is_available:
+        write_tf_static_bag(csv_file_world, tf_static_gt_path, "enu_origin", "world")
 
     tf_gt = tf_static_path.replace("_tf_static.bag", "_gt_tf.bag")
     pose_gt = tf_static_path.replace("_tf_static.bag", "_gt_pose.bag")
@@ -322,49 +328,41 @@ def launch_nodes():
 
     tf_static_path, _ = get_bag(MISSION_DATA, "*_tf_static.bag")
     tf_static_gt_path = tf_static_path.replace("_tf_static.bag", "_tf_static_gt.bag")
-    csv_file_world, _ = get_bag(OUT, "*_transform_enu_origin_to_world.csv")
-
-    write_tf_static_bag(csv_file_world, tf_static_gt_path, "enu_origin", "world")
-
-    tf_gt = tf_static_path.replace("_tf_static.bag", "_gt_tf.bag")
-    pose_gt = tf_static_path.replace("_tf_static.bag", "_gt_pose.bag")
-    csv_cov_file, _ = get_bag(OUT, "*_X_state_6D_pose_covariance.csv")
-    csv_pose_file, _ = get_bag(OUT, "*_X_state_6D_pose.csv")
-    convert_csv_to_bag(csv_cov_file, csv_pose_file, tf_gt, pose_gt, "world", "box_base")
 
     pose_gt_path = pose_gt
     ap20_gps_bag = merged_rosbag_path
 
-    # Get the correct tf_statics
-    tf_transformer = BagTfTransformerWrapper(tf_static_gt_path)
-    t_enu_origin_world, q_enu_origin_world = tf_transformer.lookupTransform("enu_origin", "world", 0, latest=True)
-    del tf_transformer
-    tf_transformer = BagTfTransformerWrapper(merged_rosbag_path)
-    t_prism_enu_origin, q_prism_enu_origin = tf_transformer.lookupTransform("prism", "enu_origin", 0, latest=True)
-    del tf_transformer
-
-    # Read in the full paths
-    gps_ie = np.array(
-        [
-            t.pose.pose
-            for _, t, _ in Bag(ap20_gps_bag).read_messages(topics="/gt_box/inertial_explorer/gt_poses_novatel")
-        ]
-    )
     ap20 = np.array([t.point for _, t, _ in Bag(ap20_gps_bag).read_messages(topics="/gt_box/ap20/prism_position")])
     pose_gt = np.array(
         [t.pose.pose for _, t, _ in Bag(pose_gt_path).read_messages(topics="/gt_box/ground_truth/pose_with_covariance")]
     )
 
-    # Convert the paths to 4x4 numpy arrays
-    gps_ie_path_arr = np.array([np.eye(4) for _ in range(len(gps_ie))])
+    if gps_is_available:
+        tf_transformer = BagTfTransformerWrapper(tf_static_gt_path)
+        t_enu_origin_world, q_enu_origin_world = tf_transformer.lookupTransform("enu_origin", "world", 0, latest=True)
+        del tf_transformer
+
+        tf_transformer = BagTfTransformerWrapper(merged_rosbag_path)
+        t_prism_enu_origin, q_prism_enu_origin = tf_transformer.lookupTransform("prism", "enu_origin", 0, latest=True)
+        del tf_transformer
+
+        # Read in the full paths
+        gps_ie = np.array(
+            [
+                t.pose.pose
+                for _, t, _ in Bag(ap20_gps_bag).read_messages(topics="/gt_box/inertial_explorer/gt_poses_novatel")
+            ]
+        )
+        # Convert the paths to 4x4 numpy arrays
+        gps_ie_path_arr = np.array([np.eye(4) for _ in range(len(gps_ie))])
+        for i in range(len(gps_ie)):
+            gps_ie_path_arr[i, :3, :3] = R.from_quat(
+                [gps_ie[i].orientation.x, gps_ie[i].orientation.y, gps_ie[i].orientation.z, gps_ie[i].orientation.w]
+            ).as_matrix()
+            gps_ie_path_arr[i, :3, 3] = [gps_ie[i].position.x, gps_ie[i].position.y, gps_ie[i].position.z]
+
     ap20_path_arr = np.array([np.eye(4) for _ in range(len(ap20))])
     pose_gt_path_arr = np.array([np.eye(4) for _ in range(len(pose_gt))])
-
-    for i in range(len(gps_ie)):
-        gps_ie_path_arr[i, :3, :3] = R.from_quat(
-            [gps_ie[i].orientation.x, gps_ie[i].orientation.y, gps_ie[i].orientation.z, gps_ie[i].orientation.w]
-        ).as_matrix()
-        gps_ie_path_arr[i, :3, 3] = [gps_ie[i].position.x, gps_ie[i].position.y, gps_ie[i].position.z]
 
     for i in range(len(ap20)):
         ap20_path_arr[i, :3, 3] = [ap20[i].x, ap20[i].y, ap20[i].z]
@@ -393,7 +391,11 @@ def launch_nodes():
         "dark_blue": "#082a54",
     }
 
-    gps_ie_path_world = gps_ie_path_arr
+    if gps_is_available:
+        gps_ie_path_world = gps_ie_path_arr
+    else:
+        gps_ie_path_world = ap20_path_arr
+
     ap20_path_world = ap20_path_arr
     pose_gt_path_world = pose_gt_path_arr
 
@@ -423,9 +425,16 @@ def launch_nodes():
     fig, ax = plt.subplots(figsize=(width, height))
 
     # Plot trajectories
-    ax.plot(
-        gps_ie_path_world[:, 0, 3], gps_ie_path_world[:, 1, 3], "-", color=colors["red"], label="GPS-IE", linewidth=2
-    )
+
+    if gps_is_available:
+        ax.plot(
+            gps_ie_path_world[:, 0, 3],
+            gps_ie_path_world[:, 1, 3],
+            "-",
+            color=colors["red"],
+            label="GPS-IE",
+            linewidth=2,
+        )
     ax.plot(ap20_path_world[:, 0, 3], ap20_path_world[:, 1, 3], "-", color=colors["purple"], label="AP20", linewidth=2)
     ax.plot(
         pose_gt_path_world[:, 0, 3],
@@ -481,19 +490,10 @@ def launch_nodes():
 
 
 def fetch_multiple_files_kleinkram(patterns):
-    tmp_dir = os.path.join(MISSION_DATA, "tmp")
-    os.makedirs(tmp_dir, exist_ok=True)
-
-    for pattern in patterns:
-        if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
-            uuid = os.environ["MISSION_UUID"]
-            os.system(f"klein download --mission {uuid} --dest {tmp_dir} '{pattern}'")
-
-            # Move all files from /mission_data/tmp to /mission_data/
-            for file_name in os.listdir(tmp_dir):
-                source_file = os.path.join(tmp_dir, file_name)
-                destination_file = os.path.join("/mission_data", file_name)
-                shutil.move(source_file, destination_file)
+    if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
+        uuid = os.environ["MISSION_UUID"]
+        paths = " ".join([f"'{p}'" for p in PATTERNS])
+        os.system(f"klein download --mission {uuid} --dest /mission_data {paths}")
 
 
 if __name__ == "__main__":
