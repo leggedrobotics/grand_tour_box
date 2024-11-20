@@ -50,7 +50,7 @@ def merge_bags_single(input_bag, output_bag, topics="*", verbose=False):
 
     if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
         uuid = os.environ["MISSION_UUID"]
-        os.system(f"klein upload --mission {uuid} --path {output_bag}")
+        os.system(f"klein upload --mission {uuid} {output_bag}")
         os.system(f"cp {output_bag} /out")
 
     return total_included_count, total_skipped_count

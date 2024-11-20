@@ -39,6 +39,8 @@ def process_prism_position_bag(input_bag_path, output_bag_path):
 
     # Verify median of first and last 20 messages
     if len(prism_positions) < 40:
+        input_bag.close()
+        output_bag.close()
         return False
 
     # Extract first and last 20 messages
@@ -51,11 +53,14 @@ def process_prism_position_bag(input_bag_path, output_bag_path):
 
     # Calculate absolute differences
     median_diff = np.abs(first_20_medians - last_20_medians)
-    print(f"Median difference (x, y, z): {median_diff}")
+    print(f"Median difference (x, y, z): {median_diff} -  Number of Prism Positions: ", len(prism_positions))
 
     # Check if median differences are smaller than 3 mm (0.003 m)
     if not np.all(median_diff < 0.003):
         print("Warning: Median differences exceed 3 mm!")
+        # Close bags
+        input_bag.close()
+        output_bag.close()
         return False
 
     # Close bags
@@ -69,7 +74,7 @@ def main():
     # Define input and output paths
     if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
         uuid = os.environ["MISSION_UUID"]
-        os.system(f"kleim download --mission {uuid} --dest /mission_data --pattern *_jetson_ap20_synced")
+        os.system(f"klein download --mission {uuid} --dest /mission_data '*_jetson_ap20_synced.bag'")
 
     mission_data = os.environ.get("MISSION_DATA", "/mission_data")
     input_bag_pattern = "*_jetson_ap20_synced.bag"
