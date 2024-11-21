@@ -1,0 +1,6 @@
+nuc:
+  bags:
+    hesai:
+      - /gt_box/hesai/points
+    livox:
+      - /gt_box/livox/lidar

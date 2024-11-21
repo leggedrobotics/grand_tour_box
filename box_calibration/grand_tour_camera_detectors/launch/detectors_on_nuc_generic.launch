@@ -40,94 +40,27 @@
         <arg name="recording_bag_name" value="alphasense_right"/>
     </include>
 
-    <node if="$(arg record_pointcloud)" pkg="grand_tour_camera_detectors" type="generic_recorder.py"
-           name="hesai_recorder" output="screen"
-           ns="gt_box">
-        <param name="topic" value="/gt_box/hesai/points"/>
-        <param name="recording_bag_name" value="hesai"/>
+    <node if="$(eval arg('record_pointcloud') == 'true' and arg('record_imu') == 'false')" 
+            pkg="grand_tour_camera_detectors" 
+            type="recorder_relay.py"
+            name="recorder_relay" output="screen"
+            ns="gt_box">
+        <param name="capability_group" value="Recording"/>
+        <param name="yaml_file" value="calib_lidar"/>
     </node>
 
-    <node if="$(arg record_pointcloud)" pkg="grand_tour_camera_detectors" type="generic_recorder.py"
-          name="livox_recorder" output="screen"
+    <node pkg="grand_tour_camera_detectors" type="recorder_relay.py"
+          name="recorder_relay" output="screen"
           ns="gt_box">
-        <param name="topic" value="/gt_box/livox/lidar"/>
-        <param name="recording_bag_name" value="livox"/>
+        <param name="capability_group" value="Recording"/>
+        <param name="yaml_file" value="calib_imu"/>
     </node>
 
-    <node if="$(arg record_imu)" pkg="grand_tour_camera_detectors" type="generic_recorder.py"
-          name="livox_imu_recorder" output="screen"
+    <node if="$(eval arg('record_pointcloud') == 'true' and arg('record_imu') == 'true')" 
+        pkg="grand_tour_camera_detectors" type="recorder_relay.py"
+          name="recorder_relay" output="screen"
           ns="gt_box">
-        <param name="topic" value="/gt_box/livox/imu"/>
-        <param name="recording_bag_name" value="livox_imu"/>
-    </node>
-
-    <node if="$(arg record_imu)" pkg="grand_tour_camera_detectors" type="generic_recorder.py"
-          name="alphasense_imu_recorder" output="screen"
-          ns="gt_box">
-        <param name="topic" value="/gt_box/alphasense_driver_node/imu"/>
-        <param name="recording_bag_name" value="alphasense_imu"/>
-    </node>
-
-    <node if="$(arg record_imu)" pkg="grand_tour_camera_detectors" type="generic_recorder.py"
-          name="cpt7_imu_raw_recorder" output="screen"
-          ns="gt_box">
-        <param name="topic" value="/gt_box/cpt7/imu/data_raw"/>
-        <param name="recording_bag_name" value="cpt7_imu_raw"/>
-    </node>
-
-    <node if="$(arg record_imu)" pkg="grand_tour_camera_detectors" type="generic_recorder.py"
-          name="cpt7_gps_imu_recorder" output="screen"
-          ns="gt_box">
-        <param name="topic" value="/gt_box/cpt7/gps/imu"/>
-        <param name="recording_bag_name" value="cpt7_gps_imu"/>
-    </node>
-
-    <node if="$(arg record_imu)" pkg="grand_tour_camera_detectors" type="generic_recorder.py"
-          name="ap20_tps_recorder" output="screen"
-          ns="gt_box">
-        <param name="topic" value="/ap20/tps"/>
-        <param name="recording_bag_name" value="ap20_tps"/>
-    </node>
-
-    <node if="$(arg record_imu)" pkg="grand_tour_camera_detectors" type="generic_recorder.py"
-          name="ap20_imu_recorder" output="screen"
-          ns="gt_box">
-        <param name="topic" value="/ap20/imu"/>
-        <param name="recording_bag_name" value="ap20_imu"/>
-    </node>
-
-    <node if="$(arg record_imu)" pkg="grand_tour_camera_detectors" type="generic_recorder.py"
-          name="ap20_imu_debug_recorder" output="screen"
-          ns="gt_box">
-        <param name="topic" value="/gt_box/ap20/imu_debug"/>
-        <param name="recording_bag_name" value="ap20_imu_debug"/>
-    </node>
-
-    <node if="$(arg record_imu)" pkg="grand_tour_camera_detectors" type="generic_recorder.py"
-          name="ap20_position_debug_recorder" output="screen"
-          ns="gt_box">
-        <param name="topic" value="/gt_box/ap20/position_debug"/>
-        <param name="recording_bag_name" value="ap20_position_debug"/>
-    </node>
-
-    <node if="$(arg record_imu)" pkg="grand_tour_camera_detectors" type="generic_recorder.py"
-          name="ap20_timestamp_debug_recorder" output="screen"
-          ns="gt_box">
-        <param name="topic" value="/gt_box/ap20/timestamp_debug"/>
-        <param name="recording_bag_name" value="ap20_timestamp_debug"/>
-    </node>
-
-    <node if="$(arg record_imu)" pkg="grand_tour_camera_detectors" type="generic_recorder.py"
-          name="adis16475_imu_recorder" output="screen"
-          ns="gt_box">
-        <param name="topic" value="/gt_box/adis16475_node/imu"/>
-        <param name="recording_bag_name" value="adis16475_imu"/>
-    </node>
-
-    <node if="$(arg record_imu)" pkg="grand_tour_camera_detectors" type="generic_recorder.py"
-          name="stim320_imu_recorder" output="screen"
-          ns="gt_box">
-        <param name="topic" value="/gt_box/stim320/imu"/>
-        <param name="recording_bag_name" value="stim320_imu"/>
+        <param name="capability_group" value="Recording"/>
+        <param name="yaml_file" value="calib_imu_lidar"/>
     </node>
 </launch>

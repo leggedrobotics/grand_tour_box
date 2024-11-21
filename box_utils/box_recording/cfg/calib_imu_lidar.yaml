@@ -1,0 +1,20 @@
+nuc:
+  bags:
+    hesai:
+      - /gt_box/hesai/points
+    livox:
+      - /gt_box/livox/lidar
+    imus:
+      - /ap20/tps
+      - /ap20/imu
+      - /gt_box/ap20/imu_debug
+      - /gt_box/ap20/position_debug
+      - /gt_box/ap20/timestamp_debug
+      - /gt_box/alphasense_driver_node/imu
+      - /gt_box/livox/imu_si_compliant
+      - /gt_box/cpt7/imu/data_raw
+      - /gt_box/stim320/imu
+      - /gt_box/adis16475_node/imu
+      - /gt_box/zed2i_driver_node/imu/data_raw
+      - /tf
+      - /tf_static

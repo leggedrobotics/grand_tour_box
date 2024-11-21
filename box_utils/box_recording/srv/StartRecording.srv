@@ -1,4 +1,5 @@
 string yaml_file
+string recording_id
 ---
 string timestamp
 bool suc

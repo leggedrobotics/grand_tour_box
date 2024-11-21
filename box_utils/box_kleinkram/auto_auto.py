@@ -37,8 +37,8 @@ def sequence_3(output_directory, all_missions):
 
 
 def main():
-    missions = "demo1 demo2"
-    output_directory = "/media/rsl/BoxiS1-1TB/deployment_day_demo"
+    missions = "2024-11-21-16-36-19"
+    output_directory = "/media/rsl/BoxiS4-2TB/deployment_day_15"
 
     # Ensure the output directory exists
     os.makedirs(output_directory, exist_ok=True)
