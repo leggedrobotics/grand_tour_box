@@ -6,7 +6,7 @@ import os
 
 
 class RecorderRelay:
-    def __init__(self, yaml_file, service_timeout=5.0, query_interval=2.0):
+    def __init__(self, yaml_file, service_timeout, query_interval):
         self.yaml_file = yaml_file
         self.service_timeout = service_timeout
         self.query_interval = query_interval
@@ -59,7 +59,7 @@ class RecorderRelay:
         self.stop_recording()
         if self.timer:
             self.timer.shutdown()
-        rospy.loginfo(f"Recorder for topic {self.topic} shut down")
+        rospy.loginfo(f"Recorder shut down for {self.yaml_file}")
 
 
 def main():
@@ -69,7 +69,7 @@ def main():
     yaml_file = rospy.get_param("~yaml_file", "calib_imu")
 
     # Create the recorder object
-    recorder = RecorderRelay(yaml_file, service_timeout=5.0, query_interval=2.0)
+    recorder = RecorderRelay(yaml_file, service_timeout=10.0, query_interval=2.0)
 
     # Ensure the recording is stopped on shutdown
     rospy.on_shutdown(recorder.shutdown)

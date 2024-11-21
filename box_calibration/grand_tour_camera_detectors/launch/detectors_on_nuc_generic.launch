@@ -3,7 +3,7 @@
     <arg name="use_april_grid"/>
     <arg name="record_pointcloud"/>
     <arg name="record_imu"/>
-
+    <arg name="node_start_delay" default="1.0" /> 
     <!-- Include camera detectors with target_type -->
     <include file="$(find grand_tour_camera_detectors)/launch/generic_detector.launch">
         <arg name="name" value="cam1_detector"/>
@@ -44,14 +44,16 @@
             pkg="grand_tour_camera_detectors" 
             type="recorder_relay.py"
             name="recorder_relay" output="screen"
-            ns="gt_box">
+            ns="gt_box"
+            launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@' " >
         <param name="capability_group" value="Recording"/>
         <param name="yaml_file" value="calib_lidar"/>
     </node>
 
     <node pkg="grand_tour_camera_detectors" type="recorder_relay.py"
           name="recorder_relay" output="screen"
-          ns="gt_box">
+          ns="gt_box"
+          launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@' " >
         <param name="capability_group" value="Recording"/>
         <param name="yaml_file" value="calib_imu"/>
     </node>
@@ -59,7 +61,8 @@
     <node if="$(eval arg('record_pointcloud') == 'true' and arg('record_imu') == 'true')" 
         pkg="grand_tour_camera_detectors" type="recorder_relay.py"
           name="recorder_relay" output="screen"
-          ns="gt_box">
+          ns="gt_box"
+          launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@' " >
         <param name="capability_group" value="Recording"/>
         <param name="yaml_file" value="calib_imu_lidar"/>
     </node>
