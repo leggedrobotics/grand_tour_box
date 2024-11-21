@@ -48,4 +48,4 @@ upload.sort()
 mission_name = folder.name
 project = "GrandTour"
 files_to_upload = " ".join(files_to_upload)
-os.system(f"klein upload --ignore-missing-tags --create {files_to_upload} --project {project} --mission {mission_name}")
+os.system(f"klein upload --ignore-missing-tags --create --project {project} --mission {mission_name} {files_to_upload}")

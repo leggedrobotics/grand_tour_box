@@ -108,19 +108,19 @@ def process_mission_data(data_folder, mission_name, local_hostname):
             "_lpc_tf.bag",
         ]
     elif local_hostname == "opc" or local_hostname == "mavt-rsl-ws":
-        upload_kk = False
-        cmds.append(
-            f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/repair_bags.py"
-        )
-        cmds.append(
-            f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/merge_mission.py"
-        )
-        cmds.append(
-            f"python3 /home/rsl/git/grand_tour_box/box_utils/boxi/boxi/move_cpt7_files.py --data_folder={data_folder}"
-        )
-        cmds.append(
-            f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/export_raw_imu_bag.py"
-        )
+        upload_kk = True
+        # cmds.append(
+        #    f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/repair_bags.py"
+        # )
+        # cmds.append(
+        #    f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/merge_mission.py"
+        # )
+        # cmds.append(
+        #    f"python3 /home/rsl/git/grand_tour_box/box_utils/boxi/boxi/move_cpt7_files.py --data_folder={data_folder}"
+        # )
+        # cmds.append(
+        #    f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/export_raw_imu_bag.py"
+        # )
 
         keys = [
             "_npc_depth_cameras.bag",
@@ -179,7 +179,7 @@ def process_mission_data(data_folder, mission_name, local_hostname):
             metadata = "--metadata " + str(p)
 
         os.system(
-            f"klein upload {files_to_upload_str} --ignore-missing-tags --project {project} --mission {mission_name} --create {metadata} "
+            f"klein upload --ignore-missing-tags --project {project} --mission {mission_name} --create {metadata} {files_to_upload_str}"
         )
 
     return upload_kk
