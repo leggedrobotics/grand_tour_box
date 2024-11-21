@@ -44,7 +44,7 @@ camera_config: &standard_camera_config_rotated
   autoexp_end_col: -1               # -1 - 719/1439
 
   # Extra configuration.
-  rotate_image: true               # true/false
+  rotate_image: false               # true/false
 
 
 camera_config: &camera_config_follower
@@ -69,7 +69,7 @@ camera_config: &camera_config_follower
   autoexp_end_col: -1               # -1 - 719/1439
 
   # Extra configuration.
-  rotate_image: true               # true/false
+  rotate_image: false               # true/false
   autoexp_master_camera_index: 2
 
 ncamera:

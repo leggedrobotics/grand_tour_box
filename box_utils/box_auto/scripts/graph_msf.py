@@ -492,7 +492,7 @@ def launch_nodes():
 def fetch_multiple_files_kleinkram(patterns):
     if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
         uuid = os.environ["MISSION_UUID"]
-        paths = " ".join([f"'{p}'" for p in PATTERNS])
+        paths = " ".join([f"'{p}'" for p in patterns])
         os.system(f"klein download --mission {uuid} --dest /mission_data {paths}")
 
 

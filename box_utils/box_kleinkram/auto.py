@@ -181,6 +181,9 @@ def process_mission_data(data_folder, mission_name, local_hostname):
         os.system(
             f"klein upload --ignore-missing-tags --project {project} --mission {mission_name} --create {metadata} {files_to_upload_str}"
         )
+        # os.system(
+        #     f"klein verify --project {project} --mission {mission_name} {files_to_upload_str}"
+        # )
 
     return upload_kk
 
