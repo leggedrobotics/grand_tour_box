@@ -2,8 +2,6 @@
 
 <include file="$(find bringup_alphasense)/launch/debayer_single_camera.launch">
     <arg name="camera_name" value="alphasense_front_left"/>
-    <arg name="flip/enabled" value="true"/>
-    <arg name="flip/angle" value="180"/>
     <arg name="input_topic" value="alphasense_driver_node/cam1"/>
     <arg name="output_prefix" value="alphasense_driver_node/cam1"/>
     <arg name="output_frame" value="alphasense_front_left"/>
@@ -14,8 +12,6 @@
 
 <include file="$(find bringup_alphasense)/launch/debayer_single_camera.launch">
     <arg name="camera_name" value="alphasense_front_right"/>
-    <arg name="flip/enabled" value="true"/>
-    <arg name="flip/angle" value="180"/>
     <arg name="input_topic" value="alphasense_driver_node/cam2"/>
     <arg name="output_prefix" value="alphasense_driver_node/cam2"/>
     <arg name="output_frame" value="alphasense_front_right"/>
@@ -26,8 +22,6 @@
 
 <include file="$(find bringup_alphasense)/launch/debayer_single_camera.launch">
     <arg name="camera_name" value="alphasense_front_center"/>
-    <arg name="flip/enabled" value="true"/>
-    <arg name="flip/angle" value="180"/>
     <arg name="input_topic" value="alphasense_driver_node/cam3"/>
     <arg name="output_prefix" value="alphasense_driver_node/cam3"/>
     <arg name="output_frame" value="alphasense_front_center"/>
@@ -48,8 +42,6 @@
 
 <include file="$(find bringup_alphasense)/launch/debayer_single_camera.launch">
     <arg name="camera_name" value="alphasense_right"/>
-    <arg name="flip/enabled" value="true"/>
-    <arg name="flip/angle" value="180"/>
     <arg name="input_topic" value="alphasense_driver_node/cam5"/>
     <arg name="output_prefix" value="alphasense_driver_node/cam5"/>
     <arg name="output_frame" value="alphasense_right"/>
