@@ -80,6 +80,7 @@ CeresProblem::ComputeCovariance(const std::vector<const double *> &parameter_blo
     covariance_options.sparse_linear_algebra_library_type = ceres::SparseLinearAlgebraLibraryType::SUITE_SPARSE;
     covariance_options.apply_loss_function = false;
     covariance_options.num_threads = 4;
+    covariance_options.apply_loss_function = true;
     auto covariance = std::make_shared<ceres::Covariance>(covariance_options);
     // Compute the covariance matrix
     if (!covariance->Compute(parameter_blocks, &problem_)) {

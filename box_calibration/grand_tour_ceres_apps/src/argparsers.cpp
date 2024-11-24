@@ -47,9 +47,16 @@ CameraPrismCalibrationAppParser::CameraPrismCalibrationAppParser(int argc, char 
     program.add_argument("-e", "--camera_intrinsics")
             .required()
             .help("specify the file containing extrinsics.");
+    program.add_argument("-o", "--output_path")
+            .required()
+            .help("output yaml path.");
     program.add_argument("-p", "--prism_positions")
             .required()
             .help("specify the file containing timestamp, prism point detection.");
+    program.add_argument("--solve_time_offset")
+            .default_value(false)
+            .implicit_value(true)
+            .help("Boolean flag to solve the timeoffset.");
     try {
         program.parse_args(argc, argv);
     }
@@ -61,13 +68,16 @@ CameraPrismCalibrationAppParser::CameraPrismCalibrationAppParser(int argc, char 
     camera_corner_detections_path = program.get<std::string>("c");
     intrinsics_path = program.get<std::string>("i");
     extrinsics_path = program.get<std::string>("e");
+    output_yaml_path = program.get<std::string>("o");
     prism_positions_path = program.get<std::string>("p");
+    solve_time_offset = program.get<bool>("--solve_time_offset");
 
     std::cout << "Running Camera/Prism calibration using:\n"
     << "camera detections file: " << camera_corner_detections_path << "\n"
     << "camera intrinsics file: " << intrinsics_path << "\n"
     << "camera extrinsics file: " << extrinsics_path << "\n"
-    << "prism positions file: " << prism_positions_path << "\n";
+    << "prism positions file: " << prism_positions_path << "\n"
+    << "solve time offset: " << solve_time_offset << "\n";
     is_valid_ = true;
 }
 

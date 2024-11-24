@@ -257,3 +257,21 @@ PrismPositionDetectionData LoadPrismPositions(std::string json_path) {
     }
     return result;
 }
+
+std::string GetHumanReadableTime(int64_t calibration_time_nsec) {
+    // Convert nanoseconds to seconds
+    int64_t seconds = calibration_time_nsec / 1'000'000'000;
+    int64_t nanoseconds = calibration_time_nsec % 1'000'000'000;
+
+    // Create a time_t object from seconds
+    std::time_t time = static_cast<std::time_t>(seconds);
+
+    // Convert to local time and format it
+    std::ostringstream oss;
+    oss << std::put_time(std::localtime(&time), "%Y-%m-%d %H:%M:%S");
+
+    // Append nanoseconds for higher precision
+    oss << "." << std::setfill('0') << std::setw(9) << nanoseconds;
+
+    return oss.str();
+}

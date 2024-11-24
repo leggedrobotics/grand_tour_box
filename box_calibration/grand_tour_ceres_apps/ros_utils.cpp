@@ -3,10 +3,8 @@
 //
 
 #include <Eigen/Core>
-#include "ros_programs.h"
-#include "ros_utils.h"
-#include <opencv2/opencv.hpp>
-#include <opencv2/core/eigen.hpp>  // Include the conversion header
+#include "ros_utils.h" // Include the conversion header
+#include <ros/ros.h>
 
 std::chrono::duration<double> ScopedTimer::elapsed() const {
     auto end_time = std::chrono::high_resolution_clock::now();
@@ -118,7 +116,6 @@ std::string getMatType(const cv::Mat &mat) {
 bool solvePnP(const CameraParameterPack &camera_parameters, const Eigen::Matrix2Xd &corners2d,
               const Eigen::Matrix3Xd &modelpoints3d, Eigen::Affine3d &output) {
     if (corners2d.cols() < 16) {
-        ROS_ERROR("Only %ld points received", corners2d.cols());
         return false;
     }
     // Convert Eigen matrices to cv::Mat using cv::eigen2cv

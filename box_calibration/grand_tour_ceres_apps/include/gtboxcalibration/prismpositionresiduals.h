@@ -69,7 +69,8 @@ public:
         Eigen::Matrix<T, 3, -1> prism_position_predicted =
                 se3_transform_(params_T_leica_board, prism_position_in_board);
 
-        Eigen::Matrix<T, 3, -1> errors = total_station_measured_point - prism_position_predicted;
+        constexpr double M_1_sqrt_totalstation_cov = 1. / std::sqrt(0.003);
+        Eigen::Matrix<T, 3, -1> errors = (total_station_measured_point - prism_position_predicted) * M_1_sqrt_totalstation_cov;
         residual[0] = errors(0, 0);
         residual[1] = errors(1, 0);
         residual[2] = errors(2, 0);

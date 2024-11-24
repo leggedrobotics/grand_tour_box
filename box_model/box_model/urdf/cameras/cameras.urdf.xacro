@@ -18,27 +18,37 @@
 
     <link name="alphasense_front_center"/>
     <joint name="alphasense_front_center_identity" type="fixed">
-        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <origin xyz=" ${calib['alphasense_cam1_helper_joint']['x']}
+                  ${calib['alphasense_cam2_helper_joint']['y']}
+                  ${calib['alphasense_cam1_helper_joint']['z']}"
+                rpy=" ${calib['alphasense_cam1_helper_joint']['roll']}
+                  ${calib['alphasense_cam1_helper_joint']['pitch']}
+                  ${calib['alphasense_cam1_helper_joint']['yaw']}"/>
         <parent link="cam1_sensor_frame"/>
         <child link="alphasense_front_center"/>
     </joint>
 
     <!-- Alphasense Cam1/ front center (should be identity)-->
     <link name="cam1_sensor_frame"/>
-    <joint name="alphasense_base_to_alphasense_front_middle" type="fixed">
-        <origin xyz=" ${calib['alphasense_base_to_alphasense_front_middle']['x']}
-                  ${calib['alphasense_base_to_alphasense_front_middle']['y']}
-                  ${calib['alphasense_base_to_alphasense_front_middle']['z']}"
-                rpy=" ${calib['alphasense_base_to_alphasense_front_middle']['roll']}
-                  ${calib['alphasense_base_to_alphasense_front_middle']['pitch']}
-                  ${calib['alphasense_base_to_alphasense_front_middle']['yaw']}"/>
+    <joint name="alphasense_base_to_alphasense_front_center" type="fixed">
+        <origin xyz=" ${calib['alphasense_base_to_alphasense_front_center']['x']}
+                  ${calib['alphasense_base_to_alphasense_front_center']['y']}
+                  ${calib['alphasense_base_to_alphasense_front_center']['z']}"
+                rpy=" ${calib['alphasense_base_to_alphasense_front_center']['roll']}
+                  ${calib['alphasense_base_to_alphasense_front_center']['pitch']}
+                  ${calib['alphasense_base_to_alphasense_front_center']['yaw']}"/>
         <parent link="alphasense_base"/>
         <child link="cam1_sensor_frame"/>
     </joint>
 
     <link name="alphasense_front_right"/>
     <joint name="alphasense_front_right_identity" type="fixed">
-        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <origin xyz=" ${calib['alphasense_cam2_helper_joint']['x']}
+                  ${calib['alphasense_cam2_helper_joint']['y']}
+                  ${calib['alphasense_cam2_helper_joint']['z']}"
+                rpy=" ${calib['alphasense_cam2_helper_joint']['roll']}
+                  ${calib['alphasense_cam2_helper_joint']['pitch']}
+                  ${calib['alphasense_cam2_helper_joint']['yaw']}"/>
         <parent link="cam2_sensor_frame"/>
         <child link="alphasense_front_right"/>
     </joint>
@@ -58,7 +68,12 @@
 
     <link name="alphasense_front_left"/>
     <joint name="alphasense_front_left_identity" type="fixed">
-        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <origin xyz=" ${calib['alphasense_cam3_helper_joint']['x']}
+                  ${calib['alphasense_cam3_helper_joint']['y']}
+                  ${calib['alphasense_cam3_helper_joint']['z']}"
+                rpy=" ${calib['alphasense_cam3_helper_joint']['roll']}
+                  ${calib['alphasense_cam3_helper_joint']['pitch']}
+                  ${calib['alphasense_cam3_helper_joint']['yaw']}"/>
         <parent link="cam3_sensor_frame"/>
         <child link="alphasense_front_left"/>
     </joint>
@@ -66,19 +81,24 @@
     <!-- Alphasense Cam3/ front left -->
     <link name="cam3_sensor_frame"/>
     <joint name="alphasense_base_to_alphasense_front_left" type="fixed">
-        <origin xyz=" ${pinned_constraints['alphasense_base_to_alphasense_front_left']['x']}
-                  ${pinned_constraints['alphasense_base_to_alphasense_front_left']['y']}
-                  ${pinned_constraints['alphasense_base_to_alphasense_front_left']['z']}"
-                rpy=" ${pinned_constraints['alphasense_base_to_alphasense_front_left']['roll']}
-                  ${pinned_constraints['alphasense_base_to_alphasense_front_left']['pitch']}
-                  ${pinned_constraints['alphasense_base_to_alphasense_front_left']['yaw']}"/>
+        <origin xyz=" ${calib['alphasense_base_to_alphasense_front_left']['x']}
+                  ${calib['alphasense_base_to_alphasense_front_left']['y']}
+                  ${calib['alphasense_base_to_alphasense_front_left']['z']}"
+                rpy=" ${calib['alphasense_base_to_alphasense_front_left']['roll']}
+                  ${calib['alphasense_base_to_alphasense_front_left']['pitch']}
+                  ${calib['alphasense_base_to_alphasense_front_left']['yaw']}"/>
         <parent link="alphasense_base"/>
         <child link="cam3_sensor_frame"/>
     </joint>
 
     <link name="alphasense_left"/>
     <joint name="alphasense_left_identity" type="fixed">
-        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <origin xyz=" ${calib['alphasense_cam4_helper_joint']['x']}
+                  ${calib['alphasense_cam4_helper_joint']['y']}
+                  ${calib['alphasense_cam4_helper_joint']['z']}"
+                rpy=" ${calib['alphasense_cam4_helper_joint']['roll']}
+                  ${calib['alphasense_cam4_helper_joint']['pitch']}
+                  ${calib['alphasense_cam4_helper_joint']['yaw']}"/>
         <parent link="cam4_sensor_frame"/>
         <child link="alphasense_left"/>
     </joint>
@@ -98,7 +118,12 @@
 
     <link name="alphasense_right"/>
     <joint name="alphasense_right_identity" type="fixed">
-        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <origin xyz=" ${calib['alphasense_cam5_helper_joint']['x']}
+                  ${calib['alphasense_cam5_helper_joint']['y']}
+                  ${calib['alphasense_cam5_helper_joint']['z']}"
+                rpy=" ${calib['alphasense_cam5_helper_joint']['roll']}
+                  ${calib['alphasense_cam5_helper_joint']['pitch']}
+                  ${calib['alphasense_cam5_helper_joint']['yaw']}"/>
         <parent link="cam5_sensor_frame"/>
         <child link="alphasense_right"/>
     </joint>
@@ -134,12 +159,12 @@
     <!-- HDR camera front (should be identity) -->
     <link name="hdr_front"/>
     <joint name="hdr_base_to_hdr_front" type="fixed">
-        <origin xyz=" ${pinned_constraints['hdr_base_to_hdr_front']['x']}
-                  ${pinned_constraints['hdr_base_to_hdr_front']['y']}
-                  ${pinned_constraints['hdr_base_to_hdr_front']['z']}"
-                rpy=" ${pinned_constraints['hdr_base_to_hdr_front']['roll']}
-                  ${pinned_constraints['hdr_base_to_hdr_front']['pitch']}
-                  ${pinned_constraints['hdr_base_to_hdr_front']['yaw']}"/>
+        <origin xyz=" ${calib['hdr_base_to_hdr_front']['x']}
+                  ${calib['hdr_base_to_hdr_front']['y']}
+                  ${calib['hdr_base_to_hdr_front']['z']}"
+                rpy=" ${calib['hdr_base_to_hdr_front']['roll']}
+                  ${calib['hdr_base_to_hdr_front']['pitch']}
+                  ${calib['hdr_base_to_hdr_front']['yaw']}"/>
         <parent link="hdr_base"/>
         <child link="hdr_front"/>
     </joint>
@@ -175,67 +200,72 @@
     <!-- ZED Base -->
     <link name="zed_base_link"/>
     <joint name="box_base_to_zed_base" type="fixed">
-        <origin xyz=" ${pinned_constraints['box_base_to_zed_base']['x']}
-                  ${pinned_constraints['box_base_to_zed_base']['y']}
-                  ${pinned_constraints['box_base_to_zed_base']['z']}"
-                rpy=" ${pinned_constraints['box_base_to_zed_base']['roll']}
-                  ${pinned_constraints['box_base_to_zed_base']['pitch']}
-                  ${pinned_constraints['box_base_to_zed_base']['yaw']}"/>
+        <origin xyz=" ${calib['box_base_to_zed_base']['x']}
+                  ${calib['box_base_to_zed_base']['y']}
+                  ${calib['box_base_to_zed_base']['z']}"
+                rpy=" ${calib['box_base_to_zed_base']['roll']}
+                  ${calib['box_base_to_zed_base']['pitch']}
+                  ${calib['box_base_to_zed_base']['yaw']}"/>
         <parent link="box_base"/>
         <child link="zed_base_link"/>
     </joint>
 
     <link name="zed2i_base_link"/>
-    <joint name="zed2i_redundant_indentity" type="fixed">
-        <origin xyz="0 0 0" rpy="0 0 0"/>
+    <joint name="zed2i_base_helper_joint" type="fixed">
+        <origin xyz=" ${calib['zed2i_base_helper_joint']['x']}
+                  ${calib['zed2i_base_helper_joint']['y']}
+                  ${calib['zed2i_base_helper_joint']['z']}"
+                rpy=" ${calib['zed2i_base_helper_joint']['roll']}
+                  ${calib['zed2i_base_helper_joint']['pitch']}
+                  ${calib['zed2i_base_helper_joint']['yaw']}"/>
         <parent link="zed_base_link"/>
         <child link="zed2i_base_link"/>
     </joint>
 
     <link name="zed2i_camera_center"/>
     <joint name="zed2i_base_to_camera_center" type="fixed">
-        <origin xyz=" ${pinned_constraints['zed2i_base_to_camera_center']['x']}
-                  ${pinned_constraints['zed2i_base_to_camera_center']['y']}
-                  ${pinned_constraints['zed2i_base_to_camera_center']['z']}"
-                rpy=" ${pinned_constraints['zed2i_base_to_camera_center']['roll']}
-                  ${pinned_constraints['zed2i_base_to_camera_center']['pitch']}
-                  ${pinned_constraints['zed2i_base_to_camera_center']['yaw']}"/>
+        <origin xyz=" ${calib['zed2i_base_to_camera_center']['x']}
+                  ${calib['zed2i_base_to_camera_center']['y']}
+                  ${calib['zed2i_base_to_camera_center']['z']}"
+                rpy=" ${calib['zed2i_base_to_camera_center']['roll']}
+                  ${calib['zed2i_base_to_camera_center']['pitch']}
+                  ${calib['zed2i_base_to_camera_center']['yaw']}"/>
         <parent link="zed2i_base_link"/>
         <child link="zed2i_camera_center"/>
     </joint>
 
     <link name="zed2i_left_camera_frame"/>
     <joint name="zed_camera_center_to_zed_left" type="fixed">
-        <origin xyz=" ${pinned_constraints['zed_camera_center_to_zed_left']['x']}
-                  ${pinned_constraints['zed_camera_center_to_zed_left']['y']}
-                  ${pinned_constraints['zed_camera_center_to_zed_left']['z']}"
-                rpy=" ${pinned_constraints['zed_camera_center_to_zed_left']['roll']}
-                  ${pinned_constraints['zed_camera_center_to_zed_left']['pitch']}
-                  ${pinned_constraints['zed_camera_center_to_zed_left']['yaw']}"/>
+        <origin xyz=" ${calib['zed_camera_center_to_zed_left']['x']}
+                  ${calib['zed_camera_center_to_zed_left']['y']}
+                  ${calib['zed_camera_center_to_zed_left']['z']}"
+                rpy=" ${calib['zed_camera_center_to_zed_left']['roll']}
+                  ${calib['zed_camera_center_to_zed_left']['pitch']}
+                  ${calib['zed_camera_center_to_zed_left']['yaw']}"/>
         <parent link="zed2i_camera_center"/>
         <child link="zed2i_left_camera_frame"/>
     </joint>
 
     <link name="zed2i_left_camera_optical_frame"/>
     <joint name="zed_left_to_optical" type="fixed">
-        <origin xyz=" ${pinned_constraints['zed2i_camera_to_zed2i_optical']['x']}
-                  ${pinned_constraints['zed2i_camera_to_zed2i_optical']['y']}
-                  ${pinned_constraints['zed2i_camera_to_zed2i_optical']['z']}"
-                rpy=" ${pinned_constraints['zed2i_camera_to_zed2i_optical']['roll']}
-                  ${pinned_constraints['zed2i_camera_to_zed2i_optical']['pitch']}
-                  ${pinned_constraints['zed2i_camera_to_zed2i_optical']['yaw']}"/>
+        <origin xyz=" ${calib['zed_left_to_left_optical']['x']}
+                  ${calib['zed_left_to_left_optical']['y']}
+                  ${calib['zed_left_to_left_optical']['z']}"
+                rpy=" ${calib['zed_left_to_left_optical']['roll']}
+                  ${calib['zed_left_to_left_optical']['pitch']}
+                  ${calib['zed_left_to_left_optical']['yaw']}"/>
         <parent link="zed2i_left_camera_frame"/>
         <child link="zed2i_left_camera_optical_frame"/>
     </joint>
 
     <link name="zed2i_imu_link"/>
-    <joint name="zed_base_to_zed_imu_link" type="fixed">
-        <origin xyz=" ${calib['zed_left_camera_frame_to_zed_imu_link']['x']}
-                  ${calib['zed_left_camera_frame_to_zed_imu_link']['y']}
-                  ${calib['zed_left_camera_frame_to_zed_imu_link']['z']}"
-                rpy=" ${calib['zed_left_camera_frame_to_zed_imu_link']['roll']}
-                  ${calib['zed_left_camera_frame_to_zed_imu_link']['pitch']}
-                  ${calib['zed_left_camera_frame_to_zed_imu_link']['yaw']}"/>
+    <joint name="zed_left_camera_frame_to_zed_imu_joint" type="fixed">
+        <origin xyz=" ${calib['zed_left_camera_frame_to_zed_imu']['x']}
+                  ${calib['zed_left_camera_frame_to_zed_imu']['y']}
+                  ${calib['zed_left_camera_frame_to_zed_imu']['z']}"
+                rpy=" ${calib['zed_left_camera_frame_to_zed_imu']['roll']}
+                  ${calib['zed_left_camera_frame_to_zed_imu']['pitch']}
+                  ${calib['zed_left_camera_frame_to_zed_imu']['yaw']}"/>
         <parent link="zed2i_left_camera_frame"/>
         <child link="zed2i_imu_link"/>
     </joint>
@@ -254,12 +284,12 @@
 
     <link name="zed2i_right_camera_frame"/>
     <joint name="zed_camera_center_to_zed_right" type="fixed">
-        <origin xyz=" ${pinned_constraints['zed2i_optical_to_zed2i_camera']['x']}
-                  ${pinned_constraints['zed2i_optical_to_zed2i_camera']['y']}
-                  ${pinned_constraints['zed2i_optical_to_zed2i_camera']['z']}"
-                rpy=" ${pinned_constraints['zed2i_optical_to_zed2i_camera']['roll']}
-                  ${pinned_constraints['zed2i_optical_to_zed2i_camera']['pitch']}
-                  ${pinned_constraints['zed2i_optical_to_zed2i_camera']['yaw']}"/>
+        <origin xyz=" ${calib['zed_right_to_right_optical']['x']}
+                  ${calib['zed_right_to_right_optical']['y']}
+                  ${calib['zed_right_to_right_optical']['z']}"
+                rpy=" ${calib['zed_right_to_right_optical']['roll']}
+                  ${calib['zed_right_to_right_optical']['pitch']}
+                  ${calib['zed_right_to_right_optical']['yaw']}"/>
         <parent link="zed2i_right_camera_optical_frame"/>
         <child link="zed2i_right_camera_frame"/>
     </joint>

@@ -4,13 +4,13 @@
 
   <!-- hesai_lidar -->
   <link name="hesai_lidar" />
-  <joint name="box_base_to_hesai" type="fixed">
-    <origin xyz=" ${calib['box_base_to_hesai']['x']}
-                  ${calib['box_base_to_hesai']['y']}
-                  ${calib['box_base_to_hesai']['z']}"
-            rpy=" ${calib['box_base_to_hesai']['roll']}
-                  ${calib['box_base_to_hesai']['pitch']}
-                  ${calib['box_base_to_hesai']['yaw']}" />
+  <joint name="box_base_to_hesai_lidar" type="fixed">
+    <origin xyz=" ${calib['box_base_to_hesai_lidar']['x']}
+                  ${calib['box_base_to_hesai_lidar']['y']}
+                  ${calib['box_base_to_hesai_lidar']['z']}"
+            rpy=" ${calib['box_base_to_hesai_lidar']['roll']}
+                  ${calib['box_base_to_hesai_lidar']['pitch']}
+                  ${calib['box_base_to_hesai_lidar']['yaw']}" />
     <parent link="box_base" />
     <child link="hesai_lidar" />
   </joint>
@@ -23,20 +23,25 @@
     </visual>
   </link>
   <joint name="hesai_lidar_to_hesai_model" type="fixed">
-    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+    <origin xyz=" ${calib['hesai_lidar_to_hesai_model']['x']}
+                  ${calib['hesai_lidar_to_hesai_model']['y']}
+                  ${calib['hesai_lidar_to_hesai_model']['z']}"
+            rpy=" ${calib['hesai_lidar_to_hesai_model']['roll']}
+                  ${calib['hesai_lidar_to_hesai_model']['pitch']}
+                  ${calib['hesai_lidar_to_hesai_model']['yaw']}" />
     <parent link="hesai_lidar" />
     <child link="hesai_model" />
   </joint>
 
   <!-- Livox -->
   <link name="livox_lidar" />
-  <joint name="box_base_to_livox" type="fixed">
-    <origin xyz=" ${calib['box_base_to_livox']['x']}
-                  ${calib['box_base_to_livox']['y']}
-                  ${calib['box_base_to_livox']['z']}"
-            rpy=" ${calib['box_base_to_livox']['roll']}
-                  ${calib['box_base_to_livox']['pitch']}
-                  ${calib['box_base_to_livox']['yaw']}" />
+  <joint name="box_base_to_livox_lidar" type="fixed">
+    <origin xyz=" ${calib['box_base_to_livox_lidar']['x']}
+                  ${calib['box_base_to_livox_lidar']['y']}
+                  ${calib['box_base_to_livox_lidar']['z']}"
+            rpy=" ${calib['box_base_to_livox_lidar']['roll']}
+                  ${calib['box_base_to_livox_lidar']['pitch']}
+                  ${calib['box_base_to_livox_lidar']['yaw']}" />
     <parent link="box_base" />
     <child link="livox_lidar" />
   </joint>
@@ -48,16 +53,26 @@
       </geometry>
     </visual>
   </link>
-  <joint name="livox_to_livox_model" type="fixed">
-    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+  <joint name="livox_lidar_to_livox_model" type="fixed">
+    <origin xyz=" ${calib['livox_lidar_to_livox_model']['x']}
+                  ${calib['livox_lidar_to_livox_model']['y']}
+                  ${calib['livox_lidar_to_livox_model']['z']}"
+            rpy=" ${calib['livox_lidar_to_livox_model']['roll']}
+                  ${calib['livox_lidar_to_livox_model']['pitch']}
+                  ${calib['livox_lidar_to_livox_model']['yaw']}" />
     <parent link="livox_lidar" />
     <child link="livox_model" />
   </joint>
 
   <link name="livox_imu"/>
   <!-- From page 15 https://terra-1-g.djicdn.com/851d20f7b9f64838a34cd02351370894/Livox/Livox_Mid-360_User_Manual_EN.pdf -->
-  <joint name="livox_to_livox_imu_frame" type="fixed">
-    <origin xyz="0.011 0.02329 -0.04412" rpy="0.0 0.0 0.0" />
+  <joint name="livox_lidar_to_livox_imu" type="fixed">
+    <origin xyz=" ${calib['livox_lidar_to_livox_imu']['x']}
+                  ${calib['livox_lidar_to_livox_imu']['y']}
+                  ${calib['livox_lidar_to_livox_imu']['z']}"
+            rpy=" ${calib['livox_lidar_to_livox_imu']['roll']}
+                  ${calib['livox_lidar_to_livox_imu']['pitch']}
+                  ${calib['livox_lidar_to_livox_imu']['yaw']}" />
     <parent link="livox_lidar" />
     <child link="livox_imu" />
   </joint>

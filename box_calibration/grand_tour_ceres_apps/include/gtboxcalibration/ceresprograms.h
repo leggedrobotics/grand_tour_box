@@ -23,7 +23,7 @@ struct CeresProgram {
 
     CeresProgram();
 
-    bool Solve();
+    virtual bool Solve();
 
     void ResetAndRepopulateProblem();
 
@@ -35,9 +35,12 @@ FixCameraDetectionTimes(const CameraCamera2D3DTargetDetectionData &input_camera_
                         const PrismPositionDetectionData &prism_detections);
 
 struct CameraPrismProgram : CeresProgram {
-    CameraPrismProgram(CameraPrismCalibrationAppParser argparser);
+    CameraPrismProgram() = default;
+    explicit CameraPrismProgram(CameraPrismCalibrationAppParser argparser);
 
     bool PopulateProblem() override;
+
+    void WriteOutputParameters();
 
     CameraCamera2D3DTargetDetectionData camera_detections;
     std::map<std::string, Eigen::Affine3d> T_bundle_cam;
@@ -45,8 +48,10 @@ struct CameraPrismProgram : CeresProgram {
     PrismPositionDetectionData prism_detections;
     PrismBoardInTotalStationParameterPack prism_board_in_total_station_params;
     std::map<std::string, std::map<unsigned long long, ceres::ResidualBlockId >> residual_block_map;
-
-    void WriteOutputParameters();
+    std::string output_yaml_path;
+    std::string cameras_calibration_path;
+    bool solve_time_offset = false;
+    unsigned long long calibration_time_nsec;
 };
 
 struct CameraCameraProgram : CeresProgram {

@@ -8,6 +8,8 @@ find_package(catkin REQUIRED COMPONENTS
         std_msgs
         grand_tour_camera_detection_msgs
         roslib
+        rosbag
+        sensor_msgs
 )
 find_package(Boost 1.70 REQUIRED COMPONENTS graph)
 find_package(Ceres 2.2 REQUIRED)
@@ -15,11 +17,6 @@ find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 find_package(OpenCV REQUIRED)
 find_package(yaml-cpp REQUIRED)
 
-# Download the rerun_sdk
-#include(FetchContent)
-#FetchContent_Declare(rerun_sdk URL
-#        https://github.com/rerun-io/rerun/releases/download/0.18.2/rerun_cpp_sdk.zip)
-#FetchContent_MakeAvailable(rerun_sdk)
 
 add_library(gtboxcalibration
         include/gtboxcalibration/argparse.h
@@ -59,11 +56,22 @@ target_link_libraries(cameras_prism_bundle_adjustment PRIVATE
         gtboxcalibration
         Ceres::ceres Eigen3::Eigen)
 
-add_executable(camera_camera_online_calibration ros_camera_camera_calibration.cpp
-        ros_programs.cpp
-        ros_parsers.cpp
+add_executable(camera_camera_online_calibration ros_camera_camera_online_calibration.cpp
+        ros_camera_camera_program.cpp
+        ros_camera_camera_online_program.cpp
+        ros_camera_camera_parser.cpp
         ros_utils.cpp
 )
 target_link_libraries(camera_camera_online_calibration gtboxcalibration ${catkin_LIBRARIES}
 )
 target_include_directories(camera_camera_online_calibration PRIVATE ${catkin_INCLUDE_DIRS})
+
+add_executable(camera_camera_offline_calibration ros_camera_camera_offline_calibration.cpp
+        ros_camera_camera_program.cpp
+        ros_camera_camera_offline_program.cpp
+        ros_camera_camera_parser.cpp
+        ros_utils.cpp
+)
+target_link_libraries(camera_camera_offline_calibration gtboxcalibration ${catkin_LIBRARIES}
+)
+target_include_directories(camera_camera_offline_calibration PRIVATE ${catkin_INCLUDE_DIRS})

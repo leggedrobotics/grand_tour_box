@@ -1,0 +1,66 @@
+<launch>
+    <!-- Pipeline 1 -->
+    <include file="$(find raw_image_pipeline_ros)/launch/raw_image_pipeline_node.launch">
+        <arg name="camera_name" value="cam1"/>
+        <arg name="input_topic" value="/gt_box/alphasense_driver_node/cam1"/>
+        <arg name="output_prefix" value="/gt_box/alphasense_driver_node/cam1_processed"/>
+        <arg name="output_frame" value="cam1_sensor_frame"/>
+        <arg name="undistortion/calibration_file" value="$(find box_calibration)/calibration/alphasense/cam1.yaml"/>
+        <arg name="undistortion/balance" value="0"/>
+        <arg name="undistortion/fov_scale" value="1.0"/>
+        <arg name="flip/angle" value="0.0"/>
+    </include>
+
+    <!-- Pipeline 2 -->
+    <include file="$(find raw_image_pipeline_ros)/launch/raw_image_pipeline_node.launch">
+        <arg name="camera_name" value="cam2"/>
+        <arg name="input_topic" value="/gt_box/alphasense_driver_node/cam2"/>
+        <arg name="output_prefix" value="/gt_box/alphasense_driver_node/cam2_processed"/>
+        <arg name="output_frame" value="cam2_sensor_frame"/>
+        <arg name="undistortion/calibration_file" value="$(find box_calibration)/calibration/alphasense/cam2.yaml"/>
+        <arg name="undistortion/balance" value="0"/>
+        <arg name="undistortion/fov_scale" value="1.0"/>
+        <arg name="flip/angle" value="0.0"/>
+    </include>
+
+    <!-- Pipeline 3 -->
+    <include file="$(find raw_image_pipeline_ros)/launch/raw_image_pipeline_node.launch">
+        <arg name="camera_name" value="cam3"/>
+        <arg name="input_topic" value="/gt_box/alphasense_driver_node/cam3"/>
+        <arg name="output_prefix" value="/gt_box/alphasense_driver_node/cam3_processed"/>
+        <arg name="output_frame" value="cam3_sensor_frame"/>
+        <arg name="undistortion/calibration_file" value="$(find box_calibration)/calibration/alphasense/cam3.yaml"/>
+        <arg name="undistortion/balance" value="0"/>
+        <arg name="undistortion/fov_scale" value="1.0"/>
+        <arg name="flip/angle" value="0.0"/>
+    </include>
+
+    <!-- Pipeline 4 -->
+    <include file="$(find raw_image_pipeline_ros)/launch/raw_image_pipeline_node.launch">
+        <arg name="camera_name" value="cam4"/>
+        <arg name="input_topic" value="/gt_box/alphasense_driver_node/cam4"/>
+        <arg name="output_prefix" value="/gt_box/alphasense_driver_node/cam4_processed"/>
+        <arg name="output_frame" value="cam4_sensor_frame"/>
+        <arg name="undistortion/calibration_file" value="$(find box_calibration)/calibration/alphasense/cam4.yaml"/>
+        <arg name="undistortion/balance" value="0"/>
+        <arg name="undistortion/fov_scale" value="1.0"/>
+        <arg name="flip/angle" value="0.0"/>
+    </include>
+
+    <!-- Pipeline 5 -->
+    <include file="$(find raw_image_pipeline_ros)/launch/raw_image_pipeline_node.launch">
+        <arg name="camera_name" value="cam5"/>
+        <arg name="input_topic" value="/gt_box/alphasense_driver_node/cam5"/>
+        <arg name="output_prefix" value="/gt_box/alphasense_driver_node/cam5_processed"/>
+        <arg name="output_frame" value="cam5_sensor_frame"/>
+        <arg name="undistortion/calibration_file" value="$(find box_calibration)/calibration/alphasense/cam5.yaml"/>
+        <arg name="undistortion/balance" value="0"/>
+        <arg name="undistortion/fov_scale" value="1.0"/>
+        <arg name="flip/angle" value="0.0"/>
+    </include>
+
+    <include file="$(find box_model)/launch/box_model.launch" />
+
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find box_calibration)/launch/visualize_lidar_overlay.rviz" output="screen"/>
+
+</launch>

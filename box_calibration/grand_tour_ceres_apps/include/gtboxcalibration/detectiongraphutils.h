@@ -1,3 +1,4 @@
+#pragma once
 #include <Eigen/Dense>
 #include <string>
 #include <boost/graph/adjacency_list.hpp>
