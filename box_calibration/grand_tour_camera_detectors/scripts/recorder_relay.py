@@ -15,6 +15,7 @@ class RecorderRelay:
 
         # Start the timer to periodically query the recording ID
         self.timer = rospy.Timer(rospy.Duration(self.query_interval), self.query_recording_id)
+        self.recording_started = False
 
     def request_recording_id(self):
         try:
@@ -34,18 +35,21 @@ class RecorderRelay:
                 f"Service: '{self.recording_service_name}' not available within the timeout period: {e}"
                 f"Closing bag with recording id: {self.recording_id}"
             )
-            self.stop_recording()
+            if self.recording_started:
+                self.stop_recording()
             return None
 
     def query_recording_id(self, event):
         # Try to request the recording ID
         recording_id = self.request_recording_id()
-        if recording_id and recording_id != self.recording_id:
-            self.recording_id = recording_id
-            self.setup_recording(recording_id)
+        if recording_id is not None:
+            if recording_id != self.recording_id:
+                self.recording_id = recording_id
+                self.setup_recording(recording_id)
 
     def setup_recording(self, recording_id):
         print("setup_recording")
+        self.recording_started = True
         os.system(
             f"rosservice call /gt_box/rosbag_record_coordinator/start_recording \"yaml_file: '{self.yaml_file}' \nrecording_id: '{recording_id}'\""
         )
@@ -53,10 +57,13 @@ class RecorderRelay:
     def stop_recording(self):
         print("stop_recording")
         os.system('rosservice call /gt_box/rosbag_record_coordinator/stop_recording "verbose: false"')
+        self.recording_started = False
 
     def shutdown(self):
         # Stop recording and shut down the timer on shutdown
-        self.stop_recording()
+        if self.recording_started:
+            self.stop_recording()
+
         if self.timer:
             self.timer.shutdown()
         rospy.loginfo(f"Recorder shut down for {self.yaml_file}")

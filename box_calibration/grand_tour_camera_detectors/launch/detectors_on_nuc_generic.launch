@@ -1,8 +1,11 @@
 <launch>
     <!-- Define global target_type parameter -->
     <arg name="use_april_grid"/>
-    <arg name="record_pointcloud"/>
-    <arg name="record_imu"/>
+    <arg name="record_pointcloud" default="False"/>
+    <arg name="record_imu" default="False"/>
+    <arg name="record_prism" default="False"/>
+    <arg name="record_imu_pointcloud" default="False"/>
+
     <arg name="node_start_delay" default="1.0" /> 
     <!-- Include camera detectors with target_type -->
     <include file="$(find grand_tour_camera_detectors)/launch/generic_detector.launch">
@@ -40,7 +43,7 @@
         <arg name="recording_bag_name" value="alphasense_right"/>
     </include>
 
-    <node if="$(eval arg('record_pointcloud') == 'true' and arg('record_imu') == 'false')" 
+    <node if="$(arg record_pointcloud)" 
             pkg="grand_tour_camera_detectors" 
             type="recorder_relay.py"
             name="recorder_relay" output="screen"
@@ -50,7 +53,8 @@
         <param name="yaml_file" value="calib_lidar"/>
     </node>
 
-    <node pkg="grand_tour_camera_detectors" type="recorder_relay.py"
+    <node if="$(arg record_imu)" 
+            pkg="grand_tour_camera_detectors" type="recorder_relay.py"
           name="recorder_relay" output="screen"
           ns="gt_box"
           launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@' " >
@@ -58,12 +62,21 @@
         <param name="yaml_file" value="calib_imu"/>
     </node>
 
-    <node if="$(eval arg('record_pointcloud') == 'true' and arg('record_imu') == 'true')" 
+    <node if="$(arg record_imu_pointcloud)" 
         pkg="grand_tour_camera_detectors" type="recorder_relay.py"
           name="recorder_relay" output="screen"
           ns="gt_box"
           launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@' " >
         <param name="capability_group" value="Recording"/>
         <param name="yaml_file" value="calib_imu_lidar"/>
+    </node>
+
+    <node if="$(arg record_prism)" 
+            pkg="grand_tour_camera_detectors" type="recorder_relay.py"
+          name="recorder_relay" output="screen"
+          ns="gt_box"
+          launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@' " >
+        <param name="capability_group" value="Recording"/>
+        <param name="yaml_file" value="calib_imu"/>
     </node>
 </launch>

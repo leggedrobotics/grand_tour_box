@@ -17,4 +17,6 @@ nuc:
       - /gt_box/adis16475_node/imu
       - /gt_box/zed2i_driver_node/imu/data_raw
       - /tf
-      - /tf_static
+      - /tf_staticcpt7_local
+    cpt7_local:
+      - cpt7_local
