@@ -1,17 +1,18 @@
 #!/usr/bin/python3
 import argparse
+from collections import OrderedDict
 
 import networkx as nx
 import numpy as np
 import yaml
 from matplotlib import pyplot as plt
 from scipy.spatial.transform import Rotation as R
-from collections import OrderedDict
 
 # Custom YAML Dumper to handle OrderedDict cleanly
 class OrderedDumper(yaml.Dumper):
     def represent_dict(self, data):
         return super().represent_dict(data.items())
+
 
 OrderedDumper.add_representer(OrderedDict, OrderedDumper.represent_dict)
 
@@ -125,24 +126,25 @@ class Graph:
         """
         return transform[:3, 3]
 
-    def compute_transform(self, from_node, to_node):
+    def compute_transform(self, from_node, to_node, log=False):
         """
         Compute the transform matrix between two nodes by traversing the graph.
         """
 
         def dfs(current, target, path, transform):
             if current == target:
-                return True, transform
+                return path, transform
             for neighbor, edge_transform in self.traversal_edges.get(current, {}).items():
                 if neighbor not in path:
-                    found, result = dfs(neighbor, target, path + [neighbor], transform @ edge_transform)
-                    if found:
-                        return True, result
-            return False, None
-
-        found, transform = dfs(from_node, to_node, [from_node], np.eye(4))
-        if not found:
+                    returned_path , result = dfs(neighbor, target, path + [neighbor], transform @ edge_transform)
+                    if returned_path[-1] == target:
+                        return returned_path, result
+            return path, None
+        path, transform = dfs(from_node, to_node, [from_node], np.eye(4))
+        if path[-1] != to_node:
             raise ValueError(f"No path found from {from_node} to {to_node}")
+        if log:
+            print(" -> ".join(path))
         return transform
 
     def build_new_graph(self, new_structure):
@@ -160,7 +162,7 @@ class Graph:
             else:
                 raise ValueError(f"Invalid edge definition: {edge}")
 
-            transform = self.compute_transform(parent, child)
+            transform = self.compute_transform(parent, child, log=True)
             new_graph.add_edge(parent, child, transform, tag=tag)
         return new_graph
 
@@ -350,39 +352,39 @@ if __name__ == "__main__":
     if has_imu_calibration:
         pass
     else:
-        calibration_graph.add_edge("cam1_sensor_frame", "imu_sensor_frame",
-                                   xyz=[0.022, -0.100, -0.055],
-                                   rpy=[0.00, -1.397, 1.570])
-        calibration_graph.add_edge("cam1_sensor_frame", "zed2i_imu_link",
-                                   xyz=[-0.037, -0.075, 0.002],
-                                   rpy=[1.594, -1.558, -0.026])
-        calibration_graph.add_edge("cam1_sensor_frame", "ap20_imu",
-                                   xyz=[0.056, 0.002, -0.371],
-                                   rpy=[-1.569, -1.397, 1.570])
-        calibration_graph.add_edge("cam1_sensor_frame", "adis16475_imu",
-                                   xyz=[-0.034, -0.093, -0.024],
-                                   rpy=[-1.745, 0.000, -0.000])
-        calibration_graph.add_edge("cam1_sensor_frame", "stim320_imu",
-                                   xyz=[0.022, -0.100, -0.055],
-                                   rpy=[-3.140, -1.397, 1.570])
-        calibration_graph.add_edge("cam1_sensor_frame", "livox_imu",
-                                   xyz=[-0.023, 0.207, -0.085],
-                                   rpy=[0.00, -1.397, 1.570])
-        calibration_graph.add_edge("cam1_sensor_frame", "cpt7_imu",
-                                   xyz=[-0.046, 0.0031, -0.375],
-                                   rpy=[0.00, -1.397, 1.570])
+        calibration_graph.add_edge("cpt7_imu", "cam1_sensor_frame",
+                                   xyz=[0.369, -0.046, 0.068],
+                                   rpy=[1.397, -0.001, 1.571])
 
+        calibration_graph.add_edge("cpt7_imu", "imu_sensor_frame",
+                                   xyz=[0.297, -0.068, 0.157],
+                                   rpy=[0.0, 0.0, 0.0])
+        calibration_graph.add_edge("cpt7_imu", "zed2i_imu_link",
+                                   xyz=[0.358, -0.009, 0.142],
+                                   rpy=[0.000, -0.174, -0.013])
+        calibration_graph.add_edge("cpt7_imu", "ap20_imu",
+                                   xyz=[0.004, -0.102, 0.002],
+                                   rpy=[-1.569, 0.000, -0.000])
+        calibration_graph.add_edge("cpt7_imu", "adis16475_imu",
+                                   xyz=[0.329, -0.012, 0.155],
+                                   rpy=[3.141, 0.001, -1.571])
+        calibration_graph.add_edge("cpt7_imu", "stim320_imu",
+                                   xyz=[0.297, -0.068, 0.157],
+                                   rpy=[-3.140, -0.000, -0.000])
+        calibration_graph.add_edge("cpt7_imu", "livox_imu",
+                                   xyz=[0.321, -0.023, -0.151],
+                                   rpy=[0.00, 0.0, 0.0])
 
     has_prism_calibration = "t_cam_prism" in calibration_data_by_topic[camera_bundle_topic]
     if has_prism_calibration:
         t_cam1_prism = calibration_data_by_topic[camera_bundle_topic]["t_cam_prism"]
         calibration_graph.add_edge("cam1_sensor_frame", "prism",
                                    xyz=t_cam1_prism,
-                                   rpy=[3.142, -1.397, 1.570])
+                                   rpy=[0.000, -1.397, -1.572])
     else:
         calibration_graph.add_edge("cam1_sensor_frame", "prism",
                                    xyz=[-0.009, 0.347, -0.128],
-                                   rpy=[3.142, -1.397, 1.570])
+                                   rpy=[0.000, -1.397, -1.572])
 
     calibration_graph.add_edge("cam1_sensor_frame", "alphasense_base", transform=identity)
     calibration_graph.add_edge("cam1_sensor_frame", "alphasense_front_center", transform=identity)
@@ -404,7 +406,9 @@ if __name__ == "__main__":
     calibration_graph.add_edge("zed2i_right_camera_optical_frame", "zed2i_right_camera_frame",
                                xyz=[0, 0, 0],
                                rpy=[1.570796325, -1.570796325, 0.0])
-    calibration_graph.add_edge("stim320_imu", "box_base_model", transform=identity)
+    calibration_graph.add_edge("box_base", "box_base_model",
+                               xyz=[0.297, -0.068, 0.157],
+                               rpy=[-3.1415, -0.000, -0.000])
     calibration_graph.add_edge("livox_lidar", "livox_model", transform=identity)
     calibration_graph.add_edge("cpt7_imu", "cpt7_antenna_front",
                                xyz=[0.13924890003, -0.0361, -0.193298],
@@ -460,7 +464,8 @@ if __name__ == "__main__":
         ("zed2i_camera_center", "zed2i_left_camera_frame", "zed_camera_center_to_zed_left"),
         ("zed2i_left_camera_frame", "zed2i_imu_link", "zed_left_camera_frame_to_zed_imu"),
         ("zed2i_left_camera_frame", "zed2i_left_camera_optical_frame", "zed_left_to_left_optical"),
-        ("zed2i_left_camera_optical_frame", "zed2i_right_camera_optical_frame", "zed_left_optical_to_zed_right_optical"),
+        (
+        "zed2i_left_camera_optical_frame", "zed2i_right_camera_optical_frame", "zed_left_optical_to_zed_right_optical"),
         ("zed2i_right_camera_optical_frame", "zed2i_right_camera_frame", "zed_right_to_right_optical")]
 
     # Build the new graph
@@ -470,11 +475,11 @@ if __name__ == "__main__":
     new_graph.validate_single_root()
 
     # Print the new graph edges
-    print("\nNew Graph with Bidirectional Edges:")
-    for node, neighbors in new_graph.input_edges.items():
-        for neighbor, transform in neighbors.items():
-            print(f"{node} -> {neighbor}: \n{transform}")
+    # print("\nNew Graph with Bidirectional Edges:")
+    # for node, neighbors in new_graph.input_edges.items():
+    #     for neighbor, transform in neighbors.items():
+    #         print(f"{node} -> {neighbor}: \n{transform}")
 
-    calibration_graph.visualize_by_depth(title="Old Graph with Transformations")
-    new_graph.visualize_by_depth(title="New Graph with Transformations")
+    # calibration_graph.visualize_by_depth(title="Old Graph with Transformations")
+    # new_graph.visualize_by_depth(title="New Graph with Transformations")
     new_graph.save_tagged_edges_to_yaml(args.output_urdf_compatible_yaml)
