@@ -16,3 +16,7 @@ nuc:
       - /tf_static
     cpt7_local:
       - cpt7_local
+    alphasense:
+      - /gt_box/alphasense_driver_node/cam1
+      - /gt_box/alphasense_driver_node/cam2
+      - /gt_box/alphasense_driver_node/cam3
