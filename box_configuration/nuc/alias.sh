@@ -8,6 +8,7 @@ alias l-set-time='tmuxp load $(rospack find box_launch)/../tmux/nuc_set_time.yam
 alias l-calib-camera='tmuxp load $(rospack find box_launch)/../tmux/nuc_calib_camera.yaml'
 alias l-calib-lidar='tmuxp load $(rospack find box_launch)/../tmux/nuc_calib_lidar.yaml'
 alias l-calib-imu='tmuxp load $(rospack find box_launch)/../tmux/nuc_calib_imu.yaml'
+alias l-calib-prism='tmuxp load $(rospack find box_launch)/../tmux/nuc_calib_prism.yaml'
 
 
 alias attach-nuc='tmux attach-session -t nuc'

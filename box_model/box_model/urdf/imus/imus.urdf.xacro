@@ -2,6 +2,58 @@
 
 <robot name="imus" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
+  <link name="cpt7_imu"/>
+  <!-- CPT7 Coordinate System -->
+  <joint name="box_base_to_cpt7_imu_frame" type="fixed">
+    <origin xyz=" ${calib['box_base_to_cpt7_imu_frame']['x']}
+                  ${calib['box_base_to_cpt7_imu_frame']['y']}
+                  ${calib['box_base_to_cpt7_imu_frame']['z']}"
+            rpy=" ${calib['box_base_to_cpt7_imu_frame']['roll']}
+                  ${calib['box_base_to_cpt7_imu_frame']['pitch']}
+                  ${calib['box_base_to_cpt7_imu_frame']['yaw']}" />
+    <parent link="box_base" />
+    <child link="cpt7_imu" />
+  </joint>
+
+  <link name="cpt7_antenna_front"/>
+  <!-- CPT7 Coordinate System -->
+  <joint name="cpt7_to_antenna_front" type="fixed">
+    <origin xyz=" ${calib['cpt7_imu_frame_to_cpt7_antenna_front']['x']}
+                  ${calib['cpt7_imu_frame_to_cpt7_antenna_front']['y']}
+                  ${calib['cpt7_imu_frame_to_cpt7_antenna_front']['z']}"
+            rpy=" ${calib['cpt7_imu_frame_to_cpt7_antenna_front']['roll']}
+                  ${calib['cpt7_imu_frame_to_cpt7_antenna_front']['pitch']}
+                  ${calib['cpt7_imu_frame_to_cpt7_antenna_front']['yaw']}" />
+    <parent link="cpt7_imu" />
+    <child link="cpt7_antenna_front" />
+  </joint>
+
+  <link name="cpt7_antenna_back"/>
+  <!-- CPT7 Coordinate System -->
+  <joint name="cpt7_to_antenna_back" type="fixed">
+    <origin xyz=" ${calib['cpt7_imu_frame_to_cpt7_antenna_back']['x']}
+                  ${calib['cpt7_imu_frame_to_cpt7_antenna_back']['y']}
+                  ${calib['cpt7_imu_frame_to_cpt7_antenna_back']['z']}"
+            rpy=" ${calib['cpt7_imu_frame_to_cpt7_antenna_back']['roll']}
+                  ${calib['cpt7_imu_frame_to_cpt7_antenna_back']['pitch']}
+                  ${calib['cpt7_imu_frame_to_cpt7_antenna_back']['yaw']}" />
+    <parent link="cpt7_imu" />
+    <child link="cpt7_antenna_back" />
+  </joint>
+
+  <link name="ap20_imu"/>
+  <!-- Basilisk IMU Frame -->
+  <joint name="box_base_to_ap20_imu_frame" type="fixed">
+    <origin xyz=" ${calib['box_base_to_ap20_imu_frame']['x']}
+                  ${calib['box_base_to_ap20_imu_frame']['y']}
+                  ${calib['box_base_to_ap20_imu_frame']['z']}"
+            rpy=" ${calib['box_base_to_ap20_imu_frame']['roll']}
+                  ${calib['box_base_to_ap20_imu_frame']['pitch']}
+                  ${calib['box_base_to_ap20_imu_frame']['yaw']}" />
+    <parent link="box_base" />
+    <child link="ap20_imu" />
+  </joint>
+  
   <!-- IMU STIM320 -->
   <link name="stim320_imu" />
   <joint name="box_base_to_imu_stim320" type="fixed">
@@ -13,6 +65,17 @@
                   ${calib['box_base_to_imu_stim320']['yaw']}" />
     <parent link="box_base" />
     <child link="stim320_imu" />
+  </joint>
+
+  <joint name="stim320_imu_to_box_base_model" type="fixed">
+    <origin xyz=" ${calib['stim320_imu_to_box_base_model']['x']}
+                  ${calib['stim320_imu_to_box_base_model']['y']}
+                  ${calib['stim320_imu_to_box_base_model']['z']}"
+            rpy=" ${calib['stim320_imu_to_box_base_model']['roll']}
+                  ${calib['stim320_imu_to_box_base_model']['pitch']}
+                  ${calib['stim320_imu_to_box_base_model']['yaw']}" />
+    <parent link="stim320_imu" />
+    <child link="box_base_model" />
   </joint>
 
   <!-- IMU ADIS16475 -->

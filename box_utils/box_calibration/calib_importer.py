@@ -29,7 +29,7 @@ class TopicMap:
     ALPHASENSE_FRONT_LEFT_TO_STIM_320 = "alphasense_front_left_to_imu_stim320"
     ALPHASENSE_FRONT_LEFT_TO_ALPHASENSE_FRONT_LEFT = "/gt_box/alphasense_driver_node/cam0"
     ALPHASENSE_FRONT_LEFT_TO_ALPHASENSE_FRONT_RIGHT = "/gt_box/alphasense_driver_node/cam1"
-    ALPHASENSE_FRONT_LEFT_TO_ALPHASENSE_FRONT_MIDDLE = "/gt_box/alphasense_driver_node/cam2/color/image"
+    ALPHASENSE_FRONT_LEFT_TO_ALPHASENSE_FRONT_CENTER = "/gt_box/alphasense_driver_node/cam2/color/image"
     ALPHASENSE_FRONT_LEFT_TO_ALPHASENSE_LEFT = "/gt_box/alphasense_driver_node/cam3/color/image"
     ALPHASENSE_FRONT_LEFT_TO_ALPHASENSE_RIGHT = "/gt_box/alphasense_driver_node/cam4/color/image"
     ALPHASENSE_FRONT_LEFT_TO_ZED_LEFT = "/gt_box/zed2i_driver_node/zed_node/left_raw/image_raw_color"
@@ -58,8 +58,8 @@ def process_alphasense(raw_calibrations: Dict[str, Calibration], manager: CalibF
         *raw_calibrations[TopicMap.ALPHASENSE_FRONT_LEFT_TO_ALPHASENSE_FRONT_RIGHT].to_output_format(),
     )
     manager.update_calibration(
-        "alphasense_base_to_alphasense_front_middle",
-        *raw_calibrations[TopicMap.ALPHASENSE_FRONT_LEFT_TO_ALPHASENSE_FRONT_MIDDLE].to_output_format(),
+        "alphasense_base_to_alphasense_front_center",
+        *raw_calibrations[TopicMap.ALPHASENSE_FRONT_LEFT_TO_ALPHASENSE_FRONT_CENTER].to_output_format(),
     )
     manager.update_calibration(
         "alphasense_base_to_alphasense_left",

@@ -58,10 +58,17 @@ class RosbagRecordCoordinator(object):
 
     def start_recording(self, request: StartRecordingRequest):
         rospy.loginfo("[RosbagRecordCoordinator] Trying to start rosbag recording process.")
-        timestamp = "{date:%Y-%m-%d-%H-%M-%S}".format(date=datetime.datetime.now())
-        self.timestamp = timestamp
+
         response = StartRecordingResponse()
+
+        if request.recording_id == "":
+            timestamp = "{date:%Y-%m-%d-%H-%M-%S}".format(date=datetime.datetime.now())
+        else:
+            timestamp = request.recording_id
+
+        self.timestamp = timestamp
         response.timestamp = timestamp
+
         response.suc = True
 
         if len(request.yaml_file) == 0:

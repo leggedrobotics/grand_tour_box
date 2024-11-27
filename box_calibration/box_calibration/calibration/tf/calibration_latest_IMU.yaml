@@ -19,7 +19,7 @@ alphasense_base_to_alphasense_front_right:
   roll: -0.0005709389162411694
   pitch: -0.0020736413455058056
   yaw: -0.020414505228272112
-alphasense_base_to_alphasense_front_middle:
+alphasense_base_to_alphasense_front_center:
   x: -0.05530273500370328
   y: 0.0006325050108971435
   z: -6.415060716975344e-05
@@ -68,14 +68,14 @@ zed_left_optical_to_zed_right_optical:
   roll: 0.0015141712684178022
   pitch: -0.0016352315604488687
   yaw: -0.0024298021850438245
-box_base_to_hesai:
+box_base_to_hesai_lidar:
   x: 0.303281493778
   y: -0.036500000014
   z: -0.005456477156000006
   roll: 3.141592653589793
   pitch: 0.0
   yaw: -1.571
-box_base_to_livox:
+box_base_to_livox_lidar:
   x: 0.303281493778
   y: -0.036500000014
   z: -0.100456477156
@@ -103,7 +103,7 @@ box_base_to_livox_imu_frame:
   roll: 0.003492617205404023
   pitch: -0.004026887772243137
   yaw: 0.0036738010315851472
-box_base_to_basilisk_imu_frame:
+box_base_to_ap20_imu_frame:
   x: 0.002796843097054358
   y: -0.09189316349020228
   z: 0.009801833465373888

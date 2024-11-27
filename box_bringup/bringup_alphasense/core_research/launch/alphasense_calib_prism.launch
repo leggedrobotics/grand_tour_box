@@ -1,0 +1,10 @@
+<launch>
+  <arg name="box_namespace" default="gt_box"/>
+  <group ns="$(arg box_namespace)">
+
+    <node pkg="alphasense_driver_ros" type="alphasense_driver_ros" name="alphasense_driver_node" args="_ncamera_settings:=$(find bringup_alphasense)/config/ncamera_settings_prism.yaml _translate_device_time:=False"> 
+      <param name="capability_group" value="Driver"/>
+    </node>
+    <include file="$(find bringup_alphasense)/launch/debayer_all.launch" />
+  </group>
+</launch>

@@ -17,10 +17,17 @@
 #include <gtboxcalibration/json.h>
 #include <gtboxcalibration/datatypes.h>
 
+#include <chrono>
+#include <ctime>
+#include <iomanip>
+#include <sstream>
+#include <string>
 
 namespace fs = std::filesystem;
 
 int dummy_function_for_tests_addition(int a, int b);
+
+std::string GetHumanReadableTime(int64_t calibration_time_nsec);
 
 std::map<std::string, Eigen::Affine3d> FetchExtrinsicsFromYaml(const YAML::Node &extrinsics_data);
 
@@ -30,12 +37,12 @@ std::map<std::string, Eigen::Affine3d> FetchExtrinsicsFromYamlPath(std::string y
 
 CameraCamera2D3DTargetDetectionData FetchMulticamera2D3DDetectionData(std::string path);
 
-std::map<std::string, CameraParameterPack> PopulateCameraParameterPacks(const std::string& intrinsics_yaml_path,
-                                                                        const std::string& g_path);
+std::map<std::string, CameraParameterPack> PopulateCameraParameterPacks(const std::string &intrinsics_yaml_path,
+                                                                        const std::string &g_path);
 
-bool SerialiseCameraParameters(const std::string& output_path,
+bool SerialiseCameraParameters(const std::string &output_path,
                                const std::map<std::string, CameraParameterPack> &camera_parameter_packs,
-                               const std::string comment="");
+                               const std::string comment = "");
 
 std::map<std::string, std::map<unsigned long long, std::shared_ptr<BoardPoseParameterPack>>>
 PopulateBoardParameters(const CameraCamera2D3DTargetDetectionData

@@ -26,7 +26,10 @@ class StartRecordingServicer(start_recording_pb2_grpc.StartRecordingServicer):
 
     def SendMessage(self, request, context):
         self.recorder_node.start_recording_time = rospy.Time.now()
+        if self.recorder_node.bag_running:
+            return start_recording_pb2.StartRecordingResponse(response="Failed recorded was already running.")
         message = ""
+
         timestamp = request.timestamp
         self.recorder_node.bag_base_path = os.path.join(self.recorder_node.data_path, timestamp)
         Path(self.recorder_node.bag_base_path).mkdir(parents=True, exist_ok=True)
@@ -55,7 +58,7 @@ class StartRecordingServicer(start_recording_pb2_grpc.StartRecordingServicer):
             )
             bash_command = f"rosrun box_recording record_bag.sh {bag_path} {topics} __name:=record_{self.recorder_node.node}_{bag_name}"
             self.recorder_node.processes.append(subprocess.Popen(bash_command, shell=True, stderr=subprocess.PIPE))
-            self.recorder_node.bag_running = True
+        self.recorder_node.bag_running = True
 
         rospy.loginfo("[RosbagRecordNodeGRPC(" + self.recorder_node.node + ")] Started recording all.")
 

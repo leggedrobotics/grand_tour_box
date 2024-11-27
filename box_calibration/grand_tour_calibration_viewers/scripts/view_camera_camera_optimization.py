@@ -96,9 +96,9 @@ class CornerVisualizer:
         # Subscribe to the CameraDetections topic
         self.subscriber = rospy.Subscriber(self.detections_topic, CameraDetections,
                                            self.added_detection_callback)
-        self.subscriber_post = rospy.Subscriber(self.processed_detections_topic, CameraDetections,
+        self.subscriber_for_intrinsics = rospy.Subscriber(self.processed_detections_topic, CameraDetections,
                                                 self.intrinsics_residuals_callback)
-        self.subscriber_post = rospy.Subscriber(self.extrinsics_detections_topic, CameraDetections,
+        self.subscriber_for_extrinsics = rospy.Subscriber(self.extrinsics_detections_topic, CameraDetections,
                                                 self.extrinsics_residuals_callback)
 
         # Store all detected points across messages
@@ -174,8 +174,6 @@ class CornerVisualizer:
         y_coords = np.array([corner.y for corner in msg.corners2d])[:, None]
         points2d = np.hstack((x_coords, y_coords))
 
-        # self.accumulated_coords[header.stamp.to_nsec()] = points2d
-
         rr.log(f"{self.image_topic}/image/keypoints",
                rr.Points2D(points2d, colors=[34, 138, 167]))
 
@@ -202,7 +200,6 @@ class CornerVisualizer:
 
             if len(self.accumulated_coords):
                 coords = self.accumulated_coords
-                # coords = np.concatenate(coords) if len(coords) > 1 else coords[0]
                 heatmap_viz = generate_density_heatmap(
                     cv_image,
                     coords,

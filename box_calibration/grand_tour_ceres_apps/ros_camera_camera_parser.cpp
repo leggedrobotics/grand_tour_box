@@ -2,7 +2,7 @@
 // Created by fu on 27/09/24.
 //
 
-#include "ros_parsers.h"
+#include "ros_camera_camera_parser.h"
 #include <ros/package.h>
 #include <filesystem>
 #include <ros/ros.h>
@@ -10,13 +10,13 @@
 
 namespace fs = std::filesystem;
 
-OnlineCameraCameraParser::OnlineCameraCameraParser(int argc, char **argv) {
+ROSCameraCameraParser::ROSCameraCameraParser(std::string program_name, int argc, char **argv) {
     const std::string package_name = "grand_tour_ceres_apps";
     std::string package_path = ros::package::getPath(package_name);
     std::string initial_guess_default_path = package_path + "/config/initial_guess.yaml";
     std::string frameid_mapping_default_path = package_path + "/config/rostopic_frameid_mappings.yaml";
 
-    argparse::ArgumentParser program("OnlineCameraCameraCalibration");
+    argparse::ArgumentParser program(program_name);
     program.add_argument("-i", "--initial_guess")
             .default_value(initial_guess_default_path)
             .help("File containing kalibr-style initial guess of intrinsics and extrinsics."
@@ -24,6 +24,11 @@ OnlineCameraCameraParser::OnlineCameraCameraParser(int argc, char **argv) {
     program.add_argument("-m", "--rostopic_frameid_mapping")
             .default_value(frameid_mapping_default_path)
             .help("File containing keys mapping rostopic names to their corresponding frame ids");
+    program.add_argument("--bags")
+            .help("Paths to rosbags with Image data topics. (Only needed for offline)")
+            .nargs(argparse::nargs_pattern::any) // Allows variadic arguments
+            .default_value(std::vector<std::string>{}) // Default to an empty vector if none are provided
+            .action([](const std::string& value) { return value; });
     try {
         program.parse_args(argc, argv);
     }
@@ -42,6 +47,9 @@ OnlineCameraCameraParser::OnlineCameraCameraParser(int argc, char **argv) {
     if (!is_valid) {
         ROS_ERROR_STREAM("The path: " + rostopic_frameid_mapping_path + " does not exist");
     }
+    // Retrieve the list of bags
+    std::vector<std::string> bags = program.get<std::vector<std::string>>("--bags");
+    bag_paths = bags;
 }
 
 std::map<std::string, std::string> LoadRostopicFrameIDMapping(const std::string yaml_path) {

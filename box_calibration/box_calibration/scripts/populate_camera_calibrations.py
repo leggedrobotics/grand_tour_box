@@ -79,11 +79,15 @@ def write_raw_img_pipeline_format(camera_info_dict, camera_name, output_path, or
     data["projection_matrix"]["cols"] = 4
     data["projection_matrix"]["data"] = [fx, 0.0, cx, 0.0, 0.0, fy, cy, 0.0, 0.0, 0.0, 1.0, 0.0]
 
+    pretty_write_yaml_array_with_comment(data, output_path, original_filename_short)
+
+
+def pretty_write_yaml_array_with_comment(data, output_path, comment):
     with open(output_path, 'w') as outfile:
-        outfile.write('# Created using ' + original_filename_short + '\n')
+        outfile.write('# Created using ' + comment + '\n')
         yaml_composition = yaml.compose(yaml.safe_dump(data))
         mutate_sequence_flowstyle_to_inline(yaml_composition)
-        yaml.serialize(yaml_composition, outfile)  # , default_flow_style=False)
+        yaml.serialize(yaml_composition, outfile)
 
 
 def mutate_sequence_flowstyle_to_inline(node):
@@ -202,7 +206,7 @@ def main(args):
     output_extrinsics["box_base_to_alphasense_base"] = (
         T_boxbase_alphasensebase
     )
-    output_extrinsics["alphasense_base_to_alphasense_front_middle"] = (
+    output_extrinsics["alphasense_base_to_alphasense_front_center"] = (
         T_alphasensebase_alphasensefrontmiddle
     )
     output_extrinsics["alphasense_base_to_alphasense_front_right"] = (

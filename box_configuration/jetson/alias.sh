@@ -9,6 +9,7 @@ alias l-viz='tmuxp load $(rospack find box_launch)/../tmux/jetson_visualization.
 alias l-calib-camera='tmuxp load $(rospack find box_launch)/../tmux/jetson_calib_camera.yaml'
 alias l-calib-lidar='tmuxp load $(rospack find box_launch)/../tmux/jetson_calib_lidar.yaml'
 alias l-calib-imu='tmuxp load $(rospack find box_launch)/../tmux/jetson_calib_imu.yaml'
+alias l-calib-prism='tmuxp load $(rospack find box_launch)/../tmux/jetson_calib_prism.yaml'
 
 
 alias attach-jetson='tmux attach-session -t jetson'
