@@ -8,6 +8,7 @@ import yaml
 from matplotlib import pyplot as plt
 from scipy.spatial.transform import Rotation as R
 
+
 # Custom YAML Dumper to handle OrderedDict cleanly
 class OrderedDumper(yaml.Dumper):
     def represent_dict(self, data):
@@ -136,10 +137,11 @@ class Graph:
                 return path, transform
             for neighbor, edge_transform in self.traversal_edges.get(current, {}).items():
                 if neighbor not in path:
-                    returned_path , result = dfs(neighbor, target, path + [neighbor], transform @ edge_transform)
+                    returned_path, result = dfs(neighbor, target, path + [neighbor], transform @ edge_transform)
                     if returned_path[-1] == target:
                         return returned_path, result
             return path, None
+
         path, transform = dfs(from_node, to_node, [from_node], np.eye(4))
         if path[-1] != to_node:
             raise ValueError(f"No path found from {from_node} to {to_node}")
@@ -291,6 +293,8 @@ if __name__ == "__main__":
                         required=True)
     parser.add_argument("-o", "--output_urdf_compatible_yaml",
                         help="Path to the output URDF compatible calibration yaml file.", )
+    parser.add_argument("-imu", "--input_imu_calibration_yaml", help="Path to the input IMU calibration yaml file.",
+                        required=False, default="")
     args = parser.parse_args()
     with open(args.input_calibration_yaml, "r") as f:
         calibration_data = yaml.safe_load(f)
@@ -348,32 +352,89 @@ if __name__ == "__main__":
                                    xyz=[0.303281493778, -0.036500000014, -0.100456477156],
                                    rpy=[0.0, 0.0, 0.0])
 
-    has_imu_calibration = False
+    has_imu_calibration = args.input_imu_calibration_yaml != ""
     if has_imu_calibration:
-        pass
+        with open(args.input_imu_calibration_yaml, "r") as f:
+            imu_frame_data = yaml.safe_load(f)
+
+        if "cpt7_imu" in imu_frame_data:
+            calibration_graph.add_edge("cam1_sensor_frame", "cpt7_imu",
+                                       transform=np.array(imu_frame_data["cpt7_imu"]["T_camerabundle_imu"]))
+        else:
+            calibration_graph.add_edge("cpt7_imu", "cam1_sensor_frame",
+                                       xyz=[0.369, -0.046, 0.068],
+                                       rpy=[1.397, -0.001, 1.571])
+        if "livox_imu" in imu_frame_data:
+            calibration_graph.add_edge("cam1_sensor_frame", "livox_imu",
+                                       transform=np.array(imu_frame_data["livox_imu"]["T_camerabundle_imu"]))
+        else:
+            calibration_graph.add_edge("cpt7_imu", "livox_imu",
+                                       xyz=[0.321, -0.023, -0.151],
+                                       rpy=[0.00, 0.0, 0.0])
+        if "imu_sensor_frame" in imu_frame_data:
+            calibration_graph.add_edge("cam1_sensor_frame", "imu_sensor_frame",
+                                       transform=np.array(imu_frame_data["imu_sensor_frame"]["T_camerabundle_imu"]))
+        else:
+            calibration_graph.add_edge("cpt7_imu", "imu_sensor_frame",
+                                       xyz=[0.297, -0.068, 0.157],
+                                       rpy=[0.0, 0.0, 0.0])
+        if "zed2i_imu_link" in imu_frame_data:
+            calibration_graph.add_edge("cam1_sensor_frame", "zed2i_imu_link",
+                                       transform=np.array(imu_frame_data["zed2i_imu_link"]["T_camerabundle_imu"]))
+        else:
+            calibration_graph.add_edge("cpt7_imu", "zed2i_imu_link",
+                                       xyz=[0.358, -0.009, 0.142],
+                                       rpy=[0.000, -0.174, -0.013])
+        if "adis16475_imu" in imu_frame_data:
+            calibration_graph.add_edge("cam1_sensor_frame", "adis16475_imu",
+                                       transform=np.array(imu_frame_data["adis16475_imu"]["T_camerabundle_imu"]))
+        else:
+            calibration_graph.add_edge("cpt7_imu", "adis16475_imu",
+                                       xyz=[0.329, -0.012, 0.155],
+                                       rpy=[3.141, 0.001, -1.571])
+        if "zed2i_imu_link" in imu_frame_data:
+            calibration_graph.add_edge("cam1_sensor_frame", "zed2i_imu_link",
+                                       transform=np.array(imu_frame_data["zed2i_imu_link"]["T_camerabundle_imu"]))
+        else:
+            calibration_graph.add_edge("cpt7_imu", "zed2i_imu_link",
+                                       xyz=[0.358, -0.009, 0.142],
+                                       rpy=[0.000, -0.174, -0.013])
+        if "ap20_imu" in imu_frame_data:
+            calibration_graph.add_edge("cam1_sensor_frame", "ap20_imu",
+                                       transform=np.array(imu_frame_data["ap20_imu"]["T_camerabundle_imu"]))
+        else:
+            calibration_graph.add_edge("cpt7_imu", "ap20_imu",
+                                       xyz=[0.004, -0.102, 0.002],
+                                       rpy=[-1.569, 0.000, -0.000])
+        if "stim320_imu" in imu_frame_data:
+            calibration_graph.add_edge("cam1_sensor_frame", "stim320_imu",
+                                       transform=np.array(imu_frame_data["stim320_imu"]["T_camerabundle_imu"]))
+        else:
+            calibration_graph.add_edge("cpt7_imu", "stim320_imu",
+                                       xyz=[0.297, -0.068, 0.157],
+                                       rpy=[-3.140, -0.000, -0.000])
     else:
         calibration_graph.add_edge("cpt7_imu", "cam1_sensor_frame",
                                    xyz=[0.369, -0.046, 0.068],
                                    rpy=[1.397, -0.001, 1.571])
-
+        calibration_graph.add_edge("cpt7_imu", "livox_imu",
+                                   xyz=[0.321, -0.023, -0.151],
+                                   rpy=[0.00, 0.0, 0.0])
         calibration_graph.add_edge("cpt7_imu", "imu_sensor_frame",
                                    xyz=[0.297, -0.068, 0.157],
                                    rpy=[0.0, 0.0, 0.0])
+        calibration_graph.add_edge("cpt7_imu", "adis16475_imu",
+                                   xyz=[0.329, -0.012, 0.155],
+                                   rpy=[3.141, 0.001, -1.571])
         calibration_graph.add_edge("cpt7_imu", "zed2i_imu_link",
                                    xyz=[0.358, -0.009, 0.142],
                                    rpy=[0.000, -0.174, -0.013])
         calibration_graph.add_edge("cpt7_imu", "ap20_imu",
                                    xyz=[0.004, -0.102, 0.002],
                                    rpy=[-1.569, 0.000, -0.000])
-        calibration_graph.add_edge("cpt7_imu", "adis16475_imu",
-                                   xyz=[0.329, -0.012, 0.155],
-                                   rpy=[3.141, 0.001, -1.571])
         calibration_graph.add_edge("cpt7_imu", "stim320_imu",
                                    xyz=[0.297, -0.068, 0.157],
                                    rpy=[-3.140, -0.000, -0.000])
-        calibration_graph.add_edge("cpt7_imu", "livox_imu",
-                                   xyz=[0.321, -0.023, -0.151],
-                                   rpy=[0.00, 0.0, 0.0])
 
     has_prism_calibration = "t_cam_prism" in calibration_data_by_topic[camera_bundle_topic]
     if has_prism_calibration:
@@ -465,7 +526,8 @@ if __name__ == "__main__":
         ("zed2i_left_camera_frame", "zed2i_imu_link", "zed_left_camera_frame_to_zed_imu"),
         ("zed2i_left_camera_frame", "zed2i_left_camera_optical_frame", "zed_left_to_left_optical"),
         (
-        "zed2i_left_camera_optical_frame", "zed2i_right_camera_optical_frame", "zed_left_optical_to_zed_right_optical"),
+            "zed2i_left_camera_optical_frame", "zed2i_right_camera_optical_frame",
+            "zed_left_optical_to_zed_right_optical"),
         ("zed2i_right_camera_optical_frame", "zed2i_right_camera_frame", "zed_right_to_right_optical")]
 
     # Build the new graph
