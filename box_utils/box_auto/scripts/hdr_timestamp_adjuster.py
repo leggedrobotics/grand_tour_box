@@ -1,0 +1,161 @@
+import rosbag
+from tqdm import tqdm
+from pathlib import Path
+import os
+import numpy as np
+
+MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
+OFFSET = 11_000_000  # Offset in nanoseconds (11 ms)
+
+
+class RosbagValidatorAndProcessor:
+    def __init__(self, mission_folder, input_pattern, output_pattern):
+        self.mission_folder = Path(mission_folder)
+        self.input_pattern = input_pattern
+        self.output_pattern = output_pattern
+
+    def get_rosbags(self):
+        return [str(s) for s in self.mission_folder.glob("*" + self.input_pattern) if self.output_pattern not in str(s)]
+
+    def validate_and_process_bag(self, input_bag_path, output_bag_path):
+        kernel_timestamps = []
+        v4l2_timestamps = []
+        image_stamps = []
+
+        cam = Path(input_bag_path).stem.split("_")[-1]
+        with rosbag.Bag(input_bag_path, "r") as inbag:
+            total_messages = inbag.get_message_count()
+            print("number of messages: ", total_messages)
+            if total_messages == 0:
+                print(f"Skipping empty bag: {Path(input_bag_path).name}")
+                return
+
+            # Read all relevant data first
+            with tqdm(total=total_messages, desc=f"Reading {Path(input_bag_path).name}", unit="msgs") as pbar:
+                for topic, msg, t in inbag.read_messages():
+                    if topic == f"/gt_box/hdr_{cam}/kernel_timestamp":
+                        kernel_timestamps.append((msg.header.seq, msg.time_ref.secs, msg.time_ref.nsecs))
+                    elif topic == f"/gt_box/hdr_{cam}/v4l2_timestamp":
+                        v4l2_timestamps.append((msg.header.seq, msg.time_ref.secs, msg.time_ref.nsecs))
+                    elif topic == f"/gt_box/hdr_{cam}/image_raw/compressed":
+                        image_stamps.append((msg.header.seq, msg.header.stamp.secs, msg.header.stamp.nsecs))
+                    pbar.update(1)
+
+        # Validation
+        errors = []
+        deltas = []
+        kernel_deltas = []
+
+        # Ensure kernel_timestamp and v4l2_timestamp alternate correctly
+        kernel_iter = iter(kernel_timestamps)
+        v4l2_iter = iter(v4l2_timestamps)
+        img_iter = iter(image_stamps)
+
+        kernel_entry = next(kernel_iter, None)
+        v4l2_entry = next(v4l2_iter, None)
+        img_entry = next(img_iter, None)
+
+        # Discard first v4l2_timestamp if it appears before the first kernel_timestamp
+        if kernel_entry and v4l2_entry:
+            kernel_ts = kernel_entry[1] * 1_000_000_000 + kernel_entry[2]
+            v4l2_ts = v4l2_entry[1] * 1_000_000_000 + v4l2_entry[2]
+            if v4l2_ts < kernel_ts:
+                print(
+                    f"[WARNING] First v4l2_timestamp secs={v4l2_entry[1]}, nsecs={v4l2_entry[2]} appears before first kernel_timestamp secs={kernel_entry[1]}, nsecs={kernel_entry[2]}."
+                )
+                v4l2_entry = next(v4l2_iter, None)
+                img_entry = next(img_iter, None)
+
+        paired_timestamps = []
+        prev_kernel_ts = None
+
+        while kernel_entry and v4l2_entry:
+            k_seq, k_secs, k_nsecs = kernel_entry
+            v_seq, v_secs, v_nsecs = v4l2_entry
+            i_seq, i_secs, i_nsecs = img_entry
+
+            kernel_ts = kernel_entry[1] * 1_000_000_000 + kernel_entry[2]
+            v4l2_ts = v4l2_entry[1] * 1_000_000_000 + v4l2_entry[2]
+            img_ts = img_entry[1] * 1_000_000_000 + img_entry[2]
+
+            if kernel_ts >= v4l2_ts:
+                errors.append(
+                    f"Kernel_timestamp secs={k_secs}, nsecs={k_nsecs} appears after v4l2_timestamp secs={v_secs}, nsecs={v_nsecs}"
+                )
+                break
+
+            if img_ts != v4l2_ts:
+                errors.append(
+                    f"image_raw/compressed secs={i_secs}, nsecs={i_nsecs} does not match v4l2_timestamp secs={v_secs}, nsecs={v_nsecs}. Is use_kernel_buffer_ts set to true in recorder.launch.py?"
+                )
+                break
+
+            if not k_seq == v_seq == i_seq:
+                print(
+                    f"[WARNING] Kernel_timestamp seq={k_seq}, v4l2_timestamp seq={v_seq} and image_raw seq={i_seq} do not match."
+                )
+
+            delta_ns = (v_secs - k_secs) * 1_000_000_000 + (v_nsecs - k_nsecs)
+            deltas.append(delta_ns)
+
+            paired_timestamps.append((k_secs, k_nsecs, v_secs, v_nsecs))
+            if prev_kernel_ts is not None:
+                kernel_deltas.append(kernel_ts - prev_kernel_ts)
+            prev_kernel_ts = kernel_ts
+
+            kernel_entry = next(kernel_iter, None)
+            v4l2_entry = next(v4l2_iter, None)
+            img_entry = next(img_iter, None)
+
+        if kernel_entry or v4l2_entry or img_entry:
+            print("[WARNING] Unmatched kernel_timestamp, image_raw or v4l2_timestamp messages at the end of the bag.")
+
+        # Report errors and stats
+        if errors:
+            print("Validation errors found:")
+            for error in errors:
+                print(f"- {error}")
+            print("Aborting processing due to validation errors.")
+            return
+
+        print("Validation passed.")
+        mean_delta = np.mean(deltas) / 1_000_000  # Convert to milliseconds
+        std_dev_delta = np.std(deltas) / 1_000_000  # Convert to milliseconds
+        mean_kernel_delta = np.mean(kernel_deltas) / 1_000_000  # Convert to milliseconds
+        print(f"\nStats: \nMean time between kernel trigger time and v4l2_ts: {mean_delta:.3f} ms")
+        print(f"Std dev delta time: {std_dev_delta:.3f} ms")
+        print(f"Trigger fps: {1_000 / mean_kernel_delta:.3f}")
+        print(f"Number of messages: {len(deltas)} \n")
+
+        # Process and overwrite timestamps
+        with rosbag.Bag(input_bag_path, "r") as inbag, rosbag.Bag(output_bag_path, "w", compression="lz4") as outbag:
+            total_messages = inbag.get_message_count()
+
+            with tqdm(total=total_messages, desc=f"Processing {Path(input_bag_path).name}", unit="msgs") as pbar:
+                for topic, msg, t in inbag.read_messages():
+                    if topic == "/gt_box/hdr_front/image_raw/compressed":
+                        for k_secs, k_nsecs, v_secs, v_nsecs in paired_timestamps:
+                            if (msg.header.stamp.secs, msg.header.stamp.nsecs) == (v_secs, v_nsecs):
+                                updated_stamp = k_secs * 1_000_000_000 + k_nsecs + OFFSET
+                                msg.header.stamp.secs = updated_stamp // 1_000_000_000
+                                msg.header.stamp.nsecs = updated_stamp % 1_000_000_000
+                                break
+                        outbag.write(topic, msg, t)
+                    else:
+                        outbag.write(topic, msg, t)
+                    pbar.update(1)
+
+    def run(self):
+        bags = self.get_rosbags()
+        for bag in bags:
+            output_bag = bag.replace(self.input_pattern, self.output_pattern)
+            self.validate_and_process_bag(bag, output_bag)
+            print(f"Processed {bag} -> {output_bag} \n")
+
+
+if __name__ == "__main__":
+    input_pattern = "_hdr_*.bag"
+    output_pattern = "_hdr_*_updated.bag"
+
+    processor = RosbagValidatorAndProcessor(MISSION_DATA, input_pattern, output_pattern)
+    processor.run()
