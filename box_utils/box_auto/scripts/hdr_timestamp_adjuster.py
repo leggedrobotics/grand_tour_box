@@ -176,10 +176,19 @@ class RosbagValidatorAndProcessor:
                 self.validate_and_process_bag(bag, output_bag, camera)
                 print(f"Processed {bag} -> {output_bag} \n")
 
+                if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
+                    uuid = os.environ["MISSION_UUID"]
+                    os.system(f"klein upload --mission {uuid} {output_bag}")
+
 
 if __name__ == "__main__":
     cameras = ["hdr_front", "hdr_left", "hdr_right"]
-    output_suffix = "_updated"
 
+    if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
+        uuid = os.environ["MISSION_UUID"]
+        bag_names = " ".join([f"*_{c}.bag" for c in cameras])
+        os.system(f"klein download --mission {uuid} --dest /mission_data '{bag_names}'")
+
+    output_suffix = "_updated"
     processor = RosbagValidatorAndProcessor(MISSION_DATA, cameras, output_suffix)
     processor.run()
