@@ -44,6 +44,9 @@ def process_mission_data(data_folder, mission_name, local_hostname, mode, merge_
         cmds.append(
             f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/mcap_to_rosbag.py"
         )
+        cmds.append(
+            f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/hdr_timestamp_adjuster.py"
+        )
         zed_svo = sorted(glob.glob(os.path.join(MISSION_DATA, "*_jetson_zed2i.svo2")))[0]
         cmds.append(
             f"export MISSION_DATA={MISSION_DATA}; source /home/rsl/catkin_ws/devel/setup.bash; roslaunch zed_wrapper zed2i_replay.launch svo_file:={zed_svo}"
@@ -60,9 +63,9 @@ def process_mission_data(data_folder, mission_name, local_hostname, mode, merge_
             "_jetson_zed2i_prop.bag",
             "_jetson_zed2i_images.bag",
             "_jetson_zed2i_depth.bag",
-            "_jetson_hdr_right_raw.bag",
-            "_jetson_hdr_left_raw.bag",
-            "_jetson_hdr_front_raw.bag",
+            "_jetson_hdr_right_updated.bag",
+            "_jetson_hdr_left_updated.bag",
+            "_jetson_hdr_front_updated.bag",
         ]
 
     elif local_hostname == "nuc":
@@ -141,9 +144,9 @@ def process_mission_data(data_folder, mission_name, local_hostname, mode, merge_
             "_jetson_zed2i_prop.bag",
             "_jetson_zed2i_images.bag",
             "_jetson_zed2i_depth.bag",
-            "_jetson_hdr_right.bag",
-            "_jetson_hdr_left.bag",
-            "_jetson_hdr_front.bag",
+            "_jetson_hdr_right_updated.bag",
+            "_jetson_hdr_left_updated.bag",
+            "_jetson_hdr_front_updated.bag",
             "_cpt7_raw_imu.bag",
             "_cpt7_ie.bag",
         ]
