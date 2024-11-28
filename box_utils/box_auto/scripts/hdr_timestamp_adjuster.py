@@ -5,24 +5,42 @@ import os
 import numpy as np
 
 MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
-OFFSET = 11_000_000  # Offset in nanoseconds (11 ms)
+
+# Constants for ISX021, from Tier4, see GrandTour Wiki
+VMAX = 1400  # Current ISX021's setting
+FPS = 30  # Current ISX021's setting
+H_TIME_SEC = 1 / FPS / VMAX
+# Delay between exposure start and middle row exposure
+ROWS_IN_FRAME = 1280
+MIDDLE_ROW_DELAY_NSEC = (ROWS_IN_FRAME / 2) * H_TIME_SEC * 1_000_000_000
+print(f"MIDDLE_ROW_DELAY_NSEC: {MIDDLE_ROW_DELAY_NSEC}")
+# Delay between trigger signal and exposure start
+TRIGGER_TO_EXPOSURE_START_DELAY_LINES = 40
+TRIGGER_TO_EXPOSURE_START_DELAY_NSEC = TRIGGER_TO_EXPOSURE_START_DELAY_LINES * H_TIME_SEC * 1_000_000_000
+print(f"TRIGGER_TO_EXPOSURE_START_DELAY_NSEC: {TRIGGER_TO_EXPOSURE_START_DELAY_NSEC}")
+# Exposure time of middle of row
+EXPOSURE_TIME_MS = 11.0
+MIDDLE_EXPOSURE_NSEC = (EXPOSURE_TIME_MS / 2) * 1_000_000
+# Offset between trigger signal and middle row exposure
+OFFSET_NSEC = MIDDLE_ROW_DELAY_NSEC + TRIGGER_TO_EXPOSURE_START_DELAY_NSEC + MIDDLE_EXPOSURE_NSEC
+print(f"OFFSET_NSEC: {OFFSET_NSEC}")
+OFFSET_NSEC = int(OFFSET_NSEC)
 
 
 class RosbagValidatorAndProcessor:
-    def __init__(self, mission_folder, input_pattern, output_pattern):
+    def __init__(self, mission_folder, cameras, output_suffix):
         self.mission_folder = Path(mission_folder)
-        self.input_pattern = input_pattern
-        self.output_pattern = output_pattern
+        self.cameras = cameras
+        self.output_suffix = output_suffix
 
-    def get_rosbags(self):
-        return [str(s) for s in self.mission_folder.glob("*" + self.input_pattern) if self.output_pattern not in str(s)]
+    def get_rosbags(self, camera):
+        return [str(s) for s in self.mission_folder.glob(f"*_{camera}.bag") if self.output_suffix not in str(s)]
 
-    def validate_and_process_bag(self, input_bag_path, output_bag_path):
+    def validate_and_process_bag(self, input_bag_path, output_bag_path, camera):
         kernel_timestamps = []
         v4l2_timestamps = []
         image_stamps = []
 
-        cam = Path(input_bag_path).stem.split("_")[-1]
         with rosbag.Bag(input_bag_path, "r") as inbag:
             total_messages = inbag.get_message_count()
             print("number of messages: ", total_messages)
@@ -31,13 +49,13 @@ class RosbagValidatorAndProcessor:
                 return
 
             # Read all relevant data first
-            with tqdm(total=total_messages, desc=f"Reading {Path(input_bag_path).name}", unit="msgs") as pbar:
+            with tqdm(total=total_messages, desc=f"[1/2] Validating {Path(input_bag_path).name}", unit="msgs") as pbar:
                 for topic, msg, t in inbag.read_messages():
-                    if topic == f"/gt_box/hdr_{cam}/kernel_timestamp":
+                    if topic == f"/gt_box/{camera}/kernel_timestamp":
                         kernel_timestamps.append((msg.header.seq, msg.time_ref.secs, msg.time_ref.nsecs))
-                    elif topic == f"/gt_box/hdr_{cam}/v4l2_timestamp":
+                    elif topic == f"/gt_box/{camera}/v4l2_timestamp":
                         v4l2_timestamps.append((msg.header.seq, msg.time_ref.secs, msg.time_ref.nsecs))
-                    elif topic == f"/gt_box/hdr_{cam}/image_raw/compressed":
+                    elif topic == f"/gt_box/{camera}/image_raw/compressed":
                         image_stamps.append((msg.header.seq, msg.header.stamp.secs, msg.header.stamp.nsecs))
                     pbar.update(1)
 
@@ -96,6 +114,10 @@ class RosbagValidatorAndProcessor:
                 )
 
             delta_ns = (v_secs - k_secs) * 1_000_000_000 + (v_nsecs - k_nsecs)
+            # if delta_ns < OFFSET_NSEC:
+            #     errors.append(
+            #         f"Time difference between trigger time and register read is less than time-delay constant {OFFSET_NSEC} ns. This should not be possible."
+            #     )
             deltas.append(delta_ns)
 
             paired_timestamps.append((k_secs, k_nsecs, v_secs, v_nsecs))
@@ -131,12 +153,12 @@ class RosbagValidatorAndProcessor:
         with rosbag.Bag(input_bag_path, "r") as inbag, rosbag.Bag(output_bag_path, "w", compression="lz4") as outbag:
             total_messages = inbag.get_message_count()
 
-            with tqdm(total=total_messages, desc=f"Processing {Path(input_bag_path).name}", unit="msgs") as pbar:
+            with tqdm(total=total_messages, desc=f"[2/2] Processing {Path(input_bag_path).name}", unit="msgs") as pbar:
                 for topic, msg, t in inbag.read_messages():
-                    if topic == "/gt_box/hdr_front/image_raw/compressed":
+                    if topic == f"/gt_box/{camera}/image_raw/compressed":
                         for k_secs, k_nsecs, v_secs, v_nsecs in paired_timestamps:
                             if (msg.header.stamp.secs, msg.header.stamp.nsecs) == (v_secs, v_nsecs):
-                                updated_stamp = k_secs * 1_000_000_000 + k_nsecs + OFFSET
+                                updated_stamp = k_secs * 1_000_000_000 + k_nsecs + OFFSET_NSEC
                                 msg.header.stamp.secs = updated_stamp // 1_000_000_000
                                 msg.header.stamp.nsecs = updated_stamp % 1_000_000_000
                                 break
@@ -146,16 +168,17 @@ class RosbagValidatorAndProcessor:
                     pbar.update(1)
 
     def run(self):
-        bags = self.get_rosbags()
-        for bag in bags:
-            output_bag = bag.replace(self.input_pattern, self.output_pattern)
-            self.validate_and_process_bag(bag, output_bag)
-            print(f"Processed {bag} -> {output_bag} \n")
+        for camera in self.cameras:
+            bags = self.get_rosbags(camera)
+            for bag in bags:
+                output_bag = bag.replace(f"_{camera}.bag", f"_{camera}{self.output_suffix}.bag")
+                self.validate_and_process_bag(bag, output_bag, camera)
+                print(f"Processed {bag} -> {output_bag} \n")
 
 
 if __name__ == "__main__":
-    input_pattern = "_hdr_*.bag"
-    output_pattern = "_hdr_*_updated.bag"
+    cameras = ["hdr_front", "hdr_left", "hdr_right"]
+    output_suffix = "_updated"
 
-    processor = RosbagValidatorAndProcessor(MISSION_DATA, input_pattern, output_pattern)
+    processor = RosbagValidatorAndProcessor(MISSION_DATA, cameras, output_suffix)
     processor.run()
