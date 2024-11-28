@@ -9,11 +9,12 @@ import rosbag
 import rospy
 from boxi import ColorLogger
 from sensor_msgs.msg import Imu
-import argparse
 from pathlib import Path
 import os
+import argparse
 
 MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
+
 
 class RAWIMUDataParser:
     def __del__(self):
@@ -53,7 +54,6 @@ class RAWIMUDataParser:
         start_time = datetime.fromtimestamp(self.ros_times[0].to_sec()).strftime("%Y-%m-%d-%H-%M-%S")
         end_time = datetime.fromtimestamp(self.ros_times[0].to_sec()).strftime("%Y-%m-%d-%H-%M-%S")
         print("Rosbag Time:", start_time, end_time)
-
         return True
 
     def load_imu_times(self, imu_df: pd.DataFrame):
@@ -226,43 +226,79 @@ class RAWIMUDataParser:
         return df
 
 
-
-def main():
-    debug = False
-    output_topic_name = "/gt_box/cpt7/offline_from_novatel_logs/imu"
-    date = [(str(s.name)).split("_")[0] for s in Path(MISSION_DATA).glob("*_nuc_livox*.bag")][0]
-    output = str(Path(MISSION_DATA) / f"{date}_cpt7_raw_imu.bag")
-
-    files = [str(s) for s in Path(MISSION_DATA).rglob("*RAWIMUSX.ASCII")]
-    if len(files) == 1:
-        imu_ascii_file = files[0]
-    else:
-        nr = len(files)
-        print(f"Invalid number [{nr}] of _RAWIMUSX.ASCII file found in the directory {MISSION_DATA}")
-        print("Specify the correct _RAWIMUSX.ASCII file manually or move it to the directory")
-        return
-
-    imu_path = imu_ascii_file
-    times_path = imu_ascii_file
-    imu_data_parser = RAWIMUDataParser(output_imu_msg_name=output_topic_name)
-    if debug:
-        imu_data_parser.logger.setLevel(logging.DEBUG)
-
-    imu_data_parser.optionally_check_time_message_consistency(times_path)
-    if imu_data_parser.process_imu_data(imu_path):
-        if output == "":
-            basename = os.path.basename(imu_path).split(".")[0]
-            output_path = os.path.join(os.path.dirname(imu_path), basename + ".bag")
-        else:
-            output_path = output
-        imu_data_parser.write_to_rosbag(output_path)
-    else:
-        imu_data_parser.logger.error(
-            "FAILED TO RUN. Remember that CPT7 .LOG files need to be"
-            " processed through the Novatel Convert App, to extract the"
-            " ASCII RAWIMU file used here."
-        )
-
-
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description="Fix, reindex, and merge ROS bag files.")
+    parser.add_argument(
+        "--all",
+        action="store_true",
+        default=False,
+        help="Process everything otherwise only with correct name in mission_folder",
+    )
+    parser.add_argument("--debug", action="store_true", default=False, help="Debug mode")
+
+    args = parser.parse_args()
+    if not args.all:
+        # Process single imu file within mission folder
+        output_topic_name = "/gt_box/cpt7/offline_from_novatel_logs/imu"
+        date = [(str(s.name)).split("_")[0] for s in Path(MISSION_DATA).glob("*_nuc_livox*.bag")][0]
+        output = str(Path(MISSION_DATA) / f"{date}_cpt7_raw_imu.bag")
+
+        files = [str(s) for s in Path(MISSION_DATA).rglob("*RAWIMUSX.ASCII")]
+        if len(files) == 1:
+            imu_ascii_file = files[0]
+        else:
+            nr = len(files)
+            print(f"Invalid number [{nr}] of _RAWIMUSX.ASCII file found in the directory {MISSION_DATA}")
+            print("Specify the correct _RAWIMUSX.ASCII file manually or move it to the directory")
+            exit - 1
+
+        imu_path = imu_ascii_file
+        times_path = imu_ascii_file
+        imu_data_parser = RAWIMUDataParser(output_imu_msg_name=output_topic_name)
+        if args.debug:
+            imu_data_parser.logger.setLevel(logging.DEBUG)
+
+        imu_data_parser.optionally_check_time_message_consistency(times_path)
+        if imu_data_parser.process_imu_data(imu_path):
+            if output == "":
+                basename = os.path.basename(imu_path).split(".")[0]
+                output_path = os.path.join(os.path.dirname(imu_path), basename + ".bag")
+            else:
+                output_path = output
+            imu_data_parser.write_to_rosbag(output_path)
+        else:
+            imu_data_parser.logger.error(
+                "FAILED TO RUN. Remember that CPT7 .LOG files need to be"
+                " processed through the Novatel Convert App, to extract the"
+                " ASCII RAWIMU file used here."
+            )
+    else:
+        # Process everything you can find
+        output_topic_name = "/gt_box/cpt7/offline_from_novatel_logs/imu"
+        output = ""
+        files = [str(s) for s in Path(MISSION_DATA).rglob("*RAWIMUSX.ASCII")]
+
+        print(f"export_raw_imu_bag from all RAWIMUSX.ASCII files in: {MISSION_DATA}")
+        for imu_ascii_file in files:
+            print(f"Processing: {imu_ascii_file}")
+            imu_path = imu_ascii_file
+            times_path = imu_ascii_file
+            imu_data_parser = RAWIMUDataParser(output_imu_msg_name=output_topic_name)
+            if args.debug:
+                imu_data_parser.logger.setLevel(logging.DEBUG)
+
+            imu_data_parser.optionally_check_time_message_consistency(times_path)
+            if imu_data_parser.process_imu_data(imu_path):
+                if output == "":
+                    basename = os.path.basename(imu_path).split(".")[0]
+                    output_path = os.path.join(os.path.dirname(imu_path), basename + ".bag")
+                else:
+                    output_path = output
+                imu_data_parser.write_to_rosbag(output_path)
+            else:
+                imu_data_parser.logger.error(
+                    "FAILED TO RUN. Remember that CPT7 .LOG files need to be"
+                    " processed through the Novatel Convert App, to extract the"
+                    " ASCII RAWIMU file used here."
+                )
+            print("")
