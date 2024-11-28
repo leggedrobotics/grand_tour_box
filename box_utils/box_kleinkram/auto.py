@@ -30,7 +30,7 @@ def shell_run(cmd, cwd=None, env={}, time=True, continue_on_error=True):
             raise RuntimeError(f"Error Return non 0 --- while executing {cmd}")
 
 
-def process_mission_data(data_folder, mission_name, local_hostname, mode):
+def process_mission_data(data_folder, mission_name, local_hostname, mode, merge_on_opc):
     MISSION_DATA = os.path.join(data_folder, mission_name)
     cmds = []
 
@@ -107,12 +107,10 @@ def process_mission_data(data_folder, mission_name, local_hostname, mode):
         cmds.append(
             f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/repair_bags.py"
         )
-        cmds.append(
-            f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/merge_mission.py"
-        )
-        cmds.append(
-            f"python3 /home/rsl/git/grand_tour_box/box_utils/boxi/boxi/move_cpt7_files.py --data_folder={data_folder}"
-        )
+        if merge_on_opc == "True":
+            cmds.append(
+                f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/merge_mission.py"
+            )
         cmds.append(
             f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/export_raw_imu_bag.py"
         )
@@ -146,6 +144,8 @@ def process_mission_data(data_folder, mission_name, local_hostname, mode):
             "_jetson_hdr_right.bag",
             "_jetson_hdr_left.bag",
             "_jetson_hdr_front.bag",
+            "_cpt7_raw_imu.bag",
+            "_cpt7_ie.bag",
         ]
 
     print(local_hostname)
@@ -165,7 +165,7 @@ def process_mission_data(data_folder, mission_name, local_hostname, mode):
 
     upload.sort()
 
-    project = "GrandTour"
+    project = "GrandTourDev"
     files_to_upload_str = " ".join(upload)
 
     metadata = ""
@@ -187,9 +187,23 @@ if __name__ == "__main__":
     parser.add_argument("--local_hostname", default=LOCAL_HOSTNAME, help="T the hostname of the local machine.")
     parser.add_argument("--data_folder", default="/data", help="Base path")
     parser.add_argument("--mode", default="verify", choices=["upload", "process", "verify", "upload_and_process"])
-    parser.add_argument("--mission_names", nargs="+", help="One or more mission names to process.")
+    parser.add_argument("--merge_on_opc", default="False", choices=["False", "True"])
+    parser.add_argument(
+        "--mission_names",
+        nargs="+",
+        help="One or more mission names to process. Syntax --mission_names 2024-8-28-00-00-00 2024-12-13-00-00-00",
+    )
 
     args = parser.parse_args()
 
+    if args.local_hostname == "opc" or args.local_hostname == "mavt-rsl-ws":
+        if args.mode == "process" or args.mode == "upload_and_process":
+            os.system(
+                f"export MISSION_DATA={args.data_folder}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/export_raw_imu_bag.py --all"
+            )
+            os.system(
+                f"python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/move_cpt7_files.py --data_folder={args.data_folder}"
+            )
+
     for mission_name in args.mission_names:
-        process_mission_data(args.data_folder, mission_name, args.local_hostname, args.mode)
+        process_mission_data(args.data_folder, mission_name, args.local_hostname, args.mode, args.merge_on_opc)
