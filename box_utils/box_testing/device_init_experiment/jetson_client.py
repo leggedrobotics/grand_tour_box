@@ -2,7 +2,7 @@ import os
 import requests
 import time
 
-SERVER_IP = "192.168.X.X"  # Replace with the laptop's static IP
+SERVER_IP = "192.168.2.154"
 SERVER_PORT = 5000
 MAX_RETRIES = 5  # Maximum retries for contacting the server
 RETRY_DELAY = 10  # Delay between retries in seconds
