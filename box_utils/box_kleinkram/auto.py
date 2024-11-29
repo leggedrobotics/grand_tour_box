@@ -30,7 +30,7 @@ def shell_run(cmd, cwd=None, env={}, time=True, continue_on_error=True):
             raise RuntimeError(f"Error Return non 0 --- while executing {cmd}")
 
 
-def process_mission_data(data_folder, mission_name, local_hostname, mode, merge_on_opc):
+def process_mission_data(data_folder, mission_name, local_hostname, mode, merge_on_opc, project):
     MISSION_DATA = os.path.join(data_folder, mission_name)
     cmds = []
 
@@ -168,7 +168,6 @@ def process_mission_data(data_folder, mission_name, local_hostname, mode, merge_
 
     upload.sort()
 
-    project = "GrandTourDev"
     files_to_upload_str = " ".join(upload)
 
     metadata = ""
@@ -189,6 +188,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Process and upload mission data.")
     parser.add_argument("--local_hostname", default=LOCAL_HOSTNAME, help="T the hostname of the local machine.")
     parser.add_argument("--data_folder", default="/data", help="Base path")
+    parser.add_argument("--project", default="GrandTour", help="Base path")
     parser.add_argument("--mode", default="verify", choices=["upload", "process", "verify", "upload_and_process"])
     parser.add_argument("--merge_on_opc", default="False", choices=["False", "True"])
     parser.add_argument(
@@ -209,4 +209,6 @@ if __name__ == "__main__":
             )
 
     for mission_name in args.mission_names:
-        process_mission_data(args.data_folder, mission_name, args.local_hostname, args.mode, args.merge_on_opc)
+        process_mission_data(
+            args.data_folder, mission_name, args.local_hostname, args.mode, args.merge_on_opc, args.project
+        )
