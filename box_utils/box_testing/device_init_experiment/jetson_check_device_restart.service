@@ -1,0 +1,15 @@
+[Unit]
+# sudo cp /home/rsl/git/grand_tour_box/box_utils/box_testing/device_init_experiment/jetson_check_device_restart.service /etc/systemd/system/jetson_check_device_restart.service
+# sudo systemctl daemon-reload
+# sudo systemctl enable jetson-restart.service
+# sudo systemctl start jetson-restart.service
+Description=Jetson Restart Experiment to check which video devices show up
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+ExecStart=/usr/bin/python3 /home/rsl/git/grand_tour_box/box_utils/box_testing/device_init_experiment/jetson_client.py
+TimeoutStartSec=0
+
+[Install]
+WantedBy=multi-user.target
