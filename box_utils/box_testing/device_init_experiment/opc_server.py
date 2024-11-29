@@ -4,9 +4,10 @@ import csv
 
 app = Flask(__name__)
 
-restart_limit = 5
+restart_limit = 50
 restart_count = 0
-csv_file = "device_log.csv"
+date_string = datetime.now().strftime("%Y%m%d_%H%M%S")
+csv_file = f"device_log_{date_string}.csv"
 
 # Initialize CSV file with headers
 with open(csv_file, mode="w", newline="") as f:
