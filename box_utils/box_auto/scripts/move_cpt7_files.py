@@ -35,7 +35,7 @@ def organize_data_folders(data_folder):
     subfolders = [
         f
         for f in os.listdir(data_folder)
-        if re.match(r"\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}", f) and os.path.isdir(os.path.join(data_folder, f))
+        if re.match(r"\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}(_.+)?$", f) and os.path.isdir(os.path.join(data_folder, f))
     ]
     gps_to_start = {}
 
@@ -45,10 +45,13 @@ def organize_data_folders(data_folder):
 
     mission_to_start = {}
     for folder in subfolders:
-        rosbag_path = os.path.join(data_folder, folder, f"{folder}_jetson_utils.bag")
-        if os.path.exists(rosbag_path):
-            rosbag_start, rosbag_end = get_rosbag_times(rosbag_path)
-            mission_to_start[folder] = rosbag_start
+
+        for p in [f"{folder}_jetson_utils.bag", "alphasense_front_center.bag"]:
+            rosbag_path = os.path.join(data_folder, folder, p)
+            if os.path.exists(rosbag_path):
+                rosbag_start, rosbag_end = get_rosbag_times(rosbag_path)
+                mission_to_start[folder] = rosbag_start
+                break
 
     for mission, start in mission_to_start.items():
         delta = float("inf")
@@ -60,7 +63,7 @@ def organize_data_folders(data_folder):
                 best_dt = dt
 
             if best_dt < 60:
-                print(f"Move {gps} to {mission}")
+                print(f"Move {gps} to {mission} - Best dt {best_dt}")
                 shutil.copy(str(best).replace(".bag", ".ASCII"), os.path.join(data_folder, mission))
                 shutil.copy(
                     os.path.join(data_folder, Path(best).name.replace("_RAWIMUSX.bag", ".LOG")),

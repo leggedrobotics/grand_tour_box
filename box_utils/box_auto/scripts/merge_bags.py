@@ -61,8 +61,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Fix, reindex, and merge ROS bag files.")
     parser.add_argument("--input", type=str, required=True, help="Comma seperated list of bags.")
     parser.add_argument("--output", type=str, required=True, help="Output bag file path ending with .bag")
+    parser.add_argument("--filter", type=str, default="*", help="Whitespace seperated list of topics or *")
+
     args = parser.parse_args()
     bag_files = args.input.split(",")
 
     print("Found files: ", bag_files)
-    merge_bags_single(bag_files, args.output, "*", verbose=True)
+    merge_bags_single(bag_files, args.output, args.filter, verbose=True)
