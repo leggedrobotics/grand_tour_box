@@ -50,10 +50,6 @@
 	path = box_drivers/adi_imu_driver
 	url = git@github.com:leggedrobotics/adi_imu_driver.git
 	branch = main
-[submodule "box_drivers/tf_bag"]
-	path = box_applications/tf_bag
-	url = git@github.com:leggedrobotics/tf_bag.git
-	branch = master
 [submodule "box_drivers/graph_msf_dev"]
 	path = box_applications/graph_msf_dev
 	url = git@bitbucket.org:leggedrobotics/graph_msf_dev.git
