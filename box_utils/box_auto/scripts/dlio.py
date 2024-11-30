@@ -13,6 +13,7 @@ MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
 WS = "/home/catkin_ws"
 PRE = f"source /opt/ros/noetic/setup.bash; source {WS}/devel/setup.bash;"
 PATTERNS = ["*_jetson_stim.bag", "*_tf_static.bag", "*_nuc_hesai_post_processed.bag"]
+OUTPUT_BAG_NAME = "dlio_replayed"
 
 
 def get_bag(directory, pattern):
@@ -79,7 +80,7 @@ def launch_nodes():
 
     merged_rosbag_path = os.path.join(MISSION_DATA, "merged.bag")
     os.system(
-        f"python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/merge_bags.py --input={inputs} --output={merged_rosbag_path}"
+        f"python3 {WS}/src/grand_tour_box/box_utils/box_auto/scripts/merge_bags.py --input={inputs} --output={merged_rosbag_path}"
     )
 
     os.system("bash -c '" + PRE + "roscore&' ")
@@ -87,7 +88,7 @@ def launch_nodes():
     os.system(
         "bash -c '"
         + PRE
-        + f"roslaunch direct_lidar_inertial_odometry dlio_replay.launch input_rosbag_path:={merged_rosbag_path}  output_rosbag_path:={MISSION_DATA} &' "
+        + f"roslaunch direct_lidar_inertial_odometry dlio_replay.launch input_rosbag_path:={merged_rosbag_path}  output_rosbag_folder_path:={MISSION_DATA} output_rosbag_name:={OUTPUT_BAG_NAME} &' "
     )
     sleep(5)
     os.system("bash -c '" + PRE + f"rosbag play -r 0.5 --clock {merged_rosbag_path}' ")
@@ -96,13 +97,13 @@ def launch_nodes():
     print("Moving and uploading bag!")
 
     output_bag_path = os.path.join(MISSION_DATA, f"{timestamp}_dlio.bag")
-    shutil.move(f"{WS}/src/grand_tour_box/box_applications/dlio/data/dlio_replayed.bag", output_bag_path)
+    shutil.move(f"{WS}/src/grand_tour_box/box_applications/dlio/data/{OUTPUT_BAG_NAME}.bag", output_bag_path)
 
     if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
         uuid = os.environ["MISSION_UUID"]
         os.system(f"klein upload --mission {uuid} {output_bag_path}")
     else:
-        print(f"Finished processing. Hesai bag saved as: {output_bag_path}")
+        print(f"Finished processing. DLIO replayed bag saved to: {output_bag_path}")
 
 
 def fetch_multiple_files_kleinkram(patterns):
