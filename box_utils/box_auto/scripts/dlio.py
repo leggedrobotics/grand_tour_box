@@ -78,11 +78,16 @@ def launch_nodes():
 
     inputs = ",".join(inputs)
 
-    merged_rosbag_path = os.path.join(MISSION_DATA, "merged.bag")
-    os.system(
-        f"python3 {WS}/src/grand_tour_box/box_utils/box_auto/scripts/merge_bags.py --input={inputs} --output={merged_rosbag_path}"
-    )
-
+    merged_rosbag_path = os.path.join(MISSION_DATA, "merged_for_dlio.bag")
+    # Check if merged_rosbag_path already exists
+    if os.path.exists(merged_rosbag_path):
+        print(f"Using existing merged rosbag at {merged_rosbag_path}")
+    else:
+        print(f"Merging bags into {merged_rosbag_path}")
+        os.system(
+            f"python3 {WS}/src/grand_tour_box/box_utils/box_auto/scripts/merge_bags.py --input={inputs} --output={merged_rosbag_path}"
+        )
+    kill_rosmaster()
     os.system("bash -c '" + PRE + "roscore&' ")
     sleep(1)
     os.system(
@@ -97,7 +102,7 @@ def launch_nodes():
     print("Moving and uploading bag!")
 
     output_bag_path = os.path.join(MISSION_DATA, f"{timestamp}_dlio.bag")
-    shutil.move(f"{WS}/src/grand_tour_box/box_applications/dlio/data/{OUTPUT_BAG_NAME}.bag", output_bag_path)
+    shutil.move(f"{MISSION_DATA}/{OUTPUT_BAG_NAME}.bag", output_bag_path)
 
     if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
         uuid = os.environ["MISSION_UUID"]
