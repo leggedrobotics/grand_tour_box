@@ -78,7 +78,7 @@ def launch_nodes():
 
     inputs = ",".join(inputs)
 
-    merged_rosbag_path = os.path.join(MISSION_DATA, "merged_for_dlio.bag")
+    merged_rosbag_path = os.path.join(MISSION_DATA, "merged_for_dlio_prep.bag")
     # Check if merged_rosbag_path already exists
     if os.path.exists(merged_rosbag_path):
         print(f"Using existing merged rosbag at {merged_rosbag_path}")
