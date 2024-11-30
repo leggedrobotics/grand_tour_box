@@ -8,9 +8,9 @@ import psutil
 from pathlib import Path
 import shutil
 
-MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
+MISSION_DATA = os.environ.get("MISSION_DATA", "/home/ttuna/Videos/dlio_verification")
 
-WS = "/home/catkin_ws"
+WS = "/home/ttuna/grandtour_ws"
 PRE = f"source /opt/ros/noetic/setup.bash; source {WS}/devel/setup.bash;"
 
 # It is up-to-debate how we want to use this node. We regardless need the deskewed point cloud and some sort of pose estimation.
@@ -80,7 +80,7 @@ def launch_nodes():
 
     inputs = ",".join(inputs)
 
-    merged_rosbag_path = os.path.join(MISSION_DATA, "merged_for_open3d.bag")
+    merged_rosbag_path = os.path.join(MISSION_DATA, "merged_for_open3d_prep.bag")
 
     # Check if merged_rosbag_path already exists
     if os.path.exists(merged_rosbag_path):
@@ -91,6 +91,7 @@ def launch_nodes():
             f"python3 {WS}/src/grand_tour_box/box_utils/box_auto/scripts/merge_bags.py --input={inputs} --output={merged_rosbag_path}"
         )
 
+    kill_rosmaster()
     os.system("bash -c '" + PRE + "roscore&' ")
     sleep(1)
     os.system(
@@ -99,10 +100,8 @@ def launch_nodes():
         + f"roslaunch open3d_slam_ros grandtour_replay.launch rosbag_filepath:={merged_rosbag_path}  map_saving_folder:={MISSION_DATA} &' "
     )
     sleep(1)
-    kill_rosmaster()
+    # The console feels stuck but it continues.
     
-    # sleep(5)
-    # print("Waiting for 5s before uploading!")
     print("Moving and uploading bag!")
 
     output_bag_path = os.path.join(MISSION_DATA, f"{timestamp}_open3d_slam.bag")
@@ -132,7 +131,7 @@ def fetch_multiple_files_kleinkram(patterns):
 
 
 if __name__ == "__main__":
-    fetch_multiple_files_kleinkram(PATTERNS)
+    # fetch_multiple_files_kleinkram(PATTERNS)
     try:
         launch_nodes()
     except rospy.ROSInterruptException:
