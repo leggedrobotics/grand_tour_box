@@ -61,7 +61,7 @@
 [submodule "box_applications/graph_msf_dev"]
 	path = box_applications/graph_msf_dev
 	url = git@bitbucket.org:leggedrobotics/graph_msf_dev.git
-	branch = feature/gt_generation
+	branch = jonfrey/gt_generation
 [submodule "box_applications/open3d_slam_private"]
 	path = box_applications/open3d_slam_private
 	url = git@github.com:leggedrobotics/open3d_slam_private.git
