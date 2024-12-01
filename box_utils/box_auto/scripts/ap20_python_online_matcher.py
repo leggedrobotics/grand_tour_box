@@ -329,11 +329,11 @@ def read_bag_file(bag_path):
 
 if __name__ == "__main__":
 
-    # if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
-    #     uuid = os.environ["MISSION_UUID"]
-    #     os.system(f"klein download --mission {uuid} --dest /mission_data '*_jetson_ap20_aux.bag'")
+    if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
+        uuid = os.environ["MISSION_UUID"]
+        os.system(f"klein download --mission {uuid} --dest /mission_data '*_jetson_ap20_aux.bag'")
 
-    # ap20_bag = get_bag(MISSION_DATA, "*_jetson_ap20_aux.bag")
+    ap20_bag = get_bag(MISSION_DATA, "*_jetson_ap20_aux.bag")
 
     # Usage example
-    data = read_bag_file("/home/ttuna/Videos/dlio_verification/2024-10-01-11-47-44_jetson_ap20_aux.bag")
+    data = read_bag_file(ap20_bag)
