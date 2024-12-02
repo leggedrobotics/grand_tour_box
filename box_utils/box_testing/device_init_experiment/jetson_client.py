@@ -14,25 +14,34 @@ def get_device_list():
     return " ".join(device for device in os.listdir("/dev") if device.startswith("video"))
 
 
+def get_boot_id():
+    """Fetch the current boot ID."""
+    with open("/proc/sys/kernel/random/boot_id", "r") as f:
+        return f.read().strip()
+
+
 def main():
     retries = 0
+    boot_id = get_boot_id()  # Get boot ID at the start
     time.sleep(DEVICE_CHECK_DELAY)  # Wait before checking devices
-    device_list = get_device_list()
 
     while retries < MAX_RETRIES:
+        device_list = get_device_list()
         try:
-            response = requests.get(f"http://{SERVER_IP}:{SERVER_PORT}/restart", params={"device_list": device_list})
+            response = requests.get(
+                f"http://{SERVER_IP}:{SERVER_PORT}/restart", params={"device_list": device_list, "boot_id": boot_id}
+            )
             response_data = response.json()
             if response_data.get("restart"):
                 print("Restarting Jetson...")
-                os.system("sudo reboot")
+                os.system("sudo /sbin/reboot")
             else:
                 print("No restart required. Experiment finished.")
                 return  # Exit script gracefully
         except Exception as e:
             retries += 1
             print(f"Error contacting server: {e}. Retrying ({retries}/{MAX_RETRIES})...")
-            time.sleep(RETRY_DELAY)
+        time.sleep(RETRY_DELAY)
 
     print("Max retries reached. Exiting experiment.")
     return  # Exit script without restarting
