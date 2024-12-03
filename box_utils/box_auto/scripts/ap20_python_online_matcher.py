@@ -133,7 +133,8 @@ def read_bag_file(bag_path):
                             bag_out.write(
                                 "/gt_box/ap20/prism_position_posestamped",
                                 new_pose_stamped_msgs,
-                                new_pose_stamped_msgs.header.stamp,)
+                                new_pose_stamped_msgs.header.stamp,
+                            )
 
                             new_odometry_msg = Odometry()
                             new_odometry_msg.header.stamp = rospy.Time.from_sec(new_ts)
