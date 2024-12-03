@@ -120,6 +120,21 @@ def read_bag_file(bag_path):
                             rate = (t - p1.imu_time) / (p2.imu_time - p1.imu_time)
                             new_ts = p1.timestamp_time + ((p2.timestamp_time - p1.timestamp_time) * rate)
 
+                            new_pose_stamped_msgs = PoseStamped()
+                            new_pose_stamped_msgs.header.stamp = rospy.Time.from_sec(new_ts)
+                            new_pose_stamped_msgs.header.seq = counter_ts
+                            new_pose_stamped_msgs.header.frame_id = "leica_total_station"
+                            new_pose_stamped_msgs.pose.position = position.position.point
+                            new_pose_stamped_msgs.pose.orientation.x = 0
+                            new_pose_stamped_msgs.pose.orientation.y = 0
+                            new_pose_stamped_msgs.pose.orientation.z = 0
+                            new_pose_stamped_msgs.pose.orientation.w = 1
+
+                            bag_out.write(
+                                "/gt_box/ap20/prism_position_posestamped",
+                                new_pose_stamped_msgs,
+                                new_pose_stamped_msgs.header.stamp,)
+
                             new_odometry_msg = Odometry()
                             new_odometry_msg.header.stamp = rospy.Time.from_sec(new_ts)
                             new_odometry_msg.header.seq = counter_ts
