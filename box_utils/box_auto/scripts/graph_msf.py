@@ -15,7 +15,6 @@ from tf_bag import BagTfTransformer
 from rosbag import Bag
 import matplotlib.pyplot as plt
 
-
 MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
 WS = "/home/catkin_ws"
 PRE = f"source /opt/ros/noetic/setup.bash; source {WS}/devel/setup.bash;"
@@ -23,8 +22,71 @@ PATTERNS = ["*_jetson_ap20_robot.bag", "*_cpt7_raw_imu.bag", "*_cpt7_gps_ie.bag"
 OUT = "/out"
 
 
+def is_gnss_in_bag(bag_file_path):
+    def get_bag_start_time(bag_file_path):
+        try:
+            with rosbag.Bag(bag_file_path, "r") as bag:
+                start_time = bag.get_start_time()
+                print(f"The start time of the bag is: {start_time} seconds (Unix epoch time).")
+                return start_time
+        except rosbag.bag.ROSBagException as e:
+            print(f"Error reading the rosbag file: {e}")
+        except FileNotFoundError:
+            print("The specified rosbag file was not found.")
+
+    def check_topic_in_rosbag(bag_file_path, topic_name):
+        try:
+            # Open the bag file
+            with rosbag.Bag(bag_file_path, "r") as bag:
+                # Check if the topic is present
+                topic_first_appearance = None
+                for topic, msg, t in bag.read_messages():
+                    if topic == topic_name:
+                        topic_first_appearance = t.to_sec()
+                        break
+
+                if topic_first_appearance is not None:
+                    print(f"The topic '{topic_name}' first appears at {topic_first_appearance} seconds in the bag.")
+                    return topic_first_appearance
+                else:
+                    print(f"The topic '{topic_name}' is not present in the bag.")
+                    return None
+
+        except rosbag.bag.ROSBagException as e:
+            print(f"Error reading the rosbag file: {e}")
+        except FileNotFoundError:
+            print("The specified rosbag file was not found.")
+
+    topic_name = "/gt_box/inertial_explorer/odometry"
+    # Check when the topic first appears in the bag
+    topic_first_appearance = check_topic_in_rosbag(bag_file_path, topic_name)
+    if topic_first_appearance is None:
+        print("The topic is not present in the bag.")
+        return False
+
+    # Get the start time of the bag
+    bag_start_time = get_bag_start_time(bag_file_path)
+    # Check
+    if bag_start_time is None or topic_first_appearance < bag_start_time:
+        print("Error computing relative time.")
+        return False
+
+    # Compute relative time of first appearance of the topic
+    relative_time = topic_first_appearance - bag_start_time
+    print(f"The topic '{topic_name}' first appears at {relative_time} seconds after the start of the bag.")
+
+    # If it appears within the first 10 seconds, return exit code 0
+    if relative_time < 10:
+        print("The topic appears within the first 10 seconds, hence the test is successful.")
+        return True
+    else:
+        print("The topic does not appear within the first 10 seconds, hence the test is unsuccessful.")
+        return False
+
+
 class BagTfTransformerWrapper:
     def __init__(self, bag):
+        print(bag)
         self.tf_listener = BagTfTransformer(bag)
 
     def waitForTransform(self, parent_frame, child_frame, time, duration):
@@ -32,6 +94,7 @@ class BagTfTransformerWrapper:
 
     def lookupTransform(self, parent_frame, child_frame, time, latest=False):
         if latest:
+            print(self.tf_listener)
             time = self.tf_listener.getStartTime()
         try:
             return self.tf_listener.lookupTransform(parent_frame, child_frame, time)
@@ -104,6 +167,7 @@ def create_transform_stamped(
 def write_tf_static_bag(input_file_path, output_bag_path, fixed_frame_id, child_frame_id):
     # Write the transforms to a bag file
     first_line = True
+    print("input_file_path", input_file_path)
     with open(input_file_path, "r") as file, rosbag.Bag(output_bag_path, "w") as bag:
         for line in file:
             if first_line:
@@ -111,6 +175,7 @@ def write_tf_static_bag(input_file_path, output_bag_path, fixed_frame_id, child_
                 continue
             parts = line.strip().split(",")
             if len(parts) < 11:
+                print("Some error in line format")
                 continue  # Skip malformed lines
             timestamp, x, y, z, qx, qy, qz, qw, roll, pitch, yaw = parts
             tf_msg = create_transform_stamped(
@@ -129,6 +194,7 @@ def write_tf_static_bag(input_file_path, output_bag_path, fixed_frame_id, child_
             inv_tf = invert_transform(tf_msg)
             tfm = tfMessage([inv_tf])
             bag.write("/tf", tfm, tf_msg.header.stamp)
+            print("Write to tf")
 
     print(f"Conversion complete. Output saved to {output_bag_path}")
 
@@ -292,39 +358,75 @@ def launch_nodes():
     inputs = ",".join(inputs)
     merged_rosbag_path = os.path.join(MISSION_DATA, "merged.bag")
 
-    if False:
+    if True:
         os.system(
             f"python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/merge_bags.py --input={inputs} --output={merged_rosbag_path}"
         )
         os.system("bash -c '" + PRE + "roscore &' ")
         sleep(1)
 
+        os.system("bash -c '" + PRE + "rosparam set use_sim_time true' ")
+        sleep(0.3)
+
+        initialize_using_gnss = "true" if is_gnss_in_bag(merged_rosbag_path) else "false"
+
+        print(f"Evaluate if initialize_using_gnss returns {initialize_using_gnss}")
         os.system(
-            "bash -c '" + PRE + f"roslaunch atn_position3_fuser position3_fuser.launch  logging_dir_location:={OUT} &' "
+            "bash -c '"
+            + PRE
+            + f"roslaunch atn_position3_fuser position3_fuser_replay.launch  logging_dir_location:={OUT} initialize_using_gnss:={initialize_using_gnss}&' "
         )
         print("Waiting 3s for graph_msf to startup")
         sleep(3)
-        os.system("bash -c '" + PRE + f"rosbag play -r 4 --clock {merged_rosbag_path}' ")
+        os.system("bash -c '" + PRE + f"rosbag play -r 1 --clock {merged_rosbag_path}' ")
         print("Waiting 3s for all messages to be consumed by graph_msf before starting optimization!")  #
 
         sleep(3)
-        os.system(
-            'rosservice call /graph_msf/trigger_offline_optimization "max_optimization_iterations: 100\nsave_covariance: true"'
-        )
+
+        from graph_msf_ros_msgs.srv import OfflineOptimizationTrigger, OfflineOptimizationTriggerRequest
+
+        def trigger_offline_optimization():
+            service_name = "/graph_msf/trigger_offline_optimization"
+            rospy.loginfo(f"Waiting for service {service_name}...")
+            try:
+                rospy.wait_for_service(service_name, timeout=1)  # Wait for service with a timeout
+            except rospy.ROSException as e:
+                rospy.logerr(f"Service {service_name} not available within timeout: {e}")
+                return
+
+            try:
+                # Create a service proxy
+                trigger_service = rospy.ServiceProxy(service_name, OfflineOptimizationTrigger)
+
+                # Prepare the service request
+                request = OfflineOptimizationTriggerRequest()
+                request.max_optimization_iterations = 100
+                request.save_covariance = True
+
+                rospy.loginfo(f"Calling service {service_name}...")
+                response = trigger_service(request)
+                rospy.loginfo(f"Service call successful: {response}")
+            except rospy.ServiceException as e:
+                rospy.logerr(f"Service call failed: {e}")
+
+        print("This may take up to 5 minutes")
+        trigger_offline_optimization()
+        kill_rosmaster()
 
     # Prepare data for plotting
     tf_static_path, _ = get_bag(MISSION_DATA, "*_tf_static.bag")
     tf_static_gt_path = tf_static_path.replace("_tf_static.bag", "_tf_static_gt.bag")
 
-    csv_file_world, gps_is_available = get_bag(OUT, "*_transform_enu_origin_to_world.csv")
+    csv_file_world, gps_is_available = get_bag(OUT, "*/R_6D_transform_world_to_enu_origin.csv")
     if gps_is_available:
+        print(f"Creating {tf_static_gt_path} - based on {csv_file_world}")
         write_tf_static_bag(csv_file_world, tf_static_gt_path, "enu_origin", "world")
 
     tf_gt = tf_static_path.replace("_tf_static.bag", "_gt_tf.bag")
     pose_gt = tf_static_path.replace("_tf_static.bag", "_gt_pose.bag")
-    csv_cov_file, _ = get_bag(OUT, "*_X_state_6D_pose_covariance.csv")
-    csv_pose_file, _ = get_bag(OUT, "*_X_state_6D_pose.csv")
-    convert_csv_to_bag(csv_cov_file, csv_pose_file, tf_gt, pose_gt, "world", "box_base")
+    csv_cov_file, _ = get_bag(OUT, "*/X_state_6D_pose_covariance.csv")
+    csv_pose_file, _ = get_bag(OUT, "*/X_state_6D_pose.csv")
+    # convert_csv_to_bag(csv_cov_file, csv_pose_file, tf_gt, pose_gt, "world", "box_base")
 
     tf_static_path, _ = get_bag(MISSION_DATA, "*_tf_static.bag")
     tf_static_gt_path = tf_static_path.replace("_tf_static.bag", "_tf_static_gt.bag")
@@ -376,11 +478,11 @@ def launch_nodes():
     # Transform the paths to the correct frames
     T_enu_origin_world = np.eye(4)
     T_enu_origin_world[:3, :3] = R.from_quat(q_enu_origin_world).as_matrix()
-    T_enu_origin_world[:3, 3] = t_enu_origin_world
+    T_enu_origin_world[:3, 3] = np.array(t_enu_origin_world)
 
     T_prism_enu_origin = np.eye(4)
     T_prism_enu_origin[:3, :3] = R.from_quat(q_prism_enu_origin).as_matrix()
-    T_prism_enu_origin[:3, 3] = t_prism_enu_origin
+    T_prism_enu_origin[:3, 3] = np.array(t_prism_enu_origin)
 
     colors = {
         "gray": "#cecece",
@@ -392,9 +494,9 @@ def launch_nodes():
     }
 
     if gps_is_available:
-        gps_ie_path_world = gps_ie_path_arr
+        gps_ie_path_world = T_enu_origin_world @ gps_ie_path_arr
     else:
-        gps_ie_path_world = ap20_path_arr
+        gps_ie_path_world = np.zeros_like(ap20_path_arr)  # For debugging only
 
     ap20_path_world = ap20_path_arr
     pose_gt_path_world = pose_gt_path_arr
@@ -435,7 +537,7 @@ def launch_nodes():
             label="GPS-IE",
             linewidth=2,
         )
-    ax.plot(ap20_path_world[:, 0, 3], ap20_path_world[:, 1, 3], "-", color=colors["purple"], label="AP20", linewidth=2)
+    ax.plot(ap20_path_world[:, 0, 3], ap20_path_world[:, 1, 3], "--", color=colors["purple"], label="AP20", linewidth=3)
     ax.plot(
         pose_gt_path_world[:, 0, 3],
         pose_gt_path_world[:, 1, 3],
