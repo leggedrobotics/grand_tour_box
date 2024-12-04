@@ -325,7 +325,7 @@ def kill_rosmaster():
                 # Terminate the process
                 print(f"Terminating rosmaster with PID {proc.info['pid']}")
                 proc.terminate()
-                proc.wait(timeout=60)  # Wait up to 60 seconds for the process to terminate
+                proc.wait(timeout=10)  # Wait up to 60 seconds for the process to terminate
                 print("rosmaster process terminated successfully.")
             except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.TimeoutExpired) as e:
                 print(f"Failed to terminate rosmaster process: {e}")
@@ -379,7 +379,7 @@ def launch_nodes():
         print("Waiting 3s for graph_msf to startup")
         sleep(3)
         os.system("bash -c '" + PRE + f"rosbag play -r 1 --clock {merged_rosbag_path}' ")
-        print("Waiting 3s for all messages to be consumed by graph_msf before starting optimization!")  #
+        print("Waiting 1s for all messages to be consumed by graph_msf before starting optimization!")  #
 
         sleep(3)
 
