@@ -1,10 +1,13 @@
 import rosbag
 import numpy as np
 from geometry_msgs.msg import PointStamped, PoseStamped
+from nav_msgs.msg import Odometry
 from collections import deque
 import rospy
 from pathlib import Path
 import os
+import tf2_msgs.msg
+import geometry_msgs.msg
 
 MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
 
@@ -82,8 +85,13 @@ def read_bag_file(bag_path):
     all_matches = []
     counter_ts = 0
     output_bag_path = bag_path.replace("jetson_ap20_aux", "jetson_ap20_synced")
+
+    if os.path.exists(output_bag_path):
+        os.remove(output_bag_path)
+
     with rosbag.Bag(output_bag_path, "w") as bag_out:
         with rosbag.Bag(bag_path, "r") as bag:
+
             for topic, msg, t in bag.read_messages(
                 topics=["/gt_box/ap20/imu_debug", "/gt_box/ap20/position_debug", "/gt_box/ap20/timestamp_debug"]
             ):
@@ -127,6 +135,46 @@ def read_bag_file(bag_path):
                                 new_pose_stamped_msgs,
                                 new_pose_stamped_msgs.header.stamp,
                             )
+
+                            new_odometry_msg = Odometry()
+                            new_odometry_msg.header.stamp = rospy.Time.from_sec(new_ts)
+                            new_odometry_msg.header.seq = counter_ts
+                            new_odometry_msg.header.frame_id = "leica_total_station"
+                            new_odometry_msg.child_frame_id = "prism"
+                            new_odometry_msg.pose.pose.position = position.position.point
+                            new_odometry_msg.pose.pose.orientation.x = 0
+                            new_odometry_msg.pose.pose.orientation.y = 0
+                            new_odometry_msg.pose.pose.orientation.z = 0
+                            new_odometry_msg.pose.pose.orientation.w = 1
+                            new_odometry_msg.twist.twist.linear.x = 0
+                            new_odometry_msg.twist.twist.linear.y = 0
+                            new_odometry_msg.twist.twist.linear.z = 0
+                            new_odometry_msg.twist.twist.angular.x = 0
+                            new_odometry_msg.twist.twist.angular.y = 0
+                            new_odometry_msg.twist.twist.angular.z = 0
+
+                            bag_out.write(
+                                "/gt_box/ap20/prism_position_odometry",
+                                new_odometry_msg,
+                                new_odometry_msg.header.stamp,
+                            )
+
+                            # Create and write the /tf message
+                            tf_msg = tf2_msgs.msg.TFMessage()
+                            transform = geometry_msgs.msg.TransformStamped()
+                            transform.header.stamp = rospy.Time.from_sec(new_ts)
+                            transform.header.frame_id = "leica_total_station"
+                            transform.child_frame_id = "prism"
+                            transform.transform.translation.x = position.position.point.x
+                            transform.transform.translation.y = position.position.point.y
+                            transform.transform.translation.z = position.position.point.z
+                            transform.transform.rotation.x = 0
+                            transform.transform.rotation.y = 0
+                            transform.transform.rotation.z = 0
+                            transform.transform.rotation.w = 1
+                            tf_msg.transforms.append(transform)
+
+                            bag_out.write("/tf", tf_msg, transform.header.stamp)
 
                             new_msg = PointStamped()
                             new_msg.header.stamp = rospy.Time.from_sec(new_ts)
