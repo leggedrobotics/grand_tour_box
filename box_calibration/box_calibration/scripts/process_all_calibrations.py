@@ -7,14 +7,12 @@ from datetime import datetime
 
 import matplotlib.pyplot as plt
 import numpy as np
+import rosbag
 import rospkg
 import yaml
-from rosbag import Bag
-from ultralytics.utils.plotting import output_to_target
-from yaml import MappingNode, SequenceNode
-import rosbag
-
 from box_calibration.calibration_utils import extract_image_topics, filter_yaml_by_rostopics
+from rosbag import Bag
+from yaml import MappingNode, SequenceNode
 
 rospack = rospkg.RosPack()
 
@@ -503,7 +501,7 @@ prism_command = ["rosrun", "grand_tour_ceres_apps", "camera_prism_offline_calibr
                  "-t", prism_topic, "--solve_time_offset" if solve_ap20_time_offset else "",
                  "-o", camcamlidarprism_calibration_path]
 # Run the command
-safe_subprocess_run(prism_command, force=True)
+safe_subprocess_run(prism_command, force=False)
 
 # Append a comment to the top of the prism_calib_output_path YAML file
 with open(camcamlidarprism_calibration_path, 'r') as file:
@@ -520,13 +518,13 @@ default_grand_tour_camera_board_path = 'grand_tour_default_camera_board.yaml'
 with open(default_grand_tour_camera_board_path, 'w') as file:
     # YAML configuration data
     default_grand_tour_camcam_target_config = {'target_type': 'aprilgrid',
-                                                 'tagCols': 6, 'tagRows': 6,
-                                                 'tagSize': 0.083,
-                                                 'tagSpacing': 0.3}
+                                               'tagCols': 6, 'tagRows': 6,
+                                               'tagSize': 0.083,
+                                               'tagSpacing': 0.3}
     yaml.dump(default_grand_tour_camcam_target_config, file)
 
 allan_variances_root = os.path.join(box_calibration_package, "calibration/allan_variances")
-imu_names = ["alphasense", "cpt7", "adis", "livox"]  # TODO: Intrinsic calibration of: "stim320" and "zed2i"
+imu_names = ["cpt7", "stim320"]  # TODO: Intrinsic calibration of: "stim320 and zed2i"
 imu_intrinsics_calibration_files = [os.path.join(allan_variances_root, f"{x}/imu.yaml") for x in imu_names]
 
 imu_topic_to_frame_mappings = {
@@ -534,75 +532,82 @@ imu_topic_to_frame_mappings = {
     "/gt_box/adis16475_node/imu": "adis16475_imu",
     "/gt_box/alphasense_driver_node/imu": "imu_sensor_frame",
     "/gt_box/livox/imu_si_compliant": "livox_imu",
+    "/gt_box/zed2i_driver_node/imu/data_raw": "zed2i_imu_link",
+    "/gt_box/stim320/imu": "stim320_imu",
 }
 
 if camera_imu_folder_path != "":
     cam_imu_merged_name = "cam_imu_merged.bag"
     cam_imu_bags = [x for x in os.listdir(camera_imu_folder_path) if x != cam_imu_merged_name and ".bag" in x]
     cam_imu_merged_bag_path = os.path.join(camera_imu_folder_path, cam_imu_merged_name)
-    reindex_and_merge_bags([os.path.join(camera_imu_folder_path, x) for x in cam_imu_bags],
-                           cam_imu_merged_bag_path)
-    camimu_image_topics = extract_image_topics(cam_imu_merged_bag_path)
-    print("Camera IMU Image Topics:", camimu_image_topics)
+    # reindex_and_merge_bags([os.path.join(camera_imu_folder_path, x) for x in cam_imu_bags],
+    #                        cam_imu_merged_bag_path)
+    # camimu_image_topics = extract_image_topics(cam_imu_merged_bag_path)
+    # print("Camera IMU Image Topics:", camimu_image_topics)
+    #
+    # cam_imu_camerachain_path = "kalibr_camcam_chain.yaml"
+    # filter_yaml_by_rostopics(hesai_camcam_calib_and_initial_guess_file,
+    #                          camimu_image_topics,
+    #                          cam_imu_camerachain_path)
+    #
+    # camera_imu_command = [
+    #     "rosrun", "kalibr", "kalibr_calibrate_imu_camera",
+    #     "--target", default_grand_tour_camera_board_path,
+    #     "--imu", *imu_intrinsics_calibration_files,
+    #     "--imu-models", *["calibrated" for x in imu_intrinsics_calibration_files],
+    #     "--cam", cam_imu_camerachain_path,
+    #     "--bag", cam_imu_merged_bag_path,
+    #     "--timeoffset-padding", "0.1",  # As per https://github.com/ethz-asl/kalibr/issues/41,
+    #     # "--recover-covariance",
+    #     "--export-poses",
+    #     "--max-iter", "200"
+    # ]
+    #
+    # safe_subprocess_run(camera_imu_command, force=True)
 
-    cam_imu_camerachain_path = "kalibr_camcam_chain.yaml"
-    filter_yaml_by_rostopics(hesai_camcam_calib_and_initial_guess_file,
-                             camimu_image_topics,
-                             cam_imu_camerachain_path)
+    # camchain_imu_path = os.path.splitext(cam_imu_merged_bag_path)[0] + "-camchain-imucam.yaml"
+    # imuchain_path = os.path.splitext(cam_imu_merged_bag_path)[0] + "-imu.yaml"
+    # with open(imuchain_path, 'r') as file:
+    #     imuchain_data = yaml.safe_load(file)
+    #
+    # for k, v in imuchain_data.items():
+    #     imuchain_data[k]["frame_id"] = imu_topic_to_frame_mappings[v["rostopic"]]
+    #
+    # imu0_frame_id = imuchain_data["imu0"]["frame_id"]
+    # T_imus_imu0 = {v["frame_id"]: v["T_i_b"] for v in imuchain_data.values()}
+    #
+    # with open(camchain_imu_path, 'r') as file:
+    #     camchain_imu_data = yaml.safe_load(file)
+    # T_camerabundle_imu0 = np.array(camchain_imu_data["cam0"]["T_bundle_camera"]) @ np.array(
+    #     camchain_imu_data["cam0"]["T_cam_imu"])
+    # T_imu0_camerabundle = np.linalg.inv(T_camerabundle_imu0)
+    #
+    # output_imu_calibration_path = "./imu_calibration.yaml"
+    # camera_imu_calibration_data = {}
+    # for frame_id, T_imu_imu0 in T_imus_imu0.items():
+    #     camera_imu_calibration_data[frame_id] = {}
+    #     camera_imu_calibration_data[frame_id]["T_camerabundle_imu"] = np.linalg.inv(
+    #         T_imu_imu0 @ T_imu0_camerabundle).tolist()
+    #
+    # camimu_calibration_time_header = extract_bag_start_time(cam_imu_merged_bag_path)
 
-    camera_imu_command = [
-        "rosrun", "kalibr", "kalibr_calibrate_imu_camera",
-        "--target", default_grand_tour_camera_board_path,
-        "--imu", *imu_intrinsics_calibration_files,
-        "--imu-models", *["calibrated" for x in imu_intrinsics_calibration_files],
-        "--cam", cam_imu_camerachain_path,
-        "--bag", cam_imu_merged_bag_path
-    ]
-
-    safe_subprocess_run(camera_imu_command, force=True)
-
-camchain_imu_path = os.path.splitext(cam_imu_merged_bag_path)[0] + "-camchain-imucam.yaml"
-imuchain_path =  os.path.splitext(cam_imu_merged_bag_path)[0] + "-imu.yaml"
-with open(imuchain_path, 'r') as file:
-    imuchain_data = yaml.safe_load(file)
-
-for k, v in imuchain_data.items():
-    imuchain_data[k]["frame_id"] = imu_topic_to_frame_mappings[v["rostopic"]]
-
-imu0_frame_id = imuchain_data["imu0"]["frame_id"]
-T_imus_imu0 = {v["frame_id"] : v["T_i_b"] for v in imuchain_data.values()}
-
-with open(camchain_imu_path, 'r') as file:
-    camchain_imu_data = yaml.safe_load(file)
-T_camerabundle_imu0 = np.array(camchain_imu_data["cam0"]["T_bundle_camera"]) @ np.array(camchain_imu_data["cam0"]["T_cam_imu"])
-T_imu0_camerabundle = np.linalg.inv(T_camerabundle_imu0)
-
-output_imu_calibration_path = "./imu_calibration.yaml"
-camera_imu_calibration_data = {}
-for frame_id, T_imu_imu0 in T_imus_imu0.items():
-    camera_imu_calibration_data[frame_id] = {}
-    camera_imu_calibration_data[frame_id]["T_camerabundle_imu"] = np.linalg.inv(T_imu_imu0 @ T_imu0_camerabundle).tolist()
-
-camimu_calibration_time_header = extract_bag_start_time(cam_imu_merged_bag_path)
-
-with open(output_imu_calibration_path, 'w') as outfile:
-    outfile.write(f'#{camimu_calibration_time_header}\n')
-    yaml_composition = yaml.compose(yaml.safe_dump(camera_imu_calibration_data))
-    mutate_sequence_flowstyle_to_inline(yaml_composition)
-    yaml.serialize(yaml_composition, outfile)
-
+    # with open(output_imu_calibration_path, 'w') as outfile:
+    #     outfile.write(f'#{camimu_calibration_time_header}\n')
+    #     yaml_composition = yaml.compose(yaml.safe_dump(camera_imu_calibration_data))
+    #     mutate_sequence_flowstyle_to_inline(yaml_composition)
+    #     yaml.serialize(yaml_composition, outfile)
 
 # Construct the full path to the file
 tf_calibration_output_path = os.path.join(box_calibration_package, "calibration/tf/calibration_latest.yaml")
 
 conversion_command = ["rosrun", "box_calibration", "convert_graph.py", "-i", camcamlidarprism_calibration_path,
-                      "-o", tf_calibration_output_path, "-imu", output_imu_calibration_path]
+                      "-o", tf_calibration_output_path]
 
 calibration_metadata = {
     "camera": camcam_calibration_time_header,
     "lidar": camlidar_calibration_time_header,
     "prism": prism_calibration_time_header,
-    "imu": camimu_calibration_time_header
+    "imu": "cad"
 }
 
 # Run the command
