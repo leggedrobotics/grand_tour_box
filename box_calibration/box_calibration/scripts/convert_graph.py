@@ -467,9 +467,9 @@ if __name__ == "__main__":
     calibration_graph.add_edge("zed2i_right_camera_optical_frame", "zed2i_right_camera_frame",
                                xyz=[0, 0, 0],
                                rpy=[1.570796325, -1.570796325, 0.0])
-    calibration_graph.add_edge("box_base", "box_base_model",
-                               xyz=[0.297, -0.068, 0.157],
-                               rpy=[-3.1415, -0.000, -0.000])
+    calibration_graph.add_edge("stim320_imu", "box_base_model",
+                               xyz=[0.0, -0.0, 0.0],
+                               rpy=[-0.0, -0.000, -0.000])
     calibration_graph.add_edge("livox_lidar", "livox_model", transform=identity)
     calibration_graph.add_edge("cpt7_imu", "cpt7_antenna_front",
                                xyz=[0.13924890003, -0.0361, -0.193298],
