@@ -14,6 +14,7 @@ from geometry_msgs.msg import PoseWithCovarianceStamped, PoseStamped, TransformS
 from tf_bag import BagTfTransformer
 from rosbag import Bag
 import matplotlib.pyplot as plt
+from tf2_msgs.msg import TFMessage
 
 MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
 WS = "/home/catkin_ws"
@@ -95,7 +96,10 @@ class BagTfTransformerWrapper:
     def lookupTransform(self, parent_frame, child_frame, time, latest=False):
         if latest:
             print(self.tf_listener)
-            time = self.tf_listener.getStartTime()
+            try:
+                time = self.tf_listener.tf_static_messages[0].header.stamp
+            except:
+                time = self.tf_listener.getStartTime()
         try:
             return self.tf_listener.lookupTransform(parent_frame, child_frame, time)
         except Exception:
@@ -148,7 +152,20 @@ def create_transform_stamped(
     qz: float,
     fixed_frame_id: str,
     child_frame_id: str,
-):
+) -> TransformStamped:
+    """
+    Create a ROS TransformStamped message.
+
+    Args:
+        timestamp (float): Timestamp of the transform
+        x, y, z (float): Translation components
+        qw, qx, qy, qz (float): Quaternion rotation components
+        fixed_frame_id (str): Parent frame ID
+        child_frame_id (str): Child frame ID
+
+    Returns:
+        TransformStamped: ROS transform message
+    """
     # Create a TransformStamped message
     t = TransformStamped()
     t.header.stamp = rospy.Time.from_sec(float(timestamp))
@@ -164,21 +181,34 @@ def create_transform_stamped(
     return t
 
 
-def write_tf_static_bag(input_file_path, output_bag_path, fixed_frame_id, child_frame_id):
-    # Write the transforms to a bag file
-    first_line = True
-    print("input_file_path", input_file_path)
-    with open(input_file_path, "r") as file, rosbag.Bag(output_bag_path, "w") as bag:
-        for line in file:
-            if first_line:
-                first_line = False
-                continue
-            parts = line.strip().split(",")
+def csv_to_TransformStamped(input_file_path: str, fixed_frame_id: str, child_frame_id: str) -> TransformStamped:
+    """
+    Convert a CSV file to a TransformStamped message.
+
+    Args:
+        input_file_path (str): Path to the input CSV file
+        fixed_frame_id (str): Parent frame ID
+        child_frame_id (str): Child frame ID
+
+    Returns:
+        TransformStamped: Converted transform message
+    """
+    try:
+        with open(input_file_path, "r") as file:
+            # Skip header
+            next(file)
+
+            # Read first data line
+            line = file.readline().strip()
+            parts = line.split(",")
+
             if len(parts) < 11:
-                print("Some error in line format")
-                continue  # Skip malformed lines
+                print(f"Error: Insufficient data in line for {input_file_path}")
+                return None
+
             timestamp, x, y, z, qx, qy, qz, qw, roll, pitch, yaw = parts
-            tf_msg = create_transform_stamped(
+
+            return create_transform_stamped(
                 timestamp=timestamp,
                 x=x,
                 y=y,
@@ -190,13 +220,53 @@ def write_tf_static_bag(input_file_path, output_bag_path, fixed_frame_id, child_
                 fixed_frame_id=fixed_frame_id,
                 child_frame_id=child_frame_id,
             )
-            # Invert the transform
-            inv_tf = invert_transform(tf_msg)
-            tfm = tfMessage([inv_tf])
-            bag.write("/tf", tfm, tf_msg.header.stamp)
-            print("Write to tf")
+    except Exception as e:
+        print(f"Error processing {input_file_path}: {e}")
+        return None
 
-    print(f"Conversion complete. Output saved to {output_bag_path}")
+
+def get_file(directory, pattern):
+    """
+    Find a single file matching the given pattern in the specified directory.
+
+    Args:
+        directory (str): Directory to search
+        pattern (str): File pattern to match
+
+    Returns:
+        tuple: (file path, success flag)
+    """
+    files = list(Path(directory).rglob(pattern))
+
+    if len(files) != 1:
+        print(f"Error: Found {len(files)} matching files for pattern {pattern} in directory {directory}")
+        return None, False
+
+    return str(files[0]), True
+
+
+def write_tf_static_bag(output_bag_path: str, transforms: list):
+    """
+    Write transforms to a ROS bag file.
+
+    Args:
+        output_bag_path (str): Path to output bag file
+        transforms (list): List of TransformStamped messages to write
+    """
+    try:
+        with rosbag.Bag(output_bag_path, "w") as bag:
+            for tf_msg in transforms:
+                if tf_msg is not None:
+                    # inv_tf = invert_transform(tf_msg)
+                    tfm = tfMessage([tf_msg])
+                    bag.write("/tf_static", tfm, tf_msg.header.stamp)
+                    tf_msg.header.stamp.secs += 1
+
+                    bag.write("/tf_static", tfm, tf_msg.header.stamp)
+
+        print(f"Conversion complete. Output saved to {output_bag_path}")
+    except Exception as e:
+        print(f"Error writing bag file: {e}")
 
 
 def convert_csv_to_bag(
@@ -290,7 +360,7 @@ def convert_csv_to_bag(
             pose_stamped.pose = pose_with_cov.pose.pose
             pose_gt_bag.write("/gt_box/ground_truth/pose_stamped", pose_stamped, stamp)
 
-            # Create and write TransformStamped message
+            # Create and populate the TransformStamped message
             transform = TransformStamped()
             transform.header = pose_with_cov.header
             transform.child_frame_id = child_frame_id
@@ -304,17 +374,14 @@ def convert_csv_to_bag(
             transform.transform.rotation.z = qz
             transform.transform.rotation.w = qw
 
-            tf_gt_bag.write("/tf", invert_transform(transform), stamp)
+            # Optionally, invert the transform if needed
+            transformed_data = invert_transform(transform)
 
+            # Create a TFMessage and add the TransformStamped object
+            tf_message = TFMessage(transforms=[transformed_data])
 
-def get_bag(directory, pattern):
-    files = [str(s) for s in Path(directory).rglob(pattern)]
-    if len(files) != 1:
-        n = len(files)
-        print(f"Error: More or less matching bag files found: {pattern} in directory {directory} - {n}")
-        return [], False
-
-    return files[0], True
+            # Write the TFMessage to the bag
+            tf_gt_bag.write("/tf", tf_message, stamp)
 
 
 def kill_rosmaster():
@@ -340,7 +407,7 @@ def launch_nodes():
 
     # GPS bag is optional
     for pattern in PATTERNS:
-        f, suc = get_bag(MISSION_DATA, pattern)
+        f, suc = get_file(MISSION_DATA, pattern)
         if suc:
             inputs.append(f)
             timestamp = str(f).split("/")[-1]
@@ -369,84 +436,73 @@ def launch_nodes():
         sleep(0.3)
 
         initialize_using_gnss = "true" if is_gnss_in_bag(merged_rosbag_path) else "false"
+        print(f"Evaluate if initialize_using_gnss returns: {initialize_using_gnss}")
 
-        print(f"Evaluate if initialize_using_gnss returns {initialize_using_gnss}")
         os.system(
             "bash -c '"
             + PRE
             + f"roslaunch atn_position3_fuser position3_fuser_replay.launch  logging_dir_location:={OUT} initialize_using_gnss:={initialize_using_gnss}&' "
         )
+
         print("Waiting 3s for graph_msf to startup")
         sleep(3)
-        os.system("bash -c '" + PRE + f"rosbag play -r 1 --clock {merged_rosbag_path}' ")
-        print("Waiting 1s for all messages to be consumed by graph_msf before starting optimization!")  #
+        os.system("bash -c '" + PRE + f"rosbag play -r 1 -u 250 --clock {merged_rosbag_path}' ")
 
+        print("Waiting 3s for all messages to be consumed by graph_msf before starting optimization!")  #
         sleep(3)
-
-        from graph_msf_ros_msgs.srv import OfflineOptimizationTrigger, OfflineOptimizationTriggerRequest
-
-        def trigger_offline_optimization():
-            service_name = "/graph_msf/trigger_offline_optimization"
-            rospy.loginfo(f"Waiting for service {service_name}...")
-            try:
-                rospy.wait_for_service(service_name, timeout=1)  # Wait for service with a timeout
-            except rospy.ROSException as e:
-                rospy.logerr(f"Service {service_name} not available within timeout: {e}")
-                return
-
-            try:
-                # Create a service proxy
-                trigger_service = rospy.ServiceProxy(service_name, OfflineOptimizationTrigger)
-
-                # Prepare the service request
-                request = OfflineOptimizationTriggerRequest()
-                request.max_optimization_iterations = 100
-                request.save_covariance = True
-
-                rospy.loginfo(f"Calling service {service_name}...")
-                response = trigger_service(request)
-                rospy.loginfo(f"Service call successful: {response}")
-            except rospy.ServiceException as e:
-                rospy.logerr(f"Service call failed: {e}")
-
-        print("This may take up to 5 minutes")
-        trigger_offline_optimization()
+        os.system(
+            'rosservice call /graph_msf/trigger_offline_optimization "max_optimization_iterations: 100\nsave_covariance: true"'
+        )
         kill_rosmaster()
 
-    # Prepare data for plotting
-    tf_static_path, _ = get_bag(MISSION_DATA, "*_tf_static.bag")
+    # Convert tf_statics to debug bag
+    tf_static_path, _ = get_file(MISSION_DATA, "*_tf_static.bag")
     tf_static_gt_path = tf_static_path.replace("_tf_static.bag", "_tf_static_gt.bag")
-
-    csv_file_world, gps_is_available = get_bag(OUT, "*/R_6D_transform_world_to_enu_origin.csv")
+    tf_statics = []
+    csv_R_6D_transform_world_to_leica_total_station, suc1 = get_file(
+        OUT, "*/R_6D_transform_world_to_leica_total_station.csv"
+    )
+    csv_6D_transform_leica_total_station_to_prism, suc2 = get_file(
+        OUT, "*/R_6D_transform_leica_total_station_to_leica_total_stationOld.csv"
+    )
+    csv_file_world_to_enu_orign, gps_is_available = get_file(OUT, "*/R_6D_transform_world_to_enu_origin.csv")
+    assert suc1 and suc2, "Totalstation has to be available!"
+    R_world_to_helper = csv_to_TransformStamped(
+        csv_R_6D_transform_world_to_leica_total_station, "world", "leica_total_station_helper"
+    )
+    R_helper_to_prism = csv_to_TransformStamped(
+        csv_6D_transform_leica_total_station_to_prism, "leica_total_station_helper", "prism"
+    )
+    tf_statics.append(R_world_to_helper)
+    tf_statics.append(R_helper_to_prism)
     if gps_is_available:
-        print(f"Creating {tf_static_gt_path} - based on {csv_file_world}")
-        write_tf_static_bag(csv_file_world, tf_static_gt_path, "enu_origin", "world")
+        R_world_to_enu_orign = csv_to_TransformStamped(csv_file_world_to_enu_orign, "world", "enu_orign")
+        tf_statics.append(R_world_to_enu_orign)
+    write_tf_static_bag(tf_static_gt_path, tf_statics)  # Important this bag cannot be replayed given
 
-    tf_gt = tf_static_path.replace("_tf_static.bag", "_gt_tf.bag")
-    pose_gt = tf_static_path.replace("_tf_static.bag", "_gt_pose.bag")
-    csv_cov_file, _ = get_bag(OUT, "*/X_state_6D_pose_covariance.csv")
-    csv_pose_file, _ = get_bag(OUT, "*/X_state_6D_pose.csv")
-    # convert_csv_to_bag(csv_cov_file, csv_pose_file, tf_gt, pose_gt, "world", "box_base")
+    # Convert world to box_base to rosbag
+    tf_gt_path = tf_static_path.replace("_tf_static.bag", "_gt_tf.bag")
+    pose_gt_path = tf_static_path.replace("_tf_static.bag", "_gt_pose.bag")
+    csv_cov_file, _ = get_file(OUT, "*/X_state_6D_pose_covariance.csv")
+    csv_pose_file, _ = get_file(OUT, "*/X_state_6D_pose.csv")
+    convert_csv_to_bag(csv_cov_file, csv_pose_file, tf_gt_path, pose_gt_path, "world", "box_base")
 
-    tf_static_path, _ = get_bag(MISSION_DATA, "*_tf_static.bag")
-    tf_static_gt_path = tf_static_path.replace("_tf_static.bag", "_tf_static_gt.bag")
-
-    pose_gt_path = pose_gt
+    # Load all data from rosbags and plot it
     ap20_gps_bag = merged_rosbag_path
-
     ap20 = np.array([t.point for _, t, _ in Bag(ap20_gps_bag).read_messages(topics="/gt_box/ap20/prism_position")])
     pose_gt = np.array(
         [t.pose.pose for _, t, _ in Bag(pose_gt_path).read_messages(topics="/gt_box/ground_truth/pose_with_covariance")]
     )
 
-    if gps_is_available:
-        tf_transformer = BagTfTransformerWrapper(tf_static_gt_path)
-        t_enu_origin_world, q_enu_origin_world = tf_transformer.lookupTransform("enu_origin", "world", 0, latest=True)
-        del tf_transformer
+    tf_transformer = BagTfTransformerWrapper(tf_static_gt_path)
+    t_prism_world, q_prism_world = tf_transformer.lookupTransform("prism", "world", 0, latest=True)
 
-        tf_transformer = BagTfTransformerWrapper(merged_rosbag_path)
-        t_prism_enu_origin, q_prism_enu_origin = tf_transformer.lookupTransform("prism", "enu_origin", 0, latest=True)
-        del tf_transformer
+    if gps_is_available:
+        t_enu_origin_world, q_enu_origin_world = tf_transformer.lookupTransform("enu_origin", "world", 0, latest=True)
+        # Transform the paths to the correct frames
+        T_enu_origin_world = np.eye(4)
+        T_enu_origin_world[:3, :3] = R.from_quat(q_enu_origin_world).as_matrix()
+        T_enu_origin_world[:3, 3] = np.array(t_enu_origin_world)
 
         # Read in the full paths
         gps_ie = np.array(
@@ -455,13 +511,15 @@ def launch_nodes():
                 for _, t, _ in Bag(ap20_gps_bag).read_messages(topics="/gt_box/inertial_explorer/gt_poses_novatel")
             ]
         )
-        # Convert the paths to 4x4 numpy arrays
+
         gps_ie_path_arr = np.array([np.eye(4) for _ in range(len(gps_ie))])
         for i in range(len(gps_ie)):
             gps_ie_path_arr[i, :3, :3] = R.from_quat(
                 [gps_ie[i].orientation.x, gps_ie[i].orientation.y, gps_ie[i].orientation.z, gps_ie[i].orientation.w]
             ).as_matrix()
             gps_ie_path_arr[i, :3, 3] = [gps_ie[i].position.x, gps_ie[i].position.y, gps_ie[i].position.z]
+
+            gps_ie_path_world = T_enu_origin_world @ gps_ie_path_arr
 
     ap20_path_arr = np.array([np.eye(4) for _ in range(len(ap20))])
     pose_gt_path_arr = np.array([np.eye(4) for _ in range(len(pose_gt))])
@@ -474,15 +532,9 @@ def launch_nodes():
             [pose_gt[i].orientation.x, pose_gt[i].orientation.y, pose_gt[i].orientation.z, pose_gt[i].orientation.w]
         ).as_matrix()
         pose_gt_path_arr[i, :3, 3] = [pose_gt[i].position.x, pose_gt[i].position.y, pose_gt[i].position.z]
-
-    # Transform the paths to the correct frames
-    T_enu_origin_world = np.eye(4)
-    T_enu_origin_world[:3, :3] = R.from_quat(q_enu_origin_world).as_matrix()
-    T_enu_origin_world[:3, 3] = np.array(t_enu_origin_world)
-
-    T_prism_enu_origin = np.eye(4)
-    T_prism_enu_origin[:3, :3] = R.from_quat(q_prism_enu_origin).as_matrix()
-    T_prism_enu_origin[:3, 3] = np.array(t_prism_enu_origin)
+    T_prism_world = np.eye(4)
+    T_prism_world[:3, :3] = R.from_quat(q_prism_world).as_matrix()
+    T_prism_world[:3, 3] = np.array(t_prism_world)
 
     colors = {
         "gray": "#cecece",
@@ -493,12 +545,10 @@ def launch_nodes():
         "dark_blue": "#082a54",
     }
 
-    if gps_is_available:
-        gps_ie_path_world = T_enu_origin_world @ gps_ie_path_arr
-    else:
+    if not gps_is_available:
         gps_ie_path_world = np.zeros_like(ap20_path_arr)  # For debugging only
 
-    ap20_path_world = ap20_path_arr
+    ap20_path_world = np.linalg.inv(T_prism_world) @ ap20_path_arr
     pose_gt_path_world = pose_gt_path_arr
 
     x_min = min(
@@ -582,24 +632,23 @@ def launch_nodes():
 
     # Adjust layout
     plt.tight_layout()
-    plt.savefig("/out/graph_msf_result.png")
+    plt.savefig(os.path.join(OUT, "graph_msf_result.png"))
 
+    # Upload results
     if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
         uuid = os.environ["MISSION_UUID"]
-        os.system(f"klein upload --mission {uuid} {tf_gt} {pose_gt} {tf_static_gt_path}")
+        os.system(f"klein upload --mission {uuid} {tf_gt_path} {pose_gt_path} {tf_static_gt_path}")
     else:
-        print(f"Finished processing - Generated: {tf_gt}, {pose_gt}, {tf_static_gt_path} - and multiple csv files.")
-
-
-def fetch_multiple_files_kleinkram(patterns):
-    if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
-        uuid = os.environ["MISSION_UUID"]
-        paths = " ".join([f"'{p}'" for p in patterns])
-        os.system(f"klein download --mission {uuid} --dest /mission_data {paths}")
+        print(
+            f"Finished processing - Generated: {tf_gt_path}, {pose_gt_path}, {tf_static_gt_path} - and multiple csv files."
+        )
 
 
 if __name__ == "__main__":
-    fetch_multiple_files_kleinkram(PATTERNS)
+    if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
+        uuid = os.environ["MISSION_UUID"]
+        paths = " ".join([f"'{p}'" for p in PATTERNS])
+        os.system(f"klein download --mission {uuid} --dest /mission_data {paths}")
     try:
         launch_nodes()
     except rospy.ROSInterruptException:
