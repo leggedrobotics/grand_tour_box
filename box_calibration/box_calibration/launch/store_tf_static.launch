@@ -1,0 +1,13 @@
+<launch>
+    <include file="$(find box_model)/launch/box_model.launch">
+    </include>
+
+    <!-- Output bag file -->
+    <arg name="bag_file" default="$(find box_calibration)/calibration/tf_static_with_metadata.bag" />
+
+    <!-- Run the Python script -->
+    <node name="store_tf_static" pkg="box_calibration" type="store_tf_static.py" output="screen">
+        <param name="bag_file" value="$(arg bag_file)" />
+    </node>
+    
+</launch>
