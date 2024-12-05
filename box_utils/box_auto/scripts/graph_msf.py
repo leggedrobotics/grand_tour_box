@@ -476,8 +476,24 @@ def launch_nodes():
     tf_statics.append(R_world_to_helper)
     tf_statics.append(R_helper_to_prism)
     if gps_is_available:
-        R_world_to_enu_orign = csv_to_TransformStamped(csv_file_world_to_enu_orign, "world", "enu_orign")
-        tf_statics.append(R_world_to_enu_orign)
+        R_world_to_enu_origin = csv_to_TransformStamped(csv_file_world_to_enu_orign, "world", "enu_origin")
+    else:
+        R_world_to_enu_origin = create_transform_stamped(
+            timestamp=R_world_to_helper.header.stamp.to_sec(),
+            x=0,
+            y=0,
+            z=0,
+            qw=1,
+            qx=0,
+            qy=0,
+            qz=0,
+            fixed_frame_id="world",
+            child_frame_id="enu_origin",
+        )
+        gps_is_available = True
+
+    tf_statics.append(R_world_to_enu_origin)
+
     write_tf_static_bag(tf_static_gt_path, tf_statics)  # Important this bag cannot be replayed given
 
     # Convert world to box_base to rosbag
