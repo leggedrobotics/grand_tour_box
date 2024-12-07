@@ -240,7 +240,10 @@ if __name__ == "__main__":
     if not args.all:
         # Process single imu file within mission folder
         output_topic_name = "/gt_box/cpt7/offline_from_novatel_logs/imu"
-        date = [(str(s.name)).split("_")[0] for s in Path(MISSION_DATA).glob("*_nuc_imu*.bag")][0]
+        try:
+            date = [(str(s.name)).split("_")[0] for s in Path(MISSION_DATA).glob("*_nuc_imu*.bag")][0]
+        except:
+            date = [(str(s.name)).split("_")[0] for s in Path(MISSION_DATA).glob("*_nuc_livox*.bag")][0]
         output = str(Path(MISSION_DATA) / f"{date}_cpt7_raw_imu.bag")
 
         files = [str(s) for s in Path(MISSION_DATA).rglob("*RAWIMUSX.ASCII")]
