@@ -9,7 +9,13 @@ nuc:
       - /gt_box/alphasense_driver_node/imu
       - /gt_box/livox/imu_si_compliant
       - /gt_box/cpt7/imu/data_raw
+      - /gt_box/stim320/acceletometer_temperature
+      - /gt_box/stim320/gyroscope_temperature
       - /gt_box/stim320/imu
+      - /gt_box/stim320/internal_counter
+      - /gt_box/stim320/kernel_time
+      - /gt_box/stim320/ros_time
+      - /gt_box/stim320/continuous_counter
       - /gt_box/adis16475_node/imu
       - /gt_box/zed2i_driver_node/imu/data_raw
       - /tf

@@ -172,7 +172,7 @@ class RAWIMUDataParser:
                     bag.write(topic=topic_name, msg=latest_message, t=stamp)
         except Exception as e:
             self.logger.error(f"Writing IMU data to rosbag failed with:" f"\n {e}")
-        self.logger.info(f"Successfully wrote to:" f"\n{path}")
+        self.logger.info(f"Successfully wrote to:" f"\n{path} - last message at {latest_message.header.stamp.secs}")
 
     def check_floating_point_diff(self, a, b, tolerance=1e-8):
         return np.abs(a - b) > tolerance
@@ -240,7 +240,7 @@ if __name__ == "__main__":
     if not args.all:
         # Process single imu file within mission folder
         output_topic_name = "/gt_box/cpt7/offline_from_novatel_logs/imu"
-        date = [(str(s.name)).split("_")[0] for s in Path(MISSION_DATA).glob("*_nuc_livox*.bag")][0]
+        date = [(str(s.name)).split("_")[0] for s in Path(MISSION_DATA).glob("*_nuc_imu*.bag")][0]
         output = str(Path(MISSION_DATA) / f"{date}_cpt7_raw_imu.bag")
 
         files = [str(s) for s in Path(MISSION_DATA).rglob("*RAWIMUSX.ASCII")]
