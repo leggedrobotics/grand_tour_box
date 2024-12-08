@@ -27,7 +27,7 @@
     <rosparam param="ignore_nodes">[]</rosparam>
 
     <!-- The list of nodes to synchronize. Only topics of this nodes are synchronized. The ~ignore_nodes, ~ignore_topics and ~ignore_services lists are processed first. -->
-    <rosparam param="sync_nodes">["/gt_box*", "/joy_manager", "/state_estimator*", "/twist_mux", "/anymal_tf_publisher*"]</rosparam>
+    <rosparam param="sync_nodes">[]</rosparam>
 
     <!-- The list of topics, which are to be ignored while a synchroniation. The ~ignore_nodes list is processed first.
     These are defaults and cannot be removed: ['/rosout', '/rosout_agg'] -->

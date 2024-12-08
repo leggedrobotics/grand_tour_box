@@ -1,4 +1,4 @@
-plugin_config_file: '$(rospack find bringup_elevation_mapping)/config/anymal_plugin_config.yaml'
+plugin_config_file: '$(rospack find bringup_elevation_mapping)/config/grand_tour_plugin_config.yaml'
 
 pointcloud_channel_fusions:
   rgb: 'color'
@@ -39,5 +39,5 @@ subscribers:
     data_type: pointcloud
 
   livox:
-    topic_name: /gt_box/livox/points
+    topic_name: /gt_box/livox/lidar
     data_type: pointcloud
