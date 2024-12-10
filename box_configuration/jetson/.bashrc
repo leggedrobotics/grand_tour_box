@@ -1,11 +1,10 @@
 source /home/rsl/git/grand_tour_box/box_configuration/jetson/alias.sh
 source /opt/ros/noetic/setup.bash
+source /home/rsl/catkin_ws/devel/setup.bash
+
 # ~/.bashrc: executed by bash(1) for non-login shells.
 # see /usr/share/doc/bash/examples/startup-files (in the package bash-doc)
 # for examples
-
-source /opt/ros/noetic/setup.bash
-source /home/rsl/catkin_ws/devel/setup.bash
 
 # If not running interactively, don't do anything
 case $- in
@@ -120,7 +119,11 @@ if ! shopt -oq posix; then
   fi
 fi
 
-source /opt/ros/noetic/setup.bash
-source /home/rsl/catkin_ws/devel/setup.bash
 export ISAAC_ROS_WS=/data/workspaces/isaac_ros-dev/
 export PATH=$PATH:/home/rsl/.local/bin
+
+export CUDA_HOME=/usr/local/cuda-11.4
+export PATH=$CUDA_HOME/bin:$PATH
+export LD_LIBRARY_PATH=$CUDA_HOME/lib64:$LD_LIBRARY_PATH
+export PYTHONPATH=$PYTHONPATH:/home/rsl/.local/lib/python3.8/site-packages:/usr/include/python3.8
+

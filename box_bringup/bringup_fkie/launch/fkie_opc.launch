@@ -1,6 +1,6 @@
 <launch>
   <!-- Use GUI -->
-  <arg name="use_gui" default="true"/>
+  <arg name="use_gui" default="false"/>
   
   <!-- Parameters parsed to the fkie -->
   <arg name="autostart_launch_files" default=""/>
@@ -50,7 +50,7 @@
             name="node_manager"
             if="$(arg use_gui)"/>
     <!-- fkie_master_discovery -->
-    <include file="$(find bringup_fkie)/launch/master_discovery_pi.launch" />
-    <!-- fkie_master_sync --> 
-    <!--  <include file="$(find bringup_fkie)/launch/master_sync.launch" /> --> 
+    <include file="$(find bringup_fkie)/launch/master_discovery_opc.launch" />
+    <!-- fkie_master_sync -->
+    <include file="$(find bringup_fkie)/launch/master_sync_opc.launch" />
 </launch>

@@ -1,0 +1,28 @@
+session_name: lpc-box
+before_script: "../scripts/cleanup_session_robot.sh"
+
+windows:
+- window_name: grand_tour_box_robot
+  layout: tiled
+  shell_command_before:
+    - export HOSTNAME=anymal-d039-lpc
+    - export DISPLAY=:0.0
+    - export ROS_MASTER_URI=http://anymal-d039-lpc:11311
+    - export ROS_IP=192.168.0.141
+
+  options:
+    pane-border-status: top
+  panes:
+    - shell_command:
+      - source /opt/ros/noetic/setup.bash
+      - source ~/catkin_ws/devel/setup.bash
+      - roslaunch bringup_fkie fkie_lpc.launch
+          autostart_launch_files:="
+            $(rospack find box_recording)/launch/rosbag_record_node_lpc.launch
+            "
+          use_gui:=false
+    - shell_command:
+      - source /opt/ros/noetic/setup.bash
+      - source ~/catkin_ws/devel/setup.bash
+      - df -h /data
+      focus: true

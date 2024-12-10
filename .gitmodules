@@ -82,7 +82,11 @@
 	path = box_applications/evo
 	url = git@github.com:leggedrobotics/evo.git
 	branch = master
-[submodule "box_applications/gtsam_catkin"]
-	path = box_applications/gtsam_catkin
-	url = git@github.com:leggedrobotics/gtsam_catkin.git
-	branch = main
+[submodule "box_applications/simple_navigation"]
+	path = box_applications/simple_navigation
+	url = git@github.com:leggedrobotics/simple_navigation.git
+	branch = master
+[submodule "box_applications/anymal_d_simple_description"]
+	path = box_applications/anymal_d_simple_description
+	url = git@github.com:leggedrobotics/anymal_d_simple_description.git
+	branch = master

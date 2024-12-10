@@ -1,14 +1,11 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>launch_anymal</name>
+  <name>bringup_anymal</name>
   <version>1.0.0</version>
-  <description>RSL's launch_anymal package.</description>
+  <description>RSL's bringup_anymal package.</description>
   <license>Proprietary</license>
   <maintainer email="jonfrey@ethz.ch">Jonas Frey</maintainer>
   <author email="jonfrey@ethz.ch">Jonas Frey</author>
   <buildtool_depend>catkin</buildtool_depend>
 
-  <depend>box_recording</depend>
-  <depend>box_launch</depend>
-  <depend>bringup_anymal</depend>
 </package>

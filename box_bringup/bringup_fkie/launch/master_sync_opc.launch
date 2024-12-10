@@ -36,7 +36,7 @@
     <rosparam param="ignore_subscribers">[]</rosparam>
 
     <!-- The list of topics to synchronize. The ~ignore_nodes and ~ignore_topics lists are processed first. -->
-    <rosparam param="sync_topics">["/tf", "/tf_static", "/twist_mux/twist", "/state_estimator/pose_in_odom", "/goal"]</rosparam>
+    <rosparam param="sync_topics">["/tf", "/tf_static"]</rosparam>
 
     <!-- The list of services, which are to be ignored while a synchroniation. The ~ignore_nodes list is processed first.
     These are defaults and cannot be removed: ['/*get_loggers', '/*set_logger_level'] -->
