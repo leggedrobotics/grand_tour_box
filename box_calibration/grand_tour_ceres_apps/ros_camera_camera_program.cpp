@@ -17,7 +17,7 @@ ROSCameraCameraProgram::ROSCameraCameraProgram(ROSCameraCameraParser parser) {
                                                                               parser.initial_guess_path);
 
     const auto frameid_mappings = LoadRostopicFrameIDMapping(parser.rostopic_frameid_mapping_path);
-    for (const auto& [rostopic, params]: rostopic_camera_parameter_packs) {
+    for (const auto &[rostopic, params]: rostopic_camera_parameter_packs) {
         if (!frameid_mappings.contains(rostopic)) {
             ROS_ERROR_STREAM("Could not find ROSTOPIC to frameid mapping for " + rostopic
                              + "\nPlease verify the file: " + parser.rostopic_frameid_mapping_path);
@@ -48,7 +48,6 @@ bool ROSCameraCameraProgram::addAlignmentData(ros::Time current_ros_time,
     Observations2dModelPoints3dPointIDsPose3dSensorName observation = buildObservationFromRosMSG(camera_detections);
     ScopedTimer timer;
     if (!this->computeAndPopulateInitialGuessModelPose(observation)) {
-        ROS_ERROR_STREAM("Failed to initialize pose for observation from frame: " + observation.sensor_name);
         return false;
     }
     if (!force) {
@@ -194,6 +193,13 @@ bool ROSCameraCameraProgram::handleAddExtrinsicsCost(unsigned long long stamp,
             continue;
         }
 
+        has_initialised_extrinsics[origin_camera_frame_id] = true;
+        if (!has_initialised_extrinsics.contains(new_observation.sensor_name) and
+        !has_initialised_extrinsics.contains(other_sensor_name)) {
+            ROS_DEBUG_STREAM("Not adding extrinsics sample between: " + new_observation.sensor_name + " and "
+            + other_sensor_name);
+            continue;
+        }
         CameraCameraProgram::extrinsics_residuals_of_cameras_at_time[
                 new_observation.sensor_name][
                 other_sensor_name][
@@ -220,6 +226,16 @@ bool ROSCameraCameraProgram::handleAddExtrinsicsCost(unsigned long long stamp,
     return information_added;
 }
 
+/**
+ * @brief Adds a new sensor vertex to the observation graph if it doesn't already exist.
+ *
+ * This method checks if a sensor with the given name exists in the frame_id_to_vertex_mapping_ map.
+ * If the sensor does not exist, it adds a new vertex to the codetection_graph_ and updates the
+ * mapping between frame IDs and vertex indices. It also assigns the name to the newly created vertex
+ * in the graph.
+ *
+ * @param name The name of the sensor to be added to the observation graph.
+ */
 void ROSCameraCameraProgram::AddNewSensorVertexToObservationGraph(
         const std::string &name) {
     if (!frame_id_to_vertex_mapping_.contains(name)) {
@@ -268,7 +284,7 @@ bool ROSCameraCameraProgram::resetProblem() {
 bool ROSCameraCameraProgram::rebuildProblemFromLoggedROSAlignmentData() {
     // Compute covariance of board poses
     this->resetStateFromLoggedObservations();
-    this->filterOutOutliersFromLoggedObservations(3.0);
+//    this->filterOutOutliersFromLoggedObservations(3.0);
     this->resetStateFromLoggedObservations();
     return true;
 }
@@ -348,30 +364,43 @@ std::stringstream GetTimeNowString(ros::Time time) {
     std::tm *time_info = std::localtime(&raw_time);
     // Convert ROS time to human-readable format
     std::stringstream time_stream;
-    time_stream << "Generated with data of ROS time: ";
-    time_stream << std::put_time(time_info, "%Y-%m-%d %H:%M:%S");
-    // Add nanoseconds for precision
-    time_stream << "." << std::setw(9) << std::setfill('0') << current_time.nsec << std::endl;
+    time_stream << std::put_time(time_info, "%Y-%m-%d-%H-%M-%S") << std::endl;
     return time_stream;
 }
 
 bool ROSCameraCameraProgram::writeCalibrationOutput() {
-    std::string calib_package_name = "box_calibration";
-    std::filesystem::path calib_root_path = ros::package::getPath(calib_package_name);
-    if (calib_root_path.empty()) {
-        ROS_ERROR_STREAM("Failed to write output calibration");
-        return true;
+    const auto write_path = this->fetchOutputPath();
+    if (write_path.string() == "") {
+        return false;
     }
-    std::filesystem::path relative_output_path =
-            "calibration/raw_calibration_output/cameras-intrinsics-extrinsics_latest.yaml";
-    std::filesystem::path output_path = calib_root_path / relative_output_path;
     std::map<std::string, CameraParameterPack> camera_parameters_by_rostopic;
     for (const auto &[frameid, params]: camera_parameter_packs) {
         camera_parameters_by_rostopic[frameid2rostopic_.at(frameid)] = params;
     }
-    SerialiseCameraParameters(output_path.string(), camera_parameters_by_rostopic,
+    SerialiseCameraParameters(write_path.string(), camera_parameters_by_rostopic,
                               GetTimeNowString(calibration_time).str());
-    ROS_INFO_STREAM("Wrote output calibrations to: " + output_path.string());
+    ROS_INFO_STREAM("Wrote output calibrations to: " + write_path.string());
+    return true;
+}
+
+void ROSCameraCameraProgram::setIntrinsicParametersConstBeforeOpt() {
+    for (auto &[name, params]: camera_parameter_packs) {
+        if (!intrinsics_residuals_of_camera_at_time.contains(name)) {
+            continue;
+        }
+        problem_->getProblem().SetParameterBlockConstant(params.fxfycxcy);
+        problem_->getProblem().SetParameterBlockConstant(params.dist_coeffs);
+    }
+}
+
+void ROSCameraCameraProgram::setIntrinsicParametersVariableBeforeOpt() {
+    for (auto &[name, params]: camera_parameter_packs) {
+        if (!intrinsics_residuals_of_camera_at_time.contains(name)) {
+            continue;
+        }
+        problem_->getProblem().SetParameterBlockVariable(params.fxfycxcy);
+        problem_->getProblem().SetParameterBlockVariable(params.dist_coeffs);
+    }
 }
 
 void ROSCameraCameraProgram::setExtrinsicParametersVariableBeforeOpt() {// Free up camera transforms before solve
@@ -385,4 +414,45 @@ void ROSCameraCameraProgram::setExtrinsicParametersVariableBeforeOpt() {// Free 
             problem_->getProblem().SetParameterBlockVariable(params.T_bundle_sensor);
         }
     }
+}
+
+void ROSCameraCameraProgram::setExtrinsicParametersConstBeforeOpt() {
+    for (auto &[name, params]: camera_parameter_packs) {
+        if (!extrinsics_residuals_of_cameras_at_time.contains(name)) {
+            continue;
+        }
+            problem_->getProblem().SetParameterBlockConstant(params.T_bundle_sensor);
+    }
+}
+
+void ROSCameraCameraProgram::setBoardPoseParametersConst() {
+    for (const auto& [cam_name, board_packs] : board_pose_parameter_packs) {
+        for (const auto& [stamp, board_param] : board_packs) {
+            problem_->getProblem().SetParameterBlockConstant(board_param->T_sensor_board);
+        }
+    }
+}
+
+void ROSCameraCameraProgram::setBoardPoseParametersVariable() {
+    for (const auto& [cam_name, board_packs] : board_pose_parameter_packs) {
+        for (const auto& [stamp, board_param] : board_packs) {
+            problem_->getProblem().SetParameterBlockVariable(board_param->T_sensor_board);
+        }
+    }
+}
+
+fs::path ROSCameraCameraProgram::fetchOutputPath() {
+    if (output_path == "") {
+        std::string calib_package_name = "box_calibration";
+        std::filesystem::path calib_root_path = ros::package::getPath(calib_package_name);
+        if (calib_root_path.empty()) {
+            ROS_ERROR_STREAM("Failed to write output calibration");
+            return "";
+        }
+        std::filesystem::path relative_output_path =
+                "calibration/raw_calibration_output/cameras-intrinsics-extrinsics_latest.yaml";
+        std::filesystem::path path = calib_root_path / relative_output_path;
+        return path;
+    }
+    return output_path;
 }

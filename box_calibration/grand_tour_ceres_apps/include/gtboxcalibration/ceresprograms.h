@@ -64,6 +64,7 @@ struct CameraCameraProgram : CeresProgram {
     void SetPresolveCameraExtrinsicsConstants();
 
     std::map<std::string, CameraParameterPack> camera_parameter_packs;
+    std::map<std::string, bool> has_initialised_extrinsics;
     std::map<std::string, std::map<unsigned long long, std::shared_ptr<BoardPoseParameterPack>>> board_pose_parameter_packs;
     CameraCamera2D3DTargetDetectionData parsed_alignment_data;
     std::map<std::string, std::map<unsigned long long, ceres::ResidualBlockId>> intrinsics_residuals_of_camera_at_time;

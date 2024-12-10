@@ -1,0 +1,4 @@
+imu_topic: "/gt_box/stim320/imu"
+imu_rate: 500
+measure_rate: 500 # Rate to which imu data is subsampled
+sequence_time: 129621 # Length in seconds
