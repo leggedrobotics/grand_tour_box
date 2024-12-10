@@ -1,0 +1,6 @@
+<launch>
+    <!-- Launch the lpc.pc node -->
+    <node pkg="anymal_d_rsl" type="lpc.py" name="anymal_lpc" output="screen">
+        <!-- Add parameters or arguments if necessary -->
+    </node>
+</launch>

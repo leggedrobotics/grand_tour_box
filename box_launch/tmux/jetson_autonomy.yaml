@@ -23,20 +23,18 @@ windows:
             $(rospack find bringup_ap20)/launch/ap20.launch
             $(rospack find box_recording)/launch/rosbag_record_coordinator.launch
             $(rospack find box_recording)/launch/rosbag_record_node.launch
-            $(rospack find bringup_zed2i_visualization)/launch/zed2i_visualization.launch
-            $(rospack find box_throttling)/launch/throttle_jetson.launch
             $(rospack find box_relaying)/launch/relay_jetson.launch
-            $(rospack find grand_tour_camera_detectors)/launch/detectors_on_jetson_camera.launch
+            $(rospack find bringup_elevation_mapping)/launch/elevation_mapping.launch
+            $(rospack find box_throttling)/launch/throttle_jetson.launch
             "
           use_gui:=false
-    - shell_command:
-      - l-docker hdr_start
-    - shell_command:
-      - sleep 10
-      - l-docker ros1_bridge_start
     - shell_command:
       - source /opt/ros/noetic/setup.bash
       - source ~/catkin_ws/devel/setup.bash
       - source ~/catkin_ws/src/grand_tour_box/box_configuration/jetson/alias.sh  
       - df -h /data
-      focus: true
+    - shell_command:
+      - l-docker hdr_start
+    - shell_command:
+      - sleep 10
+      - l-docker ros1_bridge_start

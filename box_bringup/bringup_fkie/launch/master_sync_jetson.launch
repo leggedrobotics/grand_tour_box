@@ -26,8 +26,8 @@
     These are defaults and cannot be removed: [/rosout, "/*master_sync* node", "remote /*master_discovery* node", "/*node_manager", /*zeroconf] -->
     <rosparam param="ignore_nodes">[]</rosparam>
 
-    <!-- The list of nodes to synchronize. Only topics of this nodes are synchronized. The ~ignore_nodes, ~ignore_topics and ~ignore_services lists are processed first. -->
-    <rosparam param="sync_nodes">["/gt_box*", "/joy_manager", "/state_estimator*", "/twist_mux", "/anymal_tf_publisher*"]</rosparam>
+    <!-- The list of nodes to synchronize. Only topics of this nodes are synchronized. The ~ignore_nodes, ~ignore_topics and ~ignore_services lists are processed first. "/gt_box*", "/joy_manager", "/state_estimator*", "/twist_mux", "/anymal_tf_publisher*" , "/localization_manager", "/motion_control_manager" -->
+    <rosparam param="sync_nodes">[]</rosparam>
 
     <!-- The list of topics, which are to be ignored while a synchroniation. The ~ignore_nodes list is processed first.
     These are defaults and cannot be removed: ['/rosout', '/rosout_agg'] -->
@@ -36,7 +36,7 @@
     <rosparam param="ignore_subscribers">[]</rosparam>
 
     <!-- The list of topics to synchronize. The ~ignore_nodes and ~ignore_topics lists are processed first. -->
-    <rosparam param="sync_topics">[]</rosparam>
+    <rosparam param="sync_topics">["/tf", "/tf_static", "/twist_mux/twist", "/state_estimator/pose_in_odom", "/goal"]</rosparam>
 
     <!-- The list of services, which are to be ignored while a synchroniation. The ~ignore_nodes list is processed first.
     These are defaults and cannot be removed: ['/*get_loggers', '/*set_logger_level'] -->
@@ -46,7 +46,7 @@
     <rosparam param="sync_services">[]</rosparam>
 
     <!-- This parameter is only regarded, if sync_nodes or sync_topics are set. In this case the subscribed and published topics are synchronized even if they are not in the sync_* list -->
-    <param name="sync_topics_on_demand" value="False" />
+    <param name="sync_topics_on_demand" value="True" />
 
     <!-- The list of types to ignore.
     These are defaults and cannot be removed: ['bond/Status'] -->

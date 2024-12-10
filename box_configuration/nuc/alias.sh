@@ -3,7 +3,8 @@
 alias tk='tmux kill-server'
 alias tk_dev='tmux kill-session -a'
 
-alias l-nuc='tmuxp load $(rospack find box_launch)/../tmux/nuc_recording.yaml'
+alias l-autonomy='tmuxp load $(rospack find box_launch)/../tmux/nuc_autonomy.yaml'
+alias l-recording='tmuxp load $(rospack find box_launch)/../tmux/nuc_recording.yaml'
 alias l-set-time='tmuxp load $(rospack find box_launch)/../tmux/nuc_set_time.yaml'
 alias l-calib-camera='tmuxp load $(rospack find box_launch)/../tmux/nuc_calib_camera.yaml'
 alias l-calib-lidar='tmuxp load $(rospack find box_launch)/../tmux/nuc_calib_lidar.yaml'

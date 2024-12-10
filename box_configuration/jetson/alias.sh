@@ -3,7 +3,8 @@
 alias tk='tmux kill-server'
 alias tk_dev='tmux kill-session -a'
 
-alias l-jetson='tmuxp load $(rospack find box_launch)/../tmux/jetson_recording.yaml'
+alias l-autonomy='tmuxp load $(rospack find box_launch)/../tmux/jetson_autonomy.yaml'
+alias l-recording='tmuxp load $(rospack find box_launch)/../tmux/jetson_recording.yaml'
 # Launch mode that doesn't allow for recording
 alias l-viz='tmuxp load $(rospack find box_launch)/../tmux/jetson_visualization.yaml'
 alias l-calib-camera='tmuxp load $(rospack find box_launch)/../tmux/jetson_calib_camera.yaml'

@@ -19,19 +19,17 @@ windows:
       - source ~/catkin_ws/devel/setup.bash
       - roslaunch bringup_fkie fkie_opc.launch
           autostart_launch_files:="
-            $(rospack find box_rviz)/launch/camera.launch
-            $(rospack find grand_tour_calibration_viewers)/launch/all_cameras.launch
+            $(rospack find anymal_d_simple_description)/launch/load.launch
+            $(rospack find box_rviz)/launch/autonomy.launch
             "
           load_launch_files:="
-            $(rospack find grand_tour_ceres_apps)/launch/camera_camera_online_calibration.launch
             $(rospack find box_rviz)/launch/multiplot.launch
-            $(rospack find box_rviz)/launch/recording.launch
-          "
+            "
           use_gui:=true
     - shell_command:
       - source /opt/ros/noetic/setup.bash
       - source ~/catkin_ws/devel/setup.bash
-      - source ~/catkin_ws/src/grand_tour_box/box_configuration/opc/alias.sh
-      - clear
-      - history -s "roslaunch grand_tour_calibration_viewers all_cameras.launch recording_id:="
+      - source ~/catkin_ws/src/grand_tour_box/box_configuration/opc/alias.sh 
+      - rosparam echo use_sim_time
+      - df -h $HOME
       focus: true
