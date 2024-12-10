@@ -13,6 +13,9 @@ def remove(data_folder, mission_name):
         "_jetson_hdr_right.bag",
         "_jetson_hdr_left.bag",
         "_jetson_hdr_front.bag",
+        "_jetson_hdr_right_updated.bag",
+        "_jetson_hdr_left_updated.bag",
+        "_jetson_hdr_front_updated.bag",
     ]
     folder = Path(MISSION_DATA)
     files_to_upload = [str(s) for s in folder.rglob("*.bag")]
