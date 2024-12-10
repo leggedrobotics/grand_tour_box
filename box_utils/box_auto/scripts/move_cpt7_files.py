@@ -69,6 +69,7 @@ def organize_data_folders(data_folder):
                     os.path.join(data_folder, Path(best).name.replace("_RAWIMUSX.bag", ".LOG")),
                     os.path.join(data_folder, mission),
                 )
+    print(mission_to_start)
 
 
 # Usage
