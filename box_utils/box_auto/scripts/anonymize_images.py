@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 import rosbag
@@ -14,10 +13,10 @@ from pathlib import Path
 import cv2
 import supervision as sv
 import numpy as np
-from typing import Collection, Sequence
+from typing import Collection, Sequence, Generator, Iterable
 import matplotlib.pyplot as plt
 
-# NOTE: use conda env img_anon 
+# NOTE: use conda env img_anon
 
 MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
 
@@ -27,6 +26,7 @@ MODEL_PATH = MODELS_PATH / "yolo-v11.pt"
 BLUR_CLASS_IDS = (1, 2)  # 0 for sign
 MODEL = YOLO(MODEL_PATH)
 BATCH_SIZE = 8
+
 
 def fetch_multiple_files_kleinkram(patterns):
     tmp_dir = "/mission_data/tmp"
@@ -48,13 +48,53 @@ def _get_detections_batched(images: Sequence[np.ndarray]) -> list[sv.Detections]
     return list(map(sv.Detections.from_ultralytics, MODEL.predict(source=list(images))))
 
 
-def _blur_image(
-    image: np.ndarray, dets: sv.Detections, class_ids: Collection[int] = BLUR_CLASS_IDS
-) -> np.ndarray:
-    for xyxy, _, _, cid, _, _ in dets:
+def _detections_to_coordinates(
+    detections: sv.Detections, class_ids: Collection[int] = BLUR_CLASS_IDS
+) -> list[tuple[int, int, int, int]]:
+    ret = []
+    for xyxy, _, _, cid, _, _ in detections:  # TODO: proper unpacking
         if cid not in class_ids:
             continue
-        x1, y1, x2, y2 = map(int, xyxy)
+        ret.append(tuple(map(int, xyxy)))
+    return ret
+
+
+def _temporally_aggregated_detections(
+    detections_iter: Iterable[list[tuple[int, int, int, int]]],
+    buffer_forward: int = 4,
+    buffer_size: int = 9,
+) -> Generator[list[tuple[int, int, int, int]], None, None]:
+    """\
+    temporally aggregate detections
+
+    for every frame we consider the detections of the next `buffer_forward` frames
+    and consider a total of `buffer_size` frames
+
+    with the default arguments this means that we consider the detectiosn of the next 4 frames,
+    the frame itself and the 4 previous frames
+    """
+    buffer: list[list[tuple[int, int, int, int]]] = [[] for _ in range(buffer_size)]
+
+    for idx, detections in enumerate(detections_iter):
+        buffer = buffer[1:] + [detections]  # rotate the buffer
+        # lag output by buffer_forward frames
+        if idx >= buffer_forward:
+            yield [det for dets in buffer for det in dets]
+
+    # yield the remaining frames due to lag
+    for _ in range(buffer_forward):
+        yield [det for dets in buffer for det in dets]
+        buffer = buffer[1:]
+
+
+def _blur_image(
+    image: np.ndarray,
+    detections: Sequence[tuple[int, int, int, int]],
+) -> np.ndarray:
+    """\
+    applies blurs to images based on detections
+    """
+    for x1, y1, x2, y2 in detections:
         image[y1:y2, x1:x2] = cv2.GaussianBlur(
             image[y1:y2, x1:x2], (BLUR_SIZE, BLUR_SIZE), 0
         )
@@ -68,6 +108,15 @@ def _anonymize_images(images: Sequence[np.ndarray]) -> list[np.ndarray]:
         image = _blur_image(image, dets)
         ret.append(image)
     return ret
+
+
+def _filtered_images(
+    in_bag: rosbag.Bag, out_bag: rosbag.Bag, image_topics: Collection[str]
+) -> Generator[np.ndarray, None, None]:
+    """\
+    filter images from a bagfile and return them as numpy arrays
+    """
+    pass
 
 
 def process_rosbag(input_bag, image_topics, out_bag_path, out_image_topics):
@@ -93,7 +142,9 @@ def process_rosbag(input_bag, image_topics, out_bag_path, out_image_topics):
                     # Convert ROS Image message to OpenCV image
                     cv_image = bridge.imgmsg_to_cv2(msg, desired_encoding="passthrough")
                 else:
-                    cv_image = bridge.compressed_imgmsg_to_cv2(msg, desired_encoding="passthrough")
+                    cv_image = bridge.compressed_imgmsg_to_cv2(
+                        msg, desired_encoding="passthrough"
+                    )
 
                 batch.append(cv_image)
                 msg_timestamps.append(t)
@@ -103,12 +154,20 @@ def process_rosbag(input_bag, image_topics, out_bag_path, out_image_topics):
                     for i, anonymized_image in enumerate(anonymized_images):
                         if not compressed:
                             # Convert back to ROS Image message
-                            anonymized_image_msg = bridge.cv2_to_imgmsg(anonymized_image, encoding="passthrough")
+                            anonymized_image_msg = bridge.cv2_to_imgmsg(
+                                anonymized_image, encoding="passthrough"
+                            )
                         else:
-                            anonymized_image_msg = bridge.cv2_to_compressed_imgmsg(anonymized_image, dst_format="jpg")
+                            anonymized_image_msg = bridge.cv2_to_compressed_imgmsg(
+                                anonymized_image, dst_format="jpg"
+                            )
 
                         anonymized_image_msg.header = msg.header
-                        out_bag.write(out_image_topics[idx], anonymized_image_msg, msg_timestamps[i])
+                        out_bag.write(
+                            out_image_topics[idx],
+                            anonymized_image_msg,
+                            msg_timestamps[i],
+                        )
 
                     batch = []
                     msg_timestamps = []
