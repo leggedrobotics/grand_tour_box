@@ -64,7 +64,7 @@ def main():
                 calibration_summary.update(calibration_metadata)
                 msg = String()
                 msg.data = yaml.dump(calibration_summary)
-                bag.write("calibration_metadata", msg)
+                bag.write("/calibration_metadata", msg)
 
             for folder, files in expected_files.items():
                 folder_path = os.path.join(package_path, folder)
