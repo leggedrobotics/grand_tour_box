@@ -41,6 +41,30 @@ measurement_integrators:
       type: hashed_chunked_wavelet_integrator
       min_range: { meters: 1.0 }
       max_range: { meters: 75.0 }
+  
+  livox_mid360:
+    projection_model:
+      type: spherical_projector
+      elevation:
+        num_cells: 32
+        min_angle: { degrees: -7.0 }
+        max_angle: { degrees: 52.0 }
+      azimuth:
+        num_cells: 512
+        min_angle: { degrees: -180.0 }
+        max_angle: { degrees: 180.0 }
+    measurement_model:
+      type: continuous_beam
+      angle_sigma: { degrees: 0.05 }
+      # NOTE: For best results, we recommend setting range_sigma to
+      #       max(min_cell_width / 2, ouster_noise) where ouster_noise = 0.05
+      range_sigma: { meters: 0.08 }
+      scaling_free: 0.2
+      scaling_occupied: 0.4
+    integration_method:
+      type: hashed_chunked_wavelet_integrator
+      min_range: { meters: 0.5 }
+      max_range: { meters: 12.0 }
 
 inputs:
   - type: pointcloud_topic
@@ -50,5 +74,14 @@ inputs:
     undistort_motion: false
     topic_queue_length: 10
     max_wait_for_pose: { seconds: 1.0 }
+  - type: pointcloud_topic
+    topic_name: "/gt_box/livox/lidar"
+    topic_type: pointcloud_topic
+    measurement_integrator_names: livox_mid360
+    undistort_motion: false
+    reprojected_pointcloud_topic_name: "/wavemap/input"
+    topic_queue_length: 10
+    max_wait_for_pose: { seconds: 1.0 }
+
     # reprojected_pointcloud_topic_name: "/wavemap/reprojected_pointcloud"
     # projected_range_image_topic_name: "/wavemap/projected_range_image"
