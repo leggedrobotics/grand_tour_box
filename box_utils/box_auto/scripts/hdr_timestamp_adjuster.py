@@ -141,14 +141,7 @@ class RosbagValidatorAndProcessor:
             img_entry = next(img_iter, None)
 
         if kernel_entry or v4l2_entry or img_entry:
-            unmatched_entries = []
-            if kernel_entry:
-                unmatched_entries.append("kernel_timestamp")
-            if v4l2_entry:
-                unmatched_entries.append("v4l2_timestamp")
-            if img_entry:
-                unmatched_entries.append("image_raw")
-            # TODO: Report these as errors possibly.
+            print("[WARNING] Unmatched kernel_timestamp, image_raw or v4l2_timestamp messages at the end of the bag.")
 
         # Report errors and stats
         if errors:
@@ -176,13 +169,20 @@ class RosbagValidatorAndProcessor:
                         if skip_first_image:
                             skip_first_image = False
                             continue
+                        match_found = False
                         for k_secs, k_nsecs, v_secs, v_nsecs in paired_timestamps:
                             if (msg.header.stamp.secs, msg.header.stamp.nsecs) == (v_secs, v_nsecs):
                                 updated_stamp = k_secs * 1_000_000_000 + k_nsecs + OFFSET_NSEC
                                 msg.header.stamp.secs = updated_stamp // 1_000_000_000
                                 msg.header.stamp.nsecs = updated_stamp % 1_000_000_000
+                                match_found = True
                                 break
-                        outbag.write(topic, msg, t)
+                        if match_found:
+                            outbag.write(topic, msg, t)
+                        else:
+                            print(
+                                f"Error: image with timestamp {(msg.header.stamp.secs, msg.header.stamp.nsecs)} doesn't have a published matching timestamp. Not saving to new bag."
+                            )
                     else:
                         outbag.write(topic, msg, t)
                     pbar.update(1)
@@ -203,8 +203,7 @@ class RosbagValidatorAndProcessor:
 
 
 if __name__ == "__main__":
-    # cameras = ["hdr_front", "hdr_left", "hdr_right"]
-    cameras = ["hdr_right"]
+    cameras = ["hdr_front", "hdr_left", "hdr_right"]
 
     if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
         uuid = os.environ["MISSION_UUID"]
