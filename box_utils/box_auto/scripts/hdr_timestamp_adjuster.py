@@ -88,6 +88,9 @@ class RosbagValidatorAndProcessor:
                 v4l2_entry = next(v4l2_iter, None)
                 img_entry = next(img_iter, None)
 
+            # TODO: Check if there a multiple kernel_ts entries before the first v4l2 entry, and advance.
+            # Hard to do with the current iter setup.
+
             if img_ts != v4l2_ts:
                 print(
                     "[WARNING] img_ts and v4l2_ts don't match. use_kernel_buffer_ts may be set to true in recorder.launch.py. Attempting skipping earlier timed message."
