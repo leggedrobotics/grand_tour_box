@@ -74,16 +74,32 @@ class RosbagValidatorAndProcessor:
         v4l2_entry = next(v4l2_iter, None)
         img_entry = next(img_iter, None)
 
+        skip_first_image = False
+
         # Discard first v4l2_timestamp if it appears before the first kernel_timestamp
-        if kernel_entry and v4l2_entry:
+        if kernel_entry and v4l2_entry and img_entry:
             kernel_ts = kernel_entry[1] * 1_000_000_000 + kernel_entry[2]
             v4l2_ts = v4l2_entry[1] * 1_000_000_000 + v4l2_entry[2]
+            img_ts = img_entry[1] * 1_000_000_000 + img_entry[2]
             if v4l2_ts < kernel_ts:
                 print(
                     f"[WARNING] First v4l2_timestamp secs={v4l2_entry[1]}, nsecs={v4l2_entry[2]} appears before first kernel_timestamp secs={kernel_entry[1]}, nsecs={kernel_entry[2]}."
                 )
                 v4l2_entry = next(v4l2_iter, None)
                 img_entry = next(img_iter, None)
+
+            if img_ts != v4l2_ts:
+                print(
+                    "[WARNING] img_ts and v4l2_ts don't match. use_kernel_buffer_ts may be set to true in recorder.launch.py. Attempting skipping earlier timed message."
+                )
+                if img_ts < v4l2_ts:
+                    print("Advancing img message")
+                    img_entry = next(img_iter, None)
+                    skip_first_image = True
+                else:
+                    print("Advancing v4l2 message")
+                    v4l2_entry = next(v4l2_iter, None)
+                    kernel_entry = next(kernel_iter, None)
 
         paired_timestamps = []
         prev_kernel_ts = None
@@ -105,20 +121,11 @@ class RosbagValidatorAndProcessor:
 
             if img_ts != v4l2_ts:
                 errors.append(
-                    f"image_raw/compressed secs={i_secs}, nsecs={i_nsecs} does not match v4l2_timestamp secs={v_secs}, nsecs={v_nsecs}. Is use_kernel_buffer_ts set to true in recorder.launch.py?"
+                    f"image_raw/compressed [seq: {i_seq}] secs={i_secs}, nsecs={i_nsecs} does not match v4l2_timestamp [seq: {v_seq}] secs={v_secs}, nsecs={v_nsecs}. Is use_kernel_buffer_ts set to true in recorder.launch.py?"
                 )
                 break
 
-            if not k_seq == v_seq == i_seq:
-                print(
-                    f"[WARNING] Kernel_timestamp seq={k_seq}, v4l2_timestamp seq={v_seq} and image_raw seq={i_seq} do not match."
-                )
-
             delta_ns = (v_secs - k_secs) * 1_000_000_000 + (v_nsecs - k_nsecs)
-            # if delta_ns < OFFSET_NSEC:
-            #     errors.append(
-            #         f"Time difference between trigger time and register read is less than time-delay constant {OFFSET_NSEC} ns. This should not be possible."
-            #     )
             deltas.append(delta_ns)
 
             paired_timestamps.append((k_secs, k_nsecs, v_secs, v_nsecs))
@@ -131,7 +138,14 @@ class RosbagValidatorAndProcessor:
             img_entry = next(img_iter, None)
 
         if kernel_entry or v4l2_entry or img_entry:
-            print("[WARNING] Unmatched kernel_timestamp, image_raw or v4l2_timestamp messages at the end of the bag.")
+            unmatched_entries = []
+            if kernel_entry:
+                unmatched_entries.append("kernel_timestamp")
+            if v4l2_entry:
+                unmatched_entries.append("v4l2_timestamp")
+            if img_entry:
+                unmatched_entries.append("image_raw")
+            # TODO: Report these as errors possibly.
 
         # Report errors and stats
         if errors:
@@ -156,6 +170,9 @@ class RosbagValidatorAndProcessor:
             with tqdm(total=total_messages, desc=f"[2/2] Processing {Path(input_bag_path).name}", unit="msgs") as pbar:
                 for topic, msg, t in inbag.read_messages():
                     if topic == f"/gt_box/{camera}/image_raw/compressed":
+                        if skip_first_image:
+                            skip_first_image = False
+                            continue
                         for k_secs, k_nsecs, v_secs, v_nsecs in paired_timestamps:
                             if (msg.header.stamp.secs, msg.header.stamp.nsecs) == (v_secs, v_nsecs):
                                 updated_stamp = k_secs * 1_000_000_000 + k_nsecs + OFFSET_NSEC
@@ -183,7 +200,8 @@ class RosbagValidatorAndProcessor:
 
 
 if __name__ == "__main__":
-    cameras = ["hdr_front", "hdr_left", "hdr_right"]
+    # cameras = ["hdr_front", "hdr_left", "hdr_right"]
+    cameras = ["hdr_right"]
 
     if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
         uuid = os.environ["MISSION_UUID"]
