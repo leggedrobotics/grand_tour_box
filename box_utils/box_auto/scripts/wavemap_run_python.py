@@ -25,7 +25,7 @@ pipeline = wave.Pipeline(your_map)
 pipeline.add_operation({"type": "threshold_map", "once_every": {"seconds": 5.0}})
 
 # Fixed yaml loading
-with open("/home/jonfrey/git/grand_tour_box/box_bringup/bringup_wavemap/config/hesai_xt32.yaml", "r") as config_file:
+with open("/home/jonfrey/git/grand_tour_box/box_bringup/bringup_wavemap/config/both.yaml", "r") as config_file:
     config = yaml.safe_load(config_file)
 
 # Add measurement integrators
