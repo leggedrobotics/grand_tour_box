@@ -51,10 +51,12 @@ include_directories(
 add_executable(ap20_driver_dev 
   src/demo_node.cpp
 )
+add_dependencies(ap20_driver_dev ${PROJECT_NAME}_generate_messages)
 
 add_executable(ap20_driver_node 
   src/simple_ap20_node.cpp
 )
+add_dependencies(ap20_driver_node ${PROJECT_NAME}_generate_messages)
 
 
 target_link_libraries(ap20_driver_node
