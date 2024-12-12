@@ -2,7 +2,7 @@
   <!-- Run wavemap -->
   <!-- General arguments -->
   <arg name="param_file"
-       default="/home/jonfrey/git/grand_tour_box/box_bringup/bringup_wavemap/config/hesai_xt32.yaml"
+       default="/home/jonfrey/git/grand_tour_box/box_bringup/bringup_wavemap/config/both.yaml"
        doc="Name of the file from which to read wavemap's server params."/>
   
 

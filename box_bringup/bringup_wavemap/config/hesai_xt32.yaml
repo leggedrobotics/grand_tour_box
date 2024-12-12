@@ -1,11 +1,11 @@
 general:
-  world_frame: "enu_origin"
+  world_frame: "world"
   logging_level: debug
   allow_reset_map_service: true
 
 map:
   type: hashed_chunked_wavelet_octree
-  min_cell_width: { meters: 0.2 }
+  min_cell_width: { meters: 0.05 }
 
 map_operations:
   - type: threshold_map
@@ -44,7 +44,7 @@ measurement_integrators:
 
 inputs:
   - type: pointcloud_topic
-    topic_name: /gt_box/hesai/points_last
+    topic_name: /gt_box/hesai/points_undistorted
     topic_type: PointCloud2
     measurement_integrator_names: hesai_xt32
     undistort_motion: false
