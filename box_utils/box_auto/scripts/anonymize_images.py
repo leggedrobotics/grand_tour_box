@@ -1,19 +1,17 @@
 from __future__ import annotations
 
-import rosbag
-import cv2
-from cv_bridge import CvBridge
-import numpy as np
-from pathlib import Path
 import os
 import shutil
-from ultralytics import YOLO
-from pathlib import Path
-import cv2
-import supervision as sv
 from itertools import chain
+from pathlib import Path
+from typing import Any, Collection, Mapping, Sequence, Tuple
+
+import cv2
 import numpy as np
-from typing import Collection, Sequence, Any, TypeAlias, Mapping
+import rosbag
+import supervision as sv
+from cv_bridge import CvBridge
+from ultralytics import YOLO
 
 # NOTE: use conda env img_anon
 
@@ -23,7 +21,7 @@ MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
 MODELS_PATH = Path(__file__).parent / "models"
 MODEL_PATH = MODELS_PATH / "yolo-v11.pt"
 MODEL = YOLO(MODEL_PATH)
-BATCH_SIZE = 8
+BATCH_SIZE = 4
 
 
 # blur settings
@@ -49,7 +47,7 @@ def fetch_multiple_files_kleinkram(patterns):
                 shutil.move(source_file, destination_file)
 
 
-Box: TypeAlias = tuple[int, int, int, int]
+Box = Tuple[int, int, int, int]
 
 
 def _process_detections(
@@ -72,6 +70,7 @@ def _get_detections_batched(
     """\
     runs a batch of images through the model and returns detection boxes for each image
     """
+    print("running batch...")
     sv_detections = [
         sv.Detections.from_ultralytics(d) for d in MODEL.predict(source=list(images))
     ]
@@ -180,10 +179,12 @@ def anonymize_bag(in_path: Path, out_path: Path, image_topics: Mapping[str, str]
         cv_bridge = CvBridge()
         print("anonymizing images...")
 
-        for topic, msg, t in in_bag.read_messages():
+        for idx, (topic, msg, t) in enumerate(in_bag.read_messages()):
             if topic not in image_topics:
                 out_bag.write(topic, msg, t)
                 continue
+            if idx % 50 == 0:
+                print(f"processing message {idx:6d} @ {t}")
 
             is_compressed = "CompressedImage" in type(msg)._type
             image = _msg_to_image(msg, cv_bridge, is_compressed)
@@ -230,88 +231,19 @@ def anonymize_bag(in_path: Path, out_path: Path, image_topics: Mapping[str, str]
 
         # reindex the bag
         print("reindexing bag...")
-        out_bag.reindex()
 
-        print(f"done anonymizing {in_path} -> {out_path}")
+    out_bag.reindex()
+    print(f"done anonymizing {in_path} -> {out_path}")
 
+
+FILE_PATH = Path(__file__).parent / "data" / "eth_campus.bag"
+OUT_PATH = Path(__file__).parent / "data" / "anon.bag"
 
 if __name__ == "__main__":
-    tasks_hdr = {
-        "hdr_front": {
-            "in": {
-                "image_topics": ["/gt_box/hdr_front/image_raw/compressed"],
-                "pattern": "_jetson_hdr_front.bag",
-            },
-            "out": {
-                "image_topics": ["/gt_box/hdr_front_anon/image_rect/compressed"],
-                "pattern": "_jetson_hdr_front_anon.bag",
-            },
+    anonymize_bag(
+        FILE_PATH,
+        OUT_PATH,
+        image_topics={
+            "/gt_box/hdr_front/image_raw/compressed": "/gt_box/hdr_front/image_anonymized/compressed"
         },
-        # "hdr_left": {
-        #     "in": {
-        #         "camera_info_topics": ["/gt_box/hdr_left/camera_info"],
-        #         "image_topics": ["/gt_box/hdr_left/image_raw/compressed"],
-        #         "pattern": "_jetson_hdr_left.bag",
-        #     },
-        #     "out": {
-        #         "camera_info_topics": ["/gt_box/hdr_left_rect/camera_info"],
-        #         "image_topics": ["/gt_box/hdr_left_rect/image_rect/compressed"],
-        #         "pattern": "_jetson_hdr_left_rect.bag",
-        #     },
-        # },
-        # "hdr_right": {
-        #     "in": {
-        #         "camera_info_topics": ["/gt_box/hdr_right/camera_info"],
-        #         "image_topics": ["/gt_box/hdr_right/image_raw/compressed"],
-        #         "pattern": "_jetson_hdr_right.bag",
-        #     },
-        #     "out": {
-        #         "camera_info_topics": ["/gt_box/hdr_right_rect/camera_info"],
-        #         "image_topics": ["/gt_box/hdr_right_rect/image_rect/compressed"],
-        #         "pattern": "_jetson_hdr_right_rect.bag",
-        #     },
-        # },
-    }
-
-    tasks_alphasense = {
-        # "alphasense": {
-        #     "in": {
-        #         "camera_info_topics": [f"/gt_box/alphasense_driver_node/cam{i}/color/camera_info" for i in range(1, 6)],
-        #         "image_topics": [
-        #             f"/gt_box/alphasense_driver_node/cam{i}/color_corrected/image/compressed" for i in range(1, 6)
-        #         ],
-        #         "pattern": "_nuc_alphasense_color_corrected.bag",
-        #     },
-        #     "out": {
-        #         "camera_info_topics": [
-        #             f"/gt_box/alphasense_driver_node/cam{i}/color_corrected_rect/camera_info" for i in range(1, 6)
-        #         ],
-        #         "image_topics": [
-        #             f"/gt_box/alphasense_driver_node/cam{i}/color_corrected_rect/image_rect/compressed"
-        #             for i in range(1, 6)
-        #         ],
-        #         "pattern": "_nuc_alphasense_color_corrected_rect.bag",
-        #     },
-        # }
-    }
-
-    tasks = {**tasks_hdr, **tasks_alphasense}
-
-    # Make this folder with partents if exists okay
-    patterns = ["*" + task["in"]["pattern"] for task in tasks.values()]
-    # fetch_multiple_files_kleinkram(patterns)
-
-    tmp_dir = "/mission_data/tmp"
-    os.makedirs(tmp_dir, exist_ok=True)
-
-    for name, task in tasks.items():
-        bags = [str(s) for s in Path(MISSION_DATA).rglob("*" + task["in"]["pattern"])]
-        print(f"\nProcess for {name} the following bags: \n", bags)
-
-        for input_bag in bags:
-            process_rosbag(
-                str(input_bag),
-                task["in"]["image_topics"],
-                str(input_bag).replace(task["in"]["pattern"], task["out"]["pattern"]),
-                task["out"]["image_topics"],
-            )
+    )
