@@ -1,5 +1,5 @@
 general:
-  world_frame: "world"
+  world_frame: "dlio_map"
   logging_level: debug
   allow_reset_map_service: true
 
@@ -16,7 +16,7 @@ map_operations:
     once_every: { seconds: 2.0 }
 
 measurement_integrators:
-  hesai_xt32:
+  hesai_xt32_short:
     projection_model:
       type: spherical_projector
       lidar_origin_to_beam_origin: { millimeters: 0.0 }
@@ -40,8 +40,36 @@ measurement_integrators:
     integration_method:
       type: hashed_chunked_wavelet_integrator
       min_range: { meters: 1.0 }
-      max_range: { meters: 30.0 }
-  
+      max_range: { meters: 20.0 }
+      max_update_resolution: { meters: 0.04 }
+
+  hesai_xt32_long:
+    projection_model:
+      type: spherical_projector
+      lidar_origin_to_beam_origin: { millimeters: 0.0 }
+      lidar_origin_to_sensor_origin_z_offset: { millimeters: 0.0 }
+      elevation:
+        num_cells: 32
+        min_angle: { degrees: -16.0 }
+        max_angle: { degrees: 15.0 }
+      azimuth:
+        num_cells: 1024
+        min_angle: { degrees: -180.0 }
+        max_angle: { degrees: 180.0 }
+    measurement_model:
+      type: continuous_beam
+      angle_sigma: { degrees: 0.005 }
+      # NOTE: For best results, we recommend setting range_sigma to
+      #       max(min_cell_width / 2, ouster_noise) where ouster_noise = 0.05
+      range_sigma: { meters: 0.05 }
+      scaling_free: 0.0001
+      scaling_occupied: 0.4
+    integration_method:
+      type: hashed_chunked_wavelet_integrator
+      min_range: { meters: 20.0 }
+      max_range: { meters: 50.0 }
+      max_update_resolution: { meters: 0.04 }
+
   livox_mid360:
     projection_model:
       type: spherical_projector
@@ -56,32 +84,29 @@ measurement_integrators:
     measurement_model:
       type: continuous_beam
       angle_sigma: { degrees: 0.05 }
-      # NOTE: For best results, we recommend setting range_sigma to
-      #       max(min_cell_width / 2, ouster_noise) where ouster_noise = 0.05
       range_sigma: { meters: 0.08 }
       scaling_free: 0.2
       scaling_occupied: 0.4
     integration_method:
       type: hashed_chunked_wavelet_integrator
       min_range: { meters: 0.5 }
-      max_range: { meters: 12.0 }
+      max_range: { meters: 15.0 }
 
 inputs:
   - type: pointcloud_topic
-    topic_name: /gt_box/hesai/points_undistorted
+    topic_name: /dlio/deskewed_point_cloud
     topic_type: PointCloud2
-    measurement_integrator_names: hesai_xt32
+    measurement_integrator_names: 
+      - hesai_xt32_short
+      # - hesai_xt32_long
     undistort_motion: false
-    topic_queue_length: 10
-    max_wait_for_pose: { seconds: 1.0 }
+    topic_queue_length: 2
+    max_wait_for_pose: { seconds: 0.1 }
   - type: pointcloud_topic
-    topic_name: "/gt_box/livox/lidar"
+    topic_name: /gt_box/livox/lidar
     topic_type: pointcloud_topic
     measurement_integrator_names: livox_mid360
     undistort_motion: false
     reprojected_pointcloud_topic_name: "/wavemap/input"
-    topic_queue_length: 10
-    max_wait_for_pose: { seconds: 1.0 }
-
-    # reprojected_pointcloud_topic_name: "/wavemap/reprojected_pointcloud"
-    # projected_range_image_topic_name: "/wavemap/projected_range_image"
+    topic_queue_length: 2
+    max_wait_for_pose: { seconds: 0.1 }
