@@ -16,7 +16,6 @@ from sensor_msgs.msg import CameraInfo, CompressedImage
 from torchvision.io.image import read_image
 from torchvision.models.segmentation import fcn_resnet50, FCN_ResNet50_Weights
 
-
 MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
 
 
@@ -88,7 +87,7 @@ class ImageSaver:
         self.camera_infos = camera_infos
         self.camera_keys = camera_keys
         self.config = config
-        self.blur_threshold = config.get("blur_threshold", 80)
+        self.blur_threshold = config["nerfstudio"]["blur_threshold"]
 
         self.taget_camera_infos = {k: None for k in camera_infos.keys()}
 
@@ -104,7 +103,7 @@ class ImageSaver:
         self.image_last_stored = {key: 0 for key in camera_keys.keys()}
         self.bridge = CvBridge()
 
-        if self.config["create_mask_based_on_semantics"]:
+        if self.config["nerfstudio"]["create_mask_based_on_semantics"]:
             # Step 1: Initialize model with the best available weights
             self.weights = FCN_ResNet50_Weights.DEFAULT
             self.model = fcn_resnet50(weights=self.weights)
@@ -130,7 +129,7 @@ class ImageSaver:
         self.image_counters[topic] += 1
         self.image_last_stored[topic] = img_msg.header.stamp.to_sec()
         camera_key = self.camera_keys[topic]
-        image_filename = f"{camera_key}_{self.image_counters[topic]:05d}.png"
+        image_filename = f"{camera_key}_{img_msg.header.seq:05d}.png"
         image_path = self.images_folder / image_filename
 
         # Convert and save image
@@ -243,7 +242,7 @@ def main():
         config = yaml.safe_load(f)
 
     input_folder = args.mission_data
-    tf_bag_path, suc = get_bag(args.mission_data, "*_gt_tf_and_tf_static.bag")
+    tf_bag_path, suc = get_bag(args.mission_data, "*_tf_static_dlio.bag")
 
     # Load camera infos
     camera_infos = {}

@@ -1,23 +1,33 @@
-width: 1920
-height: 1280
-base_frame: world
-create_mask_based_on_semantics: True
+base_frame: dlio_map
 num_images_per_topic: 1000000
 skip_start_seconds: 19
 skip_end_seconds: 60
 hz: 5
-blur_threshold: 0 # 80 is pretty good
-validation_factor: 8 # Do not touch+
+
 cameras:
 - name: front
   image_topic: /gt_box/hdr_front/image_raw/compressed
   info_topic: /gt_box/hdr_front/camera_info
   bag_pattern: "*_hdr_front_updated.bag"
+  depth_topic_out:  /gt_box/hdr_front/depth
 - name: left
   image_topic: /gt_box/hdr_left/image_raw/compressed
   info_topic: /gt_box/hdr_left/camera_info
   bag_pattern: "*_hdr_left_updated.bag"
+  depth_topic_out:  /gt_box/hdr_left/depth
 - name: right
   image_topic: /gt_box/hdr_right/image_raw/compressed
   info_topic: /gt_box/hdr_right/camera_info
   bag_pattern: "*_hdr_right_updated.bag"
+  depth_topic_out:  /gt_box/hdr_right/depth
+
+nerfstudio:
+  blur_threshold: 0 # 80 is pretty good
+  create_mask_based_on_semantics: True
+
+wavemap:
+  log_odds_occupancy_threshold: 0.1
+  max_range: 10
+  default_depth_value: -1.0
+  save_ros: True
+  save_png: True
