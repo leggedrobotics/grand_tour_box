@@ -1,16 +1,20 @@
 FROM osrf/ros:humble-desktop
+ARG DEBIAN_FRONTEND=noninteractive
+ENV DEBIAN_frontend=noninteractive
 
-RUN apt update -y
-RUN apt install -y wget
-RUN apt install python3-pip -y
+COPY dependencies/general.sh /general.sh
+RUN sh -c "chmod +x /general.sh"
+RUN /bin/bash -c '/general.sh'
 
+COPY dependencies/ros2.sh /ros2.sh
+RUN sh -c "chmod +x /ros2.sh"
+RUN --mount=type=ssh /bin/bash -c '/ros2.sh'
 
-RUN apt install -y git-all
-RUN mkdir -p /root/.ssh
-RUN ssh-keyscan github.com 2> /dev/null >> /root/.ssh/known_hosts
+COPY entrypoint_ros2.sh /home/rsl/entrypoint_ros2.sh
+RUN chmod +x /home/rsl/entrypoint_ros2.sh
+RUN chown rsl:rsl -R /home/rsl
 
-RUN mkdir -p /home/catkin_ws/src; 
-RUN --mount=type=ssh /bin/bash -c 'cd /home/catkin_ws/src; git clone git@github.com:leggedrobotics/grand_tour_box.git'
-RUN cd /bin; wget https://github.com/foxglove/mcap/releases/download/releases%2Fmcap-cli%2Fv0.0.47/mcap-linux-amd64; chmod +x mcap-linux-amd64; cp mcap-linux-amd64 mcap
+USER rsl
+WORKDIR /home/rsl
 
-ENTRYPOINT ["/ros_entrypoint.sh"]
+ENTRYPOINT ["/home/rsl/entrypoint_ros2.sh"]

@@ -11,6 +11,7 @@ apt install -y curl # if you haven't already installed curl
 apt install -y lsb-release
 apt install -y openssh-client
 apt install -y git-all
+apt install -y wget
 
 apt update -y
 
