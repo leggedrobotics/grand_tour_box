@@ -1,14 +1,26 @@
 <launch>
+  <!-- Argument definitions -->
   <arg name="box_namespace" default="gt_box"/>
+  <arg name="rviz_config" default="replay"/>
+  <arg name="anymal" default="False"/>
+
+  <!-- Group with namespace -->
   <group ns="$(arg box_namespace)"> 
-    <node name="rviz_replay" pkg="rviz" type="rviz" args="-d $(find box_rviz)/cfg/replay.rviz" >
+    <!-- RViz node for replay visualization -->
+    <node 
+      name="rviz_replay" 
+      pkg="rviz" 
+      type="rviz" 
+      args="-d '$(find box_rviz)/cfg/$(arg rviz_config).rviz'">
       <param name="capability_group" value="Visualization"/>
     </node>  
 
+    <!-- Including the box model launch file -->
     <include file="$(find box_model)/launch/box_model.launch">
       <arg name="use_sim_time" value="true"/>
     </include>
     
+    <!-- Including the string publisher launch file -->
     <include file="$(find box_rviz)/launch/publish_string.launch"/>
   </group>
 </launch>

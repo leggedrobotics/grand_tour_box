@@ -1,0 +1,16 @@
+<launch>
+  <arg name="box_namespace" default="gt_box"/>
+ 
+    <group ns="$(arg box_namespace)">
+      <node pkg="elevation_mapping_cupy" type="elevation_mapping_node" name="elevation_mapping" output="screen" launch-prefix="">
+          <param name="capability_group"      value="Application"/>
+          <rosparam command="load" file="$(find bringup_elevation_mapping)/config/grand_tour_parameters.yaml"/>
+          <rosparam command="load" file="$(find bringup_elevation_mapping)/config/grand_tour_sensor_parameter.yaml"/>
+    
+      </node>
+    </group>
+
+    <include file="$(find box_rviz)/launch/replay.launch">
+        <arg name="rviz_config" value="elevation_mapping"/>
+     </include>
+</launch>
