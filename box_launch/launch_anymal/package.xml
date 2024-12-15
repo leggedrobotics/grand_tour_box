@@ -10,5 +10,5 @@
 
   <depend>box_recording</depend>
   <depend>box_launch</depend>
-
+  <depend>bringup_anymal</depend>
 </package>

@@ -35,7 +35,7 @@ class RosbagValidatorAndProcessor:
         self.output_suffix = output_suffix
 
     def get_rosbags(self, camera):
-        return [str(s) for s in self.mission_folder.glob(f"*_{camera}.bag") if self.output_suffix not in str(s)]
+        return [str(s) for s in self.mission_folder.rglob(f"*_{camera}.bag")]
 
     def validate_and_process_bag(self, input_bag_path, output_bag_path, camera):
         kernel_timestamps = []
@@ -149,7 +149,6 @@ class RosbagValidatorAndProcessor:
         print(f"Std dev delta time: {std_dev_delta:.3f} ms")
         print(f"Trigger fps: {1_000 / mean_kernel_delta:.3f}")
         print(f"Number of messages: {len(deltas)} \n")
-
         # Process and overwrite timestamps
         with rosbag.Bag(input_bag_path, "r") as inbag, rosbag.Bag(output_bag_path, "w", compression="lz4") as outbag:
             total_messages = inbag.get_message_count()
@@ -167,10 +166,12 @@ class RosbagValidatorAndProcessor:
                     else:
                         outbag.write(topic, msg, t)
                     pbar.update(1)
+        os.system(f"rm {input_bag_path}")
 
     def run(self):
         for camera in self.cameras:
             bags = self.get_rosbags(camera)
+            print(f"Processing {len(bags)} bags for camera {camera} {bags}\n")
             for bag in bags:
                 output_bag = bag.replace(f"_{camera}.bag", f"_{camera}{self.output_suffix}.bag")
                 self.validate_and_process_bag(bag, output_bag, camera)

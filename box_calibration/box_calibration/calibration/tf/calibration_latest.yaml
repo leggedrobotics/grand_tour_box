@@ -222,11 +222,11 @@ prism_to_prism_model:
   z: 0.0
 stim320_imu_to_box_base_model:
   pitch: 0.0
-  roll: -0.0015000000000000568
+  roll: 0.0
   x: 0.0
   y: 0.0
   yaw: 0.0
-  z: 2.7755575615628914e-17
+  z: 0.0
 zed2i_base_helper_joint:
   pitch: 0.0
   roll: 0.0

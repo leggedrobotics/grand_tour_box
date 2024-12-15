@@ -15,31 +15,34 @@ import copy
 
 MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
 
+
 def load_camera_info_from_yaml(yaml_path):
-    with open(yaml_path, 'r') as f:
+    with open(yaml_path, "r") as f:
         calib_data = yaml.safe_load(f)
-    
+
     # Create a CameraInfo message
     camera_info = CameraInfo()
-    camera_info.width = calib_data['image_width']
-    camera_info.height = calib_data['image_height']
-    camera_info.K = calib_data['camera_matrix']['data']
-    camera_info.D = calib_data['distortion_coefficients']['data']
-    camera_info.R = calib_data['rectification_matrix']['data']
-    camera_info.P = calib_data['projection_matrix']['data']
-    camera_info.distortion_model = calib_data['distortion_model']
+    camera_info.width = calib_data["image_width"]
+    camera_info.height = calib_data["image_height"]
+    camera_info.K = calib_data["camera_matrix"]["data"]
+    camera_info.D = calib_data["distortion_coefficients"]["data"]
+    camera_info.R = calib_data["rectification_matrix"]["data"]
+    camera_info.P = calib_data["projection_matrix"]["data"]
+    camera_info.distortion_model = calib_data["distortion_model"]
     return camera_info
+
 
 def get_calibration_file_path(camera_name):
     rospack = rospkg.RosPack()
     try:
-        box_calib_path = rospack.get_path('box_calibration')
-        calib_file = os.path.join(box_calib_path, 'calibration', 'hdr', f'{camera_name}.yaml')
+        box_calib_path = rospack.get_path("box_calibration")
+        calib_file = os.path.join(box_calib_path, "calibration", "hdr", f"{camera_name}.yaml")
         if os.path.exists(calib_file):
             return calib_file
     except rospkg.ResourceNotFound:
-        print(f"Could not find box_calibration package")
+        print("Could not find box_calibration package")
     return None
+
 
 def downgrade_camerainfo_to_rosbag1(src: Path, dst: Path, replace: bool = False):
     typename = "sensor_msgs/msg/CameraInfo"
@@ -52,24 +55,24 @@ def downgrade_camerainfo_to_rosbag1(src: Path, dst: Path, replace: bool = False)
                 for topic, msg, t in input_bag.read_messages():
                     if topic not in seq_per_topic:
                         seq_per_topic[topic] = 0
-                    
-                    if 'camera_info' in topic:
-                        if topic not in camera_info_msg:    
+
+                    if "camera_info" in topic:
+                        if topic not in camera_info_msg:
                             # Extract camera name from frame_id
-                            camera_name = msg.header.frame_id.split('/')[-1]
+                            camera_name = msg.header.frame_id.split("/")[-1]
                             calib_file = get_calibration_file_path(camera_name)
                             new_camera_info = load_camera_info_from_yaml(calib_file)
                             camera_info_msg[topic] = new_camera_info
 
                         new_camera_info = copy.deepcopy(camera_info_msg[topic])
-                        new_camera_info.header = msg.header 
+                        new_camera_info.header = msg.header
                         new_camera_info.header.seq = seq_per_topic[topic]
 
                         output_bag.write(topic, new_camera_info, t)
 
                     else:
                         # Write original message if not replaced
-                        msg.header.seq = seq_per_topic[topic] 
+                        msg.header.seq = seq_per_topic[topic]
                         output_bag.write(topic, msg, t)
                     seq_per_topic[topic] += 1
 
@@ -126,7 +129,7 @@ def split_rosbags(input_bag_path, camera_direction, duration_minutes=5):
         split_filename = input_bag_path.replace(
             f"jetson_hdr_{camera_direction}_downgraded.bag", f"jetson_hdr_{camera_direction}_{index}.bag"
         )
-        with rosbag.Bag(split_filename, "w", compression='lz4') as outbag:
+        with rosbag.Bag(split_filename, "w", compression="lz4") as outbag:
             for topic, msg, t in bag.read_messages(
                 start_time=rospy.Time.from_sec(current_time),
                 end_time=rospy.Time.from_sec(min(current_time + duration_minutes * 60, end_time)),
@@ -134,7 +137,6 @@ def split_rosbags(input_bag_path, camera_direction, duration_minutes=5):
                 outbag.write(topic, msg, t)
         current_time += duration_minutes * 60
         index += 1
-
 
 
 if __name__ == "__main__":
@@ -163,10 +165,10 @@ if __name__ == "__main__":
             print(f"Skipping {mcap} downgraded.")
 
         # Split the downgraded bag into 5-minute chunks
-        print("Splitting the downgraded bag into 5-minute chunks.")
-        ## split_rosbags(downgraded_bag_path, camera_direction=camera_direction)
+        # print("Splitting the downgraded bag into 5-minute chunks.")
+        # split_rosbags(downgraded_bag_path, camera_direction=camera_direction)
         # Remove intermediate artifacts
         os.remove(converted_bag_path)
-        ## os.remove(downgraded_bag_path)
+        # os.remove(downgraded_bag_path)
 
     print("All directories processed. Split bags are available in each directory.")

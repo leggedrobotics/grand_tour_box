@@ -3,7 +3,7 @@
 alias tk='tmux kill-server'
 alias tk_dev='tmux kill-session -a'
 
-alias l-pi='tmuxp load /home/rsl/git/grand_tour_box/box_launch/tmux/pi_recording.yaml'
+alias l-recording='tmuxp load /home/rsl/git/grand_tour_box/box_launch/tmux/pi_recording.yaml'
 
 alias attach-pi='tmux attach-session -t pi'
 alias l-docker='/home/rsl/git/grand_tour_box/box_configuration/pi/docker/run.sh'
