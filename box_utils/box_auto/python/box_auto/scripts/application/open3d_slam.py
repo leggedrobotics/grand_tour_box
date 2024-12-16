@@ -27,7 +27,7 @@ def launch_nodes():
     else:
         print(f"Merging bags into {merged_rosbag_path}")
         os.system(
-            f"python3 {WS}/src/grand_tour_box/box_utils/box_auto/scripts/merge_bags.py --input={inputs} --output={merged_rosbag_path}"
+            f"python3 {WS}/src/grand_tour_box/box_utils/box_auto/scripts/general/merge_bags.py --input={inputs} --output={merged_rosbag_path}"
         )
 
     kill_roscore()

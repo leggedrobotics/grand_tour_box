@@ -9,22 +9,19 @@ from rosbag import Bag
 import tf
 import ros_numpy
 import rospy
-
+from box_auto.utils import get_bag, WS
 
 # Parameters
 OUTPUT = "wavemap.wvmp"
-TF_BAG = "/media/jonfrey/BoxiS4-2TB/deployment_day_1_subfolder/2024-10-01-11-29-55_tf_static_dlio_tf.bag"
-POINTCLOUD_BAGS = [
-    "/media/jonfrey/BoxiS4-2TB/deployment_day_1_subfolder/2024-10-01-11-29-55_dlio.bag",
-    "/media/jonfrey/BoxiS4-2TB/deployment_day_1_subfolder/2024-10-01-11-29-55_nuc_livox_filtered.bag",
-]
+TF_BAG = get_bag("*_tf_static_dlio_tf.bag")
+POINTCLOUD_BAGS = [get_bag("*_dlio.bag"), get_bag("*_nuc_livox_filtered.bag")]
 OUTFILE = str(Path(POINTCLOUD_BAGS[0]).parent / OUTPUT)
 
 START_PLUS = 0
 END_MINUS = 0
 
 # Load config file
-with open("/home/jonfrey/git/grand_tour_box/box_bringup/bringup_wavemap/config/both.yaml", "r") as config_file:
+with open(f"{WS}/src/grand_tour_box/box_bringup/bringup_wavemap/config/both.yaml", "r") as config_file:
     config = yaml.safe_load(config_file)
 
 # Create a map

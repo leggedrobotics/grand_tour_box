@@ -14,13 +14,10 @@ def launch_nodes():
     os.environ["ROS_MASTER_URI"] = "http://localhost:11311"
     inputs = []
     for pattern in PATTERNS:
-        f, suc = get_bag(pattern)
-        if suc:
-            inputs.append(f)
-            timestamp = str(f).split("/")[-1]
-            timestamp = timestamp.split("_")[0]
-        else:
-            raise ValueError("Pattern not found: ", pattern, " in Directory")
+        f = get_bag(pattern)
+        inputs.append(f)
+        timestamp = str(f).split("/")[-1]
+        timestamp = timestamp.split("_")[0]
 
     assert len(inputs) == len(PATTERNS), "Failure did not find all the bags required"
 
@@ -34,7 +31,7 @@ def launch_nodes():
     else:
         print(f"Merging bags into {merged_rosbag_path}")
         os.system(
-            f"python3 {WS}/src/grand_tour_box/box_utils/box_auto/scripts/merge_bags.py --input={inputs} --output={merged_rosbag_path}"
+            f"python3 {WS}/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/general/merge_bags.py --input={inputs} --output={merged_rosbag_path}"
         )
 
     kill_roscore()

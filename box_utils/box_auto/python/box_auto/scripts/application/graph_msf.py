@@ -14,7 +14,7 @@ from rosbag import Bag
 import matplotlib.pyplot as plt
 from tf2_msgs.msg import TFMessage
 
-from box_auto.utils import get_bag, upload_bag, MISSION_DATA, kill_roscore, get_file, start_roscore, run_ros_command
+from box_auto.utils import get_bag, upload_bag, MISSION_DATA, WS, kill_roscore, get_file, start_roscore, run_ros_command
 
 PATTERNS = ["*_jetson_ap20_robot.bag", "*_cpt7_raw_imu.bag", "*_cpt7_gps_ie.bag", "*_tf_static.bag"]
 OUT = "/out"
@@ -367,7 +367,7 @@ def launch_nodes():
 
     if True:
         os.system(
-            f"python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/merge_bags.py --input={inputs} --output={merged_rosbag_path}"
+            f"python3 {WS}/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/general/merge_bags.py --input={inputs} --output={merged_rosbag_path}"
         )
         start_roscore()
         sleep(1)
