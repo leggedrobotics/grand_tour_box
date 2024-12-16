@@ -5,25 +5,15 @@ from sensor_msgs.msg import CameraInfo
 import numpy as np
 from pathlib import Path
 import os
-import shutil
 
 MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
 
 
 def fetch_multiple_files_kleinkram(patterns):
-    tmp_dir = "/mission_data/tmp"
-    os.makedirs(tmp_dir, exist_ok=True)
-
-    for pattern in patterns:
-        if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
+    if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
+        for pattern in patterns:
             uuid = os.environ["MISSION_UUID"]
-            os.system(f"klein download --mission {uuid} --dest {tmp_dir} '{pattern}'")
-
-            # Move all files from /mission_data/tmp to /mission_data/
-            for file_name in os.listdir(tmp_dir):
-                source_file = os.path.join(tmp_dir, file_name)
-                destination_file = os.path.join("/mission_data", file_name)
-                shutil.move(source_file, destination_file)
+            os.system(f"klein download --mission {uuid} --dest {MISSION_DATA} '{pattern}'")
 
 
 def undistort_image_fisheye(image, camera_info, new_camera_info=None):
@@ -148,6 +138,7 @@ def process_rosbag(input_bag, image_topics, camera_info_topics, out_bag_path, ou
                 rectified_image_msg.header = msg.header
 
                 out_bag.write(out_image_topics[idx], rectified_image_msg, t)
+                new_camera_info.header.stamp = msg.header.stamp
                 out_bag.write(out_camera_info_topics[idx], new_camera_info, t)
     finally:
         bag.close()
@@ -162,13 +153,12 @@ def process_rosbag(input_bag, image_topics, camera_info_topics, out_bag_path, ou
 
 
 if __name__ == "__main__":
-
     tasks_hdr = {
         "hdr_front": {
             "in": {
                 "camera_info_topics": ["/gt_box/hdr_front/camera_info"],
                 "image_topics": ["/gt_box/hdr_front/image_raw/compressed"],
-                "pattern": "_jetson_hdr_front.bag",
+                "pattern": "_jetson_hdr_front_updated.bag",
             },
             "out": {
                 "camera_info_topics": ["/gt_box/hdr_front_rect/camera_info"],
@@ -180,7 +170,7 @@ if __name__ == "__main__":
             "in": {
                 "camera_info_topics": ["/gt_box/hdr_left/camera_info"],
                 "image_topics": ["/gt_box/hdr_left/image_raw/compressed"],
-                "pattern": "_jetson_hdr_left.bag",
+                "pattern": "_jetson_hdr_left_updated.bag",
             },
             "out": {
                 "camera_info_topics": ["/gt_box/hdr_left_rect/camera_info"],
@@ -192,7 +182,7 @@ if __name__ == "__main__":
             "in": {
                 "camera_info_topics": ["/gt_box/hdr_right/camera_info"],
                 "image_topics": ["/gt_box/hdr_right/image_raw/compressed"],
-                "pattern": "_jetson_hdr_right.bag",
+                "pattern": "_jetson_hdr_right_updated.bag",
             },
             "out": {
                 "camera_info_topics": ["/gt_box/hdr_right_rect/camera_info"],
@@ -202,36 +192,33 @@ if __name__ == "__main__":
         },
     }
 
-    tasks_alphasense = {
-        "alphasense": {
-            "in": {
-                "camera_info_topics": [f"/gt_box/alphasense_driver_node/cam{i}/color/camera_info" for i in range(1, 6)],
-                "image_topics": [
-                    f"/gt_box/alphasense_driver_node/cam{i}/color_corrected/image/compressed" for i in range(1, 6)
-                ],
-                "pattern": "_nuc_alphasense_color_corrected.bag",
-            },
-            "out": {
-                "camera_info_topics": [
-                    f"/gt_box/alphasense_driver_node/cam{i}/color_corrected_rect/camera_info" for i in range(1, 6)
-                ],
-                "image_topics": [
-                    f"/gt_box/alphasense_driver_node/cam{i}/color_corrected_rect/image_rect/compressed"
-                    for i in range(1, 6)
-                ],
-                "pattern": "_nuc_alphasense_color_corrected_rect.bag",
-            },
-        }
-    }
+    tasks_alphasense = {}
+    #     "alphasense": {
+    #         "in": {
+    #             "camera_info_topics": [f"/gt_box/alphasense_driver_node/cam{i}/color/camera_info" for i in range(1, 6)],
+    #             "image_topics": [
+    #                 f"/gt_box/alphasense_driver_node/cam{i}/color_corrected/image/compressed" for i in range(1, 6)
+    #             ],
+    #             "pattern": "_nuc_alphasense_color_corrected.bag",
+    #         },
+    #         "out": {
+    #             "camera_info_topics": [
+    #                 f"/gt_box/alphasense_driver_node/cam{i}/color_corrected_rect/camera_info" for i in range(1, 6)
+    #             ],
+    #             "image_topics": [
+    #                 f"/gt_box/alphasense_driver_node/cam{i}/color_corrected_rect/image_rect/compressed"
+    #                 for i in range(1, 6)
+    #             ],
+    #             "pattern": "_nuc_alphasense_color_corrected_rect.bag",
+    #         },
+    #     }
+    # }
 
     tasks = {**tasks_hdr, **tasks_alphasense}
 
     # Make this folder with partents if exists okay
     patterns = ["*" + task["in"]["pattern"] for task in tasks.values()]
     fetch_multiple_files_kleinkram(patterns)
-
-    tmp_dir = "/mission_data/tmp"
-    os.makedirs(tmp_dir, exist_ok=True)
 
     for name, task in tasks.items():
         bags = [str(s) for s in Path(MISSION_DATA).rglob("*" + task["in"]["pattern"])]
