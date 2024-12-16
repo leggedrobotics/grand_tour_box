@@ -32,21 +32,6 @@ def get_bag(directory, pattern):
     return files[0], True
 
 
-class BagTfTransformerWrapper:
-    def __init__(self, tf_bag_path):
-        self.tf_listener = BagTfTransformer(str(tf_bag_path))
-
-    def waitForTransform(self, parent_frame, child_frame, time, duration):
-        return self.tf_listener.waitForTransform(parent_frame, child_frame, time)
-
-    def lookupTransform(self, parent_frame, child_frame, time):
-        # Quat is in xyzw
-        try:
-            return self.tf_listener.lookupTransform(parent_frame, child_frame, time)
-        except Exception:
-            return (None, None)
-
-
 def undistort_image(image, camera_info, new_camera_info=None):
     K = np.array(camera_info.K).reshape((3, 3))
     D = np.array(camera_info.D)
@@ -258,7 +243,7 @@ def main():
                 camera_keys[camera["image_topic"]] = camera["name"]
                 break
     # Initialize TF listener
-    tf_listener = BagTfTransformerWrapper(tf_bag_path)
+    tf_listener = BagTfTransformer(tf_bag_path)
 
     # Initialize ImageSaver
     image_saver = ImageSaver(camera_infos, camera_keys, tf_listener, config, args.mission_data)
