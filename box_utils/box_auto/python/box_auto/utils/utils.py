@@ -6,6 +6,8 @@ from time import sleep
 WS = "/home/catkin_ws"
 PRE = f"source /opt/ros/noetic/setup.bash; source {WS}/devel/setup.bash; "
 MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
+BOX_AUTO_SCRIPTS_DIR = str(Path(__file__).parent.parent / "scripts")
+BOX_AUTO_DIR = str(Path(__file__).parent.parent.parent.parent)
 
 
 def run_ros_command(cmd, background=False):

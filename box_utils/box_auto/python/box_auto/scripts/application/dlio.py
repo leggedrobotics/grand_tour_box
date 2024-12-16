@@ -4,7 +4,15 @@ import os
 from time import sleep
 import shutil
 
-from box_auto.utils import get_bag, upload_bag, WS, MISSION_DATA, kill_roscore, start_roscore, run_ros_command
+from box_auto.utils import (
+    get_bag,
+    upload_bag,
+    BOX_AUTO_SCRIPTS_DIR,
+    MISSION_DATA,
+    kill_roscore,
+    start_roscore,
+    run_ros_command,
+)
 
 PATTERNS = ["*_jetson_stim.bag", "*_tf_static.bag", "*_nuc_hesai_post_processed.bag"]
 OUTPUT_BAG_NAME = "dlio_replayed"
@@ -31,7 +39,7 @@ def launch_nodes():
     else:
         print(f"Merging bags into {merged_rosbag_path}")
         os.system(
-            f"python3 {WS}/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/general/merge_bags.py --input={inputs} --output={merged_rosbag_path}"
+            f"python3 {BOX_AUTO_SCRIPTS_DIR}/general/merge_bags.py --input={inputs} --output={merged_rosbag_path}"
         )
 
     kill_roscore()

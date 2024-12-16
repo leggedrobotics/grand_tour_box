@@ -3,7 +3,15 @@
 import os
 from time import sleep
 import shutil
-from box_auto.utils import MISSION_DATA, WS, get_bag, upload_bag, run_ros_command, kill_roscore, start_roscore
+from box_auto.utils import (
+    MISSION_DATA,
+    BOX_AUTO_SCRIPTS_DIR,
+    get_bag,
+    upload_bag,
+    run_ros_command,
+    kill_roscore,
+    start_roscore,
+)
 
 # It is up-to-debate how we want to use this node. We regardless need the deskewed point cloud and some sort of pose estimation.
 # If the ground truth poses are available, we can use them instead of dlio_poses.
@@ -27,7 +35,7 @@ def launch_nodes():
     else:
         print(f"Merging bags into {merged_rosbag_path}")
         os.system(
-            f"python3 {WS}/src/grand_tour_box/box_utils/box_auto/scripts/general/merge_bags.py --input={inputs} --output={merged_rosbag_path}"
+            f"python3 {BOX_AUTO_SCRIPTS_DIR}/general/merge_bags.py --input={inputs} --output={merged_rosbag_path}"
         )
 
     kill_roscore()
