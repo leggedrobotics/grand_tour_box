@@ -21,7 +21,7 @@ PATTERNS = ["*_dlio.bag", "*_tf_static.bag"]
 def launch_nodes():
     inputs = []
     for pattern in PATTERNS:
-        f = get_bag(pattern, return_suc=True)
+        f = get_bag(pattern)
         inputs.append(f)
         timestamp = str(f).split("/")[-1]
         timestamp = timestamp.split("_")[0]
