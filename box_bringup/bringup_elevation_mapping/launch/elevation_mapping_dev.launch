@@ -12,5 +12,6 @@
 
     <include file="$(find box_rviz)/launch/replay.launch">
         <arg name="rviz_config" value="elevation_mapping"/>
+        <arg name="anymal" value="True"/>
      </include>
 </launch>
