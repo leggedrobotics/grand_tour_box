@@ -22,5 +22,10 @@
     
     <!-- Including the string publisher launch file -->
     <include file="$(find box_rviz)/launch/publish_string.launch"/>
+
+
+    <include if="$(arg anymal)" file="$(find anymal_d_simple_description)/launch/load.launch"/>
+
   </group>
+
 </launch>

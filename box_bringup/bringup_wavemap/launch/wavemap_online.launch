@@ -13,7 +13,7 @@
        default="true"
        doc="Automatically launch Rviz."/>
   <arg name="rviz_config"
-       default="$(find bringup_wavemap)/config/livox.rviz"/>
+       default="$(find bringup_wavemap)/config/wavemap.rviz"/>
 
   <!-- Dataset params -->
   <arg name="rosbag_path"

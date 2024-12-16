@@ -1,0 +1,47 @@
+<launch>
+    <!-- Define a namespace for the box -->
+    <arg name="box_namespace" default="gt_box"/>
+
+    <group ns="$(arg box_namespace)">
+
+        <node name="cropbox_filter_hesai"
+                pkg="nodelet" type="nodelet"
+                args="standalone pcl/CropBox">
+            <remap from="~input" to="/gt_box/hesai/points" />
+            <remap from="~output" to="/gt_box/hesai/points_filtered" />
+            <param name="capability_group" value="Application"/>
+            <param name="min_x" type="double" value="-0.2"/>
+            <param name="max_x" type="double" value="0.2"/>
+            
+            
+            <param name="min_y" type="double" value="-0.1"/>
+            <param name="max_y" type="double" value="0.65"/>   
+            
+            <param name="min_z" type="double" value="-0.15"/>
+            <param name="max_z" type="double" value="0.15"/>
+            <param name="negative" type="bool" value="true"/>
+        </node>
+        
+        <node name="cropbox_filter_livox"
+                pkg="nodelet" type="nodelet"
+                args="standalone pcl/CropBox">
+            <remap from="~input" to="/gt_box/livox/lidar" />
+            <remap from="~output" to="/gt_box/livox/lidar_filtered" />
+            <param name="capability_group" value="Application"/>
+           
+            <param name="min_x" type="double" value="-0.9"/>
+            <param name="max_x" type="double" value="0.2"/>
+            
+            
+            <param name="min_y" type="double" value="-0.15"/>
+            <param name="max_y" type="double" value="0.15"/>   
+            
+            <param name="min_z" type="double" value="-0.05"/>
+            <param name="max_z" type="double" value="0.3"/>
+            
+
+            <param name="negative" type="bool" value="true"/>
+        </node>
+    
+    </group>
+</launch>
