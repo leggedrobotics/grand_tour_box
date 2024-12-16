@@ -130,7 +130,7 @@ services:
   merge_dlio_tf_static:
     <<: *common-config
     container_name: merge_dlio_tf_static
-    command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/lidar/merge_dlio_tf_static.py"]
+    command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/general/merge_dlio_tf_static.py"]
     depends_on:
       dlio:
         condition: service_completed_successfully
