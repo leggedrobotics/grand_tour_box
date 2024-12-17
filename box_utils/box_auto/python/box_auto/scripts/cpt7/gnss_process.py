@@ -17,8 +17,11 @@ def main():
             IE_API_KEY = os.environ["IE_API_KEY"]
             Path(PROJ).parent.mkdir(exist_ok=True, parents=True)
 
-            cmd = "cd /home/jonfrey/Downloads/waypoint_ie_10_00_1206/bin; ./WPGCMDIMU "
+            os.system(f"mv {LOGFILE} " + str(Path(MISSION_DATA) / "ie"))
 
+            # Updated moved logfile path
+            LOGFILE, suc = get_file("*.LOG")
+            cmd = "cd /home/jonfrey/Downloads/waypoint_ie_10_00_1206/bin; ./WPGCMDIMU "
             cmd += f'-remfile "{LOGFILE}" '
             cmd += f"-procmode {PROCMODE} "
             cmd += f"-proccfg {PROJ} "

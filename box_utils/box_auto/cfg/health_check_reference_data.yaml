@@ -1,10 +1,10 @@
-_cpt7_gps_ie.bag:
+_cpt7_gps_ie_tc.bag:
   topics:
-    /gt_box/inertial_explorer/gt_poses_novatel:
+    /gt_box/inertial_explorer/tc/gt_poses_novatel:
       checking: freq
       freq: 100.00009536752259
       msg_type: geometry_msgs/PoseWithCovarianceStamped
-    /gt_box/inertial_explorer/odometry:
+    /gt_box/inertial_explorer/tc/odometry:
       checking: freq
       freq: 100.00009536752259
       msg_type: nav_msgs/Odometry

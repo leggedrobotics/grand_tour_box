@@ -25,7 +25,7 @@ from box_auto.utils import (
     run_ros_command,
 )
 
-PATTERNS = ["*_jetson_ap20_robot.bag", "*_cpt7_raw_imu.bag", "*_cpt7_gps_ie.bag", "*_tf_static.bag"]
+PATTERNS = ["*_jetson_ap20_robot.bag", "*_cpt7_raw_imu.bag", "*_cpt7_gps_ie_tc.bag", "*_tf_static.bag"]
 OUT = "/out"
 
 
@@ -64,7 +64,7 @@ def is_gnss_in_bag(bag_file_path):
         except FileNotFoundError:
             print("The specified rosbag file was not found.")
 
-    topic_name = "/gt_box/inertial_explorer/odometry"
+    topic_name = "/gt_box/inertial_explorer/tc/odometry"
     # Check when the topic first appears in the bag
     topic_first_appearance = check_topic_in_rosbag(bag_file_path, topic_name)
     if topic_first_appearance is None:
@@ -363,7 +363,7 @@ def launch_nodes():
             timestamp = timestamp.split("_")[0]
 
         else:
-            if pattern == "*_cpt7_gps_ie.bag":
+            if pattern == "*_cpt7_gps_ie_tc.bag":
                 print("The GPS postprocessed Bag is optional!")
                 continue
             else:
@@ -469,7 +469,7 @@ def launch_nodes():
         gps_ie = np.array(
             [
                 t.pose.pose
-                for _, t, _ in Bag(ap20_gps_bag).read_messages(topics="/gt_box/inertial_explorer/gt_poses_novatel")
+                for _, t, _ in Bag(ap20_gps_bag).read_messages(topics="/gt_box/inertial_explorer/tc/gt_poses_novatel")
             ]
         )
 
