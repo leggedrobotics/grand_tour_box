@@ -11,6 +11,7 @@ from .utils import (
     get_file,
     upload_bag,
 )
+from .gps_utils import GPS_utils
 
 __all__ = [
     "WS",
@@ -24,4 +25,5 @@ __all__ = [
     "get_bag",
     "get_file",
     "upload_bag",
+    "GPS_utils",
 ]
