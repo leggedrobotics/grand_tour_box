@@ -26,7 +26,7 @@ def main():
     gps_files = [str(s) for s in (Path(MISSION_DATA) / "ie").rglob("*_GrandTour-LocalFrame-minimal.txt")]
     post_proc_modes = [s.split("/")[-1].split("_")[1] for s in gps_files]
     bag_paths = [
-        str(Path(s).parent.parent / (date + f"_cpt7_gps_ie_{mode}.bag")) for s, mode in zip(gps_files, post_proc_modes)
+        str(Path(s).parent.parent / (date + f"_cpt7_ie_{mode}.bag")) for s, mode in zip(gps_files, post_proc_modes)
     ]
 
     for gps_file_path, bag_path, post_proc_mode in zip(gps_files, bag_paths, post_proc_modes):

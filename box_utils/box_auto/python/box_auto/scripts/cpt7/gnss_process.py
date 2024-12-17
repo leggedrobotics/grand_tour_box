@@ -7,7 +7,7 @@ def main():
     print("CLI REFERENCE: https://docs.novatel.com/Waypoint/Content/Appendix/WPGCMD.htm")
     for PROCMODE in ["tc", "lc", "ppp", "dgps"]:
 
-        for EXP_PROFILE in ["GrandTour-LocalFrame-minimal", "GPX"]:
+        for EXP_PROFILE in ["GrandTour-LocalFrame-minimal"]:
             LOGFILE, suc = get_file("*.LOG")
             if not suc:
                 raise ValueError("Failed to find LOG file.")

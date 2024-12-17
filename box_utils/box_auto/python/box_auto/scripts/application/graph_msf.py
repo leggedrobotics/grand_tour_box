@@ -25,7 +25,7 @@ from box_auto.utils import (
     run_ros_command,
 )
 
-PATTERNS = ["*_jetson_ap20_robot.bag", "*_cpt7_raw_imu.bag", "*_cpt7_gps_ie_tc.bag", "*_tf_static.bag"]
+PATTERNS = ["*_jetson_ap20_robot.bag", "*_cpt7_raw_imu.bag", "*_cpt7_ie_tc.bag", "*_tf_static.bag"]
 OUT = "/out"
 
 
@@ -363,7 +363,7 @@ def launch_nodes():
             timestamp = timestamp.split("_")[0]
 
         else:
-            if pattern == "*_cpt7_gps_ie_tc.bag":
+            if pattern == "*_cpt7_ie_tc.bag":
                 print("The GPS postprocessed Bag is optional!")
                 continue
             else:

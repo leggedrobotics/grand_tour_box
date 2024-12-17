@@ -1,4 +1,4 @@
-_cpt7_gps_ie_tc.bag:
+_cpt7_ie_tc.bag:
   topics:
     /gt_box/inertial_explorer/tc/gt_poses_novatel:
       checking: freq

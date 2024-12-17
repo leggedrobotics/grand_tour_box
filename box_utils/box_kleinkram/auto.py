@@ -126,7 +126,10 @@ def process_mission_data(data_folder, mission_name, local_hostname, mode, merge_
             "_jetson_hdr_left_updated.bag",
             "_jetson_hdr_front_updated.bag",
             "_cpt7_raw_imu.bag",
-            "_cpt7_ie.bag",
+            "_cpt7_ie_tc.bag",
+            "_cpt7_ie_lc.bag",
+            "_cpt7_ie_ppp.bag",
+            "_cpt7_ie_dgps.bag",
         ]
 
     print(local_hostname)

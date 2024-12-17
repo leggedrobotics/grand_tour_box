@@ -12,8 +12,7 @@ from sensor_msgs.msg import Image as ImageRos
 import tf.transformations
 import matplotlib.pyplot as plt
 import cv2
-
-from box_auto.utils import MISSION_DATA, get_bag, upload_bag
+from box_auto.utils import MISSION_DATA, BOX_AUTO_DIR, get_bag, upload_bag, get_file
 
 
 class Saver:
@@ -113,18 +112,23 @@ if __name__ == "__main__":
     parser.add_argument(
         "--map_file",
         type=str,
-        default="/media/jonfrey/BoxiS4-2TB/deployment_day_1_subfolder/wavemap.wvmp",
+        default="automatic",
         help="Path to the wavemap file (.wvmp)",
     )
     parser.add_argument("--mission_data", type=str, default=MISSION_DATA, help="Path to the mission data folder")
     parser.add_argument(
         "--config_file",
         type=str,
-        default="/home/jonfrey/git/grand_tour_box/box_utils/box_converter/grand_tour_offline.yaml",
+        default=str(Path(BOX_AUTO_DIR).parent / "box_converter/grand_tour_offline.yaml"),
         help="Path to the configuration YAML file",
     )
 
     args = parser.parse_args()
+
+    if args.map_file == "automatic":
+        args.map_file, suc = get_file("*.wvmp")
+        if not suc:
+            exit(-1)
 
     # Validate map file
     if not os.path.exists(args.map_file):
