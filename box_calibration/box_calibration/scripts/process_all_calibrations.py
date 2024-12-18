@@ -639,11 +639,12 @@ if __name__ == "__main__":
 
         camimu_calibration_time_header = extract_bag_start_time(cam_imu_merged_bag_path)
 
-        with open(output_imu_calibration_path, 'w') as outfile:
-            outfile.write(f'#{camimu_calibration_time_header}\n')
-            yaml_composition = yaml.compose(yaml.safe_dump(camera_imu_calibration_data))
-            mutate_sequence_flowstyle_to_inline(yaml_composition)
-            yaml.serialize(yaml_composition, outfile)
+        if not args.dry_run:
+            with open(output_imu_calibration_path, 'w') as outfile:
+                outfile.write(f'#{camimu_calibration_time_header}\n')
+                yaml_composition = yaml.compose(yaml.safe_dump(camera_imu_calibration_data))
+                mutate_sequence_flowstyle_to_inline(yaml_composition)
+                yaml.serialize(yaml_composition, outfile)
 
     # Construct the full path to the file
     tf_calibration_output_path = os.path.join(box_calibration_package, "calibration/tf/calibration_latest.yaml")
@@ -656,7 +657,7 @@ if __name__ == "__main__":
         "camera": camcam_calibration_time_header,
         "lidar": camlidar_calibration_time_header,
         "prism": prism_calibration_time_header,
-        "imu": "cad"
+        "imu": camimu_calibration_time_header
     }
 
     # Run the command
