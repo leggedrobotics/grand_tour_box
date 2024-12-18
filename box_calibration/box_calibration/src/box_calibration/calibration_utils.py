@@ -1,7 +1,35 @@
+import re
+
 import rosbag
 import yaml
+import os
+import shutil
 
+def list_to_folder_name(strings):
+    # Combine strings with an underscore as a delimiter
+    combined = "_".join(strings)
+    # Remove any invalid characters for folder names (e.g., slashes)
+    valid_folder_name = re.sub(r'[<>:"/\\|?*]', '_', combined)
+    return valid_folder_name
 
+def move_files_to_folder(file_paths, target_folder):
+    """
+    Moves a list of files to a specified folder. Creates the folder if it doesn't exist.
+
+    Args:
+        file_paths (list of str): Paths of files to be moved.
+        target_folder (str): Path to the destination folder.
+    """
+    # Ensure the target folder exists
+    os.makedirs(target_folder, exist_ok=True)
+
+    for file_path in file_paths:
+        if os.path.isfile(file_path):  # Check if the path is a file
+            # Move the file to the target folder
+            shutil.move(file_path, target_folder)
+            print(f"Moved: {file_path} -> {target_folder}")
+        else:
+            print(f"File not found: {file_path}")
 def fun1():
     return True
 
