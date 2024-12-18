@@ -68,6 +68,7 @@ def main(args):
                     "_lpc_tf.bag",
                     ".log",
                     ".svo",
+                    ".svo2",
                     ".yaml",
                 ]
                 include_patterns = " ".join([f"--include='*{key}'" for key in keys])

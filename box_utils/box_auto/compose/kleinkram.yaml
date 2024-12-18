@@ -4,7 +4,7 @@ x-common-config: &common-config
     dockerfile: "$HOME/git/grand_tour_box/box_utils/box_auto/docker/box.Dockerfile"
     ssh:
       default: "$HOME/.ssh/id_rsa_2"
-  image: rslethz/grand_tour_box
+  image: rslethz/grand_tour_box:kleinkram
   runtime: nvidia
   # network_mode: host
   privileged: true
@@ -58,38 +58,113 @@ x-ros2-common-config: &ros2-common-config
 
 
 services:
-  # minimal
-  rectify:
+  # HDR _updated -> _calib 
+  calibration:
     <<: *common-config
-    container_name: rectify
-    command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/rectify.py"]
+    container_name: calibration
+    command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/calibration/update_calibration.py"]
 
-  # minimal
-  create_tf_static:
+
+  # minimal AP20: _robot.bag
+  ap20_validate:
     <<: *common-config
-    container_name: create_tf_static
-    command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/create_tf_static.py"]
-
-  # minimal
+    container_name: ap20_validate
+    command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/ap20/ap20_validate.py"]
+  
+  # minimal AP20: _robot.bag - _synced.bag
   ap20_python_online_matcher:
     <<: *common-config
     container_name: ap20_python_online_matcher
-    command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/ap20_python_online_matcher.py"]
+    command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/ap20/ap20_python_online_matcher.py"]
+    depends_on:
+      ap20_validate:
+        condition: service_completed_successfully
 
+  # minimal hesai.bag -> hesai_post_processed.bag
   hesai:
     <<: *common-config
     container_name: hesai
-    command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/hesai.py"]
+    command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/lidar/hesai.py"]
   
-  color_correction:
+  # hesai_post_processed.bag & livox.bag -> hesai_filtered.bag , livox_filtered.bag
+  filter_pointclouds: 
     <<: *common-config
-    container_name: color_correction
-    command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/color_correction.py"]
+    container_name: filter_pointclouds
+    command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/lidar/filter_pointclouds.py"]
+    depends_on:
+      hesai:
+        condition: service_completed_successfully
+        
+  # minimal -> HDR _calib.bag _rect.bag  - ALPHA - .bag -> _rect.bag 
+  rectify:
+    <<: *common-config
+    container_name: rectify
+    command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/camera/rectify.py"]
+    depends_on:
+      calibration:
+        condition: service_completed_successfully
+
+  # hesai.bag -> dlio.bag
+  dlio:
+    <<: *common-config
+    container_name: dlio
+    command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/application/dlio.py"]
+    depends_on:
+      hesai:
+        condition: service_completed_successfully
+      calibration:
+        condition: service_completed_successfully
+
+  open3d_slam:
+    <<: *common-config
+    container_name: dlio
+    command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/application/open3d_slam.py"]
+    depends_on:
+      hesai:
+        condition: service_completed_successfully
+      calibration:
+        condition: service_completed_successfully
+
+
+  # this is needed for wavemap right now but should be replaced
+  merge_dlio_tf_static:
+    <<: *common-config
+    container_name: merge_dlio_tf_static
+    command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/general/merge_dlio_tf_static.py"]
+    depends_on:
+      dlio:
+        condition: service_completed_successfully
+      calibration:
+        condition: service_completed_successfully
+
+  graph_msf:
+    <<: *common-config
+    container_name: graph_msf
+    command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/application/graph_msf.py"]
+    depends_on:
+      hesai:
+        condition: service_completed_successfully
+      calibration:
+        condition: service_completed_successfully
+      ap20_python_online_matcher:
+        condition: service_completed_successfully
+
+  # # hesai.bag -> dlio.bag
+  # wavemap:
+  #   <<: *common-config
+  #   container_name: dlio
+  #   command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/application/dlio.py"]
+
+  # color_correction:
+  #   <<: *common-config
+  #   container_name: color_correction
+  #   command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/camera/color_correction.py"]
 
   # topic_freq:
   #   <<: *common-config
   #   container_name: topic_freq
-  #   command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/topic_freq.py"]
+  #   command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/verification/topic_freq.py"]
+
   #   depends_on:
   #     hesai:
   #       condition: service_completed_successfully
@@ -103,12 +178,12 @@ services:
   # cpt7:
   #   <<: *common-config
   #   container_name: cpt7
-  #   command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/cpt7.py"]
+  #   command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/cpt7/cpt7.py"]
 
   # imu_timesync:
   #   <<: *common-config
   #   container_name: imu_timesync
-  #   command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/imu_timesync.py"]
+  #   command: ["python3", "/home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/verification/imu_timesync.py"]
   #   depends_on:
   #     cpt7:
   #       condition: service_completed_successfully

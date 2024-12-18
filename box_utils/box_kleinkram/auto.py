@@ -7,6 +7,7 @@ import subprocess
 import socket
 
 LOCAL_HOSTNAME = socket.gethostname()
+DIR = "/home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts"
 
 
 def shell_run(cmd, cwd=None, env={}, time=True, continue_on_error=True):
@@ -35,25 +36,15 @@ def process_mission_data(data_folder, mission_name, local_hostname, mode, merge_
     cmds = []
 
     if local_hostname == "jetson":
-        cmds.append(
-            f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/repair_ros2_jetson.py"
-        )
-        cmds.append(
-            f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/repair_bags.py"
-        )
-        cmds.append(
-            f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/mcap_to_rosbag.py"
-        )
-        cmds.append(
-            f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/hdr_timestamp_adjuster.py"
-        )
+        cmds.append(f"export MISSION_DATA={MISSION_DATA}; python3 {DIR}general/repair_ros2_jetson.py")
+        cmds.append(f"export MISSION_DATA={MISSION_DATA}; python3 {DIR}/general/repair_bags.py")
+        cmds.append(f"export MISSION_DATA={MISSION_DATA}; python3 {DIR}/general/mcap_to_rosbag.py")
+        cmds.append(f"export MISSION_DATA={MISSION_DATA}; python3 {DIR}/camera/hdr_timestamp_adjuster.py")
         zed_svo = sorted(glob.glob(os.path.join(MISSION_DATA, "*_jetson_zed2i.svo2")))[0]
         cmds.append(
             f"export MISSION_DATA={MISSION_DATA}; source /home/rsl/catkin_ws/devel/setup.bash; roslaunch zed_wrapper zed2i_replay.launch svo_file:={zed_svo}"
         )
-        cmds.append(
-            f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/merge_mission.py"
-        )
+        cmds.append(f"export MISSION_DATA={MISSION_DATA}; python3 {DIR}/general/merge_mission.py")
         keys = [
             "_jetson_utils.bag",
             "_jetson_stim.bag",
@@ -69,15 +60,8 @@ def process_mission_data(data_folder, mission_name, local_hostname, mode, merge_
         ]
 
     elif local_hostname == "nuc":
-        cmds.append(
-            f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/repair_bags.py"
-        )
-        cmds.append(
-            f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/merge_mission.py"
-        )
-        cmds.append(
-            f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/create_tf_static.py"
-        )
+        cmds.append(f"export MISSION_DATA={MISSION_DATA}; python3 {DIR}/general/repair_bags.py")
+        cmds.append(f"export MISSION_DATA={MISSION_DATA}; python3 {DIR}/general/merge_mission.py")
         keys = [
             "_tf_static.bag",
             "_nuc_hesai_post_processed.bag",
@@ -89,12 +73,8 @@ def process_mission_data(data_folder, mission_name, local_hostname, mode, merge_
             "_nuc_alphasense.bag",
         ]
     elif local_hostname == "anymal-d039-lpc" or local_hostname == "anymal-d039-npc":
-        cmds.append(
-            f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/repair_bags.py"
-        )
-        cmds.append(
-            f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/merge_mission.py"
-        )
+        cmds.append(f"export MISSION_DATA={MISSION_DATA}; python3 {DIR}/general/repair_bags.py")
+        cmds.append(f"export MISSION_DATA={MISSION_DATA}; python3 {DIR}/general/merge_mission.py")
         keys = [
             "_npc_depth_cameras.bag",
             "_npc_elevation_mapping.bag",
@@ -107,48 +87,49 @@ def process_mission_data(data_folder, mission_name, local_hostname, mode, merge_
             "_lpc_tf.bag",
         ]
     elif local_hostname == "opc" or local_hostname == "mavt-rsl-ws":
-        cmds.append(
-            f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/repair_bags.py"
-        )
+        cmds.append(f"export MISSION_DATA={MISSION_DATA}; python3 {DIR}/general/repair_bags.py")
         if merge_on_opc == "True":
-            cmds.append(
-                f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/merge_mission.py"
-            )
-        cmds.append(
-            f"export MISSION_DATA={MISSION_DATA}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/export_raw_imu_bag.py"
-        )
+            cmds.append(f"export MISSION_DATA={MISSION_DATA}; python3 {DIR}/general/merge_mission.py")
+        cmds.append(f"export MISSION_DATA={MISSION_DATA}; python3 {DIR}/cpt7/export_raw_imu_bag.py")
+
+        cmds.append(f"export MISSION_DATA={MISSION_DATA}; python3 {DIR}/cpt7/gnss_process.py")
+
+        cmds.append(f"export MISSION_DATA={MISSION_DATA}; python3 {DIR}/cpt7/export_gps_gt_trajectory_bag.py")
 
         keys = [
-            "_npc_depth_cameras.bag",
-            "_npc_elevation_mapping.bag",
-            "_npc_velodyne.bag",
-            "_lpc_anymal_imu.bag",
-            "_lpc_depth_cameras.bag",
-            "_lpc_general.bag",
-            "_lpc_locomotion.bag",
-            "_lpc_state_estimator.bag",
-            "_lpc_tf.bag",
-            "_tf_static.bag",
-            "_nuc_hesai_post_processed.bag",
-            "_nuc_utils.bag",
-            "_nuc_tf.bag",
-            "_nuc_livox.bag",
-            "_nuc_hesai.bag",
-            "_nuc_cpt7.bag",
-            "_nuc_alphasense.bag",
-            "_jetson_utils.bag",
-            "_jetson_stim.bag",
-            "_jetson_ap20_aux.bag",
-            "_jetson_adis.bag",
-            "_jetson_zed2i_tf.bag",
-            "_jetson_zed2i_prop.bag",
-            "_jetson_zed2i_images.bag",
-            "_jetson_zed2i_depth.bag",
-            "_jetson_hdr_right_updated.bag",
-            "_jetson_hdr_left_updated.bag",
-            "_jetson_hdr_front_updated.bag",
+            # "_npc_depth_cameras.bag",
+            # "_npc_elevation_mapping.bag",
+            # "_npc_velodyne.bag",
+            # "_lpc_anymal_imu.bag",
+            # "_lpc_depth_cameras.bag",
+            # "_lpc_general.bag",
+            # "_lpc_locomotion.bag",
+            # "_lpc_state_estimator.bag",
+            # "_lpc_tf.bag",
+            # "_tf_static.bag",
+            # "_nuc_hesai_post_processed.bag",
+            # "_nuc_utils.bag",
+            # "_nuc_tf.bag",
+            # "_nuc_livox.bag",
+            # "_nuc_hesai.bag",
+            # "_nuc_cpt7.bag",
+            # "_nuc_alphasense.bag",
+            # "_jetson_utils.bag",
+            # "_jetson_stim.bag",
+            # "_jetson_ap20_aux.bag",
+            # "_jetson_adis.bag",
+            # "_jetson_zed2i_tf.bag",
+            # "_jetson_zed2i_prop.bag",
+            # "_jetson_zed2i_images.bag",
+            # "_jetson_zed2i_depth.bag",
+            # "_jetson_hdr_right_updated.bag",
+            # "_jetson_hdr_left_updated.bag",
+            # "_jetson_hdr_front_updated.bag",
             "_cpt7_raw_imu.bag",
-            "_cpt7_ie.bag",
+            "_cpt7_ie_tc.bag",
+            "_cpt7_ie_lc.bag",
+            "_cpt7_ie_ppp.bag",
+            "_cpt7_ie_dgps.bag",
         ]
 
     print(local_hostname)
@@ -201,12 +182,8 @@ if __name__ == "__main__":
 
     if args.local_hostname == "opc" or args.local_hostname == "mavt-rsl-ws":
         if args.mode == "process" or args.mode == "upload_and_process":
-            os.system(
-                f"export MISSION_DATA={args.data_folder}; python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/export_raw_imu_bag.py --all"
-            )
-            os.system(
-                f"python3 /home/rsl/catkin_ws/src/grand_tour_box/box_utils/box_auto/scripts/move_cpt7_files.py --data_folder={args.data_folder}"
-            )
+            os.system(f"export MISSION_DATA={args.data_folder}; python3 {DIR}/cpt7/export_raw_imu_bag.py --all")
+            os.system(f"python3 {DIR}/cpt7/move_cpt7_files.py --data_folder={args.data_folder}")
 
     for mission_name in args.mission_names:
         process_mission_data(
