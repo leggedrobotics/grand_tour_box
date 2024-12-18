@@ -12,6 +12,7 @@ import rosbag
 import supervision as sv
 from cv_bridge import CvBridge
 from ultralytics import YOLO
+from deep_sort_realtime.deepsort_tracker import DeepSort
 
 # NOTE: use conda env img_anon
 
@@ -156,6 +157,32 @@ def _write_images_to_bag(
         bag.write(topic, msg, timestamp)
 
 
+def _convert_box_to_xywh(box: Box) -> Tuple[int, int, int, int]:
+    x1, y1, x2, y2 = box
+    return x1, y1, x2 - x1, y2 - y1
+
+
+def _apply_deepsort_blur(
+    tracker: DeepSort,
+    images: Sequence[np.ndarray],
+    detections: Sequence[Collection[Box]],
+) -> list[np.ndarray]:
+    assert len(images) == len(detections)
+
+    blurred_images = []
+    for image, dets in zip(images, detections):
+        deepsort_dets: list[Box] = []
+        bbs = [(_convert_box_to_xywh(det), 100, 0) for det in dets]
+
+        for track in tracker.update_tracks(bbs, frame=image):
+            tup = tuple(map(int, track.to_tlbr()))
+            deepsort_dets.append(tup)  # type: ignore
+
+        blurred_images.append(_blur_image(image, deepsort_dets))
+
+    return blurred_images
+
+
 def anonymize_bag(in_path: Path, out_path: Path, image_topics: Mapping[str, str]):
     """\
     blurs faces and license plates in images from rosbag file
@@ -168,10 +195,8 @@ def anonymize_bag(in_path: Path, out_path: Path, image_topics: Mapping[str, str]
 
     # init buffers
     # detections_buffer is filled with "empty" detections to start off
-    batch_buffer: list[np.ndarray] = []
     image_buffer: list[np.ndarray] = []
     metadata_buffer: list[tuple[int, str, bool]] = []  # timestamp, topic
-    detections_buffer = [[] for _ in range(BACKWARD_BUFFER)]
 
     with rosbag.Bag(str(in_path), "r") as in_bag, rosbag.Bag(
         str(out_path), "w", compression="lz4"
@@ -179,6 +204,7 @@ def anonymize_bag(in_path: Path, out_path: Path, image_topics: Mapping[str, str]
         cv_bridge = CvBridge()
         print("anonymizing images...")
 
+        tracker = DeepSort(max_age=5)
         for idx, (topic, msg, t) in enumerate(in_bag.read_messages()):
             if topic not in image_topics:
                 out_bag.write(topic, msg, t)
@@ -188,56 +214,31 @@ def anonymize_bag(in_path: Path, out_path: Path, image_topics: Mapping[str, str]
 
             is_compressed = "CompressedImage" in type(msg)._type
             image = _msg_to_image(msg, cv_bridge, is_compressed)
-            batch_buffer.append(image)
+            image_buffer.append(image)
             metadata_buffer.append((t, image_topics[topic], is_compressed))
 
             # once we reach the batch size, we run the detection model
-            if len(batch_buffer) == BATCH_SIZE:
-                detections = _get_detections_batched(batch_buffer)
-                detections_buffer.extend(detections)
-                image_buffer.extend(batch_buffer)
-                batch_buffer = []
-
-            # once we have enough detections from our model we can start blurring
-            if len(image_buffer) > FORWARD_BUFFER:
-                blurred_images = _apply_temporal_blur(
-                    detections_buffer,
-                    image_buffer[:-FORWARD_BUFFER],
-                    forward_buffer=FORWARD_BUFFER,
-                    backward_buffer=BACKWARD_BUFFER,
-                )
-                n_images = len(blurred_images)
-
+            if len(image_buffer) == BATCH_SIZE:
+                detections = _get_detections_batched(image_buffer)
+                blurred_images = _apply_deepsort_blur(tracker, image_buffer, detections)
                 _write_images_to_bag(
-                    out_bag, cv_bridge, metadata_buffer[:n_images], blurred_images
+                    out_bag, cv_bridge, metadata_buffer, blurred_images
                 )
+                image_buffer = []
+                metadata_buffer = []
 
-                # clear stuff from buffers we no longer need
-                image_buffer = image_buffer[n_images:]
-                detections_buffer = detections_buffer[n_images:]
-                metadata_buffer = metadata_buffer[n_images:]
-
-        # run last batch
-        detections = _get_detections_batched(batch_buffer)
-        detections_buffer.extend(detections + [[] for _ in range(FORWARD_BUFFER)])
-        image_buffer.extend(batch_buffer)
-        blurred_images = _apply_temporal_blur(
-            detections_buffer,
-            image_buffer,
-            forward_buffer=FORWARD_BUFFER,
-            backward_buffer=BACKWARD_BUFFER,
-        )
+        detections = _get_detections_batched(image_buffer)
+        blurred_images = _apply_deepsort_blur(tracker, image_buffer, detections)
         _write_images_to_bag(out_bag, cv_bridge, metadata_buffer, blurred_images)
 
-        # reindex the bag
-        print("reindexing bag...")
-
+    # reindex the bag
+    print("reindexing bag...")
     out_bag.reindex()
     print(f"done anonymizing {in_path} -> {out_path}")
 
 
 FILE_PATH = Path(__file__).parent / "data" / "eth_campus.bag"
-OUT_PATH = Path(__file__).parent / "data" / "anon.bag"
+OUT_PATH = Path(__file__).parent / "data" / "anon_deepsort.bag"
 
 if __name__ == "__main__":
     anonymize_bag(
