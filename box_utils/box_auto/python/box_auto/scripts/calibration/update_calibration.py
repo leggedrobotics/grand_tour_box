@@ -47,7 +47,7 @@ def load_calibration_data() -> Dict[str, Dict[str, Any]]:
                     calibration_dict[cal_data["rostopic"]] = msg
 
                 # Process calibration metadata
-                elif topic == "calibration_metadata":
+                elif topic == "/calibration_metadata":
                     calibration_dict["metadata"] = yaml.safe_load(msg.data)
 
                 elif topic == "/tf_static":
