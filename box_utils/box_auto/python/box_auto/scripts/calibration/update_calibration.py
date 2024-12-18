@@ -151,3 +151,5 @@ if __name__ == "__main__":
 
     # Step 3: Update camera intrinsics
     update_camera_info(calibration)
+
+    exit(0)

@@ -98,3 +98,5 @@ if __name__ == "__main__":
     output_bag_path = input_bag.replace("_nuc_alphasense_calib.bag", "_nuc_alphasense_color.bag")
     process_rosbag(input_bag, output_bag_path, image_topics, camera_info_topics, config_file)
     upload_bag(output_bag_path)
+
+    exit(0)

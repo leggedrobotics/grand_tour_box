@@ -6,6 +6,15 @@ import numpy as np
 
 from box_auto.utils import get_bag, upload_bag
 
+"""
+Exit Codes:
+
+EXIT CODE 0: Successful Conversion
+EXIT CODE 1: Empty HDR Bag
+EXIT CODE 2: Timestamps could not be matched correctly
+"""
+
+
 # Constants for ISX021, from Tier4, see GrandTour Wiki
 VMAX = 1400  # Current ISX021's setting
 FPS = 30  # Current ISX021's setting
@@ -44,7 +53,7 @@ class RosbagValidatorAndProcessor:
             print("number of messages: ", total_messages)
             if total_messages == 0:
                 print(f"Skipping empty bag: {Path(input_bag_path).name}")
-                return
+                exit(1)
 
             # Read all relevant data first
             with tqdm(total=total_messages, desc=f"[1/2] Validating {Path(input_bag_path).name}", unit="msgs") as pbar:
@@ -136,7 +145,7 @@ class RosbagValidatorAndProcessor:
             for error in errors:
                 print(f"- {error}")
             print("Aborting processing due to validation errors.")
-            return
+            exit(2)
 
         print("Validation passed.")
         mean_delta = np.mean(deltas) / 1_000_000  # Convert to milliseconds
@@ -179,3 +188,5 @@ if __name__ == "__main__":
     output_suffix = "_updated"
     processor = RosbagValidatorAndProcessor(cameras, output_suffix)
     processor.run()
+
+    exit(0)

@@ -9,7 +9,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import pathlib
-from pathlib import Path
 import subprocess
 from matplotlib.ticker import ScalarFormatter
 
@@ -158,12 +157,12 @@ def read_rosbag_and_generate_histograms(rosbag_path, output_dir, name, skip_same
 
 
 if __name__ == "__main__":
-    rosbag_paths = [str(s) for s in pathlib.Path(MISSION_DATA).rglob("*.bag")]
-    output_dir = "topic_freq"
+    rosbag_paths = [s for s in pathlib.Path(MISSION_DATA).rglob("*.bag")]
+    output_dir = "verification"
 
     for rosbag_path in rosbag_paths:
-        output_dir = Path(rosbag_path).parent.joinpath(output_dir)
+        output_dir = rosbag_path.parent / output_dir
         output_dir.mkdir(exist_ok=True)
 
-        name = rosbag_path.split("/")[-1].split(".")[0]
+        name = rosbag_path.stem
         read_rosbag_and_generate_histograms(rosbag_path, str(output_dir), name)

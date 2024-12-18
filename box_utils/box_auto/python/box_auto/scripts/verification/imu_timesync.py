@@ -10,16 +10,7 @@ import os
 import rerun as rr
 import yaml
 
-MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
-
-
-def get_bag(directory, pattern):
-    files = [str(s) for s in Path(directory).rglob(pattern)]
-    if len(files) != 1:
-        print(f"Error: More or less matching bag files found: {pattern} in directory {directory}")
-        return [], False
-
-    return files[0], True
+from box_auto.utils import get_bag, MISSION_DATA
 
 
 def extract_imu_data(bag_file, topic, tf_transformer=None, reference_frame=None):
@@ -237,7 +228,7 @@ class IMUSyncOptimizer:
         return model.time_offset.item() * 10**9
 
 
-def process_all(directory, axis):
+def process_all(directory, output_folder, axis):
 
     summary = {}
     plot = True
@@ -254,21 +245,21 @@ def process_all(directory, axis):
             "bag_pattern": "*_jetson_ap20_synced.bag",
             "max_offset_ms": 1,
         },
-        # {
-        #     "topic": "/gt_box/adis16475_node/imu",
-        #     "bag_pattern": "*_jetson_adis.bag",
-        #     "max_offset_ms": 1,
-        # },
-        # {
-        #     "topic": "/gt_box/livox/imu",
-        #     "bag_pattern": "*_nuc_livox.bag",
-        #     "max_offset_ms": 1,
-        # },
-        # {
-        #     "topic": "/gt_box/alphasense_driver_node/imu",
-        #     "bag_pattern": "*_nuc_alphasense.bag",
-        #     "max_offset_ms": 1,
-        # },
+        {
+            "topic": "/gt_box/adis16475_node/imu",
+            "bag_pattern": "*_jetson_adis.bag",
+            "max_offset_ms": 1,
+        },
+        {
+            "topic": "/gt_box/livox/imu",
+            "bag_pattern": "*_nuc_livox.bag",
+            "max_offset_ms": 1,
+        },
+        {
+            "topic": "/gt_box/alphasense_driver_node/imu",
+            "bag_pattern": "*_nuc_alphasense.bag",
+            "max_offset_ms": 1,
+        },
         {
             "topic": "/gt_box/cpt7/offline_from_novatel_logs/imu",
             "bag_pattern": "*_cpt7_raw_imu.bag",
@@ -276,30 +267,41 @@ def process_all(directory, axis):
         },
     ]
 
-    reference_imu_file, suc = get_bag(directory, reference_imu["bag_pattern"])
-    if not suc:
-        summary["Reference IMU"] = "Bag file not found! Stop processing!"
-        return summary
+    try:
+        reference_imu_file = get_bag(reference_imu["bag_pattern"])
+    except Exception:
+        pattern = reference_imu["bag_pattern"]
+        log = f"{pattern} [FAILED] - Getting Reference IMU - " + reference_imu["bag_pattern"]
+        summary[pattern[2:]] = log
+        print(log)
+        return
 
-    tf_bag_file, suc = get_bag(directory, reference_imu["tf_bag_pattern"])
-    if not suc:
-        summary["Transform"] = "Bag not found! Stop processing!"
-        return summary
+    try:
+
+        tf_bag_file = get_bag(reference_imu["tf_bag_pattern"])
+    except Exception:
+        pattern = reference_imu["tf_bag_pattern"]
+        log = f"{pattern} [FAILED] - Getting TF bag pattern - " + reference_imu["tf_bag_pattern"]
+        summary[pattern[2:]] = log
+        print(log)
+        return
 
     sync_optimizer = IMUSyncOptimizer(reference_imu_file, reference_imu["topic"], tf_bag_file, axis)
 
     rr.init("rerun_example_minimal", spawn=True)
-    # rr.save(os.path.join(directory, f"imu_timesync-{axis}.rrd"))
 
     for validation_imu in validation_imus:
-        bag_file, suc = get_bag(directory, validation_imu["bag_pattern"])
-        pattern = validation_imu["bag_pattern"]
-
-        if not suc:
-            log = f"{pattern} [FAILED] - No bag file found"
+        try:
+            bag_file = get_bag(validation_imu["bag_pattern"])
+        except Exception:
+            pattern = validation_imu["bag_pattern"]
+            log = f"{pattern} [FAILED] - validation_imu loading bag pattern - " + reference_imu["bag_pattern"]
             summary[pattern[2:]] = log
             print(log)
             continue
+
+        pattern = validation_imu["bag_pattern"]
+
         optimal_offset_ns, suc = sync_optimizer.time_sync_imu(bag_file, validation_imu["topic"])
         if not suc:
             log = f"{pattern} [FAILED] - Error processing data"
@@ -331,33 +333,22 @@ def process_all(directory, axis):
             for t in range(len(sync_optimizer.t2_final)):
                 rr.set_time_seconds("time", float(sync_optimizer.t2_final[t]))
                 rr.log(pattern[2:] + "_adjusted" + f"-{axis}", rr.Scalar(float(sync_optimizer.y2_original[t])))
+
+        rr.save(str(output_folder / f"imu_timesync-{axis}.rrd"))
+
     return summary
 
 
 if __name__ == "__main__":
-
-    # debug = False
-    # if debug:
-    #     base = "/Data/Projects/GrandTour/lee_k_democracy/2024-09-18-10-59-00/2024-09-18-10-59-00"
-    #     parser = argparse.ArgumentParser(description="IMU Synchronization and Time Offset Optimization")
-    #     parser.add_argument("--imu1_bag", default=f"{base}_jetson_ap20_0.bag", help="Path to IMU1 rosbag file")
-    #     parser.add_argument("--imu2_bag", default=f"{base}_nuc_cpt7_0.bag", help="Path to IMU2 rosbag file")
-    #     parser.add_argument("--tf_bag", default=f"{base}_nuc_tf_0.bag", help="Path to TF rosbag file")
-    #     parser.add_argument("--imu1_topic", default="/gt_box/ap20/imu", help="IMU1 topic name")
-    #     parser.add_argument("--imu2_topic", default="/gt_box/cpt7/imu/data_raw", help="IMU2 topic name")
-
-    #     args = parser.parse_args()
-    #     sync_optimizer = IMUSyncOptimizer( args.imu1_bag, args.imu1_topic, args.tf_bag)
-    #     optimal_offset_ns, suc = sync_optimizer.time_sync_imu(args.imu2_bag, args.imu2_topic)
-    #     print(f"Final time offset: {optimal_offset_ns}ns")
-    # else:
-
     master_summary = {}
     for axis in ["x"]:
         print("Running for axis: ", axis)
 
-        master_summary[axis] = process_all(MISSION_DATA, axis=axis)
+        summary_path = Path(MISSION_DATA) / "verification" / "imu_timesync_summary.yaml"
+        summary_path.parent.mkdir(exist_ok=True)
+
+        master_summary[axis] = process_all(MISSION_DATA, output_folder=summary_path.parent, axis=axis)
 
         # Dump the dictionary to a YAML file
-        with open(os.path.join(MISSION_DATA, "imu_timesync_summary.yaml"), "w") as file:
+        with open(str(summary_path), "w") as file:
             yaml.dump(master_summary, file, default_flow_style=False, width=1000)

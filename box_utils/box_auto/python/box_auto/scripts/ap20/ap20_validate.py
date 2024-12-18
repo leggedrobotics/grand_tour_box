@@ -2,6 +2,13 @@ import rosbag
 import numpy as np
 from box_auto.utils import get_bag, upload_bag
 
+"""
+Exit Codes:
+
+EXIT CODE 0: Successful Verification
+EXIT CODE 1: Totalstation position or prism moved
+"""
+
 
 def process_prism_position_bag(input_bag_path, output_bag_path, skip_check):
     # Read the input bag file
@@ -16,6 +23,7 @@ def process_prism_position_bag(input_bag_path, output_bag_path, skip_check):
     # Get the first position as reference
     if not prism_positions:
         print("No prism position messages found!")
+
         return False
 
     first_position = prism_positions[0][0]
@@ -87,7 +95,7 @@ def main(skip_check):
 
         else:
             print("Check failed - Exit -1 ")
-            exit(-1)
+            exit(1)
 
 
 if __name__ == "__main__":

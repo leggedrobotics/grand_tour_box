@@ -7,3 +7,4 @@ if __name__ == "__main_":
 
     run_ros_command(f"roslaunch novatel_oem7_driver cpt7_replay.launch input_bag_path:={input_bag}")
     upload_bag(output_bag)
+    exit(0)

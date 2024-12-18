@@ -337,3 +337,5 @@ if __name__ == "__main__":
 
     # Usage example
     data = read_bag_file(ap20_bag)
+
+    exit(0)

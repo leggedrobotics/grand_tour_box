@@ -245,3 +245,4 @@ if __name__ == "__main__":
 
     if config["wavemap"]["save_ros"]:
         upload_bag(saver.bag_path)
+    exit(0)

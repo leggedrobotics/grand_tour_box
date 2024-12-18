@@ -62,3 +62,4 @@ def launch_nodes():
 
 if __name__ == "__main__":
     launch_nodes()
+    exit(0)

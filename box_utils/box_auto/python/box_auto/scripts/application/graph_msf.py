@@ -28,6 +28,13 @@ from box_auto.utils import (
 PATTERNS = ["*_jetson_ap20_robot.bag", "*_cpt7_raw_imu.bag", "*_cpt7_ie_tc.bag", "*_tf_static.bag"]
 OUT = "/out"
 
+"""
+Exit Codes:
+
+EXIT CODE 0: Successful Verification
+EXIT CODE 1: Essential Bag for Conversion are Missing
+"""
+
 
 def is_gnss_in_bag(bag_file_path):
     def get_bag_start_time(bag_file_path):
@@ -367,7 +374,8 @@ def launch_nodes():
                 print("The GPS postprocessed Bag is optional!")
                 continue
             else:
-                raise ValueError("Pattern not found: ", pattern, " in Directory ", MISSION_DATA)
+                print("Pattern not found: ", pattern, " in Directory ", MISSION_DATA)
+                exit(1)
 
     os.makedirs(OUT, exist_ok=True)
 
@@ -601,3 +609,4 @@ def launch_nodes():
 
 if __name__ == "__main__":
     launch_nodes()
+    exit(0)

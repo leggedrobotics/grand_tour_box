@@ -211,3 +211,5 @@ if __name__ == "__main__":
             task["out"]["image_topics"],
             task["out"]["camera_info_topics"],
         )
+
+    exit(0)

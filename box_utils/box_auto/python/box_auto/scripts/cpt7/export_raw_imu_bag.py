@@ -13,6 +13,16 @@ from pathlib import Path
 import os
 import argparse
 from box_auto.utils import MISSION_DATA
+from std_msgs.msg import String
+
+"""
+Exit Codes:
+
+EXIT CODE 0: Successful Conversion
+EXIT CODE 1: No _RAWIMUSX.ASCII files found in: {MISSION_DATA}
+EXIT CODE 2: Too many (x) _RAWIMUSX.ASCII files found in: {MISSION_DATA}
+EXIT CODE 3: Error processing the RAWIMUSX.ASCII file. Check the Convert.LOG via the Novatel Convert App for details in ASCII format.
+"""
 
 
 class RAWIMUDataParser:
@@ -53,6 +63,8 @@ class RAWIMUDataParser:
         start_time = datetime.fromtimestamp(self.ros_times[0].to_sec()).strftime("%Y-%m-%d-%H-%M-%S")
         end_time = datetime.fromtimestamp(self.ros_times[0].to_sec()).strftime("%Y-%m-%d-%H-%M-%S")
         print("Rosbag Time:", start_time, end_time)
+
+        self.reference_logfile_name = str(Path(path).stem)
         return True
 
     def load_imu_times(self, imu_df: pd.DataFrame):
@@ -156,7 +168,15 @@ class RAWIMUDataParser:
             with rosbag.Bag(path, "w", compression="lz4") as bag:
                 self.logger.debug(f"Opened {path} for writing")
                 self.logger.info(f"Writing {lengths[0]} samples")
+                info_written = False
                 for stamp, x_a, minusy_a, z_a, x_g, minusy_g, z_g in zip(*processed_data):
+                    if not info_written:
+                        topic_info = self.output_imu_msg_name.replace("imu", "info")
+                        msg_debug = String(data=self.reference_logfile_name)
+                        bag.write(topic=topic_info, msg=msg_debug, t=stamp)
+                        info_written = True
+                        print(self.reference_logfile_name)
+
                     latest_message.header.seq += 1
                     latest_message.header.stamp = stamp
 
@@ -169,6 +189,7 @@ class RAWIMUDataParser:
                     latest_message.angular_velocity.z = z_g
 
                     bag.write(topic=topic_name, msg=latest_message, t=stamp)
+
         except Exception as e:
             self.logger.error(f"Writing IMU data to rosbag failed with:" f"\n {e}")
         self.logger.info(f"Successfully wrote to:" f"\n{path} - last message at {latest_message.header.stamp.secs}")
@@ -248,11 +269,14 @@ if __name__ == "__main__":
         files = [str(s) for s in Path(MISSION_DATA).rglob("*RAWIMUSX.ASCII")]
         if len(files) == 1:
             imu_ascii_file = files[0]
+        elif len(files) == 0:
+
+            print(f"No _RAWIMUSX.ASCII files found in : {MISSION_DATA}")
+            exit(1)
         else:
             nr = len(files)
-            print(f"Invalid number [{nr}] of _RAWIMUSX.ASCII file found in the directory {MISSION_DATA}")
-            print("Specify the correct _RAWIMUSX.ASCII file manually or move it to the directory")
-            exit - 1
+            print(f"To many ({nr}) _RAWIMUSX.ASCII files found in : {MISSION_DATA}")
+            exit(2)
 
         imu_path = imu_ascii_file
         times_path = imu_ascii_file
@@ -274,6 +298,7 @@ if __name__ == "__main__":
                 " processed through the Novatel Convert App, to extract the"
                 " ASCII RAWIMU file used here."
             )
+            exit(3)
     else:
         # Process everything you can find
         output_topic_name = "/gt_box/cpt7/offline_from_novatel_logs/imu"
@@ -303,4 +328,7 @@ if __name__ == "__main__":
                     " processed through the Novatel Convert App, to extract the"
                     " ASCII RAWIMU file used here."
                 )
+                exit(3)
             print("")
+
+    exit(0)

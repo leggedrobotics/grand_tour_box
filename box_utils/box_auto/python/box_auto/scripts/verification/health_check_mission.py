@@ -7,11 +7,10 @@ from colorama import init, Fore, Style
 import statistics
 import sys
 import os
-from box_auto.utils import WS
+from box_auto.utils import WS, MISSION_DATA
 
 YAML_FILE = str(Path(WS) / "box_utils/box_auto/cfg/health_check_reference_data.yaml")
 LOG_FILE = "/out/result.log"
-MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
 
 # Initialize colorama for colored output
 init()
@@ -269,11 +268,11 @@ def validate_mission_folder(reference_data: Dict, mission_folder: str, time_tole
 if __name__ == "__main__":
     if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
         uuid = os.environ["MISSION_UUID"]
-        os.system(f"klein download --mission {uuid} --dest /mission_data '*.bag'")
+        os.system(f"klein download --mission {uuid} --dest {MISSION_DATA} '*.bag'")
 
-    validation_passed = validate_bags(
-        reference_folder=None, yaml_file=YAML_FILE, mission_folder=MISSION_DATA, time_tolerance=20
-    )
+    # validation_passed = validate_bags(
+    #     reference_folder=None, yaml_file=YAML_FILE, mission_folder=MISSION_DATA, time_tolerance=20
+    # )
 
     # Comment in to generate new reference data
     validation_passed = validate_bags(

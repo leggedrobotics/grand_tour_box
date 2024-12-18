@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from box_auto.utils import MISSION_DATA, get_file
+import time
 
 
 def main():
@@ -8,21 +9,36 @@ def main():
     for PROCMODE in ["tc", "lc", "ppp", "dgps"]:
 
         for EXP_PROFILE in ["GrandTour-LocalFrame-minimal"]:
-            LOGFILE, suc = get_file("*.LOG")
+            log_files = [str(s) for s in Path(MISSION_DATA).rglob("*.LOG") if "/ie/" not in str(s)]
+            suc = True if len(log_files) == 1 else False
+
+            if len(log_files) == 0:
+                log_files = [str(s) for s in Path(MISSION_DATA).rglob("*.LOG")]
+
+                if len(log_files) == 1:
+                    log_file = log_files[0]
+                    print(f"cp {log_file} {MISSION_DATA}")
+                    exit(1)
+
+                log_files = [str(s) for s in Path(MISSION_DATA).rglob("*.LOG") if "/ie/" not in str(s)]
+                suc = True if len(log_files) == 1 else False
+
             if not suc:
                 raise ValueError("Failed to find LOG file.")
+
+            log_file = log_files[0]
 
             PROJ = str(Path(MISSION_DATA) / "ie" / PROCMODE / f"ie_{PROCMODE}.proj")
             OUTPUT = str(Path(MISSION_DATA) / "ie" / f"output_{PROCMODE}_{EXP_PROFILE}.txt")
             IE_API_KEY = os.environ["IE_API_KEY"]
             Path(PROJ).parent.mkdir(exist_ok=True, parents=True)
 
-            os.system(f"mv {LOGFILE} " + str(Path(MISSION_DATA) / "ie"))
+            os.system(f"cp {log_file} " + str(Path(MISSION_DATA) / "ie"))
 
-            # Updated moved logfile path
-            LOGFILE, suc = get_file("*.LOG")
+            # Updated moved log_file path
+            log_file, suc = get_file("*.LOG", str(Path(MISSION_DATA) / "ie"))
             cmd = "cd /home/jonfrey/Downloads/waypoint_ie_10_00_1206/bin; ./WPGCMDIMU "
-            cmd += f'-remfile "{LOGFILE}" '
+            cmd += f'-remfile "{log_file}" '
             cmd += f"-procmode {PROCMODE} "
             cmd += f"-proccfg {PROJ} "
             cmd += '-procprofile "SPAN Pedestrian (CPT7-HG4930)" '
@@ -37,6 +53,8 @@ def main():
 
             print(cmd)
             os.system(cmd)
+
+            time.sleep(2)
 
 
 if __name__ == "__main__":
