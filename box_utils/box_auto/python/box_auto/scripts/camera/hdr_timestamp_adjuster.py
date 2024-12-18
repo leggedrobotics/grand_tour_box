@@ -38,8 +38,7 @@ OFFSET_NSEC = int(OFFSET_NSEC)
 
 
 class RosbagValidatorAndProcessor:
-    def __init__(self, mission_folder, cameras, output_suffix):
-        self.mission_folder = Path(mission_folder)
+    def __init__(self, cameras, output_suffix):
         self.cameras = cameras
         self.output_suffix = output_suffix
 

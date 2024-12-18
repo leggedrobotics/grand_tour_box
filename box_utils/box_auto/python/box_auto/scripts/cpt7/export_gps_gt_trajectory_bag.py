@@ -55,6 +55,42 @@ def main():
             for i, (time, position, orientation_rpy, position_std, orientation_rpy_std) in enumerate(
                 zip(times, positions, orientations_rpy, positions_std, orientations_rpy_std)
             ):
+                timestamp = rospy.Time.from_sec(time)
+                if i == 0:
+                    msg = Vector3(x=position[0], y=position[1], z=position[2])
+                    bag.write(
+                        topic=f"/gt_box/inertial_explorer/{post_proc_mode}/origin/position_ecef", msg=msg, t=timestamp
+                    )
+                    msg = Vector3(x=position_std[0], y=position_std[1], z=position_std[2])
+                    bag.write(
+                        topic=f"/gt_box/inertial_explorer/{post_proc_mode}/origin/position_ecef_std",
+                        msg=msg,
+                        t=timestamp,
+                    )
+                    msg = Vector3(x=orientation_rpy[0], y=orientation_rpy[1], z=orientation_rpy[2])
+                    bag.write(
+                        topic=f"/gt_box/inertial_explorer/{post_proc_mode}/origin/orientation_hrp", msg=msg, t=timestamp
+                    )
+                    msg = Vector3(x=orientation_rpy_std[0], y=orientation_rpy_std[1], z=orientation_rpy_std[2])
+                    bag.write(
+                        topic=f"/gt_box/inertial_explorer/{post_proc_mode}/origin/orientation_hrp_std",
+                        msg=msg,
+                        t=timestamp,
+                    )
+
+                msg = Vector3(x=position[0], y=position[1], z=position[2])
+                bag.write(topic=f"/gt_box/inertial_explorer/{post_proc_mode}/raw/position_ecef", msg=msg, t=timestamp)
+                msg = Vector3(x=position_std[0], y=position_std[1], z=position_std[2])
+                bag.write(
+                    topic=f"/gt_box/inertial_explorer/{post_proc_mode}/raw/position_ecef_std", msg=msg, t=timestamp
+                )
+                msg = Vector3(x=orientation_rpy[0], y=orientation_rpy[1], z=orientation_rpy[2])
+                bag.write(topic=f"/gt_box/inertial_explorer/{post_proc_mode}/raw/orientation_hrp", msg=msg, t=timestamp)
+                msg = Vector3(x=orientation_rpy_std[0], y=orientation_rpy_std[1], z=orientation_rpy_std[2])
+                bag.write(
+                    topic=f"/gt_box/inertial_explorer/{post_proc_mode}/raw/orientation_hrp_std", msg=msg, t=timestamp
+                )
+
                 if start_time is None:
                     start_time = time
 
@@ -78,7 +114,6 @@ def main():
                 # Missing **2
                 covariance = np.diag(np.concatenate([rot_std[:], np.array(position_enu_std)[0, :]], axis=0))
 
-                timestamp = rospy.Time.from_sec(time)
                 output_msg = PoseWithCovarianceStamped()
                 output_msg.header.seq = i
                 output_msg.header.stamp = timestamp

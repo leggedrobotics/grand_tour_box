@@ -96,6 +96,20 @@ deployments = [
             "2024-11-15-14-43-52",
         ],
     },
+    {
+        "data_folder": "/media/jonfrey/BoxiS1-1TB/deployment_day_14",
+        "mission_names": [
+            "2024-11-18-11-42-04",
+            "2024-11-18-12-05-01",
+            "2024-11-18-13-22-14",
+            "2024-11-18-13-48-19",
+            "2024-11-18-15-46-05",
+            "2024-11-18-16-45-27",
+            "2024-11-18-16-59-23",
+            "2024-11-18-17-13-09",
+            "2024-11-18-17-31-36",
+        ],
+    },
     {"data_folder": "/media/jonfrey/BoxiS4-2TB/deployment_day_15", "mission_names": ["2024-11-21-16-36-19"]},
     {
         "data_folder": "/media/jonfrey/Data/deployment_day_16",
@@ -120,39 +134,6 @@ deployments = [
 ]
 
 
-def test_deployment_folders_exist(deployments):
-    """
-    Test if all deployment folders exist in the file system.
-
-    Args:
-        deployments (list): List of deployment dictionaries with 'data_folder' key
-
-    Returns:
-        tuple: (bool indicating all folders exist, list of non-existent folders)
-    """
-    non_existent_folders = []
-
-    for deployment in deployments:
-        folder_path = deployment["data_folder"]
-
-        if not os.path.exists(folder_path):
-            non_existent_folders.append(folder_path)
-
-    return len(non_existent_folders) == 0, non_existent_folders
-
-
-# Run the test
-def main():
-    all_exist, missing_folders = test_deployment_folders_exist(deployments)
-
-    if all_exist:
-        print("✅ All deployment folders exist!")
-    else:
-        print("❌ Some deployment folders are missing:")
-        for folder in missing_folders:
-            print(f"   - {folder}")
-
-
 # Optional: Verbose mode with more details
 def test_deployment_folders_verbose(deployments):
     """
@@ -168,88 +149,31 @@ def test_deployment_folders_verbose(deployments):
 
     for deployment in deployments:
         folder_path = deployment["data_folder"]
-
         folder_status[folder_path] = {
             "exists": os.path.exists(folder_path),
             "is_directory": os.path.isdir(folder_path) if os.path.exists(folder_path) else False,
-            "readable": os.access(folder_path, os.R_OK) if os.path.exists(folder_path) else False,
             "mission_count": len(deployment["mission_names"]),
         }
-
     return folder_status
 
 
 # Run verbose test
 def main_verbose():
     verbose_results = test_deployment_folders_verbose(deployments)
-
     print("Deployment Folder Detailed Report:\n")
     for folder, status in verbose_results.items():
         print(f"Folder: {folder}")
         print(f"  Exists:        {'✅ Yes' if status['exists'] else '❌ No'}")
         print(f"  Is Directory:  {'✅ Yes' if status['is_directory'] else '❌ No'}")
-        print(f"  Readable:      {'✅ Yes' if status['readable'] else '❌ No'}")
         print(f"  Mission Count: {status['mission_count']}")
         print()
 
 
-# You can choose which test to run
-if __name__ == "__main__":
-    # Quick test
-    # main()
-
-    # Optional: Detailed test
-    # main_verbose()
-
-    # for dep in deployments:
-    #     mission_names = " ".join(dep["mission_names"])
-    #     data_folder = dep["data_folder"]
-    #     os.system(f"python3 /home/jonfrey/git/grand_tour_box/box_utils/box_kleinkram/auto.py --mode=upload_and_process --data_folder={data_folder} --mission_names {mission_names}")
-
-    # summary = {}
-    # for dep in deployments:
-    #     f = dep["data_folder"]
-
-    #     cmd = f"python3 /home/jonfrey/git/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/cpt7/move_cpt7_files.py --data_folder {f} --cpt7_folder /media/jonfrey/Data/CPT7/2024-11-27_post_leica"
-    #     result = subprocess.run( shlex.split(cmd) )
-    #     return_code = result.returncode
-    #     summary[ dep["data_folder"] ] = return_code
-    # for k,v in summary.items():
-    #     print( k,": ", v)
-
-    # summary = {}
-    # for dep in deployments:
-    #     for mission_name in  dep["mission_names"]:
-
-    #         p = os.path.join(dep["data_folder"], mission_name)
-    #         cmd = "python3 /home/jonfrey/git/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/cpt7/export_raw_imu_bag.py"
-    #         env = {"MISSION_DATA": str(p)}
-    #         try:
-    #             result = subprocess.run(
-    #                 shlex.split(cmd),
-    #                 env={**os.environ, **env},  # Merge the current environment with the custom one
-    #                 check=True  # Raise an exception if the command fails
-    #             )
-    #             exit_code = result.returncode
-    #             summary[" ".join( p.split("/")[-2:])] = f"Script executed successfully with exit code {exit_code}."
-
-    #             print(f"Script executed successfully with exit code {exit_code}.")
-    #         except subprocess.CalledProcessError as e:
-    #             print(f"Script failed with exit code {e.returncode}.")
-    #             summary[" ".join( p.split("/")[-2:])] = f"Script failed with exit code {e.returncode}."
-    #         except Exception as e:
-    #             print(f"An error occurred: {e}")
-    #             summary[" ".join( p.split("/")[-2:])] = f"An error occurred: {e}"
-
-    # for k,v in summary.items():
-    #     print( k,": ", v)
-
+def execute_command_per_mission(cmd):
     summary = {}
     for dep in deployments:
         for mission_name in dep["mission_names"]:
-
             p = os.path.join(dep["data_folder"], mission_name)
-            cmd = "python3 /home/jonfrey/git/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/cpt7/gnss_process.py"
             env = {"MISSION_DATA": str(p)}
             try:
                 result = subprocess.run(
@@ -270,3 +194,34 @@ if __name__ == "__main__":
 
     for k, v in summary.items():
         print(k, ": ", v)
+
+
+def process_all_gnss():
+    # summary = {}
+    # for dep in deployments:
+    #     f = dep["data_folder"]
+    #     cmd = f"python3 /home/jonfrey/git/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/cpt7/move_cpt7_files.py --data_folder {f} --cpt7_folder /media/jonfrey/Data/CPT7/2024-11-27_post_leica"
+    #     result = subprocess.run( shlex.split(cmd) )
+    #     return_code = result.returncode
+    #     summary[ dep["data_folder"] ] = return_code
+    # for k,v in summary.items():
+    #     print( k,": ", v)
+
+    # execute_command_per_mission("python3 /home/jonfrey/git/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/cpt7/export_raw_imu_bag.py")
+    # execute_command_per_mission("python3 /home/jonfrey/git/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/cpt7/gnss_process.py")
+    execute_command_per_mission(
+        "python3 /home/jonfrey/git/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/cpt7/export_gps_gt_trajectory_bag.py"
+    )
+
+
+# You can choose which test to run
+if __name__ == "__main__":
+    # Optional: Detailed test
+    # main_verbose()
+
+    # for dep in deployments:
+    #     mission_names = " ".join(dep["mission_names"])
+    #     data_folder = dep["data_folder"]
+    #     os.system(f"python3 /home/jonfrey/git/grand_tour_box/box_utils/box_kleinkram/auto.py --mode=upload_and_process --data_folder={data_folder} --mission_names {mission_names}")
+
+    process_all_gnss()
