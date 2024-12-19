@@ -42,7 +42,7 @@ subscribers:
     topic_name: /dlio/deskewed_point_cloud
     data_type: pointcloud
   livox:
-    topic_name: /gt_box/livox/lidar
+    topic_name: /gt_box/livox/lidar_filtered
     data_type: pointcloud
   hdr_front:
     topic_name: /gt_box/hdr_front_rect/image_rect/compressed

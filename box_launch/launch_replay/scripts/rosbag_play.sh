@@ -27,22 +27,26 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Array of keys to filter
-keys=(
-    "_lpc_state_estimator.bag"
-    "_lpc_locomotion.bag"
-    "_lpc_general.bag"
-    # "_npc_"
-    # "_nuc_hesai_post_processed.bag"
+keys=(    
+    "_cpt7_ie_tc.bag"
+    "_gt_tf.bag"
+    "_lpc_state_estimator"
+    "_lpc_locomotion"
+    "_lpc_general"
+    "_lpc_tf"
+    "_tf_static_with_dlio.bag"
+    "_nuc_livox_filtered.bag"
+    "_nuc_cpt7.bag"
+    "_jetson_hdr_right_updated.bag"
+    "_jetson_hdr_left_updated.bag"
+    "_jetson_hdr_front_updated.bag"
+    "_nuc_hesai_post_processed.bag"
     # "_jetson_ap20_synced.bag"
     # "_cpt7_raw_imu.bag"
     # "_cpt7_ie_tc.bag"
-    "_tf_static_with_dlio.bag"
     # "_nuc_utils.bag"
     # "_nuc_tf.bag"
-    "_nuc_livox.bag"
-    "_gt_tf.bag"
-    "_nuc_cpt7.bag"
-    "_nuc_alphasense.bag"
+    # "_nuc_alphasense.bag"
     # "_jetson_utils.bag"
     # "_jetson_stim.bag"
     # "_jetson_ap20_aux.bag"
@@ -51,9 +55,6 @@ keys=(
     #"_jetson_zed2i_prop.bag"
     #"_jetson_zed2i_images.bag"
     #"_jetson_zed2i_depth.bag"
-    # "_jetson_hdr_right.bag"
-    # "_jetson_hdr_left.bag"
-    # "_jetson_hdr_front.bag"
     #"_jetson_hdr_front_rect.bag"
 )
 

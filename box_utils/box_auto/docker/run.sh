@@ -1,5 +1,7 @@
 #!/bin/bash
 # author: Jonas Frey
+MISSION_DATA_MOUNT="--volume $MISSION_DATA:/mission_data"
+
 set -e
 
 # Define usage
@@ -25,10 +27,12 @@ INTERACTIVE_FLAG="-it"
 IMAGE="rslethz/grand_tour_box"
 IMAGE_TYPE=""
 COMMAND=""
-MISSION_DATA_MOUNT=""
+MISSION_DATA=""
 DEBUG_MOUNT=""
 REPO_PATH="$HOME/git/grand_tour_box"  # Default repo path
+
 ENV_VARS=()
+
 
 # Read arguments
 for i in "$@"; do
@@ -64,9 +68,9 @@ for i in "$@"; do
             shift
             ;;
         --mission-data=*)
-            MISSION_PATH=${i#*=}
-            if [ -d "$MISSION_PATH" ]; then
-                MISSION_DATA_MOUNT="--volume $MISSION_PATH:/mission_data"
+            MISSION_DATA=${i#*=}
+            if [ -d "$MISSION_DATA" ]; then
+                MISSION_DATA_MOUNT="--volume $MISSION_DATA:/mission_data"
             else
                 echo "Error: Mission data path does not exist: $MISSION_PATH"
                 exit 1
@@ -75,7 +79,7 @@ for i in "$@"; do
             ;;
         --debug)
             if [ -d "$REPO_PATH" ]; then
-                DEBUG_MOUNT="--volume $REPO_PATH:/home/catkin_ws/src/grand_tour_box"
+                DEBUG_MOUNT="--volume $REPO_PATH:/home/catkin_ws/src/grand_tour_box --net=host"
             else
                 echo "Error: Repository path does not exist: $REPO_PATH"
                 exit 1
@@ -123,8 +127,7 @@ echo "  Debug mode: ${DEBUG_MOUNT:+enabled}"
 echo "  Command: ${COMMAND:-default shell}"
 echo ""
 
-docker run --net=host \
-    --privileged \
+docker run --privileged \
     $INTERACTIVE_FLAG \
     $REMOVE_FLAG \
     --volume=$XSOCK:/root/.X11-unix:rw \
@@ -142,3 +145,4 @@ docker run --net=host \
     $DEBUG_MOUNT \
     $FULL_IMAGE \
     $COMMAND
+
