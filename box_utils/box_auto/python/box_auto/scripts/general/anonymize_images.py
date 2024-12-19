@@ -6,9 +6,9 @@ from pathlib import Path
 from typing import Any
 from typing import List
 from typing import Mapping
+from typing import Optional
 from typing import Sequence
 from typing import Tuple
-from typing import Optional
 
 import numpy as np
 import rosbag
@@ -313,8 +313,9 @@ def anonymize_bag(
     print(f"done anonymizing {in_path} -> {out_path}")
 
 
-FILE_PATH = Path(__file__).parent / "data" / "eth_campus.bag"
-OUT_PATH = Path(__file__).parent / "data" / "_bytetrack_anon.bag"
+DATA_PATH = Path(__file__).parent.parent.parent.parent.parent / "data"
+FILE_PATH = DATA_PATH / "pilatus.bag"
+OUT_PATH = DATA_PATH / "out.bag"
 
 if __name__ == "__main__":
     anonymize_bag(
