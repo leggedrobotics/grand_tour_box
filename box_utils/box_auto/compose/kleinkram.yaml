@@ -64,20 +64,19 @@ services:
   calibration:
     <<: *common-config
     container_name: calibration
-    command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE; python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/calibration/update_calibration.py; exit $?"]
-
+    command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE; python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/calibration/update_calibration.py"]
 
   # minimal AP20: _robot.bag - _synced.bag
   ap20_python_online_matcher:
     <<: *common-config
     container_name: ap20_python_online_matcher
-    command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE; python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/ap20/ap20_python_online_matcher.py; exit $?"]
+    command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE; python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/ap20/ap20_python_online_matcher.py"]
 
   # minimal AP20: _robot.bag
   ap20_validate:
     <<: *common-config
     container_name: ap20_validate
-    command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE; python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/ap20/ap20_validate.py; exit $?"]
+    command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE; python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/ap20/ap20_validate.py"]
     depends_on:
       ap20_python_online_matcher:
         condition: service_completed_successfully
@@ -86,13 +85,13 @@ services:
   hesai:
     <<: *common-config
     container_name: hesai
-    command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE && python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/lidar/hesai.py; exit $?"]
+    command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE && python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/lidar/hesai.py"]
   
   # hesai_post_processed.bag & livox.bag -> hesai_filtered.bag , livox_filtered.bag
   filter_pointclouds: 
     <<: *common-config
     container_name: filter_pointclouds
-    command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE && python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/lidar/filter_pointclouds.py; exit $?"]
+    command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE && python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/lidar/filter_pointclouds.py"]
     depends_on:
       hesai:
         condition: service_completed_successfully
@@ -101,7 +100,7 @@ services:
   rectify:
     <<: *common-config
     container_name: rectify
-    command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE && python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/camera/rectify.py; exit $?"]
+    command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE && python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/camera/rectify.py"]
     depends_on:
       calibration:
         condition: service_completed_successfully
@@ -110,7 +109,7 @@ services:
   dlio:
     <<: *common-config
     container_name: dlio
-    command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE && python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/application/dlio.py; exit $?"]
+    command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE && python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/application/dlio.py"]
     depends_on:
       hesai:
         condition: service_completed_successfully
@@ -120,7 +119,7 @@ services:
   open3d_slam:
     <<: *common-config
     container_name: open3d_slam
-    command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE && python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/application/open3d_slam.py; exit $?"]
+    command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE && python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/application/open3d_slam.py"]
     depends_on:
       hesai:
         condition: service_completed_successfully
@@ -134,7 +133,7 @@ services:
   merge_dlio_tf_static:
     <<: *common-config
     container_name: merge_dlio_tf_static
-    command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE && python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/general/merge_dlio_tf_static.py; exit $?"]
+    command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE && python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/general/merge_dlio_tf_static.py"]
     depends_on:
       dlio:
         condition: service_completed_successfully
@@ -144,7 +143,7 @@ services:
   graph_msf:
     <<: *common-config
     container_name: graph_msf
-    command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE && python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/application/graph_msf.py; exit $?"]
+    command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE && python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/application/graph_msf.py"]
     depends_on:
       hesai:
         condition: service_completed_successfully
@@ -157,17 +156,17 @@ services:
   # wavemap:
   #   <<: *common-config
   #   container_name: dlio
-  #   command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE && python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/application/dlio.py; exit $?"]
+  #   command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE && python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/application/dlio.py"]
 
   # color_correction:
   #   <<: *common-config
   #   container_name: color_correction
-  #   command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE && python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/camera/color_correction.py; exit $?"]
+  #   command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE && python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/camera/color_correction.py"]
 
   # topic_freq:
   #   <<: *common-config
   #   container_name: topic_freq
-  #   command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE && python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/verification/topic_freq.py; exit $?"]
+  #   command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE && python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/verification/topic_freq.py"]
 
   #   depends_on:
   #     hesai:
@@ -182,12 +181,12 @@ services:
   # cpt7:
   #   <<: *common-config
   #   container_name: cpt7
-  #   command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE && python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/cpt7/cpt7.py; exit $?"]
+  #   command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE && python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/cpt7/cpt7.py"]
 
   # imu_timesync:
   #   <<: *common-config
   #   container_name: imu_timesync
-  #   command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE && python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/verification/imu_timesync.py; exit $?"]
+  #   command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE && python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/verification/imu_timesync.py"]
   #   depends_on:
   #     cpt7:
   #       condition: service_completed_successfully
