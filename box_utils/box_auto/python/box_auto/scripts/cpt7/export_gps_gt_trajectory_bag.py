@@ -21,8 +21,11 @@ def main():
 
     As a result, conflicting TFs (Transforms) might be published between the ROS bags.
     """
+    try:
+        date = [(str(s.name)).split("_")[0] for s in Path(MISSION_DATA).glob("*_nuc_livox.bag")][0]
+    except:
+        date = [(str(s.name)).split("_")[0] for s in Path(MISSION_DATA).glob("*_nuc_hesai.bag")][0]
 
-    date = [(str(s.name)).split("_")[0] for s in Path(MISSION_DATA).glob("*_nuc_livox*.bag")][0]
     gps_files = [str(s) for s in (Path(MISSION_DATA) / "ie").rglob("*_GrandTour-LocalFrame-minimal.txt")]
     post_proc_modes = [s.split("/")[-1].split("_")[1] for s in gps_files]
     bag_paths = [

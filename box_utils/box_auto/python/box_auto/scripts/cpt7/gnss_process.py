@@ -2,12 +2,13 @@ import os
 from pathlib import Path
 from box_auto.utils import MISSION_DATA, get_file
 import time
+import subprocess
+import shlex
 
 
 def main():
     print("CLI REFERENCE: https://docs.novatel.com/Waypoint/Content/Appendix/WPGCMD.htm")
     for PROCMODE in ["tc", "lc", "ppp", "dgps"]:
-
         for EXP_PROFILE in ["GrandTour-LocalFrame-minimal"]:
             log_files = [str(s) for s in Path(MISSION_DATA).rglob("*.LOG") if "/ie/" not in str(s)]
             suc = True if len(log_files) == 1 else False
@@ -37,7 +38,8 @@ def main():
 
             # Updated moved log_file path
             log_file, suc = get_file("*.LOG", str(Path(MISSION_DATA) / "ie"))
-            cmd = "cd /home/jonfrey/Downloads/waypoint_ie_10_00_1206/bin; ./WPGCMDIMU "
+
+            cmd = "./WPGCMDIMU "
             cmd += f'-remfile "{log_file}" '
             cmd += f"-procmode {PROCMODE} "
             cmd += f"-proccfg {PROJ} "
@@ -51,10 +53,23 @@ def main():
             cmd += "-expsrc1 epochs "
             cmd += f"-expfile1 {OUTPUT} "
 
-            print(cmd)
-            os.system(cmd)
-
+            os.chdir("/home/jonfrey/Downloads/waypoint_ie_10_00_1206/bin")
+            results = subprocess.run(
+                shlex.split(cmd),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,  # Ensure outputs are returned as strings
+            )
             time.sleep(2)
+
+            if results.returncode == 1:
+                if "_ERROR_ No records were decoded" in results.stdout:
+                    exit(1)
+                elif "_ERROR_ TBD" in results.stdout:
+                    exit(2)
+                else:
+                    exit(3)
+            exit(0)
 
 
 if __name__ == "__main__":
