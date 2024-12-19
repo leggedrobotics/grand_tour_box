@@ -134,7 +134,7 @@ def process_rosbag(input_bag, image_topics, camera_info_topics, out_bag_path, ou
         bag.close()
         out_bag.close()
 
-    upload_bag(out_bag)
+    upload_bag(out_bag_path)
 
 
 if __name__ == "__main__":

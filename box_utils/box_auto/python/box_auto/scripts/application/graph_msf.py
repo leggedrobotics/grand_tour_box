@@ -363,7 +363,7 @@ def launch_nodes():
 
     # GPS bag is optional
     for pattern in PATTERNS:
-        f, suc = get_file(MISSION_DATA, pattern)
+        f, suc = get_file(pattern)
         if suc:
             inputs.append(f)
             timestamp = str(f).split("/")[-1]
