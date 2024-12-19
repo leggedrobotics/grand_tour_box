@@ -139,6 +139,10 @@ if __name__ == "__main__":
     closest_date = None
     calibration = None
     for date, v in calibration_data.items():
+
+        print("CURRENTLY NOT MATCHING IS PERFORMED!!!! ")
+        calibration = v
+
         current_date = datetime.strptime(date, "%Y-%m-%d-%H-%M-%S")
         if (current_date - reference_date).total_seconds() > 0 and (
             closest_date is None

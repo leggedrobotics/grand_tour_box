@@ -60,11 +60,20 @@ x-ros2-common-config: &ros2-common-config
 
 
 services:
+
+  hdr_timestamp_adjuster:
+    <<: *common-config
+    container_name: hdr_timestamp_adjuster
+    command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE; python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/camera/hdr_timestamp_adjuster.py"]
+
   # HDR _updated -> _calib 
   calibration:
     <<: *common-config
     container_name: calibration
     command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE; python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/calibration/update_calibration.py"]
+    depends_on:
+      hdr_timestamp_adjuster:
+        condition: service_completed_successfully
 
   # minimal AP20: _robot.bag - _synced.bag
   ap20_python_online_matcher:
@@ -103,6 +112,8 @@ services:
     command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE && python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/camera/rectify.py"]
     depends_on:
       calibration:
+        condition: service_completed_successfully
+      hdr_timestamp_adjuster:
         condition: service_completed_successfully
 
   # hesai.bag -> dlio.bag
