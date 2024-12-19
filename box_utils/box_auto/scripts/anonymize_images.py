@@ -14,6 +14,7 @@ import numpy as np
 import rosbag
 import supervision as sv
 from cv_bridge import CvBridge
+from std_msgs.msg import Int32
 from ultralytics import YOLO
 
 # NOTE: use conda env img_anon
@@ -31,12 +32,12 @@ FACE_MODEL11_CONF = 0.05
 FACE_MODEL8_PATH = MODELS_PATH / "yolov8s-faces.pt"
 FACE_MODEL8 = YOLO(FACE_MODEL8_PATH)
 FACE_MODEL8_CIDS = [0]
-FACE_MODEL8_CONF = 0.05
+FACE_MODEL8_CONF = 0.10
 
 PLATE_MODEL8_PATH = MODELS_PATH / "yolov8s-plates.pt"
 PLATE_MODEL8 = YOLO(PLATE_MODEL8_PATH)
 PLATE_MODEL8_CIDS = [0]
-PLATE_MODEL8_CONF = 0.25
+PLATE_MODEL8_CONF = 0.35
 
 FACE_PLATE_MODEL11_PATH = MODELS_PATH / "yolov11l-faces-plates.pt"
 FACE_PLATE_MODEL11 = YOLO(FACE_PLATE_MODEL11_PATH)
@@ -45,13 +46,13 @@ FACE_PLATE_MODEL11_CONF = 0.05
 
 MODELS = {
     "faces11": (FACE_MODEL11, FACE_MODEL11_CIDS, FACE_MODEL11_CONF),
-    # "plates8": (PLATE_MODEL8, PLATE_MODEL8_CIDS, PLATE_MODEL8_CONF),
+    # "plates8": (PLATE_MODEL8, PLATE_MODEL8_CIDS, PLATE_MODEL8_CONF), # this sucks for some reason
     "faces_plates11": (
         FACE_PLATE_MODEL11,
         FACE_PLATE_MODEL11_CIDS,
         FACE_PLATE_MODEL11_CONF,
     ),
-    "faces8": (FACE_MODEL11, FACE_MODEL11_CIDS, FACE_MODEL11_CONF),
+    "faces8": (FACE_MODEL8, FACE_MODEL8_CIDS, FACE_MODEL8_CONF),
 }
 
 
@@ -84,9 +85,6 @@ def fetch_multiple_files_kleinkram(patterns):
                 source_file = os.path.join(tmp_dir, file_name)
                 destination_file = os.path.join("/mission_data", file_name)
                 shutil.move(source_file, destination_file)
-
-
-Box = Tuple[int, int, int, int]
 
 
 def _get_detections_batched(images: Sequence[np.ndarray]) -> list[sv.Detections]:
@@ -146,18 +144,54 @@ def _blur_image(
     return image
 
 
+# used for computing the dimension of the nullspace
+EPS = 1e-6
+
+
+def _compute_number_of_detections(
+    detections: Tuple[sv.Detections, sv.Detections]
+) -> int:
+    raw, tracked = detections  # shape (N, 4) each
+    total_dets = np.concatenate([raw.xyxy, tracked.xyxy], axis=0)
+    N = total_dets.shape[0]
+
+    if N == 0:
+        return 0
+
+    dets_left = total_dets.reshape((-1, N, 4))
+    dets_right = total_dets.reshape((N, -1, 4))
+
+    x_max = np.maximum(dets_left[:, :, 0], dets_right[:, :, 0])
+    x_min = np.minimum(dets_left[:, :, 2], dets_right[:, :, 2])
+
+    y_max = np.maximum(dets_left[:, :, 1], dets_right[:, :, 1])
+    y_min = np.minimum(dets_left[:, :, 3], dets_right[:, :, 3])
+
+    # compute connected components
+    intersect = (x_max <= x_min) & (y_max <= y_min)
+
+    # compute the number of connected components of the graph laplacian
+    A = intersect.astype(np.int32)
+    D = np.diag(np.sum(A, axis=1))
+    L = D - A
+    w, _ = np.linalg.eig(L)
+    return int(np.sum(w < EPS))
+
+
 def _blur_images(
     images: Sequence[np.ndarray],
     detections: Sequence[Tuple[sv.Detections, sv.Detections]],
     draw_boxes: bool = False,
-) -> List[np.ndarray]:
+) -> List[Tuple[np.ndarray, int]]:
     """\
     applies blurs to images based on detections
     """
-    return [
-        _blur_image(image, detections, draw_boxes=draw_boxes)
-        for image, detections in zip(images, detections)
-    ]
+    ret: List[Tuple[np.ndarray, int]] = []
+    for image, dets in zip(images, detections):
+        blurred = _blur_image(image, dets, draw_boxes=draw_boxes)
+        n_dets = _compute_number_of_detections(dets)
+        ret.append((blurred, n_dets))
+    return ret
 
 
 def _msg_to_image(msg: Any, cv_bridge: CvBridge, compressed: bool) -> np.ndarray:
@@ -184,17 +218,25 @@ def _write_images_to_bag(
     bag: rosbag.Bag,
     cv_bridge: CvBridge,
     metadata: Sequence[tuple[int, str, bool]],
-    images: Sequence[np.ndarray],
+    images_with_detections: Sequence[Tuple[np.ndarray, int]],
 ) -> None:
     """\
     writes images with corresponding metadata to an open bagfile
     """
-    assert len(metadata) == len(images)
+    assert len(metadata) == len(images_with_detections)
 
-    for (timestamp, topic, compress), image in zip(metadata, images):
+    for (timestamp, topic, compress), (image, n_dets) in zip(
+        metadata, images_with_detections
+    ):
+        # write the image
         msg = _image_to_msg(image, cv_bridge, compressed=compress)
         msg.header.stamp = timestamp
         bag.write(topic, msg, timestamp)
+
+        # write number of detections
+        n_dets_msg = Int32()
+        n_dets_msg.data = n_dets
+        bag.write(f"{topic}/n_detections", n_dets_msg, timestamp)
 
 
 FRAME_RATE = 10
@@ -262,6 +304,7 @@ def anonymize_bag(
         blurred_images = _blur_images(
             image_buffer, tracked_detections, draw_boxes=DRAW_BOXES
         )
+
         _write_images_to_bag(out_bag, cv_bridge, metadata_buffer, blurred_images)
 
     # reindex the bag
