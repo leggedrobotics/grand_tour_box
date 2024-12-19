@@ -4,7 +4,9 @@ source /home/rsl/git/grand_tour_box/box_configuration/nuc/alias.sh
 # for examples
 
 source /opt/ros/noetic/setup.bash
+source ~/opencv_ws/devel/setup.bash
 source ~/catkin_ws/devel/setup.bash
+
 # If not running interactively, don't do anything
 case $- in
     *i*) ;;
@@ -119,5 +121,3 @@ if ! shopt -oq posix; then
 fi
 ## FZF autocompletion and resursive search.
 source /usr/share/doc/fzf/examples/key-bindings.bash
-source /opt/ros/noetic/setup.bash
-source ~/catkin_ws/devel/setup.bash

@@ -4,6 +4,7 @@
 #alias tk_dev='tmux kill-session -a'
 
 alias l-lpc='tmuxp load /home/rsl/git/grand_tour_box/box_launch/tmux/lpc.yaml'
+alias l-recording='tmuxp load /home/rsl/git/grand_tour_box/box_launch/tmux/lpc_recording.yaml'
 
 # Here sim-link does not work
 alias chrony_set_box="sudo killall chronyd; sudo rm -f /etc/chrony/chrony.conf; sudo cp /home/rsl/git/grand_tour_box/box_configuration/anymal/lpc/chrony.conf /etc/chrony/chrony.conf; sudo chronyd"

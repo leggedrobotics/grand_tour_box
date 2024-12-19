@@ -149,7 +149,7 @@ class CameraCameraViewerBlueprintNode:
                                                              CameraIntrinsicsExtrinsics,
                                                              self.camera_extrinsics_callback)
         rr.log(f"{CAMERA_BUNDLE_ORIGIN_NAME}",
-               rr.ViewCoordinates.RIGHT_HAND_Y_UP, static=True)
+               rr.ViewCoordinates.RIGHT_HAND_Y_DOWN, static=True)
         self.projection_sigma = dict()
         self.camera_position_sigma = dict()
         self.rotation_sigma = dict()

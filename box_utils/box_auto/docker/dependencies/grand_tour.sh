@@ -32,6 +32,7 @@ cp /home/catkin_ws/src/grand_tour_box/box_configuration/general/.tmux.conf ~/
 
 
 # Dependencies: open3d_slam_private - Upgrade cmake version to 3.19.2
+apt update -y
 apt install wget software-properties-common -y
 wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null
 apt-add-repository "deb https://apt.kitware.com/ubuntu/ $(lsb_release -cs) main"
@@ -58,6 +59,9 @@ pip3 install scipy
 pip3 install colorlog
 pip3 install rosbags
 pip3 install matplotlib # graph_msf
+pip3 uninstall kleinkram -y
+pip3 install kleinkram
+
 
 # Dependencies: box_auto - hesai.py
 mkdir -p /home/rsl/git/grand_tour_box/box_bringup/bringup_hesai/config
