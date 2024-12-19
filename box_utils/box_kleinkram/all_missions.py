@@ -70,7 +70,7 @@ deployments = [
         ],
     },
     {
-        "data_folder": "/media/jonfrey/T7/deployment_day_12",
+        "data_folder": "/media/jonfrey/Untitled/deployment_day_12",
         "mission_names": [
             "2024-11-14-11-17-02",
             "2024-11-14-13-45-37",
