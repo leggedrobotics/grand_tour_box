@@ -380,7 +380,7 @@ def launch_nodes():
     os.makedirs(OUT, exist_ok=True)
 
     inputs = ",".join(inputs)
-    merged_rosbag_path = os.path.join(MISSION_DATA, "merged.bag")
+    merged_rosbag_path = os.path.join(MISSION_DATA, "merged_for_graph_msf.bag")
 
     if True:
         os.system(
