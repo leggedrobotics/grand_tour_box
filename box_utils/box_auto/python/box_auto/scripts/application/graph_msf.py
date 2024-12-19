@@ -409,7 +409,7 @@ def launch_nodes():
         kill_roscore()
 
     # Convert tf_statics to debug bag
-    tf_static_path, _ = get_bag("*_tf_static.bag")
+    tf_static_path = get_bag("*_tf_static.bag")
     tf_static_gt_path = tf_static_path.replace("_tf_static.bag", "_tf_static_gt.bag")
     tf_statics = []
     csv_R_6D_transform_world_to_leica_total_station, suc1 = get_file(
