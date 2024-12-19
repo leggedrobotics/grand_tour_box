@@ -2,17 +2,19 @@ from __future__ import annotations
 
 import os
 import shutil
-from itertools import chain
 from pathlib import Path
-from typing import Any, Collection, Mapping, Sequence, Tuple
+from typing import Any
+from typing import List
+from typing import Mapping
+from typing import Sequence
+from typing import Tuple
+from typing import Optional
 
-import cv2
 import numpy as np
 import rosbag
 import supervision as sv
 from cv_bridge import CvBridge
 from ultralytics import YOLO
-from deep_sort_realtime.deepsort_tracker import DeepSort
 
 # NOTE: use conda env img_anon
 
@@ -20,16 +22,52 @@ MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
 
 # yolo settings
 MODELS_PATH = Path(__file__).parent / "models"
-MODEL_PATH = MODELS_PATH / "yolo-v11.pt"
-MODEL = YOLO(MODEL_PATH)
+
+FACE_MODEL11_PATH = MODELS_PATH / "yolov11m-faces.pt"
+FACE_MODEL11 = YOLO(FACE_MODEL11_PATH)
+FACE_MODEL11_CIDS = [0]
+FACE_MODEL11_CONF = 0.05
+
+FACE_MODEL8_PATH = MODELS_PATH / "yolov8s-faces.pt"
+FACE_MODEL8 = YOLO(FACE_MODEL8_PATH)
+FACE_MODEL8_CIDS = [0]
+FACE_MODEL8_CONF = 0.05
+
+PLATE_MODEL8_PATH = MODELS_PATH / "yolov8s-plates.pt"
+PLATE_MODEL8 = YOLO(PLATE_MODEL8_PATH)
+PLATE_MODEL8_CIDS = [0]
+PLATE_MODEL8_CONF = 0.25
+
+FACE_PLATE_MODEL11_PATH = MODELS_PATH / "yolov11l-faces-plates.pt"
+FACE_PLATE_MODEL11 = YOLO(FACE_PLATE_MODEL11_PATH)
+FACE_PLATE_MODEL11_CIDS = [1, 2]  # 0 for sign
+FACE_PLATE_MODEL11_CONF = 0.05
+
+MODELS = {
+    "faces11": (FACE_MODEL11, FACE_MODEL11_CIDS, FACE_MODEL11_CONF),
+    # "plates8": (PLATE_MODEL8, PLATE_MODEL8_CIDS, PLATE_MODEL8_CONF),
+    "faces_plates11": (
+        FACE_PLATE_MODEL11,
+        FACE_PLATE_MODEL11_CIDS,
+        FACE_PLATE_MODEL11_CONF,
+    ),
+    "faces8": (FACE_MODEL11, FACE_MODEL11_CIDS, FACE_MODEL11_CONF),
+}
+
+
 BATCH_SIZE = 4
 
 
 # blur settings
-BLUR_CLASS_IDS = (1, 2)  # 0 for sign
+BLUR_CLASS_IDS = (0,)  # (1, 2)  # 0 for sign
 FORWARD_BUFFER = 4
 BACKWARD_BUFFER = 4
 BLUR_SIZE = 25
+
+# annotators
+BOX_ANNOTATOR = sv.BoxAnnotator()
+LABEL_ANNOTATOR = sv.LabelAnnotator()
+BLUR_ANNOTATOR = sv.BlurAnnotator()
 
 
 def fetch_multiple_files_kleinkram(patterns):
@@ -51,73 +89,75 @@ def fetch_multiple_files_kleinkram(patterns):
 Box = Tuple[int, int, int, int]
 
 
-def _process_detections(
-    detections: sv.Detections, class_ids: Collection[int] = BLUR_CLASS_IDS
-) -> list[Box]:
-    """\
-    convert `sv.Detections` to `list[Box]` where `Box` is a tuple of 4 ints
-    """
-    ret = []
-    for xyxy, _, _, cid, _, _ in detections:  # TODO: proper unpacking
-        if cid not in class_ids:
-            continue
-        ret.append(tuple(map(int, xyxy)))
-    return ret
-
-
-def _get_detections_batched(
-    images: Sequence[np.ndarray], class_ids: Collection[int] = BLUR_CLASS_IDS
-) -> list[list[Box]]:
+def _get_detections_batched(images: Sequence[np.ndarray]) -> list[sv.Detections]:
     """\
     runs a batch of images through the model and returns detection boxes for each image
     """
     print("running batch...")
-    sv_detections = [
-        sv.Detections.from_ultralytics(d) for d in MODEL.predict(source=list(images))
-    ]
-    return [_process_detections(d, class_ids=class_ids) for d in sv_detections]
+
+    model_dets: List[List[sv.Detections]] = []
+    for model, cids, conf in MODELS.values():
+        dets: List[sv.Detections] = []
+        for det in model.predict(source=list(images), conf=conf):
+            raw_det = sv.Detections.from_ultralytics(det)
+            assert raw_det.class_id is not None
+            dets.append(raw_det[np.isin(raw_det.class_id, cids)])  # type: ignore
+        model_dets.append(dets)
+
+    ret = []
+    for dets in zip(*model_dets):
+        stacked_dets = sv.Detections.merge(list(dets))
+        ret.append(stacked_dets)
+
+    return ret
+
+
+def _tracked_detections(
+    detections: Sequence[sv.Detections], tracker: sv.ByteTrack
+) -> List[Tuple[sv.Detections, sv.Detections]]:
+    """\
+    tracks detections using a tracker
+    """
+    ret: List[Tuple[sv.Detections, sv.Detections]] = []
+    for dets in detections:
+        tracked_dets = tracker.update_with_detections(dets)
+        ret.append((tracked_dets, dets))
+    return ret
 
 
 def _blur_image(
     image: np.ndarray,
-    detections: Collection[Box],
+    detections: tuple[sv.Detections, sv.Detections],
+    draw_boxes: bool = False,
 ) -> np.ndarray:
     """\
     applies blurs to images based on detections
     """
+    # filter class ids and blur
+    tracked, raw = detections
+    image = BLUR_ANNOTATOR.annotate(image, tracked)
+    image = BLUR_ANNOTATOR.annotate(image, raw)
 
-    mask = np.zeros_like(image, dtype=np.uint8)
-    for x1, y1, x2, y2 in detections:
-        mask[y1:y2, x1:x2] = 1
-    blurred = cv2.GaussianBlur(image, (BLUR_SIZE, BLUR_SIZE), 0)
-    return np.where(mask, blurred, image)
+    if draw_boxes:
+        image = BOX_ANNOTATOR.annotate(image, tracked)
+        image = LABEL_ANNOTATOR.annotate(image, tracked)
+        image = BOX_ANNOTATOR.annotate(image, raw)
+        image = LABEL_ANNOTATOR.annotate(image, raw)
+    return image
 
 
-def _apply_temporal_blur(
-    buffered_detections: Sequence[Collection[Box]],
+def _blur_images(
     images: Sequence[np.ndarray],
-    forward_buffer: int = FORWARD_BUFFER,
-    backward_buffer: int = BACKWARD_BUFFER,
-) -> list[np.ndarray]:
+    detections: Sequence[Tuple[sv.Detections, sv.Detections]],
+    draw_boxes: bool = False,
+) -> List[np.ndarray]:
     """\
-    apply temporal blur to images based on detections
-
-    an image is always blurred with the detection from the previous `backward_buffer` frames
-    and the detections from the next `forward_buffer` frames
-
-    for this reason `buffered_detections` must have length `len(images) + forward_buffer + backward_buffer`
-    where the buffered_detections[i + backward_buffer] are the detections for the image[i]
+    applies blurs to images based on detections
     """
-
-    assert len(images) + forward_buffer + backward_buffer == len(buffered_detections)
-    buffer_size = 1 + forward_buffer + backward_buffer
-
-    blurred_images = []
-    for i, image in enumerate(images):
-        detections = buffered_detections[i : i + buffer_size]
-        image = _blur_image(image, list(chain.from_iterable(detections)))
-        blurred_images.append(image)
-    return blurred_images
+    return [
+        _blur_image(image, detections, draw_boxes=draw_boxes)
+        for image, detections in zip(images, detections)
+    ]
 
 
 def _msg_to_image(msg: Any, cv_bridge: CvBridge, compressed: bool) -> np.ndarray:
@@ -157,33 +197,16 @@ def _write_images_to_bag(
         bag.write(topic, msg, timestamp)
 
 
-def _convert_box_to_xywh(box: Box) -> Tuple[int, int, int, int]:
-    x1, y1, x2, y2 = box
-    return x1, y1, x2 - x1, y2 - y1
+FRAME_RATE = 10
+DRAW_BOXES = True
 
 
-def _apply_deepsort_blur(
-    tracker: DeepSort,
-    images: Sequence[np.ndarray],
-    detections: Sequence[Collection[Box]],
-) -> list[np.ndarray]:
-    assert len(images) == len(detections)
-
-    blurred_images = []
-    for image, dets in zip(images, detections):
-        deepsort_dets: list[Box] = []
-        bbs = [(_convert_box_to_xywh(det), 100, 0) for det in dets]
-
-        for track in tracker.update_tracks(bbs, frame=image):
-            tup = tuple(map(int, track.to_tlbr()))
-            deepsort_dets.append(tup)  # type: ignore
-
-        blurred_images.append(_blur_image(image, deepsort_dets))
-
-    return blurred_images
-
-
-def anonymize_bag(in_path: Path, out_path: Path, image_topics: Mapping[str, str]):
+def anonymize_bag(
+    in_path: Path,
+    out_path: Path,
+    image_topics: Mapping[str, str],
+    head: Optional[int] = None,
+):
     """\
     blurs faces and license plates in images from rosbag file
     we implicitly assume that all images in a bagfile can be interpreted as a single video
@@ -204,13 +227,17 @@ def anonymize_bag(in_path: Path, out_path: Path, image_topics: Mapping[str, str]
         cv_bridge = CvBridge()
         print("anonymizing images...")
 
-        tracker = DeepSort(max_age=5)
+        tracker = sv.ByteTrack(
+            frame_rate=FRAME_RATE,
+        )
         for idx, (topic, msg, t) in enumerate(in_bag.read_messages()):
             if topic not in image_topics:
                 out_bag.write(topic, msg, t)
                 continue
             if idx % 50 == 0:
                 print(f"processing message {idx:6d} @ {t}")
+            if head is not None and idx >= head:
+                break
 
             is_compressed = "CompressedImage" in type(msg)._type
             image = _msg_to_image(msg, cv_bridge, is_compressed)
@@ -220,7 +247,10 @@ def anonymize_bag(in_path: Path, out_path: Path, image_topics: Mapping[str, str]
             # once we reach the batch size, we run the detection model
             if len(image_buffer) == BATCH_SIZE:
                 detections = _get_detections_batched(image_buffer)
-                blurred_images = _apply_deepsort_blur(tracker, image_buffer, detections)
+                tracked_detections = _tracked_detections(detections, tracker)
+                blurred_images = _blur_images(
+                    image_buffer, tracked_detections, draw_boxes=DRAW_BOXES
+                )
                 _write_images_to_bag(
                     out_bag, cv_bridge, metadata_buffer, blurred_images
                 )
@@ -228,7 +258,10 @@ def anonymize_bag(in_path: Path, out_path: Path, image_topics: Mapping[str, str]
                 metadata_buffer = []
 
         detections = _get_detections_batched(image_buffer)
-        blurred_images = _apply_deepsort_blur(tracker, image_buffer, detections)
+        tracked_detections = _tracked_detections(detections, tracker)
+        blurred_images = _blur_images(
+            image_buffer, tracked_detections, draw_boxes=DRAW_BOXES
+        )
         _write_images_to_bag(out_bag, cv_bridge, metadata_buffer, blurred_images)
 
     # reindex the bag
@@ -238,7 +271,7 @@ def anonymize_bag(in_path: Path, out_path: Path, image_topics: Mapping[str, str]
 
 
 FILE_PATH = Path(__file__).parent / "data" / "eth_campus.bag"
-OUT_PATH = Path(__file__).parent / "data" / "anon_deepsort.bag"
+OUT_PATH = Path(__file__).parent / "data" / "_bytetrack_anon.bag"
 
 if __name__ == "__main__":
     anonymize_bag(
