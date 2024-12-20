@@ -17,7 +17,7 @@ from pathlib import Path
 
 # It is up-to-debate how we want to use this node. We regardless need the deskewed point cloud and some sort of pose estimation.
 # If the ground truth poses are available, we can use them instead of dlio_poses.
-PATTERNS = ["*_dlio.bag", "*_tf_static.bag"]
+PATTERNS = ["*[0-9]_dlio.bag", "*_tf_static.bag"]
 
 
 def launch_nodes():
