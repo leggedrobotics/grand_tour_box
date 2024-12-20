@@ -9,7 +9,7 @@ from rosbag import Bag
 import tf
 import ros_numpy
 import rospy
-from box_auto.utils import get_bag, WS, MISSION_DATA
+from box_auto.utils import get_bag, WS, MISSION_DATA, ARTIFACT_FOLDER
 
 
 def main():
@@ -18,7 +18,8 @@ def main():
     OUTPUT = f"{date}_wavemap.wvmp"
     TF_BAG = get_bag("*_tf_static_dlio_tf.bag")
     POINTCLOUD_BAGS = [get_bag("*_dlio.bag"), get_bag("*_nuc_livox_filtered.bag")]
-    OUTFILE = str(Path(POINTCLOUD_BAGS[0]).parent / OUTPUT)
+    (Path(ARTIFACT_FOLDER) / "wavemap").mkdir(exist_ok=True, parents=True)
+    OUTFILE = str(Path(ARTIFACT_FOLDER) / "wavemap" / OUTPUT)
 
     START_PLUS = 0
     END_MINUS = 0

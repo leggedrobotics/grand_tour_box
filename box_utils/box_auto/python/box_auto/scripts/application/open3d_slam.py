@@ -45,7 +45,7 @@ def launch_nodes():
     sleep(1)
 
     p = Path(ARTIFACT_FOLDER) / "open3d_slam"
-    p.mkdirs(exists_ok=True, parent=True)
+    p.mkdir(exist_ok=True, parents=True)
     p = str(p)
 
     run_ros_command(

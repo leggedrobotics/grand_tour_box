@@ -41,6 +41,45 @@ apt install kitware-archive-keyring -y
 apt install cmake=3.19.2-0kitware1ubuntu20.04.1 cmake-data=3.19.2-0kitware1ubuntu20.04.1 -y
 apt install libgoogle-glog-dev libglfw3-dev liblua5.2-dev -y
 apt install python3-catkin-tools libc++-dev libc++abi-dev -y 
+apt install libxinerama-dev -y
+apt install libxcursor-dev -y
+apt install ros-noetic-tf-conversions -y
+# Use: install_deps_ubuntu.sh [ assume-yes ]
+set -ev
+
+SUDO=${SUDO:=sudo} # SUDO=command in docker (running as root, sudo not available)
+if [ "$1" == "assume-yes" ]; then
+    APT_CONFIRM="--assume-yes"
+else
+    APT_CONFIRM=""
+fi
+
+dependencies=(
+    # Open3D deps
+    xorg-dev
+    libglu1-mesa-dev
+    python3-dev
+    # Filament build-from-source deps
+    libsdl2-dev
+    libc++-7-dev
+    libc++abi-7-dev
+    ninja-build
+    libxi-dev
+    # OpenBLAS build-from-source deps
+    gfortran
+    # ML deps
+    libtbb-dev
+    # Headless rendering deps
+    libosmesa6-dev
+    # RealSense deps
+    libudev-dev
+    autoconf
+    libtool
+)
+for package in "${dependencies[@]}"; do
+    apt install "$APT_CONFIRM" "$package" -y
+done
+
 
 # Dependencies: novatel_oem7_driver - cpt7
 cd /home/catkin_ws/src/grand_tour_box/box_drivers/novatel_oem7_driver
