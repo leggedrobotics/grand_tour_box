@@ -94,7 +94,7 @@ if __name__ == "__main__":
     input_bag = get_bag(f"*{INPUT_PATTERN}")
 
     output_bag_path = input_bag.replace(INPUT_PATTERN, "_nuc_alphasense_color.bag")
-    process_rosbag(input_bag, output_bag_path, image_topics, camera_info_topics, config_file, use_gpu=True)
+    process_rosbag(input_bag, output_bag_path, image_topics, camera_info_topics, config_file, use_gpu=False)
     upload_bag(output_bag_path)
 
     exit(0)
