@@ -47,8 +47,6 @@ if __name__ == "__main__":
     sleep(5)
     run_ros_command(f"rosbag play -r 2 --clock {input_rosbag_path} --topics /gt_box/hesai/packets")
 
-    sleep(5)
-
     output_bag_path = input_rosbag_path.replace("_nuc_hesai.bag", "_nuc_hesai_post_processed.bag")
 
     # Wait for file size to stabilize
@@ -56,5 +54,4 @@ if __name__ == "__main__":
     check_file_size_stable(output_bag_path)
     print("Output bag size has stabilized. Proceeding with upload.")
 
-    sleep(20)
     upload_bag(output_bag_path)

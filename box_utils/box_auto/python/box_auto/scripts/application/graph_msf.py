@@ -23,10 +23,10 @@ from box_auto.utils import (
     get_file,
     start_roscore,
     run_ros_command,
+    ARTIFACT_FOLDER,
 )
 
-PATTERNS = ["*_jetson_ap20_robot.bag", "*_cpt7_raw_imu.bag", "*_cpt7_ie_tc.bag", "*_tf_static.bag"]
-OUT = "/out"
+PATTERNS = ["*_jetson_ap20_robot.bag", "*_cpt7_raw_imu.bag", "*_cpt7_ie_tc.bag", "*_tf_static.bag", "*_nuc_cpt7.bag"]
 
 """
 Exit Codes:
@@ -377,7 +377,8 @@ def launch_nodes():
                 print("Pattern not found: ", pattern, " in Directory ", MISSION_DATA)
                 exit(1)
 
-    os.makedirs(OUT, exist_ok=True)
+    GRAPH_MSF_ARTIFACT_FOLDER = os.path.join(ARTIFACT_FOLDER, "graph_msf")
+    os.makedirs(GRAPH_MSF_ARTIFACT_FOLDER, exist_ok=True)
 
     inputs = ",".join(inputs)
     merged_rosbag_path = os.path.join(MISSION_DATA, "merged_for_graph_msf.bag")
@@ -393,7 +394,7 @@ def launch_nodes():
         print(f"Evaluate if initialize_using_gnss returns: {initialize_using_gnss}")
 
         run_ros_command(
-            f"roslaunch atn_position3_fuser position3_fuser_replay.launch  logging_dir_location:={OUT} initialize_using_gnss:={initialize_using_gnss}",
+            f"roslaunch atn_position3_fuser position3_fuser_replay.launch  logging_dir_location:={GRAPH_MSF_ARTIFACT_FOLDER} initialize_using_gnss:={initialize_using_gnss}",
             background=True,
         )
 
@@ -413,12 +414,14 @@ def launch_nodes():
     tf_static_gt_path = tf_static_path.replace("_tf_static.bag", "_tf_static_gt.bag")
     tf_statics = []
     csv_R_6D_transform_world_to_leica_total_station, suc1 = get_file(
-        "*/R_6D_transform_world_to_leica_total_station.csv", OUT
+        "*/R_6D_transform_world_to_leica_total_station.csv", GRAPH_MSF_ARTIFACT_FOLDER
     )
     csv_6D_transform_leica_total_station_to_prism, suc2 = get_file(
-        "*/R_6D_transform_leica_total_station_to_leica_total_stationOld.csv", OUT
+        "*/R_6D_transform_leica_total_station_to_leica_total_stationOld.csv", GRAPH_MSF_ARTIFACT_FOLDER
     )
-    csv_file_world_to_enu_orign, gps_is_available = get_file("*/R_6D_transform_world_to_enu_origin.csv", OUT)
+    csv_file_world_to_enu_orign, gps_is_available = get_file(
+        "*/R_6D_transform_world_to_enu_origin.csv", GRAPH_MSF_ARTIFACT_FOLDER
+    )
     assert suc1 and suc2, "Totalstation has to be available!"
     R_world_to_helper = csv_to_TransformStamped(
         csv_R_6D_transform_world_to_leica_total_station, "world", "leica_total_station_helper"
@@ -452,8 +455,8 @@ def launch_nodes():
     # Convert world to box_base to rosbag
     tf_gt_path = tf_static_path.replace("_tf_static.bag", "_gt_tf.bag")
     pose_gt_path = tf_static_path.replace("_tf_static.bag", "_gt_pose.bag")
-    csv_cov_file, _ = get_file("*/X_state_6D_pose_covariance.csv", OUT)
-    csv_pose_file, _ = get_file("*/X_state_6D_pose.csv", OUT)
+    csv_cov_file, _ = get_file("*/X_state_6D_pose_covariance.csv", GRAPH_MSF_ARTIFACT_FOLDER)
+    csv_pose_file, _ = get_file("*/X_state_6D_pose.csv", GRAPH_MSF_ARTIFACT_FOLDER)
     convert_csv_to_bag(csv_cov_file, csv_pose_file, tf_gt_path, pose_gt_path, "world", "box_base")
 
     # Load all data from rosbags and plot it
@@ -601,7 +604,7 @@ def launch_nodes():
 
     # Adjust layout
     plt.tight_layout()
-    plt.savefig(os.path.join(OUT, "graph_msf_result.png"))
+    plt.savefig(os.path.join(GRAPH_MSF_ARTIFACT_FOLDER, "graph_msf_result.png"))
 
     # Upload results
     upload_bag([tf_gt_path, pose_gt_path, tf_static_gt_path])

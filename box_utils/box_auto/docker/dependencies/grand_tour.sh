@@ -62,6 +62,9 @@ pip3 install matplotlib # graph_msf
 pip3 uninstall kleinkram -y
 pip3 install kleinkram
 
+# Dependencies for box_auto imu_timesync
+pip3 install torch
+pip3 install rerun-sdk
 
 # Dependencies: box_auto - hesai.py
 mkdir -p /home/rsl/git/grand_tour_box/box_bringup/bringup_hesai/config
@@ -92,6 +95,12 @@ apt update -y
 source /opt/ros/noetic/setup.bash
 source /home/opencv_gtsam_ws/devel/setup.bash
 cd /home/catkin_ws
+
+export CUDA_HOME=/usr/local/cuda
+export PATH=$CUDA_HOME/bin:$PATH
+export LD_LIBRARY_PATH=$CUDA_HOME/lib64:$LD_LIBRARY_PATH
+export PATH=/usr/local/cuda/bin${PATH:+:${PATH}}
+
 catkin build direct_lidar_inertial_odometry
 catkin build box_auto
 
