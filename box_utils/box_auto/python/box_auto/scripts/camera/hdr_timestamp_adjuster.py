@@ -65,88 +65,153 @@ class RosbagValidatorAndProcessor:
                         image_stamps.append((msg.header.seq, msg.header.stamp.secs, msg.header.stamp.nsecs))
                     pbar.update(1)
 
+        print(
+            f"Found {len(kernel_timestamps)} kernel timestamps, {len(v4l2_timestamps)} v4l2 timestamps, "
+            f"and {len(image_stamps)} images in {Path(input_bag_path).name}."
+        )
+        if len(kernel_timestamps) == 0 or len(v4l2_timestamps) == 0 or len(image_stamps) == 0:
+            print(
+                f"""Aborting because could not find topics: /gt_box/{camera}/kernel_timestamp, 
+                  /gt_box/{camera}/v4l2_timestamp or /gt_box/{camera}/image_raw/compressed in {Path(input_bag_path).name}.
+                  """
+            )
+            exit(1)
+
+        # Make sure that each image has a corresponding v4l2 timestamp, allowing for the first/last image or v4l2 ts to be missing
+        if len(image_stamps) != len(v4l2_timestamps):
+            print("Number of image messages and v4l2 timestamps do not match, running further validation.")
+            img_idx = 0
+            v4l2_idx = 0
+            while img_idx < len(image_stamps) and v4l2_idx < len(v4l2_timestamps):
+                img_ts = image_stamps[img_idx][1] * 1_000_000_000 + image_stamps[img_idx][2]
+                v4l2_ts = v4l2_timestamps[v4l2_idx][1] * 1_000_000_000 + v4l2_timestamps[v4l2_idx][2]
+                if img_ts == v4l2_ts:
+                    break
+                elif img_ts < v4l2_ts:
+                    img_idx += 1
+                else:
+                    v4l2_idx += 1
+            # Proceed one to one after the first matching pair
+            while img_idx < len(image_stamps) and v4l2_idx < len(v4l2_timestamps):
+                img_ts = image_stamps[img_idx][1] * 1_000_000_000 + image_stamps[img_idx][2]
+                v4l2_ts = v4l2_timestamps[v4l2_idx][1] * 1_000_000_000 + v4l2_timestamps[v4l2_idx][2]
+                if img_ts != v4l2_ts:
+                    print(
+                        f"""Missing image message or v4l2 timestamp for image seq={image_stamps[img_idx][0]},
+                        secs={image_stamps[img_idx][1]}, nsecs={image_stamps[img_idx][2]}. v4l2 timestamp seq=
+                        {v4l2_timestamps[v4l2_idx][0]}, secs={v4l2_timestamps[v4l2_idx][1]}, nsecs={v4l2_timestamps[v4l2_idx][2]}.
+                        This should not happen as the messages are published in the same code block.
+                        """
+                    )
+                    exit(2)
+                img_idx += 1
+                v4l2_idx += 1
+
         # Validation
-        errors = []
         deltas = []
         kernel_deltas = []
 
-        # Ensure kernel_timestamp and v4l2_timestamp alternate correctly
-        kernel_iter = iter(kernel_timestamps)
-        v4l2_iter = iter(v4l2_timestamps)
-        img_iter = iter(image_stamps)
-
-        kernel_entry = next(kernel_iter, None)
-        v4l2_entry = next(v4l2_iter, None)
-        img_entry = next(img_iter, None)
-
-        # Discard first v4l2_timestamp if it appears before the first kernel_timestamp
-        if kernel_entry and v4l2_entry:
-            kernel_ts = kernel_entry[1] * 1_000_000_000 + kernel_entry[2]
-            v4l2_ts = v4l2_entry[1] * 1_000_000_000 + v4l2_entry[2]
-            if v4l2_ts < kernel_ts:
-                print(
-                    f"[WARNING] First v4l2_timestamp secs={v4l2_entry[1]}, nsecs={v4l2_entry[2]} appears before first kernel_timestamp secs={kernel_entry[1]}, nsecs={kernel_entry[2]}."
-                )
-                v4l2_entry = next(v4l2_iter, None)
-                img_entry = next(img_iter, None)
-
+        # Match v4l2 timestamps to the closest preceding kernel timestamps
         paired_timestamps = []
-        prev_kernel_ts = None
 
-        while kernel_entry and v4l2_entry:
-            k_seq, k_secs, k_nsecs = kernel_entry
-            v_seq, v_secs, v_nsecs = v4l2_entry
-            i_seq, i_secs, i_nsecs = img_entry
+        # Initial pairing: find the first v4l2 timestamp and its preceding kernel timestamp
+        kernel_index = 0
+        v4l2_index = 0
 
-            kernel_ts = kernel_entry[1] * 1_000_000_000 + kernel_entry[2]
-            v4l2_ts = v4l2_entry[1] * 1_000_000_000 + v4l2_entry[2]
-            img_ts = img_entry[1] * 1_000_000_000 + img_entry[2]
+        # Find the first valid pair
+        first_pair_found = False
+        while not first_pair_found and v4l2_index < len(v4l2_timestamps):
+            v_seq, v_secs, v_nsecs = v4l2_timestamps[v4l2_index]
+            v4l2_ts = v_secs * 1_000_000_000 + v_nsecs
 
-            if kernel_ts >= v4l2_ts:
-                errors.append(
-                    f"Kernel_timestamp secs={k_secs}, nsecs={k_nsecs} appears after v4l2_timestamp secs={v_secs}, nsecs={v_nsecs}"
-                )
-                break
+            while (
+                kernel_index < len(kernel_timestamps)
+                and kernel_timestamps[kernel_index][1] * 1_000_000_000 + kernel_timestamps[kernel_index][2] <= v4l2_ts
+            ):
+                kernel_index += 1
 
-            if img_ts != v4l2_ts:
-                errors.append(
-                    f"image_raw/compressed secs={i_secs}, nsecs={i_nsecs} does not match v4l2_timestamp secs={v_secs}, nsecs={v_nsecs}. Is use_kernel_buffer_ts set to true in recorder.launch.py?"
-                )
-                break
-
-            if not k_seq == v_seq == i_seq:
+            if kernel_index == 0:
                 print(
-                    f"[WARNING] Kernel_timestamp seq={k_seq}, v4l2_timestamp seq={v_seq} and image_raw seq={i_seq} do not match."
+                    f"""[WARNING] No kernel timestamp found before v4l2 timestamp secs={v_secs}, nsecs={v_nsecs}, 
+                     seq={v_seq}. Advancing to next v4l2 timestamp, dropping this v4l2 timestamp.
+                    """
                 )
+                v4l2_index += 1
+            else:
+                first_pair_found = True
+                prev_kernel_ts = kernel_timestamps[kernel_index - 1]
+                k_seq, k_secs, k_nsecs = prev_kernel_ts
+                kernel_ts = k_secs * 1_000_000_000 + k_nsecs
 
-            delta_ns = (v_secs - k_secs) * 1_000_000_000 + (v_nsecs - k_nsecs)
-            # if delta_ns < OFFSET_NSEC:
-            #     errors.append(
-            #         f"Time difference between trigger time and register read is less than time-delay constant {OFFSET_NSEC} ns. This should not be possible."
-            #     )
-            deltas.append(delta_ns)
+                paired_timestamps.append((k_secs, k_nsecs, v_secs, v_nsecs))
 
-            paired_timestamps.append((k_secs, k_nsecs, v_secs, v_nsecs))
-            if prev_kernel_ts is not None:
-                kernel_deltas.append(kernel_ts - prev_kernel_ts)
-            prev_kernel_ts = kernel_ts
+                delta_ns = (v_secs - k_secs) * 1_000_000_000 + (v_nsecs - k_nsecs)
+                deltas.append(delta_ns)
 
-            kernel_entry = next(kernel_iter, None)
-            v4l2_entry = next(v4l2_iter, None)
-            img_entry = next(img_iter, None)
+                v4l2_index += 1
 
-        if kernel_entry or v4l2_entry or img_entry:
-            print("[WARNING] Unmatched kernel_timestamp, image_raw or v4l2_timestamp messages at the end of the bag.")
-
-        # Report errors and stats
-        if errors:
-            print("Validation errors found:")
-            for error in errors:
-                print(f"- {error}")
-            print("Aborting processing due to validation errors.")
+        if not first_pair_found:
+            print("Valid starting pair of kernel and v4l2 timestamps could not be found. Aborting processing.")
             exit(2)
 
-        print("Validation passed.")
+        # Proceed one-to-one for the rest of the timestamps
+        while v4l2_index < len(v4l2_timestamps) and kernel_index < len(kernel_timestamps):
+            v_seq, v_secs, v_nsecs = v4l2_timestamps[v4l2_index]
+            k_seq, k_secs, k_nsecs = kernel_timestamps[kernel_index]
+
+            v4l2_ts = v_secs * 1_000_000_000 + v_nsecs
+            kernel_ts = k_secs * 1_000_000_000 + k_nsecs
+
+            # Make sure the kernel timestamp is before the v4l2 timestamp
+            if kernel_ts >= v4l2_ts:
+                print(
+                    f"""Kernel timestamp seq={k_seq}, secs={k_secs}, nsecs={k_nsecs} appears after v4l2 timestamp 
+                    seq={v_seq}, secs={v_secs}, nsecs={v_nsecs}.
+                    """
+                )
+                exit(2)
+
+            # Make sure the kernel timestamp is after the previous v4l2 timestamp.
+            if len(paired_timestamps) > 0:
+                prev_pair = paired_timestamps[-1]
+                prev_v4l2_ts = prev_pair[2] * 1_000_000_000 + prev_pair[3]
+                if kernel_ts < prev_v4l2_ts:
+                    print(
+                        f"""Kernel timestamp seq={k_seq}, secs={k_secs}, nsecs={k_nsecs} appears before the previous 
+                        v4l2 timestamp seq={prev_pair[0]}, secs={prev_pair[2]}, nsecs={prev_pair[3]}. FPS should not
+                        be high enough to allow this.
+                        """
+                    )
+                    exit(2)
+
+            paired_timestamps.append((k_secs, k_nsecs, v_secs, v_nsecs))
+
+            delta_ns = (v_secs - k_secs) * 1_000_000_000 + (v_nsecs - k_nsecs)
+
+            # Make sure delta is close to the average delta
+            if len(deltas) > 0:
+                mean_delta = np.mean(deltas)
+                if abs(delta_ns - mean_delta) / mean_delta > 0.25:
+                    print(
+                        f"""
+                        Delta between kernel timestamp seq={k_seq}, secs={k_secs}, nsecs={k_nsecs} and v4l2 timestamp 
+                        seq={v_seq}, secs={v_secs}, nsecs={v_nsecs} is too far (>25%) from the average delta 
+                        {mean_delta/100_000} ms. 
+                        """
+                    )
+                    exit(2)
+
+            deltas.append(delta_ns)
+
+            if len(paired_timestamps) > 1:
+                prev_kernel_pair = paired_timestamps[-2]
+                prev_kernel_ts = prev_kernel_pair[0] * 1_000_000_000 + prev_kernel_pair[1]
+                kernel_deltas.append(kernel_ts - prev_kernel_ts)
+
+            kernel_index += 1
+            v4l2_index += 1
+
+        print(f"Validation passed.")
         mean_delta = np.mean(deltas) / 1_000_000  # Convert to milliseconds
         std_dev_delta = np.std(deltas) / 1_000_000  # Convert to milliseconds
         mean_kernel_delta = np.mean(kernel_deltas) / 1_000_000  # Convert to milliseconds
@@ -154,10 +219,10 @@ class RosbagValidatorAndProcessor:
         print(f"Std dev delta time: {std_dev_delta:.3f} ms")
         print(f"Trigger fps: {1_000 / mean_kernel_delta:.3f}")
         print(f"Number of messages: {len(deltas)} \n")
+
         # Process and overwrite timestamps
         with rosbag.Bag(input_bag_path, "r") as inbag, rosbag.Bag(output_bag_path, "w", compression="lz4") as outbag:
             total_messages = inbag.get_message_count()
-
             with tqdm(total=total_messages, desc=f"[2/2] Processing {Path(input_bag_path).name}", unit="msgs") as pbar:
                 for topic, msg, t in inbag.read_messages():
                     if topic == f"/gt_box/{camera}/image_raw/compressed":
@@ -175,10 +240,12 @@ class RosbagValidatorAndProcessor:
 
     def run(self):
         for camera in self.cameras:
+            print(f"Processing camera: {camera}")
             input_bag = get_bag(camera)
             output_bag = input_bag.replace(".bag", "_updated.bag")
+            # Strip .bag and * from camera name
+            camera = camera.split(".")[0][1:]
             self.validate_and_process_bag(input_bag, output_bag, camera)
-            print(f"Processed {input_bag} -> {output_bag} \n")
             upload_bag(output_bag)
 
 
@@ -187,5 +254,4 @@ if __name__ == "__main__":
     output_suffix = "_updated"
     processor = RosbagValidatorAndProcessor(cameras, output_suffix)
     processor.run()
-
     exit(0)
