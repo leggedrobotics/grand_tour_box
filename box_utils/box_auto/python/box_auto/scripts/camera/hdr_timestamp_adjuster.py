@@ -12,7 +12,6 @@ Exit Codes:
 EXIT CODE 0: Successful Conversion
 EXIT CODE 1: Empty HDR Bag
 EXIT CODE 2: Timestamps could not be matched correctly
-EXIT CODE 3: Non-Blocking Validation issues found, but conversion was completed.
 """
 
 
@@ -78,9 +77,37 @@ class RosbagValidatorAndProcessor:
             )
             exit(1)
 
+        # Make sure that each image has a corresponding v4l2 timestamp, allowing for the first/last image or v4l2 ts to be missing
+        if len(image_stamps) != len(v4l2_timestamps):
+            print("Number of image messages and v4l2 timestamps do not match, running further validation.")
+            img_idx = 0
+            v4l2_idx = 0
+            while img_idx < len(image_stamps) and v4l2_idx < len(v4l2_timestamps):
+                img_ts = image_stamps[img_idx][1] * 1_000_000_000 + image_stamps[img_idx][2]
+                v4l2_ts = v4l2_timestamps[v4l2_idx][1] * 1_000_000_000 + v4l2_timestamps[v4l2_idx][2]
+                if img_ts == v4l2_ts:
+                    break
+                elif img_ts < v4l2_ts:
+                    img_idx += 1
+                else:
+                    v4l2_idx += 1
+            # Proceed one to one after the first matching pair
+            while img_idx < len(image_stamps) and v4l2_idx < len(v4l2_timestamps):
+                img_ts = image_stamps[img_idx][1] * 1_000_000_000 + image_stamps[img_idx][2]
+                v4l2_ts = v4l2_timestamps[v4l2_idx][1] * 1_000_000_000 + v4l2_timestamps[v4l2_idx][2]
+                if img_ts != v4l2_ts:
+                    print(
+                        f"""Missing image message or v4l2 timestamp for image seq={image_stamps[img_idx][0]},
+                        secs={image_stamps[img_idx][1]}, nsecs={image_stamps[img_idx][2]}. v4l2 timestamp seq=
+                        {v4l2_timestamps[v4l2_idx][0]}, secs={v4l2_timestamps[v4l2_idx][1]}, nsecs={v4l2_timestamps[v4l2_idx][2]}.
+                        This should not happen as the messages are published in the same code block.
+                        """
+                    )
+                    exit(2)
+                img_idx += 1
+                v4l2_idx += 1
+
         # Validation
-        errors = []
-        warnings = []
         deltas = []
         kernel_deltas = []
 
@@ -104,7 +131,7 @@ class RosbagValidatorAndProcessor:
                 kernel_index += 1
 
             if kernel_index == 0:
-                warnings.append(
+                print(
                     f"""[WARNING] No kernel timestamp found before v4l2 timestamp secs={v_secs}, nsecs={v_nsecs}, 
                      seq={v_seq}. Advancing to next v4l2 timestamp, dropping this v4l2 timestamp.
                     """
@@ -124,11 +151,7 @@ class RosbagValidatorAndProcessor:
                 v4l2_index += 1
 
         if not first_pair_found:
-            print("Valid starting pair could not be found. Aborting processing.")
-            if warnings:
-                print("Warnings found:")
-                for warning in warnings:
-                    print(f"- {warning}")
+            print("Valid starting pair of kernel and v4l2 timestamps could not be found. Aborting processing.")
             exit(2)
 
         # Proceed one-to-one for the rest of the timestamps
@@ -141,25 +164,25 @@ class RosbagValidatorAndProcessor:
 
             # Make sure the kernel timestamp is before the v4l2 timestamp
             if kernel_ts >= v4l2_ts:
-                errors.append(
+                print(
                     f"""Kernel timestamp seq={k_seq}, secs={k_secs}, nsecs={k_nsecs} appears after v4l2 timestamp 
                     seq={v_seq}, secs={v_secs}, nsecs={v_nsecs}.
                     """
                 )
-                break
+                exit(2)
 
             # Make sure the kernel timestamp is after the previous v4l2 timestamp.
             if len(paired_timestamps) > 0:
                 prev_pair = paired_timestamps[-1]
                 prev_v4l2_ts = prev_pair[2] * 1_000_000_000 + prev_pair[3]
                 if kernel_ts < prev_v4l2_ts:
-                    errors.append(
+                    print(
                         f"""Kernel timestamp seq={k_seq}, secs={k_secs}, nsecs={k_nsecs} appears before the previous 
                         v4l2 timestamp seq={prev_pair[0]}, secs={prev_pair[2]}, nsecs={prev_pair[3]}. FPS should not
                         be high enough to allow this.
                         """
                     )
-                    break
+                    exit(2)
 
             paired_timestamps.append((k_secs, k_nsecs, v_secs, v_nsecs))
 
@@ -168,14 +191,15 @@ class RosbagValidatorAndProcessor:
             # Make sure delta is close to the average delta
             if len(deltas) > 0:
                 mean_delta = np.mean(deltas)
-                if abs(delta_ns - mean_delta) / mean_delta > 0.2:
-                    warnings.append(
+                if abs(delta_ns - mean_delta) / mean_delta > 0.25:
+                    print(
                         f"""
                         Delta between kernel timestamp seq={k_seq}, secs={k_secs}, nsecs={k_nsecs} and v4l2 timestamp 
-                        seq={v_seq}, secs={v_secs}, nsecs={v_nsecs} is too far (>20%) from the average delta 
+                        seq={v_seq}, secs={v_secs}, nsecs={v_nsecs} is too far (>25%) from the average delta 
                         {mean_delta/100_000} ms. 
                         """
                     )
+                    exit(2)
 
             deltas.append(delta_ns)
 
@@ -187,14 +211,7 @@ class RosbagValidatorAndProcessor:
             kernel_index += 1
             v4l2_index += 1
 
-        if errors:
-            print("Validation errors found:")
-            for error in errors:
-                print(f"- {error}")
-            print("Aborting processing due to validation errors.")
-            exit(2)
-
-        print(f"Validation passed with {len(warnings)} warnings.")
+        print(f"Validation passed.")
         mean_delta = np.mean(deltas) / 1_000_000  # Convert to milliseconds
         std_dev_delta = np.std(deltas) / 1_000_000  # Convert to milliseconds
         mean_kernel_delta = np.mean(kernel_deltas) / 1_000_000  # Convert to milliseconds
@@ -206,56 +223,36 @@ class RosbagValidatorAndProcessor:
         # Process and overwrite timestamps
         with rosbag.Bag(input_bag_path, "r") as inbag, rosbag.Bag(output_bag_path, "w", compression="lz4") as outbag:
             total_messages = inbag.get_message_count()
-
+            first_match_found = False
             with tqdm(total=total_messages, desc=f"[2/2] Processing {Path(input_bag_path).name}", unit="msgs") as pbar:
                 for topic, msg, t in inbag.read_messages():
                     if topic == f"/gt_box/{camera}/image_raw/compressed":
-                        match_found = False
                         for k_secs, k_nsecs, v_secs, v_nsecs in paired_timestamps:
                             if (msg.header.stamp.secs, msg.header.stamp.nsecs) == (v_secs, v_nsecs):
                                 updated_stamp = k_secs * 1_000_000_000 + k_nsecs + OFFSET_NSEC
                                 msg.header.stamp.secs = updated_stamp // 1_000_000_000
                                 msg.header.stamp.nsecs = updated_stamp % 1_000_000_000
-                                match_found = True
                                 break
-                        if not match_found:
-                            warnings.append(
-                                f"""[WARNING] No matching timestamp found for image timestamp seq={msg.header.seq},
-                                secs={msg.header.stamp.secs}, nsecs={msg.header.stamp.nsecs}. Dropping this image.
-                                """
-                            )
-                        else:
-                            outbag.write(topic, msg, t)
+                        outbag.write(topic, msg, t)
                     else:
                         outbag.write(topic, msg, t)
                     pbar.update(1)
-        # TODO: Check if this is intentional
-        #os.system(f"rm {input_bag_path}")
-
-        return warnings
+        os.system(f"rm {input_bag_path}")
 
     def run(self):
-        warnings_total = 0
         for camera in self.cameras:
             print(f"Processing camera: {camera}")
             input_bag = get_bag(camera)
             output_bag = input_bag.replace(".bag", "_updated.bag")
             # Strip .bag and * from camera name
             camera = camera.split(".")[0][1:]
-            warnings = self.validate_and_process_bag(input_bag, output_bag, camera)
-            warnings_total += len(warnings)
-            print(f"Processed {input_bag} -> {output_bag} with {len(warnings)} warnings: \n")
-            for warning in warnings:
-                print(f"- {warning}")
+            self.validate_and_process_bag(input_bag, output_bag, camera)
             upload_bag(output_bag)
-        return warnings_total
 
 
 if __name__ == "__main__":
-    cameras = ["*hdr_front.bag", "*hdr_left.bag", "*hdr_right.bag"]
+    cameras = ["*hdr_front.bag"]#, "*hdr_left.bag", "*hdr_right.bag"]
     output_suffix = "_updated"
     processor = RosbagValidatorAndProcessor(cameras, output_suffix)
-    num_warnings = processor.run()
-    if num_warnings > 0:
-        exit(3)
+    processor.run()
     exit(0)
