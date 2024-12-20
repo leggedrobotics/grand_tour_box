@@ -66,6 +66,9 @@ class RosbagValidatorAndProcessor:
                         image_stamps.append((msg.header.seq, msg.header.stamp.secs, msg.header.stamp.nsecs))
                     pbar.update(1)
 
+        print(f"Found {len(kernel_timestamps)} kernel timestamps, {len(v4l2_timestamps)} v4l2 timestamps, "
+              f"and {len(image_stamps)} images in {Path(input_bag_path).name}.")
+
         # Validation
         errors = []
         warnings = []
@@ -112,7 +115,11 @@ class RosbagValidatorAndProcessor:
                 v4l2_index += 1
 
         if not first_pair_found:
-            errors.append("Valid starting pair could not be found. Aborting processing.")
+            print("Valid starting pair could not be found. Aborting processing.")
+            if warnings:
+                print("Warnings found:")
+                for warning in warnings:
+                    print(f"- {warning}")
             exit(2)
 
         # Proceed one-to-one for the rest of the timestamps
@@ -220,6 +227,7 @@ class RosbagValidatorAndProcessor:
     def run(self):
         warnings_total = 0
         for camera in self.cameras:
+            print(f"Processing camera: {camera}")
             input_bag = get_bag(camera)
             output_bag = input_bag.replace(".bag", "_updated.bag")
             warnings = self.validate_and_process_bag(input_bag, output_bag, camera)
