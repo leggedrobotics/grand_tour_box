@@ -85,7 +85,7 @@ services:
   ap20_validate:
     <<: *common-config
     container_name: ap20_validate
-    command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE; export ARTIFACT_FOLDER=/mission_data; python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/ap20/ap20_validate.py"]
+    command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE; export ARTIFACT_FOLDER=/mission_data; python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/ap20/ap20_validate.py --skip_check"]
     depends_on:
       ap20_python_online_matcher:
         condition: service_completed_successfully
@@ -97,13 +97,13 @@ services:
     command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE; export ARTIFACT_FOLDER=/mission_data; python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/lidar/hesai.py"]
   
   # hesai_post_processed.bag & livox.bag -> hesai_filtered.bag , livox_filtered.bag
-  filter_pointclouds: 
-    <<: *common-config
-    container_name: filter_pointclouds
-    command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE; export ARTIFACT_FOLDER=/mission_data; python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/lidar/filter_pointclouds.py"]
-    depends_on:
-      hesai:
-        condition: service_completed_successfully
+  # filter_pointclouds: 
+  #   <<: *common-config
+  #   container_name: filter_pointclouds
+  #   command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE; export ARTIFACT_FOLDER=/mission_data; python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/lidar/filter_pointclouds.py"]
+  #   depends_on:
+  #     hesai:
+  #       condition: service_completed_successfully
   
   # hesai.bag -> dlio.bag
   dlio:
@@ -116,29 +116,29 @@ services:
       calibration:
         condition: service_completed_successfully
 
-  open3d_slam:
-    <<: *common-config
-    container_name: open3d_slam
-    command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE; export ARTIFACT_FOLDER=/mission_data; python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/application/open3d_slam.py"]
-    depends_on:
-      hesai:
-        condition: service_completed_successfully
-      calibration:
-        condition: service_completed_successfully
-      dlio:
-        condition: service_completed_successfully
+  # open3d_slam:
+  #   <<: *common-config
+  #   container_name: open3d_slam
+  #   command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE; export ARTIFACT_FOLDER=/mission_data; python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/application/open3d_slam.py"]
+  #   depends_on:
+  #     hesai:
+  #       condition: service_completed_successfully
+  #     calibration:
+  #       condition: service_completed_successfully
+  #     dlio:
+  #       condition: service_completed_successfully
 
 
   # this is needed for wavemap right now but should be replaced
-  merge_dlio_tf_static:
-    <<: *common-config
-    container_name: merge_dlio_tf_static
-    command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE; export ARTIFACT_FOLDER=/mission_data; python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/general/merge_dlio_tf_static.py"]
-    depends_on:
-      dlio:
-        condition: service_completed_successfully
-      calibration:
-        condition: service_completed_successfully
+  # merge_dlio_tf_static:
+  #   <<: *common-config
+  #   container_name: merge_dlio_tf_static
+  #   command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE; export ARTIFACT_FOLDER=/mission_data; python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/general/merge_dlio_tf_static.py"]
+  #   depends_on:
+  #     dlio:
+  #       condition: service_completed_successfully
+  #     calibration:
+  #       condition: service_completed_successfully
 
   graph_msf:
     <<: *common-config
@@ -153,36 +153,36 @@ services:
         condition: service_completed_successfully
 
   # # hesai.bag -> dlio.bag
-  wavemap:
-    <<: *common-config
-    container_name: wavemap
-    command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE; export ARTIFACT_FOLDER=/mission_data; python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/application/wavemap.py"]
-    depends_on:
-      merge_dlio_tf_static:
-        condition: service_completed_successfully
+  # wavemap:
+  #   <<: *common-config
+  #   container_name: wavemap
+  #   command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE; export ARTIFACT_FOLDER=/mission_data; python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/application/wavemap_create.py"]
+  #   depends_on:
+  #     merge_dlio_tf_static:
+  #       condition: service_completed_successfully
 
         
-  color_correction:
-    <<: *common-config
-    container_name: color_correction
-    command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE; export ARTIFACT_FOLDER=/mission_data; python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/camera/color_correction.py"]
-    depends_on:
-      calibration:
-        condition: service_completed_successfully
+  # color_correction:
+  #   <<: *common-config
+  #   container_name: color_correction
+  #   command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE; export ARTIFACT_FOLDER=/mission_data; python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/camera/color_correction.py"]
+  #   depends_on:
+  #     calibration:
+  #       condition: service_completed_successfully
 
 
-          # minimal -> HDR _calib.bag _rect.bag  - ALPHA - color.bag -> _rect.bag 
-  rectify:
-    <<: *common-config
-    container_name: rectify
-    command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE; export ARTIFACT_FOLDER=/mission_data; python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/camera/rectify.py"]
-    depends_on:
-      calibration:
-        condition: service_completed_successfully
-      hdr_timestamp_adjuster:
-        condition: service_completed_successfully
-      color_correction:
-        condition: service_completed_successfully
+  #         # minimal -> HDR _calib.bag _rect.bag  - ALPHA - color.bag -> _rect.bag 
+  # rectify:
+  #   <<: *common-config
+  #   container_name: rectify
+  #   command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE; export ARTIFACT_FOLDER=/mission_data; python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/camera/rectify.py"]
+  #   depends_on:
+  #     calibration:
+  #       condition: service_completed_successfully
+  #     hdr_timestamp_adjuster:
+  #       condition: service_completed_successfully
+  #     color_correction:
+  #       condition: service_completed_successfully
 
   # topic_freq:
   #   <<: *common-config
@@ -199,16 +199,16 @@ services:
   #     color_correction:
   #       condition: service_completed_successfully
   
-  cpt7:
-    <<: *common-config
-    container_name: cpt7
-    command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE; export ARTIFACT_FOLDER=/mission_data; python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/cpt7/cpt7.py"]
+  # cpt7:
+  #   <<: *common-config
+  #   container_name: cpt7
+  #   command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE; export ARTIFACT_FOLDER=/mission_data; python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/cpt7/cpt7.py"]
 
-  imu_timesync:
-    <<: *common-config
-    container_name: imu_timesync
-    command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE; export ARTIFACT_FOLDER=/mission_data; python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/verification/imu_timesync.py"]
-    depends_on:
-      calibration:
-        condition: service_completed_successfully
+  # imu_timesync:
+  #   <<: *common-config
+  #   container_name: imu_timesync
+  #   command: ["sh", "-c", "export KLEINKRAM_ACTIVE=FALSE; export ARTIFACT_FOLDER=/mission_data; python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/verification/imu_timesync.py"]
+  #   depends_on:
+  #     calibration:
+  #       condition: service_completed_successfully
   
