@@ -8,7 +8,7 @@ from typing import List
 from typing import Mapping
 from typing import Optional
 from typing import Sequence
-from typing import Tuple
+from typing import Tuple, Dict
 
 import numpy as np
 import rosbag
@@ -34,30 +34,31 @@ FACE_MODEL8 = YOLO(FACE_MODEL8_PATH)
 FACE_MODEL8_CIDS = [0]
 FACE_MODEL8_CONF = 0.10
 
-PLATE_MODEL8_PATH = MODELS_PATH / "yolov8s-plates.pt"
-PLATE_MODEL8 = YOLO(PLATE_MODEL8_PATH)
-PLATE_MODEL8_CIDS = [0]
-PLATE_MODEL8_CONF = 0.35
-
 FACE_PLATE_MODEL11_PATH = MODELS_PATH / "yolov11l-faces-plates.pt"
 FACE_PLATE_MODEL11 = YOLO(FACE_PLATE_MODEL11_PATH)
 FACE_PLATE_MODEL11_CIDS = [1, 2]  # 0 for sign
 FACE_PLATE_MODEL11_CONF = 0.05
 
-MODELS = {
-    "faces11": (FACE_MODEL11, FACE_MODEL11_CIDS, FACE_MODEL11_CONF),
-    # "plates8": (PLATE_MODEL8, PLATE_MODEL8_CIDS, PLATE_MODEL8_CONF), # this sucks for some reason
+MODEL11_PATH = MODELS_PATH / "yolov11m.pt"
+MODEL11 = YOLO(MODEL11_PATH)
+MODEL11_CIDS = [0]
+MODEL11_CONF = 0.10
+HUMANS_MAX_SIZE = 4096
+
+
+# model, class_ids, confidence, max_size
+DetectorConfig = Tuple[YOLO, List[int], float, Optional[int]]
+MODELS: Dict[str, DetectorConfig] = {
+    "faces11": (FACE_MODEL11, FACE_MODEL11_CIDS, FACE_MODEL11_CONF, None),
     "faces_plates11": (
         FACE_PLATE_MODEL11,
         FACE_PLATE_MODEL11_CIDS,
         FACE_PLATE_MODEL11_CONF,
+        None,
     ),
-    "faces8": (FACE_MODEL8, FACE_MODEL8_CIDS, FACE_MODEL8_CONF),
+    "faces8": (FACE_MODEL8, FACE_MODEL8_CIDS, FACE_MODEL8_CONF, None),
+    "full11": (MODEL11, MODEL11_CIDS, MODEL11_CONF, HUMANS_MAX_SIZE),
 }
-
-
-BATCH_SIZE = 4
-
 
 # blur settings
 BLUR_CLASS_IDS = (0,)  # (1, 2)  # 0 for sign
@@ -69,6 +70,15 @@ BLUR_SIZE = 25
 BOX_ANNOTATOR = sv.BoxAnnotator()
 LABEL_ANNOTATOR = sv.LabelAnnotator()
 BLUR_ANNOTATOR = sv.BlurAnnotator()
+
+# other settings
+FRAME_RATE = 10
+DRAW_BOXES = True
+
+# TODO: remove this
+DATA_PATH = Path(__file__).parent.parent.parent.parent.parent / "data"
+FILE_PATH = DATA_PATH / "pilatus.bag"
+OUT_PATH = DATA_PATH / "out.bag"
 
 
 def fetch_multiple_files_kleinkram(patterns):
@@ -87,49 +97,49 @@ def fetch_multiple_files_kleinkram(patterns):
                 shutil.move(source_file, destination_file)
 
 
-def _get_detections_batched(images: Sequence[np.ndarray]) -> list[sv.Detections]:
+def _get_detections(image: np.ndarray) -> sv.Detections:
     """\
-    runs a batch of images through the model and returns detection boxes for each image
+    runs an image through all models, filters the detections by class id and max size
+    and returns the merged detections
     """
-    print("running batch...")
+    dets: List[sv.Detections] = []
+    for model, cids, conf, max_size in MODELS.values():
+        pred = model.predict(image, conf=conf, verbose=False)[0]
+        raw_det = sv.Detections.from_ultralytics(pred)
 
-    model_dets: List[List[sv.Detections]] = []
-    for model, cids, conf in MODELS.values():
-        dets: List[sv.Detections] = []
-        for det in model.predict(source=list(images), conf=conf):
-            raw_det = sv.Detections.from_ultralytics(det)
-            assert raw_det.class_id is not None
-            dets.append(raw_det[np.isin(raw_det.class_id, cids)])  # type: ignore
-        model_dets.append(dets)
+        # filter by class id
+        filtered_det: sv.Detections = raw_det[np.isin(raw_det.class_id, cids)]  # type: ignore
 
-    ret = []
-    for dets in zip(*model_dets):
-        stacked_dets = sv.Detections.merge(list(dets))
-        ret.append(stacked_dets)
+        if max_size is not None:  # filter by max size
+            filtered_det = filtered_det[filtered_det.area < max_size]  # type: ignore
 
-    return ret
+        dets.append(filtered_det)
+
+    # merge the different detections
+    return sv.Detections.merge(dets)
 
 
 def _tracked_detections(
-    detections: Sequence[sv.Detections], tracker: sv.ByteTrack
-) -> List[Tuple[sv.Detections, sv.Detections]]:
+    detections: sv.Detections, tracker: sv.ByteTrack
+) -> Tuple[sv.Detections, sv.Detections]:
     """\
-    tracks detections using a tracker
+    tracks detections using a tracker, this slightly improves the detection quality
+    over using frame by frame detections
+
+    we also return the raw detections
     """
-    ret: List[Tuple[sv.Detections, sv.Detections]] = []
-    for dets in detections:
-        tracked_dets = tracker.update_with_detections(dets)
-        ret.append((tracked_dets, dets))
-    return ret
+    tracked_dets = tracker.update_with_detections(detections)
+    return tracked_dets, detections
 
 
 def _blur_image(
-    image: np.ndarray,
-    detections: tuple[sv.Detections, sv.Detections],
-    draw_boxes: bool = False,
+    image: np.ndarray, detections: tuple[sv.Detections, sv.Detections], draw_boxes: bool
 ) -> np.ndarray:
     """\
     applies blurs to images based on detections
+
+    If `draw_boxes` is True, we also draw lables and bounding boxes
+    around the detections. This is useful for debugging
     """
     # filter class ids and blur
     tracked, raw = detections
@@ -151,6 +161,21 @@ EPS = 1e-6
 def _compute_number_of_detections(
     detections: Tuple[sv.Detections, sv.Detections]
 ) -> int:
+    r"""\
+    computes the number of detections by computing the
+    connected components of the union of all detections
+
+    for this we first compute an adjacency matrix of all detections
+    and wheter or not they overlap
+
+    then we compute the number of connected components of the resuling graph
+    by computing the dimension of the kernel of the laplacian matrix
+    $$
+    L = D - A
+    \mathrm{dim}\ker(L)
+    $$
+    """
+
     raw, tracked = detections  # shape (N, 4) each
     total_dets = np.concatenate([raw.xyxy, tracked.xyxy], axis=0)
     N = total_dets.shape[0]
@@ -178,19 +203,28 @@ def _compute_number_of_detections(
     return int(np.sum(w < EPS))
 
 
-def _blur_images(
+def _process_image(
+    image: np.ndarray, detections: Tuple[sv.Detections, sv.Detections], draw_boxes: bool
+) -> Tuple[np.ndarray, int]:
+    """\
+    blurs an image base on a tuple of detections, and compuets the number of detections
+    """
+    blurred = _blur_image(image, detections, draw_boxes=draw_boxes)
+    n_dets = _compute_number_of_detections(detections)
+    return blurred, n_dets
+
+
+def _process_images(
     images: Sequence[np.ndarray],
     detections: Sequence[Tuple[sv.Detections, sv.Detections]],
-    draw_boxes: bool = False,
+    draw_boxes: bool,
 ) -> List[Tuple[np.ndarray, int]]:
     """\
-    applies blurs to images based on detections
+    does the same as _process_image but for a batch of images
     """
     ret: List[Tuple[np.ndarray, int]] = []
     for image, dets in zip(images, detections):
-        blurred = _blur_image(image, dets, draw_boxes=draw_boxes)
-        n_dets = _compute_number_of_detections(dets)
-        ret.append((blurred, n_dets))
+        ret.append(_process_image(image, dets, draw_boxes=draw_boxes))
     return ret
 
 
@@ -239,10 +273,6 @@ def _write_images_to_bag(
         bag.write(f"{topic}/n_detections", n_dets_msg, timestamp)
 
 
-FRAME_RATE = 10
-DRAW_BOXES = True
-
-
 def anonymize_bag(
     in_path: Path,
     out_path: Path,
@@ -257,12 +287,6 @@ def anonymize_bag(
     - `out_path` path to output bagfile
     - `image_topics` mapping from input image topics to output image topics
     """
-
-    # init buffers
-    # detections_buffer is filled with "empty" detections to start off
-    image_buffer: list[np.ndarray] = []
-    metadata_buffer: list[tuple[int, str, bool]] = []  # timestamp, topic
-
     with rosbag.Bag(str(in_path), "r") as in_bag, rosbag.Bag(
         str(out_path), "w", compression="lz4"
     ) as out_bag:
@@ -271,6 +295,8 @@ def anonymize_bag(
 
         tracker = sv.ByteTrack(
             frame_rate=FRAME_RATE,
+            minimum_matching_threshold=0.1,
+            track_activation_threshold=0.05,
         )
         for idx, (topic, msg, t) in enumerate(in_bag.read_messages()):
             if topic not in image_topics:
@@ -283,39 +309,23 @@ def anonymize_bag(
 
             is_compressed = "CompressedImage" in type(msg)._type
             image = _msg_to_image(msg, cv_bridge, is_compressed)
-            image_buffer.append(image)
-            metadata_buffer.append((t, image_topics[topic], is_compressed))
+            metadata = (t, image_topics[topic], is_compressed)
 
-            # once we reach the batch size, we run the detection model
-            if len(image_buffer) == BATCH_SIZE:
-                detections = _get_detections_batched(image_buffer)
-                tracked_detections = _tracked_detections(detections, tracker)
-                blurred_images = _blur_images(
-                    image_buffer, tracked_detections, draw_boxes=DRAW_BOXES
-                )
-                _write_images_to_bag(
-                    out_bag, cv_bridge, metadata_buffer, blurred_images
-                )
-                image_buffer = []
-                metadata_buffer = []
-
-        detections = _get_detections_batched(image_buffer)
-        tracked_detections = _tracked_detections(detections, tracker)
-        blurred_images = _blur_images(
-            image_buffer, tracked_detections, draw_boxes=DRAW_BOXES
-        )
-
-        _write_images_to_bag(out_bag, cv_bridge, metadata_buffer, blurred_images)
+            # TODO: make functions nicer
+            raw_detection = _get_detections(image)
+            detections = _tracked_detections(raw_detection, tracker)
+            blurred_image, n_dets = _process_image(
+                image, detections, draw_boxes=DRAW_BOXES
+            )
+            _write_images_to_bag(
+                out_bag, cv_bridge, [metadata], [(blurred_image, n_dets)]
+            )
 
     # reindex the bag
     print("reindexing bag...")
     out_bag.reindex()
     print(f"done anonymizing {in_path} -> {out_path}")
 
-
-DATA_PATH = Path(__file__).parent.parent.parent.parent.parent / "data"
-FILE_PATH = DATA_PATH / "pilatus.bag"
-OUT_PATH = DATA_PATH / "out.bag"
 
 if __name__ == "__main__":
     anonymize_bag(
