@@ -11,7 +11,10 @@ d = generate_distutils_setup(
     package_dir={"": "python"},
     include_package_data=True,
     package_data={},
-    install_requires=[],
+    install_requires=[
+        "supervision",
+        "ultralytics",
+    ],
 )
 
 setup(**d)
