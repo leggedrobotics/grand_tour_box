@@ -54,6 +54,7 @@ def load_calibration_data() -> Dict[str, Dict[str, Any]]:
                     calibration_dict["tf_static"] = msg
 
         calibration_data[calibration_dict["metadata"]["validity_start"]] = calibration_dict
+
     return calibration_data
 
 
@@ -138,9 +139,14 @@ if __name__ == "__main__":
     closest_date = None
     calibration = None
     for date, v in calibration_data.items():
+
+        print("CURRENTLY NOT MATCHING IS PERFORMED!!!! ")
+        calibration = v
+
         current_date = datetime.strptime(date, "%Y-%m-%d-%H-%M-%S")
-        if current_date < reference_date and (
-            closest_date is None or reference_date - current_date < reference_date - closest_date
+        if (current_date - reference_date).total_seconds() > 0 and (
+            closest_date is None
+            or (reference_date - current_date).total_seconds() < (reference_date - closest_date).total_seconds()
         ):
             closest_date = current_date
             calibration = v

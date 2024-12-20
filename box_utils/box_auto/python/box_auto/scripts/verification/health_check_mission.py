@@ -7,10 +7,12 @@ from colorama import init, Fore, Style
 import statistics
 import sys
 import os
-from box_auto.utils import WS, MISSION_DATA
+from box_auto.utils import WS, MISSION_DATA, ARTIFACT_FOLDER
 
 YAML_FILE = str(Path(WS) / "box_utils/box_auto/cfg/health_check_reference_data.yaml")
-LOG_FILE = "/out/result.log"
+LOG_FILE = Path(ARTIFACT_FOLDER) / "health_check_mission" / "result.log"
+LOG_FILE.parent.mkdir(parents=True, exist_ok=True)
+LOG_FILE = str(LOG_FILE)
 
 # Initialize colorama for colored output
 init()
@@ -49,6 +51,7 @@ class FileFormatter(logging.Formatter):
 # Set up console handler with colored output
 console_handler = logging.StreamHandler()
 console_handler.setFormatter(ColoredFormatter())
+
 
 # Set up file handler with plain text output
 file_handler = logging.FileHandler(LOG_FILE)

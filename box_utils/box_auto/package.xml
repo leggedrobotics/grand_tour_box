@@ -37,7 +37,7 @@
   <depend>tf_bag</depend>
   <depend>atn_position3_fuser</depend>
   <depend>ap20_driver_ros</depend>
-
+  <depend>open3d_slam_ros</depend>
   <depend>python-setuptools</depend>
   <depend>rospy</depend>
 

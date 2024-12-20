@@ -269,11 +269,11 @@ def process_all(directory, output_folder, axis):
 
     try:
         reference_imu_file = get_bag(reference_imu["bag_pattern"])
-    except Exception:
+    except Exception as e:
         pattern = reference_imu["bag_pattern"]
         log = f"{pattern} [FAILED] - Getting Reference IMU - " + reference_imu["bag_pattern"]
         summary[pattern[2:]] = log
-        print(log)
+        print(log, e)
         return
 
     try:
@@ -288,7 +288,7 @@ def process_all(directory, output_folder, axis):
 
     sync_optimizer = IMUSyncOptimizer(reference_imu_file, reference_imu["topic"], tf_bag_file, axis)
 
-    rr.init("rerun_example_minimal", spawn=True)
+    rr.init("imu_timesync", spawn=False)
 
     for validation_imu in validation_imus:
         try:
