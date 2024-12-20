@@ -5,7 +5,7 @@ import tqdm
 import os
 
 
-def merge_bags_single(input_bag, output_bag, topics="*", verbose=False):
+def merge_bags_single(input_bag, output_bag, topics="*", upload="No", verbose=False):
     # From https://www.clearpathrobotics.com/assets/downloads/support/merge_bag.py
     topics = topics.split(" ")
 
@@ -48,10 +48,9 @@ def merge_bags_single(input_bag, output_bag, topics="*", verbose=False):
     if verbose:
         print("Total: Included %d messages and skipped %d" % (total_included_count, total_skipped_count))
 
-    if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
+    if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE" and upload == "Yes":
         uuid = os.environ["MISSION_UUID"]
         os.system(f"klein upload --mission {uuid} {output_bag}")
-        os.system(f"cp {output_bag} /out")
 
     return total_included_count, total_skipped_count
 
@@ -62,9 +61,10 @@ if __name__ == "__main__":
     parser.add_argument("--input", type=str, required=True, help="Comma seperated list of bags.")
     parser.add_argument("--output", type=str, required=True, help="Output bag file path ending with .bag")
     parser.add_argument("--filter", type=str, default="*", help="Whitespace seperated list of topics or *")
+    parser.add_argument("--upload", default="No", help="(default: No or Yes).")
 
     args = parser.parse_args()
     bag_files = args.input.split(",")
 
     print("Found files: ", bag_files)
-    merge_bags_single(bag_files, args.output, args.filter, verbose=True)
+    merge_bags_single(bag_files, args.output, args.filter, args.upload, verbose=True)

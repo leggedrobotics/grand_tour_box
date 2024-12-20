@@ -86,17 +86,15 @@ def process_rosbag(input_bag, output_bag_path, image_topics, camera_info_topics,
 
 
 if __name__ == "__main__":
-    config_file = Path(WS) / "src/grand_tour_box/box_utils/box_auto/cfg/color_calib_file.yaml"
-
-    pattern = "_nuc_alphasense.bag"  # "_nuc_alphasense_updated_intrinsics.bag"
-
+    INPUT_PATTERN = "_nuc_alphasense_calib.bag"
+    config_file = str(Path(WS) / "src/grand_tour_box/box_utils/box_auto/cfg/color_calib_file.yaml")
     camera_info_topics = [f"/gt_box/alphasense_driver_node/cam{n}/color/camera_info" for n in [1, 2, 3, 4, 5]]
     image_topics = [f"/gt_box/alphasense_driver_node/cam{n}/color/image/compressed" for n in [1, 2, 3, 4, 5]]
 
-    input_bag = get_bag("*_nuc_alphasense.bag")
+    input_bag = get_bag(f"*{INPUT_PATTERN}")
 
-    output_bag_path = input_bag.replace("_nuc_alphasense_calib.bag", "_nuc_alphasense_color.bag")
-    process_rosbag(input_bag, output_bag_path, image_topics, camera_info_topics, config_file)
+    output_bag_path = input_bag.replace(INPUT_PATTERN, "_nuc_alphasense_color.bag")
+    process_rosbag(input_bag, output_bag_path, image_topics, camera_info_topics, config_file, use_gpu=True)
     upload_bag(output_bag_path)
 
     exit(0)

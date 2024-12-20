@@ -14,8 +14,12 @@ cd /home/opencv_gtsam_ws
 
 # Install OpenCV optionally
 cd /home/opencv_gtsam_ws/src; git clone https://github.com/ori-drs/opencv_catkin.git --depth 1
-catkin build opencv_catkin --cmake-args -DCUDA_ARCH_BIN=8.6
 
+export CUDA_HOME=/usr/local/cuda
+export PATH=$CUDA_HOME/bin:$PATH
+export PATH=/usr/local/cuda/bin:$PATH
+export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
+catkin build opencv_catkin --cmake-args -DCUDA_ARCH_BIN=8.6
 
 apt install -y libeigen3-dev
 catkin build gtsam_catkin

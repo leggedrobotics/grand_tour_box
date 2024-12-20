@@ -20,12 +20,8 @@ apt install -y python3-opencv
 apt install -y python3-pip
 pip3 install tqdm
 pip3 install --upgrade pip
-# pip install rerun-sdk
-
 
 pip3 install kleinkram
-
-
 
 mkdir -p /root/.ssh
 ssh-keyscan github.com >> /root/.ssh/known_hosts

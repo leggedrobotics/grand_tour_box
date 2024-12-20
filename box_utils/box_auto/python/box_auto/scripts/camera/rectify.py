@@ -181,20 +181,17 @@ if __name__ == "__main__":
         "alphasense": {
             "in": {
                 "camera_info_topics": [f"/gt_box/alphasense_driver_node/cam{i}/color/camera_info" for i in range(1, 6)],
-                "image_topics": [
-                    f"/gt_box/alphasense_driver_node/cam{i}/color_corrected/image/compressed" for i in range(1, 6)
-                ],
-                "pattern": "_nuc_alphasense_color_corrected.bag",
+                "image_topics": [f"/gt_box/alphasense_driver_node/cam{i}/color/image/compressed" for i in range(1, 6)],
+                "pattern": "_nuc_alphasense_color.bag",
             },
             "out": {
                 "camera_info_topics": [
-                    f"/gt_box/alphasense_driver_node/cam{i}/color_corrected_rect/camera_info" for i in range(1, 6)
+                    f"/gt_box/alphasense_driver_node/cam{i}/color_rect/camera_info" for i in range(1, 6)
                 ],
                 "image_topics": [
-                    f"/gt_box/alphasense_driver_node/cam{i}/color_corrected_rect/image_rect/compressed"
-                    for i in range(1, 6)
+                    f"/gt_box/alphasense_driver_node/cam{i}/color_rect/image_rect/compressed" for i in range(1, 6)
                 ],
-                "pattern": "_nuc_alphasense_color_corrected_rect.bag",
+                "pattern": "_nuc_alphasense_color_rect.bag",
             },
         }
     }
