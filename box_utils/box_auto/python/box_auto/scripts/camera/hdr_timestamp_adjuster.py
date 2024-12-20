@@ -223,7 +223,6 @@ class RosbagValidatorAndProcessor:
         # Process and overwrite timestamps
         with rosbag.Bag(input_bag_path, "r") as inbag, rosbag.Bag(output_bag_path, "w", compression="lz4") as outbag:
             total_messages = inbag.get_message_count()
-            first_match_found = False
             with tqdm(total=total_messages, desc=f"[2/2] Processing {Path(input_bag_path).name}", unit="msgs") as pbar:
                 for topic, msg, t in inbag.read_messages():
                     if topic == f"/gt_box/{camera}/image_raw/compressed":
