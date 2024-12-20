@@ -250,7 +250,7 @@ class RosbagValidatorAndProcessor:
 
 
 if __name__ == "__main__":
-    cameras = ["*hdr_front.bag"]#, "*hdr_left.bag", "*hdr_right.bag"]
+    cameras = ["*hdr_front.bag", "*hdr_left.bag", "*hdr_right.bag"]
     output_suffix = "_updated"
     processor = RosbagValidatorAndProcessor(cameras, output_suffix)
     processor.run()
