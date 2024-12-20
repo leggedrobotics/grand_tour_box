@@ -66,8 +66,17 @@ class RosbagValidatorAndProcessor:
                         image_stamps.append((msg.header.seq, msg.header.stamp.secs, msg.header.stamp.nsecs))
                     pbar.update(1)
 
-        print(f"Found {len(kernel_timestamps)} kernel timestamps, {len(v4l2_timestamps)} v4l2 timestamps, "
-              f"and {len(image_stamps)} images in {Path(input_bag_path).name}.")
+        print(
+            f"Found {len(kernel_timestamps)} kernel timestamps, {len(v4l2_timestamps)} v4l2 timestamps, "
+            f"and {len(image_stamps)} images in {Path(input_bag_path).name}."
+        )
+        if len(kernel_timestamps) == 0 or len(v4l2_timestamps) == 0 or len(image_stamps) == 0:
+            print(
+                f"""Aborting because could not find topics: /gt_box/{camera}/kernel_timestamp, 
+                  /gt_box/{camera}/v4l2_timestamp or /gt_box/{camera}/image_raw/compressed in {Path(input_bag_path).name}.
+                  """
+            )
+            exit(1)
 
         # Validation
         errors = []
@@ -220,7 +229,8 @@ class RosbagValidatorAndProcessor:
                     else:
                         outbag.write(topic, msg, t)
                     pbar.update(1)
-        os.system(f"rm {input_bag_path}")
+        # TODO: Check if this is intentional
+        #os.system(f"rm {input_bag_path}")
 
         return warnings
 
@@ -230,6 +240,8 @@ class RosbagValidatorAndProcessor:
             print(f"Processing camera: {camera}")
             input_bag = get_bag(camera)
             output_bag = input_bag.replace(".bag", "_updated.bag")
+            # Strip .bag and * from camera name
+            camera = camera.split(".")[0][1:]
             warnings = self.validate_and_process_bag(input_bag, output_bag, camera)
             warnings_total += len(warnings)
             print(f"Processed {input_bag} -> {output_bag} with {len(warnings)} warnings: \n")
