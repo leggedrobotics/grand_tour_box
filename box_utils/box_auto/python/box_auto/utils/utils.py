@@ -8,7 +8,11 @@ PRE = f"source /opt/ros/noetic/setup.bash; source {WS}/devel/setup.bash; "
 MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
 BOX_AUTO_SCRIPTS_DIR = str(Path(__file__).parent.parent / "scripts")
 BOX_AUTO_DIR = str(Path(__file__).parent.parent.parent.parent)
-ARTIFACT_FOLDER = os.environ.get("ARTIFACT_FOLDER", "/out")
+
+if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
+    ARTIFACT_FOLDER = os.environ.get("ARTIFACT_FOLDER", "/out")
+else:
+    ARTIFACT_FOLDER = os.environ.get("ARTIFACT_FOLDER", "/mission_data")
 
 
 def run_ros_command(cmd, background=False):

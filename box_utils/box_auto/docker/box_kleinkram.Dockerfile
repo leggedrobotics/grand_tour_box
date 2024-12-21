@@ -36,4 +36,7 @@ RUN --mount=type=ssh /bin/bash -c '/grand_tour.sh'
 COPY entrypoint_kleinkram.sh /entrypoint_kleinkram.sh
 RUN chmod +x /entrypoint_kleinkram.sh
 
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
 ENTRYPOINT ["/entrypoint_kleinkram.sh"]
