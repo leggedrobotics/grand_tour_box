@@ -1,4 +1,5 @@
 x-common-config: &common-config
+  entrypoint: "/entrypoint.sh"
   build:
     context: "$HOME/git/grand_tour_box/box_utils/box_auto/docker"
     dockerfile: "$HOME/git/grand_tour_box/box_utils/box_auto/docker/box.Dockerfile"
@@ -133,13 +134,13 @@ services:
   # Output:
   #   - hesai_filtered.bag
   #   - livox_filtered.bag
-  # filter_pointclouds: 
-  #   <<: *common-config
-  #   container_name: filter_pointclouds
-  #   command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/lidar/filter_pointclouds.py"]
-  #   depends_on:
-  #     hesai:
-  #       condition: service_completed_successfully
+  filter_pointclouds: 
+    <<: *common-config
+    container_name: filter_pointclouds
+    command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/lidar/filter_pointclouds.py"]
+    depends_on:
+      hesai:
+        condition: service_completed_successfully
   
   # Input:
   #   - hesai.bag
@@ -176,15 +177,15 @@ services:
   #   - tf_static.bag
   # Output:
   #   - dlio_tf_static.bag
-  # merge_dlio_tf_static:
-  #   <<: *common-config
-  #   container_name: merge_dlio_tf_static
-  #   command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/general/merge_dlio_tf_static.py"]
-  #   depends_on:
-  #     dlio:
-  #       condition: service_completed_successfully
-  #     calibration:
-  #       condition: service_completed_successfully
+  merge_dlio_tf_static:
+    <<: *common-config
+    container_name: merge_dlio_tf_static
+    command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/general/merge_dlio_tf_static.py"]
+    depends_on:
+      dlio:
+        condition: service_completed_successfully
+      calibration:
+        condition: service_completed_successfully
 
   # Input:
   #   - tf_static.bag
@@ -204,6 +205,7 @@ services:
       ap20_python_online_matcher:
         condition: service_completed_successfully
 
+  # This is currently not supported by any docker container.
   # Input:
   #   - dlio_tf_static.bag
   # Output:

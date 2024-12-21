@@ -12,7 +12,7 @@ BOX_AUTO_DIR = str(Path(__file__).parent.parent.parent.parent)
 if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
     ARTIFACT_FOLDER = os.environ.get("ARTIFACT_FOLDER", "/out")
 else:
-    ARTIFACT_FOLDER = os.environ.get("ARTIFACT_FOLDER", "/mission_data")
+    ARTIFACT_FOLDER = os.environ.get("ARTIFACT_FOLDER", MISSION_DATA)
 
 
 def run_ros_command(cmd, background=False):
