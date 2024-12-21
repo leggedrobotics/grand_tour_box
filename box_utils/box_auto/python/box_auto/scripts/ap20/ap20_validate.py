@@ -23,8 +23,7 @@ def process_prism_position_bag(input_bag_path, output_bag_path, skip_check):
     # Get the first position as reference
     if not prism_positions:
         print("No prism position messages found!")
-
-        return False
+        exit(1)
 
     first_position = prism_positions[0][0]
 
@@ -48,7 +47,7 @@ def process_prism_position_bag(input_bag_path, output_bag_path, skip_check):
     if len(prism_positions) < 40:
         input_bag.close()
         output_bag.close()
-        return False
+        exit(2)
 
     # Extract first and last 20 messages
     first_20_msgs = [msg for msg, t in prism_positions[:20]]
@@ -64,38 +63,42 @@ def process_prism_position_bag(input_bag_path, output_bag_path, skip_check):
 
     # Check if median differences are smaller than 3 mm (0.003 m)
     if not np.all(median_diff < 0.003):
-        print("Warning: Median differences exceed 3 mm!")
+        if skip_check:
+            print("Warning: Median differences exceed 3 mm! - But we will write everything to robot.bag")
+            print("Skipping check - Exit 0")
+
+            for msg, t in prism_positions:
+                output_bag.write("/gt_box/ap20/prism_position", msg, t)
+
+            input_bag.close()
+            output_bag.close()
+            upload_bag(output_bag_path)
+            exit(3)
+        else:
+            print("Warning: Median differences exceed 3 mm! - Nothing will be written to robot.bag")
+            # Close bags
+            input_bag.close()
+            output_bag.close()
+            exit(4)
+    else:
+        print("Writing normally to robot bag")
+        for msg, t in prism_positions:
+            # Calculate distance from the first position
+            distance = np.sqrt(
+                (msg.point.x - first_position.point.x) ** 2
+                + (msg.point.y - first_position.point.y) ** 2
+                + (msg.point.z - first_position.point.z) ** 2
+            )
+
+            # Only write messages beyond 20 cm (0.2 m) from the first position
+            if distance > 0.2:
+                output_bag.write("/gt_box/ap20/prism_position", msg, t)
+
         # Close bags
         input_bag.close()
         output_bag.close()
-        return False
-
-    # Close bags
-    input_bag.close()
-    output_bag.close()
-
-    return True
-
-
-def main(skip_check):
-    input_bag_path = get_bag("*_jetson_ap20_synced.bag")
-    output_bag_path = input_bag_path.replace("_synced.bag", "_robot.bag")
-
-    # Process the bag
-    success = process_prism_position_bag(input_bag_path, output_bag_path, skip_check)
-
-    if success:
         upload_bag(output_bag_path)
-        print("Checks passed - Exit 0 ")
         exit(0)
-    else:
-        if skip_check:
-            print("Check failed but skipped check - Exit 0")
-            exit(0)
-
-        else:
-            print("Check failed - Exit -1 ")
-            exit(1)
 
 
 if __name__ == "__main__":
@@ -109,5 +112,7 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    # Pass the boolean flag to the main function
-    main(args.skip_check)
+    input_bag_path = get_bag("*_jetson_ap20_synced.bag")
+    output_bag_path = input_bag_path.replace("_synced.bag", "_robot.bag")
+    # Process the bag
+    process_prism_position_bag(input_bag_path, output_bag_path, args.skip_check)
