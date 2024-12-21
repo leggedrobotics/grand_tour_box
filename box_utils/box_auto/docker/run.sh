@@ -127,7 +127,7 @@ echo "  Debug mode: ${DEBUG_MOUNT:+enabled}"
 echo "  Command: ${COMMAND:-default shell}"
 echo ""
 
-docker run --privileged \
+eval docker run --privileged \
     $INTERACTIVE_FLAG \
     $REMOVE_FLAG \
     --volume=$XSOCK:/root/.X11-unix:rw \
@@ -146,3 +146,4 @@ docker run --privileged \
     $FULL_IMAGE \
     $COMMAND
 
+exit $?
