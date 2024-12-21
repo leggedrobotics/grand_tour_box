@@ -40,11 +40,11 @@ for i in "$@"; do
         --type=*)
             TYPE=${i#*=}
             case $TYPE in
-                kleinkram|kleinkram_minimal|ros2|full)
+                kleinkram|kleinkram_minimal|ros2|bridge)
                     IMAGE_TYPE=$TYPE
                     ;;
                 *)
-                    echo "Error: Invalid type. Must be one of: kleinkram, kleinkram_minimal, ros2, full"
+                    echo "Error: Invalid type. Must be one of: kleinkram, kleinkram_minimal, ros2, bridge"
                     echo "$__usage"
                     exit 1
                     ;;

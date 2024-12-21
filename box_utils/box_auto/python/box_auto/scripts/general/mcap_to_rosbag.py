@@ -1,6 +1,5 @@
 import os
 import glob
-from boxi import shell_run
 import rosbag
 import rospy
 from rosbags.highlevel.anyreader import AnyReader
@@ -12,8 +11,31 @@ import yaml
 import rospkg
 from sensor_msgs.msg import CameraInfo
 import copy
+import subprocess
 
-from box_auto.utils import MISSION_DATA
+MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
+
+
+def shell_run(cmd, cwd=None, env={}, time=True, continue_on_error=True):
+    """Execute shell command."""
+    # Support both list and str format for commands
+    # if isinstance(cmd, str):
+    #     cmd = shlex.split(cmd)
+
+    # Set up environmental variables
+    env_variables = copy.deepcopy(os.environ)
+    env_variables.update(env)
+
+    # Execute command
+    try:
+        p = subprocess.Popen(cmd, cwd=cwd, env=env_variables, shell=True, executable="/bin/bash")
+    except Exception as e:
+        raise RuntimeError(f"{e} --- while executing {cmd}")
+
+    if p.wait() != 0:
+        print()
+        if not continue_on_error:
+            raise RuntimeError(f"Error Return non 0 --- while executing {cmd}")
 
 
 def load_camera_info_from_yaml(yaml_path):
