@@ -1,7 +1,6 @@
 import rosbag
 from tqdm import tqdm
 from pathlib import Path
-import os
 import numpy as np
 
 from box_auto.utils import get_bag, upload_bag
@@ -71,9 +70,7 @@ class RosbagValidatorAndProcessor:
         )
         if len(kernel_timestamps) == 0 or len(v4l2_timestamps) == 0 or len(image_stamps) == 0:
             print(
-                f"""Aborting because could not find topics: /gt_box/{camera}/kernel_timestamp, 
-                  /gt_box/{camera}/v4l2_timestamp or /gt_box/{camera}/image_raw/compressed in {Path(input_bag_path).name}.
-                  """
+                f"""Aborting because could not find topics: /gt_box/{camera}/kernel_timestamp, /gt_box/{camera}/v4l2_timestamp or /gt_box/{camera}/image_raw/compressed in {Path(input_bag_path).name}."""
             )
             exit(1)
 
@@ -97,10 +94,7 @@ class RosbagValidatorAndProcessor:
                 v4l2_ts = v4l2_timestamps[v4l2_idx][1] * 1_000_000_000 + v4l2_timestamps[v4l2_idx][2]
                 if img_ts != v4l2_ts:
                     print(
-                        f"""Missing image message or v4l2 timestamp for image seq={image_stamps[img_idx][0]},
-                        secs={image_stamps[img_idx][1]}, nsecs={image_stamps[img_idx][2]}. v4l2 timestamp seq=
-                        {v4l2_timestamps[v4l2_idx][0]}, secs={v4l2_timestamps[v4l2_idx][1]}, nsecs={v4l2_timestamps[v4l2_idx][2]}.
-                        This should not happen as the messages are published in the same code block.
+                        f"""Missing image message or v4l2 timestamp for image seq={image_stamps[img_idx][0]},secs={image_stamps[img_idx][1]}, nsecs={image_stamps[img_idx][2]}. v4l2 timestamp seq={v4l2_timestamps[v4l2_idx][0]}, secs={v4l2_timestamps[v4l2_idx][1]}, nsecs={v4l2_timestamps[v4l2_idx][2]}. This should not happen as the messages are published in the same code block.
                         """
                     )
                     exit(2)
@@ -132,8 +126,7 @@ class RosbagValidatorAndProcessor:
 
             if kernel_index == 0:
                 print(
-                    f"""[WARNING] No kernel timestamp found before v4l2 timestamp secs={v_secs}, nsecs={v_nsecs}, 
-                     seq={v_seq}. Advancing to next v4l2 timestamp, dropping this v4l2 timestamp.
+                    f"""[WARNING] No kernel timestamp found before v4l2 timestamp secs={v_secs}, nsecs={v_nsecs}, seq={v_seq}. Advancing to next v4l2 timestamp, dropping this v4l2 timestamp.
                     """
                 )
                 v4l2_index += 1
@@ -165,9 +158,7 @@ class RosbagValidatorAndProcessor:
             # Make sure the kernel timestamp is before the v4l2 timestamp
             if kernel_ts >= v4l2_ts:
                 print(
-                    f"""Kernel timestamp seq={k_seq}, secs={k_secs}, nsecs={k_nsecs} appears after v4l2 timestamp 
-                    seq={v_seq}, secs={v_secs}, nsecs={v_nsecs}.
-                    """
+                    f"""Kernel timestamp seq={k_seq}, secs={k_secs}, nsecs={k_nsecs} appears after v4l2 timestamp seq={v_seq}, secs={v_secs}, nsecs={v_nsecs}."""
                 )
                 exit(2)
 
@@ -177,9 +168,7 @@ class RosbagValidatorAndProcessor:
                 prev_v4l2_ts = prev_pair[2] * 1_000_000_000 + prev_pair[3]
                 if kernel_ts < prev_v4l2_ts:
                     print(
-                        f"""Kernel timestamp seq={k_seq}, secs={k_secs}, nsecs={k_nsecs} appears before the previous 
-                        v4l2 timestamp seq={prev_pair[0]}, secs={prev_pair[2]}, nsecs={prev_pair[3]}. FPS should not
-                        be high enough to allow this.
+                        f"""Kernel timestamp seq={k_seq}, secs={k_secs}, nsecs={k_nsecs} appears before the previous v4l2 timestamp seq={prev_pair[0]}, secs={prev_pair[2]}, nsecs={prev_pair[3]}. FPS should not be high enough to allow this.
                         """
                     )
                     exit(2)
@@ -194,10 +183,7 @@ class RosbagValidatorAndProcessor:
                 if abs(delta_ns - mean_delta) / mean_delta > 0.25:
                     print(
                         f"""
-                        Delta between kernel timestamp seq={k_seq}, secs={k_secs}, nsecs={k_nsecs} and v4l2 timestamp 
-                        seq={v_seq}, secs={v_secs}, nsecs={v_nsecs} is too far (>25%) from the average delta 
-                        {mean_delta/100_000} ms. 
-                        """
+                        Delta between kernel timestamp seq={k_seq}, secs={k_secs}, nsecs={k_nsecs} and v4l2 timestamp seq={v_seq}, secs={v_secs}, nsecs={v_nsecs} is too far (>25%) from the average delta {mean_delta/100_000} ms. """
                     )
                     exit(2)
 
@@ -211,7 +197,7 @@ class RosbagValidatorAndProcessor:
             kernel_index += 1
             v4l2_index += 1
 
-        print(f"Validation passed.")
+        print("Validation passed.")
         mean_delta = np.mean(deltas) / 1_000_000  # Convert to milliseconds
         std_dev_delta = np.std(deltas) / 1_000_000  # Convert to milliseconds
         mean_kernel_delta = np.mean(kernel_deltas) / 1_000_000  # Convert to milliseconds
@@ -236,7 +222,6 @@ class RosbagValidatorAndProcessor:
                     else:
                         outbag.write(topic, msg, t)
                     pbar.update(1)
-        os.system(f"rm {input_bag_path}")
 
     def run(self):
         for camera in self.cameras:

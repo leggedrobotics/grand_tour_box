@@ -39,7 +39,7 @@ def process_prism_position_bag(input_bag_path, output_bag_path, skip_check):
         )
 
         # Only write messages beyond 20 cm (0.2 m) from the first position
-        if distance > 0.2 and not skip_check:
+        if distance > 0.2 or not skip_check:
             output_bag.write("/gt_box/ap20/prism_position", msg, t)
 
         valid_positions.append(msg)
