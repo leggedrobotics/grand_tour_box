@@ -13,7 +13,7 @@
     <parent link="base" />
     <child link="box_base" />
   </joint>
-
+<!-- 
   <joint name="prism_to_prism_model" type="fixed">
     <origin xyz=" ${calib['prism_to_prism_model']['x']}
                   ${calib['prism_to_prism_model']['y']}
@@ -23,7 +23,7 @@
                   ${calib['prism_to_prism_model']['yaw']}" />
     <parent link="prism" />
     <child link="prism_model" />
-  </joint>
+  </joint> -->
 
   <!-- Prism -->
   <link name="prism"/>
@@ -52,21 +52,21 @@
         <child link="box_base_model"/>
   </joint>
 
-  <joint name="base_to_cpt7_antenna_back_model" type="fixed">
+  <!-- <joint name="base_to_cpt7_antenna_back_model" type="fixed">
         <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
         <parent link="base"/>
         <child link="cpt7_antenna_back_model"/>
-  </joint>
+  </joint> -->
 
   <!-- Model base -->
   <link name="box_base_model">
     <visual>
       <geometry>
-        <mesh filename="package://box_model/urdf/box/mesh/2312_box_model_reduced_size.stl" scale="0.001 0.001 0.001" />
+        <mesh filename="package://box_model/urdf/box/mesh/box_colored.dae" scale="0.001 0.001 0.001" />
       </geometry>
     </visual>
   </link>
-
+<!-- 
   <link name="cpt7_antenna_back_model">
     <visual>
       <geometry>
@@ -81,7 +81,7 @@
         <mesh filename="package://box_model/urdf/box/mesh/2312_prism_in_cpt7_csys.stl" scale="0.001 0.001 0.001" />
       </geometry>
     </visual>
-  </link>
+  </link> -->
 
   <xacro:include filename="$(find box_model)/urdf/cameras/cameras.urdf.xacro" />
   <xacro:include filename="$(find box_model)/urdf/lidars/lidars.urdf.xacro" />
