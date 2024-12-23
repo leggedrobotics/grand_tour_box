@@ -2,6 +2,8 @@ import os
 from pathlib import Path
 import psutil
 from time import sleep
+from sortedcontainers import SortedDict
+import rosbag
 
 WS = "/home/catkin_ws"
 PRE = f"source /opt/ros/noetic/setup.bash; source {WS}/devel/setup.bash; "
@@ -85,3 +87,39 @@ def upload_bag(bags):
         print(f"Kleinkram Aciive - Bags uploaded: {bags}")
     else:
         print(f"Kleinkram Inactive - Bags not uploaded: {bags}")
+
+
+class RosbagMessageGenerator:
+    def __init__(self, bag_paths):
+        """
+        Initializes the generator with a list of ROS bag files.
+        Only opens the bags without loading messages.
+        """
+        self.bags = {p: rosbag.Bag(p, "r") for p in bag_paths}
+        self.bags_iterators = {p: self.bags[p].read_messages() for p in bag_paths}
+        self.messages = SortedDict()
+        for p in bag_paths:
+            topic, msg, t = next(self.bags_iterators[p])
+            self.messages[t.to_sec()] = (topic, msg, t, p)
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        """Returns the message with earliest timestamp across all bags"""
+        # Filter out None values and find earliest message
+        if len(self.messages) == 0:
+            raise StopIteration
+        k, v = self.messages.popitem(0)
+        topic, msg, t, bag_path = v
+        try:
+            topic_new, msg_new, t_new = next(self.bags_iterators[bag_path])
+            self.messages[t_new.to_sec()] = (topic_new, msg_new, t_new, bag_path)
+
+        except StopIteration:
+            print(f"Finished iterating over bag {bag_path}")
+        return topic, msg, t
+
+    def __del__(self):
+        for p in self.bags:
+            self.bags[p].close()
