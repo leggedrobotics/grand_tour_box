@@ -29,7 +29,7 @@
   <link name="prism"/>
   <!-- Box base -->
   <link name="box_base"/>
-  <joint name="box_base_to_prism" type="fixed">
+  <!-- <joint name="box_base_to_prism" type="fixed">
     <origin xyz=" ${calib['box_base_to_prism']['x']}
                   ${calib['box_base_to_prism']['y']}
                   ${calib['box_base_to_prism']['z']}"
@@ -38,13 +38,39 @@
                   ${calib['box_base_to_prism']['yaw']}" />
     <parent link="box_base" />
     <child link="prism" />
+  </joint> -->
+
+  <joint name="box_base_to_prism" type="fixed">
+        <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+        <parent link="box_base"/>
+        <child link="prism"/>
+  </joint>
+
+  <joint name="box_base_to_box_base_model" type="fixed">
+        <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+        <parent link="box_base"/>
+        <child link="box_base_model"/>
+  </joint>
+
+  <joint name="base_to_cpt7_antenna_back_model" type="fixed">
+        <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+        <parent link="base"/>
+        <child link="cpt7_antenna_back_model"/>
   </joint>
 
   <!-- Model base -->
   <link name="box_base_model">
     <visual>
       <geometry>
-        <mesh filename="package://box_model/urdf/box/mesh/box_assembly_incl_livox_mount.dae" />
+        <mesh filename="package://box_model/urdf/box/mesh/2312_box_model_reduced_size.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+    </visual>
+  </link>
+
+  <link name="cpt7_antenna_back_model">
+    <visual>
+      <geometry>
+        <mesh filename="package://box_model/urdf/box/mesh/2312_antenna_back_in_base_csys.stl" scale="0.001 0.001 0.001" />
       </geometry>
     </visual>
   </link>
@@ -52,7 +78,7 @@
   <link name="prism_model">
     <visual>
       <geometry>
-        <mesh filename="package://box_model/urdf/box/mesh/leica_small_prism.dae" />
+        <mesh filename="package://box_model/urdf/box/mesh/2312_prism_in_cpt7_csys.stl" scale="0.001 0.001 0.001" />
       </geometry>
     </visual>
   </link>

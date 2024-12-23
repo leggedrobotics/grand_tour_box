@@ -68,7 +68,7 @@ alphasense_cam5_helper_joint:
   y: 0.0
   yaw: 0.0
   z: 0.0
-base_to_boxbase:
+base_to_box_base:
   pitch: 0.0
   roll: 3.1415126
   x: -0.07640380000000001
@@ -220,7 +220,7 @@ prism_to_prism_model:
   y: 0.0
   yaw: 0.0
   z: 0.0
-stim320_imu_to_box_base_model:
+box_base_to_box_base_model:
   pitch: 0.0
   roll: 0.0
   x: 0.0
