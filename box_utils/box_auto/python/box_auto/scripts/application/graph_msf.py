@@ -13,6 +13,7 @@ from tf_bag import BagTfTransformer
 from rosbag import Bag
 import matplotlib.pyplot as plt
 from tf2_msgs.msg import TFMessage
+from tf.transformations import euler_from_quaternion
 
 from box_auto.utils import (
     get_bag,
@@ -400,12 +401,12 @@ def launch_nodes():
 
         print("Waiting 3s for graph_msf to startup")
         sleep(3)
-        run_ros_command(f"rosbag play -r 1 -u 250 --clock {merged_rosbag_path}")
+        run_ros_command(f"rosbag play -r 1 --clock {merged_rosbag_path}")
 
         print("Waiting 3s for all messages to be consumed by graph_msf before starting optimization!")  #
         sleep(3)
         run_ros_command(
-            'rosservice call /graph_msf/trigger_offline_optimization "max_optimization_iterations: 100\nsave_covariance: true"'
+            'rosservice call /graph_msf/trigger_offline_optimization "max_optimization_iterations: 1000\nsave_covariance: true"'
         )
         kill_roscore()
 
@@ -413,19 +414,31 @@ def launch_nodes():
     tf_static_path = get_bag("*_tf_static.bag")
     tf_static_gt_path = tf_static_path.replace("_tf_static.bag", "_tf_static_gt.bag")
     tf_statics = []
+
+    GRAPH_MSF_ARTIFACT_FOLDER_SUBFOLDER = max(
+        [
+            os.path.join(GRAPH_MSF_ARTIFACT_FOLDER, d)
+            for d in os.listdir(GRAPH_MSF_ARTIFACT_FOLDER)
+            if os.path.isdir(os.path.join(GRAPH_MSF_ARTIFACT_FOLDER, d))
+        ],
+        key=os.path.getmtime,
+    )
+
+    print(GRAPH_MSF_ARTIFACT_FOLDER_SUBFOLDER)
     csv_R_6D_transform_world_to_leica_total_station, suc1 = get_file(
-        "*/R_6D_transform_world_to_leica_total_station.csv", GRAPH_MSF_ARTIFACT_FOLDER
+        "R_6D_transform_world_to_leica_total_station.csv", GRAPH_MSF_ARTIFACT_FOLDER_SUBFOLDER
     )
     csv_6D_transform_leica_total_station_to_prism, suc2 = get_file(
-        "*/R_6D_transform_leica_total_station_to_leica_total_stationOld.csv", GRAPH_MSF_ARTIFACT_FOLDER
+        "R_6D_transform_leica_total_station_to_leica_total_stationOld.csv", GRAPH_MSF_ARTIFACT_FOLDER_SUBFOLDER
     )
     csv_file_world_to_enu_orign, gps_is_available = get_file(
-        "*/R_6D_transform_world_to_enu_origin.csv", GRAPH_MSF_ARTIFACT_FOLDER
+        "R_6D_transform_world_to_enu_origin.csv", GRAPH_MSF_ARTIFACT_FOLDER_SUBFOLDER
     )
     assert suc1 and suc2, "Totalstation has to be available!"
     R_world_to_helper = csv_to_TransformStamped(
         csv_R_6D_transform_world_to_leica_total_station, "world", "leica_total_station_helper"
     )
+
     R_helper_to_prism = csv_to_TransformStamped(
         csv_6D_transform_leica_total_station_to_prism, "leica_total_station_helper", "prism"
     )
@@ -433,30 +446,30 @@ def launch_nodes():
     tf_statics.append(R_helper_to_prism)
     if gps_is_available:
         R_world_to_enu_origin = csv_to_TransformStamped(csv_file_world_to_enu_orign, "world", "enu_origin")
-    else:
-        R_world_to_enu_origin = create_transform_stamped(
-            timestamp=R_world_to_helper.header.stamp.to_sec(),
-            x=0,
-            y=0,
-            z=0,
-            qw=1,
-            qx=0,
-            qy=0,
-            qz=0,
-            fixed_frame_id="world",
-            child_frame_id="enu_origin",
-        )
-        gps_is_available = True
+        tf_statics.append(R_world_to_enu_origin)
 
-    tf_statics.append(R_world_to_enu_origin)
+    # else:
+    #     R_world_to_enu_origin = create_transform_stamped(
+    #         timestamp=R_world_to_helper.header.stamp.to_sec(),
+    #         x=0,
+    #         y=0,
+    #         z=0,
+    #         qw=1,
+    #         qx=0,
+    #         qy=0,
+    #         qz=0,
+    #         fixed_frame_id="world",
+    #         child_frame_id="enu_origin",
+    #     )
+    #     gps_is_available = True
 
     write_tf_static_bag(tf_static_gt_path, tf_statics)  # Important this bag cannot be replayed given
 
     # Convert world to box_base to rosbag
     tf_gt_path = tf_static_path.replace("_tf_static.bag", "_gt_tf.bag")
     pose_gt_path = tf_static_path.replace("_tf_static.bag", "_gt_pose.bag")
-    csv_cov_file, _ = get_file("*/X_state_6D_pose_covariance.csv", GRAPH_MSF_ARTIFACT_FOLDER)
-    csv_pose_file, _ = get_file("*/X_state_6D_pose.csv", GRAPH_MSF_ARTIFACT_FOLDER)
+    csv_cov_file, _ = get_file("X_state_6D_pose_covariance.csv", GRAPH_MSF_ARTIFACT_FOLDER_SUBFOLDER)
+    csv_pose_file, _ = get_file("X_state_6D_pose.csv", GRAPH_MSF_ARTIFACT_FOLDER_SUBFOLDER)
     convert_csv_to_bag(csv_cov_file, csv_pose_file, tf_gt_path, pose_gt_path, "world", "box_base")
 
     # Load all data from rosbags and plot it
@@ -517,11 +530,11 @@ def launch_nodes():
         "dark_blue": "#082a54",
     }
 
-    if not gps_is_available:
-        gps_ie_path_world = np.zeros_like(ap20_path_arr)  # For debugging only
-
     ap20_path_world = np.linalg.inv(T_prism_world) @ ap20_path_arr
     pose_gt_path_world = pose_gt_path_arr
+
+    if not gps_is_available:
+        gps_ie_path_world = np.copy(ap20_path_world)  # For debugging only
 
     x_min = min(
         np.min(gps_ie_path_world[:, 0, 3]), np.min(ap20_path_world[:, 0, 3]), np.min(pose_gt_path_world[:, 0, 3])
@@ -559,14 +572,32 @@ def launch_nodes():
             label="GPS-IE",
             linewidth=2,
         )
-    ax.plot(ap20_path_world[:, 0, 3], ap20_path_world[:, 1, 3], "--", color=colors["purple"], label="AP20", linewidth=3)
+
+    # Instead of single plot command, we'll plot segments
+    MAX_DISTANCE = 0.2  # 10cm threshold
+
+    # Get x and y coordinates
+    x_coords = ap20_path_world[:, 0, 3]
+    y_coords = ap20_path_world[:, 1, 3]
+
+    # Find segments with distances less than threshold
+    for i in range(len(x_coords) - 1):
+        dist = np.sqrt((x_coords[i + 1] - x_coords[i]) ** 2 + (y_coords[i + 1] - y_coords[i]) ** 2)
+        if dist < MAX_DISTANCE:
+            ax.plot(
+                [x_coords[i], x_coords[i + 1]], [y_coords[i], y_coords[i + 1]], "-", color=colors["purple"], linewidth=2
+            )
+
+    # Add a single entry for the legend
+    ax.plot([], [], "-", color=colors["purple"], label="AP20", linewidth=3)
+
     ax.plot(
         pose_gt_path_world[:, 0, 3],
         pose_gt_path_world[:, 1, 3],
-        "-",
+        ":",
         color=colors["dark_blue"],
         label="Ground Truth",
-        linewidth=2,
+        linewidth=3,
     )
 
     # Style settings
@@ -604,7 +635,89 @@ def launch_nodes():
 
     # Adjust layout
     plt.tight_layout()
-    plt.savefig(os.path.join(GRAPH_MSF_ARTIFACT_FOLDER, "graph_msf_result.png"))
+    plt.savefig(os.path.join(GRAPH_MSF_ARTIFACT_FOLDER_SUBFOLDER, "graph_msf_result.png"))
+
+    def plot_ground_truth_data(pose_gt_path, output_folder):
+        """Plot ground truth pose and covariance data."""
+        # Initialize lists to store data
+        timestamps = []
+        positions = {"x": [], "y": [], "z": []}
+        position_covariances = []
+        orientations = {"roll": [], "pitch": [], "yaw": []}
+        orientation_covariances = []
+
+        # Read the rosbag
+        with rosbag.Bag(pose_gt_path, "r") as bag:
+            for _, msg, t in bag.read_messages(topics=["/gt_box/ground_truth/pose_with_covariance"]):
+                # Extract timestamp
+                timestamps.append(t.to_sec())
+
+                # Extract position
+                positions["x"].append(msg.pose.pose.position.x)
+                positions["y"].append(msg.pose.pose.position.y)
+                positions["z"].append(msg.pose.pose.position.z)
+
+                # Extract covariance
+                cov = np.array(msg.pose.covariance).reshape(6, 6)
+                position_covariances.append([cov[0, 0], cov[1, 1], cov[2, 2]])
+
+                # Extract orientation
+                quat = msg.pose.pose.orientation
+                roll, pitch, yaw = euler_from_quaternion([quat.x, quat.y, quat.z, quat.w])
+                orientations["roll"].append(roll)
+                orientations["pitch"].append(pitch)
+                orientations["yaw"].append(yaw)
+
+                # Extract orientation covariance
+                orientation_covariances.append([cov[3, 3], cov[4, 4], cov[5, 5]])
+
+        # Convert to numpy arrays
+        timestamps = np.array(timestamps)
+        positions = {key: np.array(values) for key, values in positions.items()}
+        position_covariances = np.array(position_covariances)
+        orientations = {key: np.array(values) for key, values in orientations.items()}
+        orientation_covariances = np.array(orientation_covariances)
+
+        # Create plots
+        fig, axs = plt.subplots(4, 1, figsize=(10, 16))
+
+        # Plot 1: Positions
+        for key, color in zip(["x", "y", "z"], ["r", "g", "b"]):
+            axs[0].plot(timestamps, positions[key], label=f"{key} position", color=color)
+        axs[0].set_title("Position (x, y, z)")
+        axs[0].set_xlabel("Time (s)")
+        axs[0].set_ylabel("Position (m)")
+        axs[0].legend()
+
+        # Plot 2: Position covariances
+        for i, (key, color) in enumerate(zip(["x", "y", "z"], ["r", "g", "b"])):
+            axs[1].plot(timestamps, position_covariances[:, i], label=f"{key} covariance", color=color)
+        axs[1].set_title("Position Covariance (x, y, z)")
+        axs[1].set_xlabel("Time (s)")
+        axs[1].set_ylabel("Covariance (m²)")
+        axs[1].legend()
+
+        # Plot 3: Orientations
+        for key, color in zip(["roll", "pitch", "yaw"], ["r", "g", "b"]):
+            axs[2].plot(timestamps, orientations[key], label=f"{key}", color=color)
+        axs[2].set_title("Orientation (Roll, Pitch, Yaw)")
+        axs[2].set_xlabel("Time (s)")
+        axs[2].set_ylabel("Angle (rad)")
+        axs[2].legend()
+
+        # Plot 4: Orientation covariances
+        for i, (key, color) in enumerate(zip(["roll", "pitch", "yaw"], ["r", "g", "b"])):
+            axs[3].plot(timestamps, orientation_covariances[:, i], label=f"{key} covariance", color=color)
+        axs[3].set_title("Orientation Covariance (Roll, Pitch, Yaw)")
+        axs[3].set_xlabel("Time (s)")
+        axs[3].set_ylabel("Covariance (rad²)")
+        axs[3].legend()
+
+        plt.tight_layout()
+        plt.savefig(os.path.join(output_folder, "ground_truth_analysis.png"))
+        plt.close()
+
+    plot_ground_truth_data(pose_gt_path, GRAPH_MSF_ARTIFACT_FOLDER_SUBFOLDER)
 
     # Upload results
     upload_bag([tf_gt_path, pose_gt_path, tf_static_gt_path])

@@ -73,6 +73,10 @@ def main():
                         print(f"Lookup Failed: {e}")
                         continue
 
+                    if transform[0] is None:
+                        print("Skipped given that transformation could not be found!")
+                        continue
+
                     rotation_matrix = tf.transformations.quaternion_matrix(transform[1])
                     se3_matrix = np.eye(4)
                     se3_matrix[:3, :3] = rotation_matrix[:3, :3]
