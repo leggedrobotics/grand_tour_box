@@ -1,71 +1,54 @@
 [submodule "box_drivers/livox_ros_driver2"]
 	path = box_drivers/livox_ros_driver2
 	url = git@github.com:leggedrobotics/livox_ros_driver2.git
-	branch = grandTour
 [submodule "box_drivers/multimaster_fkie"]
 	path = box_drivers/multimaster_fkie
 	url = git@github.com:leggedrobotics/multimaster_fkie.git
-	branch = grandTour
 [submodule "box_drivers/stim320_driver"]
 	path = box_drivers/stim320_driver
 	url = git@github.com:leggedrobotics/stim320_driver
-	branch = master
 [submodule "box_drivers/zed-ros-wrapper"]
 	path = box_drivers/zed-ros-wrapper
 	url = git@github.com:leggedrobotics/zed-ros-wrapper.git
-	branch = grandTour
 [submodule "box_drivers/raw_image_pipeline"]
 	path = box_drivers/raw_image_pipeline
 	url = git@github.com:leggedrobotics/raw_image_pipeline.git
-	branch = master
 [submodule "box_drivers/hesai_lidar_ros_driver"]
 	path = box_drivers/hesai_lidar_ros_driver
 	url = git@github.com:leggedrobotics/hesai_lidar_ros_driver.git
-	branch = master
 [submodule "box_drivers/Livox-LiDAR-SDK2"]
 	path = box_drivers/Livox-LiDAR-SDK2
 	url = git@github.com:leggedrobotics/Livox-LiDAR-SDK2.git
-	branch = master
 [submodule "box_drivers/novatel_oem7_driver"]
 	path = box_drivers/novatel_oem7_driver
 	url = git@github.com:leggedrobotics/novatel_oem7_driver.git
-	branch = ros1
 [submodule "box_drivers_ros2/rosbag2_composable_recorder"]
 	path = box_drivers_ros2/rosbag2_composable_recorder
 	url = git@github.com:leggedrobotics/rosbag2_composable_recorder.git
-	branch = dev/grand_tour
 [submodule "box_drivers_ros2/hdr_camera_driver"]
 	path = box_drivers_ros2/hdr_camera_driver
 	url = git@github.com:leggedrobotics/hdr_camera_driver.git
-	branch = dev/ros2_grand_tour
 [submodule "box_drivers_ros2/isaac_ros_common"]
 	path = box_drivers_ros2/isaac_ros_common
 	url = git@github.com:leggedrobotics/isaac_ros_common.git
-	branch = dev/grand_tour
 [submodule "box_drivers/iio_cpp"]
 	path = box_drivers/iio_cpp
 	url = git@github.com:leggedrobotics/iio_cpp.git
-	branch = main
 [submodule "box_drivers/adi_imu_driver"]
 	path = box_drivers/adi_imu_driver
 	url = git@github.com:leggedrobotics/adi_imu_driver.git
-	branch = main
 [submodule "box_drivers_ros2/ros1_bridge"]
 	path = box_drivers_ros2/ros1_bridge
 	url = git@github.com:leggedrobotics/ros1_bridge.git
-	branch = master
 [submodule "box_applications/tf_bag"]
 	path = box_applications/tf_bag
 	url = git@github.com:leggedrobotics/tf_bag.git
-	branch = master
 [submodule "box_applications/graph_msf_dev"]
 	path = box_applications/graph_msf_dev
 	url = git@bitbucket.org:leggedrobotics/graph_msf_dev.git
-	branch = jonfrey/gt_generation
 [submodule "box_applications/open3d_slam_private"]
 	path = box_applications/open3d_slam_private
 	url = git@github.com:leggedrobotics/open3d_slam_private.git
-	branch = dev/grandtour
 [submodule "box_applications/wavemap"]
 	path = box_applications/wavemap
 	url = git@github.com:ethz-asl/wavemap.git
@@ -73,20 +56,15 @@
 [submodule "box_applications/elevation_mapping_cupy"]
 	path = box_applications/elevation_mapping_cupy
 	url = git@github.com:leggedrobotics/elevation_mapping_cupy.git
-	branch = main
 [submodule "box_applications/dlio"]
 	path = box_applications/dlio
 	url = git@github.com:leggedrobotics/dlio.git
-	branch = grandtour
 [submodule "box_applications/evo"]
 	path = box_applications/evo
 	url = git@github.com:leggedrobotics/evo.git
-	branch = master
 [submodule "box_applications/simple_navigation"]
 	path = box_applications/simple_navigation
 	url = git@github.com:leggedrobotics/simple_navigation.git
-	branch = master
 [submodule "box_applications/anymal_d_simple_description"]
 	path = box_applications/anymal_d_simple_description
 	url = git@github.com:leggedrobotics/anymal_d_simple_description.git
-	branch = master
