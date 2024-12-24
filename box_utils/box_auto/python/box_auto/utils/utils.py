@@ -100,6 +100,10 @@ class RosbagMessageGenerator:
         self.messages = SortedDict()
         for p in bag_paths:
             topic, msg, t = next(self.bags_iterators[p])
+            k = t.to_sec()
+            while k in self.messages:
+                k = k + 0.0000002
+
             self.messages[t.to_sec()] = (topic, msg, t, p)
 
     def __iter__(self):
@@ -114,7 +118,12 @@ class RosbagMessageGenerator:
         topic, msg, t, bag_path = v
         try:
             topic_new, msg_new, t_new = next(self.bags_iterators[bag_path])
-            self.messages[t_new.to_sec()] = (topic_new, msg_new, t_new, bag_path)
+
+            k = t_new.to_sec()
+            while k in self.messages:
+                k = k + 0.0000002
+
+            self.messages[k] = (topic_new, msg_new, t_new, bag_path)
 
         except StopIteration:
             print(f"Finished iterating over bag {bag_path}")

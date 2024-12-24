@@ -11,6 +11,7 @@ from .utils import (
     get_bag,
     get_file,
     upload_bag,
+    RosbagMessageGenerator,
 )
 from .gps_utils import GPS_utils
 
@@ -28,4 +29,5 @@ __all__ = [
     "get_file",
     "upload_bag",
     "GPS_utils",
+    "RosbagMessageGenerator",
 ]
