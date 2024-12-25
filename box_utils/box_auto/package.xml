@@ -28,6 +28,9 @@
   <depend>interactive_markers</depend>
   <depend>rosbag</depend>
   <depend>nav_msgs</depend>
+  <depend>pybind11_catkin</depend>
+  <depend>catkin_simple</depend>
+  <depend>glog_catkin</depend>
   <depend>raw_image_pipeline_python</depend>
   <depend>raw_image_pipeline_ros</depend>
   <depend>novatel_oem7_driver</depend>
@@ -35,6 +38,7 @@
   <depend>bringup_hesai</depend>
   <depend>zed_wrapper</depend>
   <depend>tf_bag</depend>
+  <depend>gtsam_catkin</depend>
   <depend>atn_position3_fuser</depend>
   <depend>ap20_driver_ros</depend>
   <depend>open3d_slam_ros</depend>

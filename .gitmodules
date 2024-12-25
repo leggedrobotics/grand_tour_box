@@ -82,9 +82,22 @@
 	path = box_applications/anymal_d_simple_description
 	url = git@github.com:leggedrobotics/anymal_d_simple_description.git
 	branch = master
+[submodule "box_applications/gtsam_catkin"]
+	path = box_applications/gtsam_catkin
+	url = git@github.com:leggedrobotics/gtsam_catkin.git
+	branch = main
 [submodule "box_applications/wavemap"]
 	path = box_applications/wavemap
 	url = git@github.com:ethz-asl/wavemap.git
 [submodule "box_applications/elevation_mapping_cupy"]
 	path = box_applications/elevation_mapping_cupy
 	url = git@github.com:leggedrobotics/elevation_mapping_cupy.git
+[submodule "box_applications/glog_catkin"]
+	path = box_applications/glog_catkin
+	url = git@github.com:ethz-asl/glog_catkin.git
+[submodule "box_applications/pybind11_catkin"]
+	path = box_applications/pybind11_catkin
+	url = git@github.com:leggedrobotics/pybind11_catkin.git
+[submodule "box_applications/catkin_simple"]
+	path = box_applications/catkin_simple
+	url = git@github.com:catkin/catkin_simple.git
