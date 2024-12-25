@@ -69,11 +69,9 @@
 [submodule "box_applications/wavemap"]
 	path = box_applications/wavemap
 	url = git@github.com:ethz-asl/wavemap.git
-	branch = feature/alma
 [submodule "box_applications/elevation_mapping_cupy"]
 	path = box_applications/elevation_mapping_cupy
 	url = git@github.com:leggedrobotics/elevation_mapping_cupy.git
-	branch = main
 [submodule "box_applications/dlio"]
 	path = box_applications/dlio
 	url = git@github.com:leggedrobotics/dlio.git
