@@ -13,7 +13,7 @@ from sensor_msgs.msg import CameraInfo
 import copy
 import subprocess
 
-MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
+MISSION_DATA = os.environ.get("MISSION_DATA", "/tmp_disk")
 
 
 def shell_run(cmd, cwd=None, env={}, time=True, continue_on_error=True):

@@ -18,7 +18,6 @@ ROS_BAG_PATHS = [
     get_bag("*_nuc_livox.bag"),
     get_bag("*_hesai_post_processed.bag"),
 ]  # List of bag files
-
 ODOM_BAG_PATH = get_bag("*_lpc_state_estimator.bag")
 
 MISSION_NAME = Path(ROS_BAG_PATHS[0]).parent.stem
@@ -188,8 +187,8 @@ class VideoGenerator:
                     empty_ax_left = fig.add_subplot(2, 3, 4)
                     empty_ax_left.set_xlim(-S, S)
                     empty_ax_left.set_ylim(-S, S)
-                    empty_ax_left.set_xticks(np.arange(-S, 21, 5))
-                    empty_ax_left.set_yticks(np.arange(-S, 21, 5))
+                    empty_ax_left.set_xticks(np.arange(-S, S + 1, 10))
+                    empty_ax_left.set_yticks(np.arange(-S, S + 1, 10))
                     empty_ax_left.grid(True, linestyle="--", alpha=0.7)
                     empty_ax_left.set_title("Trajectory / Other Information", fontsize=12)
 

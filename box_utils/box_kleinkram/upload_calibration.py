@@ -1,7 +1,7 @@
 from pathlib import Path
 import os
 
-MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
+MISSION_DATA = os.environ.get("MISSION_DATA", "/tmp_disk")
 
 folder = Path(MISSION_DATA)
 files_to_upload = [str(s) for s in folder.rglob("*.bag")]
