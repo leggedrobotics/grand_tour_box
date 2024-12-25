@@ -26,7 +26,7 @@ x-common-config: &common-config
               - compute # CUDA
               - video   # encoding 
   volumes:
-    - "${MISSION_DATA:-/mission/data}:/mission_data"
+    - "${MISSION_DATA:-/mission/data}:/tmp_disk"
     - "${GRAND_TOUR_BOX_PATH:-$HOME/git/grand_tour_box}:/home/catkin_ws/src/grand_tour_box"
 
 x-ros2-common-config: &ros2-common-config
@@ -56,7 +56,7 @@ x-ros2-common-config: &ros2-common-config
               - compute # CUDA
               - video   # encoding 
   volumes:
-    - "${MISSION_DATA:-/mission/data}:/mission_data"
+    - "${MISSION_DATA:-/mission/data}:/tmp_disk"
     - "${GRAND_TOUR_BOX_PATH:-$HOME/git/grand_tour_box}:/home/catkin_ws/src/grand_tour_box"
 
 
@@ -127,7 +127,15 @@ services:
     <<: *common-config
     container_name: hesai
     command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/lidar/hesai.py"]
-  
+
+  preview_video:
+    <<: *common-config
+    container_name: preview_video
+    command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_converter/preview_video.py"]
+    depends_on:
+      hesai:
+        condition: service_completed_successfully
+
   # Input:
   #   - hesai_post_processed.bag
   #   - livox.bag

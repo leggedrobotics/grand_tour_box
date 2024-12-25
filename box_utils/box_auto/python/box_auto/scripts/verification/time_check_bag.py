@@ -7,7 +7,7 @@ import pathlib
 import numpy as np
 import contextlib
 
-MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
+MISSION_DATA = os.environ.get("MISSION_DATA", "/tmp_disk")
 
 
 class TeeFile:

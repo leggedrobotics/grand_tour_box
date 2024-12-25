@@ -82,7 +82,7 @@ std::pair<int, int> merge_bags_single(const std::vector<std::string>& input_bag,
 int main(int argc, char* argv[]) {
   bool overwrite = false;
 
-  std::string mission_folder = "/mission_data";
+  std::string mission_folder = "/tmp_disk";
   std::vector<fs::path> bag_files;
 
   for (const auto& entry : fs::recursive_directory_iterator(mission_folder)) {

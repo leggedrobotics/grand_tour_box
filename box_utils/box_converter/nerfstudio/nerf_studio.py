@@ -15,8 +15,7 @@ from sensor_msgs.msg import CameraInfo, CompressedImage
 
 from torchvision.io.image import read_image
 from torchvision.models.segmentation import fcn_resnet50, FCN_ResNet50_Weights
-
-MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
+from box_auto.utils import MISSION_DATA
 
 
 def get_bag(directory, pattern):

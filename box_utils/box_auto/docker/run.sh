@@ -1,6 +1,6 @@
 #!/bin/bash
 # author: Jonas Frey
-MISSION_DATA_MOUNT="--volume $MISSION_DATA:/mission_data"
+MISSION_DATA_MOUNT="--volume $MISSION_DATA:/tmp_disk"
 
 set -e
 
@@ -16,7 +16,7 @@ Optional:
   --image=NAME             Override default image name (default: rslethz/grand_tour_box)
   --no-it                  Don't run in interactive mode
   --command=CMD            Run specific command in container
-  --mission-data=PATH      Mount mission data directory to /mission_data
+  --mission-data=PATH      Mount mission data directory to /tmp_disk
   --debug                  Mount grand_tour_box repo for development
   --env
 "
@@ -70,7 +70,7 @@ for i in "$@"; do
         --mission-data=*)
             MISSION_DATA=${i#*=}
             if [ -d "$MISSION_DATA" ]; then
-                MISSION_DATA_MOUNT="--volume $MISSION_DATA:/mission_data"
+                MISSION_DATA_MOUNT="--volume $MISSION_DATA:/tmp_disk"
             else
                 echo "Error: Mission data path does not exist: $MISSION_PATH"
                 exit 1
