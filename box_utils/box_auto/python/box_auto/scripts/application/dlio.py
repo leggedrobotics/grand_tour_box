@@ -12,9 +12,26 @@ from box_auto.utils import (
     kill_roscore,
     start_roscore,
     run_ros_command,
+    check_duplicate_timestamps,
 )
 
-PATTERNS = ["*_jetson_stim.bag", "*_tf_static.bag", "*_nuc_hesai_post_processed.bag"]
+USE_STIM320 = False
+USE_CPT7_IMU = True
+
+imu_pattern = None
+
+if USE_STIM320:
+    imu_pattern = "*_jetson_stim.bag"
+    imu_topic = "/gt_box/stim320/imu"
+elif USE_CPT7_IMU:
+    imu_pattern = "*_cpt7_raw_imu.bag"
+    imu_topic = "/gt_box/cpt7/offline_from_novatel_logs/imu"
+
+if imu_pattern is None:
+    print(f"IMU pattern not set correctly: {imu_pattern}")
+    exit(-1)
+
+PATTERNS = [imu_pattern, "*_tf_static.bag", "*_nuc_hesai_post_processed.bag"]
 OUTPUT_BAG_NAME = "dlio_replayed"
 
 
@@ -43,10 +60,13 @@ def launch_nodes():
         )
 
     kill_roscore()
+
+    check_duplicate_timestamps(merged_rosbag_path, "/gt_box/hesai/points")
+
     start_roscore()
     sleep(1)
     run_ros_command(
-        f"roslaunch direct_lidar_inertial_odometry dlio_replay.launch input_rosbag_path:={merged_rosbag_path}  output_rosbag_folder_path:={MISSION_DATA} output_rosbag_name:={OUTPUT_BAG_NAME}",
+        f"roslaunch direct_lidar_inertial_odometry dlio_replay.launch input_rosbag_path:={merged_rosbag_path}  output_rosbag_folder_path:={MISSION_DATA} output_rosbag_name:={OUTPUT_BAG_NAME} imu_topic:={imu_topic}",
         background=True,
     )
     sleep(5)
@@ -57,6 +77,9 @@ def launch_nodes():
 
     output_bag_path = os.path.join(MISSION_DATA, f"{timestamp}_dlio.bag")
     shutil.move(f"{MISSION_DATA}/{OUTPUT_BAG_NAME}.bag", output_bag_path)
+
+    check_duplicate_timestamps(output_bag_path, "/dlio/deskewed_point_cloud")
+
     upload_bag(output_bag_path)
 
 

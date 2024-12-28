@@ -50,13 +50,15 @@ def launch_nodes():
 
     run_ros_command(
         f"roslaunch open3d_slam_ros grandtour_replay.launch rosbag_filepath:={merged_rosbag_path}  map_saving_folder:={p}",
-        background=True,
+        background=False,
     )
+    print("Open3D SLAM replaying has been completed.")
     sleep(1)
 
     output_bag_path = os.path.join(MISSION_DATA, f"{timestamp}_open3d_slam.bag")
     shutil.move(str(Path(MISSION_DATA) / "open3d_slam_replayed.bag"), output_bag_path)
 
+    print("Replayed bag is renamed. Uploading.")
     upload_bag(output_bag_path)
 
 
