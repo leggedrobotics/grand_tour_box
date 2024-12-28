@@ -3,6 +3,7 @@ from pathlib import Path
 import psutil
 from time import sleep
 from sortedcontainers import SortedDict
+from collections import defaultdict
 import rosbag
 
 WS = "/home/catkin_ws"
@@ -88,6 +89,34 @@ def upload_bag(bags):
     else:
         print(f"Kleinkram Inactive - Bags not uploaded: {bags}")
 
+def check_duplicate_timestamps(bag_file, topic_name):
+    try:
+        print(f"Reading bag file: {bag_file}")
+        bag = rosbag.Bag(bag_file)
+        timestamps = defaultdict(int)
+        total_msgs = 0
+
+        for topic, msg, t in bag.read_messages(topics=[topic_name]):
+            if hasattr(msg, 'header') and hasattr(msg.header, 'stamp'):
+                timestamp = msg.header.stamp.to_nsec()
+                timestamps[timestamp] += 1
+                total_msgs += 1
+
+        bag.close()
+
+        duplicates = {ts: count for ts, count in timestamps.items() if count > 1}
+        if duplicates:
+            print(f"\nFound {len(duplicates)} duplicated timestamps:")
+            for ts, count in duplicates.items():
+                print(f"Timestamp: {ts}, Duplicates: {count}")
+            total_duplicates = sum(count - 1 for count in duplicates.values())
+            print(f"\nTotal duplicate instances across all messages: {total_duplicates}")
+        else:
+            print("\nNo duplicated timestamps found.")
+
+        print(f"\nProcessed {total_msgs} messages.")
+    except Exception as e:
+        print(f"Error: {e}")
 
 class RosbagMessageGenerator:
     def __init__(self, bag_paths):
