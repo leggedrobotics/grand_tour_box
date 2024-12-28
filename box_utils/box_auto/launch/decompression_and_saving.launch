@@ -1,0 +1,19 @@
+<launch>
+  <!-- Arguments to specify the bag file and the topic -->
+  <arg name="bag_file" default="path_to_your_bag.bag" />
+  <arg name="output_folder_path" default="/home/tutuna/Videos/evo_issue/saved_images" />
+  <arg name="max_color_images" default="450" />
+  <arg name="map_frame" default="dlio_map" />
+  <arg name="tf_bag_paths" default="[/media/tutuna/T7/2024-08-14-10-45-39/2024-08-14-10-45-39_lpc_tf_0.bag, /media/tutuna/T7/2024-08-14-10-45-39/2024-08-14-10-45-39_lpc_tf_1.bag]"/>
+
+  <rosparam param="tf_containing_bag_paths" subst_value="True">$(arg tf_bag_paths) </rosparam >
+
+
+  <node pkg="box_auto" type="decompression_and_saving" name="decompression_and_saving_node" output="screen">
+    <param name="max_color_images" value="$(arg max_color_images)"/>
+    <param name="bag_file" value="$(arg bag_file)"/>
+    <param name="output_folder_path" value="$(arg output_folder_path)"/>
+    <param name="map_frame" value="$(arg map_frame)"/>
+  </node>
+
+</launch>

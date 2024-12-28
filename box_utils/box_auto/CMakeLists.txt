@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.5)
 project(box_auto)
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
 
 ## Source: https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
 #add_compile_options(-Wall -Wextra -Wpedantic -O3)
@@ -31,6 +33,7 @@ set(CATKIN_PACKAGE_DEPENDENCIES
   pcl_ros
   pcl_conversions
   rospy
+  cv_bridge
   )
 
 # We pass the path of the `FindXYZ.cmake` files to `CMAKE_MODULE_PATH`
@@ -40,8 +43,7 @@ list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
 #list(APPEND LIBRARIES ".....so.0")
 #list(APPEND LIBRARIES ".......so")
 
-#find_package(gflags REQUIRED)
-# find_package(Glog REQUIRED)
+find_package(OpenCV REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(OpenMP QUIET)
 if (OpenMP_FOUND)
@@ -77,6 +79,7 @@ include_directories(${PROJECT_SOURCE_DIR})
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIRS}
   ${YAML_CPP_INCLUDE_DIR}
   ${OpenMP_CXX_INCLUDE_DIRS}
@@ -110,6 +113,12 @@ add_executable(tf_processor_node
 add_executable(merge
   src/merge.cpp)
 
+
+add_executable(decompression_and_saving src/decompress_depth.cpp)
+add_executable(offline_lookup_node src/offline_lookup.cpp)
+add_executable(offline_lookup_second_node src/offline_lookup_second.cpp)
+
+  
 target_link_libraries(post_processor_node 
 ${catkin_LIBRARIES}
 ${gflags_LIBRARIES}
@@ -136,6 +145,10 @@ ${catkin_LIBRARIES}
 ${PCL_LIBRARIES}
 ${PROJECT_NAME}
 )
+
+target_link_libraries(offline_lookup_second_node ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${PROJECT_NAME})
+target_link_libraries(offline_lookup_node ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${PROJECT_NAME})
+target_link_libraries(decompression_and_saving ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${PROJECT_NAME})
 
 
 find_package(cmake_clang_tools QUIET)
@@ -166,8 +179,16 @@ RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
 
+install(TARGETS decompression_and_saving
+RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
-# catkin_install_python(PROGRAMS 
-#   python/scripts/your_script.py
-#   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
+install(TARGETS offline_lookup_node
+RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+install(TARGETS offline_lookup_second_node
+RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+## Mark launch files for installation
+install(DIRECTORY launch/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+)

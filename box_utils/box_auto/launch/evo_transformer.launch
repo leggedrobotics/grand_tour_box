@@ -1,0 +1,18 @@
+<launch>
+  <!-- Arguments to specify the bag file and the topic -->
+  <arg name="bag_file" default="path_to_your_bag.bag" />
+  <arg name="topic" default="/camera/depth/image_raw/compressedDepth" />
+  <arg name="max_color_images" default="450" />
+
+  <!-- <arg name="use_sim_time" default="true"/>
+  <param name="/use_sim_time" value="$(arg use_sim_time)"/> -->
+
+  <node pkg="box_auto" type="offline_lookup_node" name="offline_lookup_node" output="screen">
+    <param name="max_color_images" value="$(arg max_color_images)"/>
+  </node>
+
+  <!-- <node pkg="box_auto" type="offline_lookup_second_node" name="offline_lookup_second" output="screen">
+    <param name="max_color_images" value="$(arg max_color_images)"/> -->
+  <!-- </node> -->
+
+</launch>
