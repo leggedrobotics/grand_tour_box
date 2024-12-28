@@ -7,9 +7,10 @@
 <!-- load the YAML calibration file into a property -->
 <xacro:property name="calib" value="${xacro.load_yaml(calib_file)}"/>
 
+  <!-- Wrong export origins in CAD - the coorect ones are xyz="0.0764038 -0.0361 0.2802790" -->
   <link name="base"/>
   <joint name="cpt7_to_robot_base" type="fixed">
-    <origin xyz="0.0764038 -0.0361 0.2802790" rpy="3.1415126 0.0 0.0" />
+    <origin xyz="0.0764038 -0.0461 0.2602790" rpy="3.1415126 0.0 0.0" />
     <parent link="base" />
     <child link="box_base" />
   </joint>
@@ -46,10 +47,24 @@
         <child link="prism"/>
   </joint>
 
+  <!-- Wrong export origins in CAD - the coorect ones are xyz="0 0 0" -->
   <joint name="box_base_to_box_base_model" type="fixed">
-        <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+        <origin xyz="0.004 -0.01 -0.007" rpy="0.0 0.0 0.0"/>
         <parent link="box_base"/>
         <child link="box_base_model"/>
+  </joint>
+
+  <!-- Wrong export origins in CAD - the coorect ones are xyz="0 0 0" -->
+  <joint name="box_base_to_prism_model" type="fixed">
+        <origin xyz="0.004 -0.01 -0.007" rpy="0.0 0.0 0.0"/>
+        <parent link="box_base"/>
+        <child link="prism_model"/>
+  </joint>
+  <!-- Wrong export origins in CAD - the coorect ones are xyz="0 0 0" -->
+  <joint name="base_to_cpt7_antenna_back_model" type="fixed">
+        <origin xyz="0 0 0.03 " rpy="0.0 0.0 0.0"/>
+        <parent link="base"/>
+        <child link="cpt7_antenna_back_model"/>
   </joint>
 
   <!-- <joint name="base_to_cpt7_antenna_back_model" type="fixed">
@@ -62,26 +77,27 @@
   <link name="box_base_model">
     <visual>
       <geometry>
-        <mesh filename="package://box_model/urdf/box/mesh/box_colored.dae" scale="0.001 0.001 0.001" />
-      </geometry>
-    </visual>
-  </link>
-<!-- 
-  <link name="cpt7_antenna_back_model">
-    <visual>
-      <geometry>
-        <mesh filename="package://box_model/urdf/box/mesh/2312_antenna_back_in_base_csys.stl" scale="0.001 0.001 0.001" />
+        <mesh filename="package://box_model/urdf/box/mesh/box_colored_units.dae" scale="1 1 1" />
       </geometry>
     </visual>
   </link>
 
+  <link name="cpt7_antenna_back_model">
+    <visual>
+      <geometry>
+        <mesh filename="package://box_model/urdf/box/mesh/gps_colored_units.dae" scale="1 1 1" />
+      </geometry>
+    </visual>
+  </link>
+   
+
   <link name="prism_model">
     <visual>
       <geometry>
-        <mesh filename="package://box_model/urdf/box/mesh/2312_prism_in_cpt7_csys.stl" scale="0.001 0.001 0.001" />
+        <mesh filename="package://box_model/urdf/box/mesh/prism_colored_units.dae" scale="1 1 1" />
       </geometry>
     </visual>
-  </link> -->
+  </link> 
 
   <xacro:include filename="$(find box_model)/urdf/cameras/cameras.urdf.xacro" />
   <xacro:include filename="$(find box_model)/urdf/lidars/lidars.urdf.xacro" />

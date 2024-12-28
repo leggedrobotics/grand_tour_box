@@ -13,3 +13,6 @@ box_model/box_model/urdf/box/box.urdf
 box_bringup/bringup_open3d_slam/data/maps/*
 .idea/
 box_model/box_model/urdf/box/mesh/box_colored.dae
+box_model/box_model/urdf/box/mesh/box_colored_units.dae
+box_model/box_model/urdf/box/mesh/gps_colored_units.dae
+box_model/box_model/urdf/box/mesh/prism_colored_units.dae
