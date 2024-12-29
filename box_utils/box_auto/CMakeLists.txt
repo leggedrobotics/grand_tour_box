@@ -115,9 +115,6 @@ add_executable(merge
 
 
 add_executable(decompression_and_saving src/decompress_depth.cpp)
-add_executable(offline_lookup_node src/offline_lookup.cpp)
-add_executable(offline_lookup_second_node src/offline_lookup_second.cpp)
-
   
 target_link_libraries(post_processor_node 
 ${catkin_LIBRARIES}
@@ -146,8 +143,6 @@ ${PCL_LIBRARIES}
 ${PROJECT_NAME}
 )
 
-target_link_libraries(offline_lookup_second_node ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${PROJECT_NAME})
-target_link_libraries(offline_lookup_node ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${PROJECT_NAME})
 target_link_libraries(decompression_and_saving ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${PROJECT_NAME})
 
 
@@ -180,12 +175,6 @@ LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
 
 install(TARGETS decompression_and_saving
-RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
-
-install(TARGETS offline_lookup_node
-RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
-
-install(TARGETS offline_lookup_second_node
 RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 ## Mark launch files for installation
