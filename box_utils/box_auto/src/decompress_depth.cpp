@@ -190,17 +190,18 @@ static inline sensor_msgs::Image::Ptr decodeCompressedDepthImage(const sensor_ms
   if (message.data.size() > sizeof(compressed_depth_image_transport::ConfigHeader)) {
     // Read compression type from stream
     compressed_depth_image_transport::ConfigHeader compressionConfig;
+
     memcpy(&compressionConfig, &message.data[0], sizeof(compressionConfig));
 
     // Get compressed image data
     const std::vector<uint8_t> imageData(message.data.begin() + sizeof(compressionConfig), message.data.end());
 
-    // Depth map decoding
-    float depthQuantA, depthQuantB;
+    float depthZ0 = 100;
+    float depthMax = 15.0;
 
-    // Read quantization parameters
-    depthQuantA = compressionConfig.depthParam[0];
-    depthQuantB = compressionConfig.depthParam[1];
+    // Inverse depth quantization parameters
+    float depthQuantA = depthZ0 * (depthZ0 + 1.0f);
+    float depthQuantB = 1.0f - depthQuantA / depthMax;
 
     if (enc::bitDepth(image_encoding) == 32) {
       cv::Mat decompressed;
@@ -307,9 +308,9 @@ int main(int argc, char** argv) {
 
   // Get parameters
 
-  std::string bag_file = "";
-  if (!nh.getParam("bag_file", bag_file)) {
-    ROS_ERROR("Parameter 'bag_file' not set!");
+  std::string bag_file_directory = "";
+  if (!nh.getParam("bag_file_directory", bag_file_directory)) {
+    ROS_ERROR("Parameter 'bag_file_directory' not set!");
     return -1;
   }
 
@@ -319,6 +320,24 @@ int main(int argc, char** argv) {
     return -1;
   }
   const int max_depth_images = max_color_images;
+
+  int frames_to_skip = 50;
+  if (!nh.getParam("frames_to_skip", frames_to_skip)) {
+    ROS_ERROR("Parameter 'frames_to_skip' not set!");
+    return -1;
+  }
+
+  bool saveAsEXR = false;
+  if (!nh.getParam("save_as_exr", saveAsEXR)) {
+    ROS_ERROR("Parameter 'save_as_exr' not set!");
+    return -1;
+  }
+
+  if (saveAsEXR) {
+    ROS_ERROR("################################");
+    ROS_ERROR("#### EXR format is enabled #####");
+    ROS_ERROR("################################");
+  }
 
   std::string folder_path = "GrandTourBestTour";
   if (!nh.getParam("output_folder_path", folder_path)) {
@@ -345,18 +364,110 @@ int main(int argc, char** argv) {
     return -1;
   }
 
-  std::map<ros::Time, bool> image_timestamps;
-  rosbag::Bag bag;
+  std::string rgbBagPath = "";
+  std::string depthBagPath = "";
+
+  {
+    // Substring to look for
+    std::string target_substring = "_jetson_zed2i_depth.bag";
+
+    bool found_any = false;
+
+    try {
+      // Iterate over the directory
+      for (const auto& entry : std::filesystem::directory_iterator(bag_file_directory)) {
+        if (!entry.is_regular_file()) {
+          continue;  // Skip directories/symlinks/etc.
+        }
+
+        const std::string filename = entry.path().filename().string();
+
+        // Check if file name contains the desired substring
+        if (filename.find(target_substring) != std::string::npos) {
+          if (found_any) {
+            // We already found a match before -> multiple files exist
+            std::cerr << "Error: Found multiple files containing '" << target_substring << "' in directory.\n";
+            return 1;  // or throw an exception
+          }
+          // Record this file as our match
+          depthBagPath = entry.path().string();
+          found_any = true;
+        }
+      }
+
+      // After iterating, check our results
+      if (!found_any) {
+        std::cerr << "Error: No files containing '" << target_substring << "' found in directory.\n";
+        return -1;  // or throw an exception
+      }
+
+      // Exactly one match was found
+      std::cout << "Matched file path: " << depthBagPath << std::endl;
+
+    } catch (const std::filesystem::filesystem_error& e) {
+      std::cerr << "Filesystem error: " << e.what() << std::endl;
+      return -1;  // or throw
+    }
+  }
+
+  {
+    // Substring to look for
+    std::string target_substring = "_jetson_zed2i_images.bag";
+
+    bool found_any = false;
+
+    try {
+      // Iterate over the directory
+      for (const auto& entry : std::filesystem::directory_iterator(bag_file_directory)) {
+        if (!entry.is_regular_file()) {
+          continue;  // Skip directories/symlinks/etc.
+        }
+
+        const std::string filename = entry.path().filename().string();
+
+        // Check if file name contains the desired substring
+        if (filename.find(target_substring) != std::string::npos) {
+          if (found_any) {
+            // We already found a match before -> multiple files exist
+            std::cerr << "Error: Found multiple files containing '" << target_substring << "' in directory.\n";
+            return 1;
+          }
+
+          rgbBagPath = entry.path().string();
+          found_any = true;
+        }
+      }
+
+      // After iterating, check our results
+      if (!found_any) {
+        std::cerr << "Error: No files containing '" << target_substring << "' found in directory.\n";
+        return -1;  // or throw an exception
+      }
+
+      // Exactly one match was found
+      std::cout << "Matched file path: " << rgbBagPath << std::endl;
+
+    } catch (const std::filesystem::filesystem_error& e) {
+      std::cerr << "Filesystem error: " << e.what() << std::endl;
+      return -1;
+    }
+  }
+
+  rosbag::Bag depthBag;
+  rosbag::Bag rgbBag;
   try {
-    ROS_INFO("Opening bag file: %s", bag_file.c_str());
-    bag.open(bag_file, rosbag::bagmode::Read);
+    ROS_INFO("Opening bag file: %s", rgbBagPath.c_str());
+    rgbBag.open(rgbBagPath, rosbag::bagmode::Read);
+
+    ROS_INFO("Opening bag file: %s", depthBagPath.c_str());
+    depthBag.open(depthBagPath, rosbag::bagmode::Read);
+
   } catch (rosbag::BagException& e) {
     ROS_ERROR("Failed to open bag file: %s", e.what());
     return -1;
   }
 
   std::vector<std::string> tfContainingBags;
-
   nh.getParam("/tf_containing_bag_paths", tfContainingBags);
 
   if (tfContainingBags.empty()) {
@@ -365,9 +476,8 @@ int main(int argc, char** argv) {
     return -1;
   }
 
-  ROS_WARN("Reading full bag file to get the duration of the tf buffer");
-
-  rosbag::View full_view(bag);
+  ROS_WARN("Reading full rgbBag file to get the duration of the tf buffer");
+  rosbag::View full_view(rgbBag);
 
   ros::Time start_time = full_view.getBeginTime();
   ros::Time end_time = full_view.getEndTime();
@@ -380,9 +490,10 @@ int main(int argc, char** argv) {
   ros::Time lastDepthImageTime;
 
   ROS_WARN("Getting depth");
-  rosbag::View depth_view(bag, rosbag::TopicQuery(depth_topic));
+  rosbag::View depth_view(depthBag, rosbag::TopicQuery(depth_topic));
 
   int saved_depth_count = 0;
+  int nbDepthFrames = 0;
   bool found_depth = false;
 
   foreach (rosbag::MessageInstance const m, depth_view) {
@@ -392,8 +503,14 @@ int main(int argc, char** argv) {
 
     sensor_msgs::CompressedImage::ConstPtr cimg = m.instantiate<sensor_msgs::CompressedImage>();
     if (cimg) {
+      ++nbDepthFrames;
+      if (nbDepthFrames < frames_to_skip) {
+        continue;
+      }
+
       lastDepthImageTime = cimg->header.stamp;
       found_depth = true;
+
       // Decode compressed depth image
       sensor_msgs::Image::Ptr decompressed = decodeCompressedDepthImage(*cimg);
 
@@ -406,21 +523,32 @@ int main(int argc, char** argv) {
           mat = cv_ptr->image.clone();  // 32-bit float depth in meters (assumed)
         } catch (cv_bridge::Exception& e) {
           ROS_ERROR("cv_bridge exception: %s", e.what());
-          continue;
+          return -1;
         }
 
-        // Convert 32F (meters) to 16U (millimeters) for PNG saving
-        cv::Mat depth_16u;
-        mat.convertTo(depth_16u, CV_16UC1, 1000.0);  // Scale meters to millimeters
+        if (saveAsEXR) {
+          std::ostringstream filename;
+          filename << "depth" << saved_depth_count << ".exr";
+          if (cv::imwrite(folder_path + "/" + filename.str(), mat)) {
+            ROS_INFO("Saved %s", filename.str().c_str());
+            saved_depth_count++;
+          } else {
+            ROS_ERROR("Failed to write %s", filename.str().c_str());
+            return -1;
+          }
 
-        std::ostringstream filename;
-        filename << "depth" << saved_depth_count << ".png";
-        // cv::imwrite(folder_path+"/depth.exr", mat);
-        if (cv::imwrite(folder_path + "/" + filename.str(), depth_16u)) {
-          ROS_INFO("Saved %s", filename.str().c_str());
-          saved_depth_count++;
         } else {
-          ROS_ERROR("Failed to write %s", filename.str().c_str());
+          // Convert 32F (meters) to 16U (millimeters) for PNG saving
+          cv::Mat depth_16u;
+          mat.convertTo(depth_16u, CV_16UC1, 1000.0);  // Scale meters to millimeters
+          std::ostringstream filename;
+          filename << "depth" << saved_depth_count << ".png";
+          if (cv::imwrite(folder_path + "/" + filename.str(), depth_16u)) {
+            ROS_INFO("Saved %s", filename.str().c_str());
+            saved_depth_count++;
+          } else {
+            ROS_ERROR("Failed to write %s", filename.str().c_str());
+          }
         }
 
       } catch (std::exception& e) {
@@ -429,9 +557,11 @@ int main(int argc, char** argv) {
     }
 
     if (!found_depth) {
-      ROS_WARN("No compressed depth images found on topic '%s' in bag '%s'", depth_topic.c_str(), bag_file.c_str());
+      ROS_WARN("No compressed depth images found on topic '%s' in bag '%s'", depth_topic.c_str(), depthBagPath.c_str());
+      return -1;
     } else if (saved_depth_count == 0) {
       ROS_WARN("Found compressed depth images but failed to decode or save any.");
+      return -1;
     }
   }
 
@@ -439,12 +569,18 @@ int main(int argc, char** argv) {
   std::vector<rosbag::Bag> bags;
   bags.reserve(tfContainingBags.size());
 
+  ROS_INFO_STREAM("Number of Bags for TF: " << tfContainingBags.size());
+
   // Open all bags
   for (const auto& path : tfContainingBags) {
     ROS_INFO_STREAM("Opening bag: " << path);
-    rosbag::Bag tfbag;
-    tfbag.open(path, rosbag::bagmode::Read);
-    bags.push_back(std::move(tfbag));
+    // rosbag::Bag tfbag;
+    // bags.emplace_back(std::move(tfbag));
+
+    bags.emplace_back();
+
+    // tfbag.open(path, rosbag::bagmode::Read);
+    bags.back().open(path, rosbag::bagmode::Read);
   }
 
   // Topics we care about
@@ -511,8 +647,9 @@ int main(int argc, char** argv) {
 
   ROS_WARN("Getting color");
 
-  rosbag::View color_view(bag, rosbag::TopicQuery(color_topic));
+  rosbag::View color_view(rgbBag, rosbag::TopicQuery(color_topic));
   int saved_color_count = 0;
+  int nbRGBFrames = 0;
   bool found_color = false;
 
   // Second pass: read the odometry messages and match timestamps
@@ -530,32 +667,33 @@ int main(int argc, char** argv) {
 
     sensor_msgs::CompressedImage::ConstPtr cimg = m.instantiate<sensor_msgs::CompressedImage>();
     if (cimg) {
-      image_timestamps[cimg->header.stamp] = true;
       found_color = true;
 
-      std::string format = cimg->format;
-      bool is_png = (format.find("png") != std::string::npos);
-      bool is_rgb8 = (format.find("rgb8") != std::string::npos);
-
-      if (!is_png) {
-        ROS_WARN("Color image not in PNG format, skipping. Format: %s", format.c_str());
+      ++nbRGBFrames;
+      if (nbRGBFrames < frames_to_skip) {
         continue;
       }
+
+      std::string format = cimg->format;
+
+      // TODO, if original compression is PNG, save image as PNG.
+      // bool is_png = (format.find("png") != std::string::npos);
+      bool is_rgb8 = (format.find("rgb8") != std::string::npos);
 
       // Decode PNG from compressed data
       cv::Mat rawData(1, (int)cimg->data.size(), CV_8UC1, (void*)cimg->data.data());
       cv::Mat color_img = cv::imdecode(rawData, cv::IMREAD_COLOR);
       if (color_img.empty()) {
         ROS_ERROR("Failed to decode color image from topic '%s'", color_topic.c_str());
-        continue;
+        return -1;
       }
 
       // If the original encoding is rgb8, we must convert from BGR (OpenCV default) to RGB
-      // if (is_rgb8) {
-      //   cv::Mat color_img_rgb;
-      //   cv::cvtColor(color_img, color_img_rgb, cv::COLOR_BGR2RGB);
-      //   color_img = color_img_rgb;
-      // }
+      if (is_rgb8) {
+        cv::Mat color_img_bgr;
+        cv::cvtColor(color_img, color_img_bgr, cv::COLOR_RGB2BGR);
+        color_img = color_img_bgr;
+      }
 
       std::ostringstream filename;
       filename << "frame" << saved_color_count << ".jpg";
@@ -573,7 +711,7 @@ int main(int argc, char** argv) {
           //         tf_buffer.lookupTransform("dlio_map", cimg->header.stamp, "zed2i_left_camera_optical_frame", cimg->header.stamp,
           //         "dlio_map", ros::Duration(0.1));
           ros::spinOnce();
-          lookup_transform = tf_buffer.lookupTransform("dlio_map", "zed2i_left_camera_optical_frame", cimg->header.stamp);
+          lookup_transform = tf_buffer.lookupTransform(map_frame, "zed2i_left_camera_optical_frame", cimg->header.stamp);
           ros::spinOnce();
 
           tf2::Quaternion q(lookup_transform.transform.rotation.x, lookup_transform.transform.rotation.y,
@@ -618,19 +756,22 @@ int main(int argc, char** argv) {
 
       } catch (std::exception& e) {
         ROS_ERROR("Error processing color image: %s", e.what());
+        return -1;
       }
     }
   }
 
   if (!found_color) {
-    ROS_WARN("No compressed color images found on topic '%s' in bag '%s'", color_topic.c_str(), bag_file.c_str());
+    ROS_WARN("No compressed color images found on topic '%s' in bag '%s'", color_topic.c_str(), rgbBagPath.c_str());
+    return -1;
   } else if (saved_color_count == 0) {
     ROS_WARN("Found compressed color images but failed to decode or save any.");
+    return -1;
   }
   ofs.close();
 
   // Write camera info
-  rosbag::View view(bag, rosbag::TopicQuery(camera_info_topic));
+  rosbag::View view(rgbBag, rosbag::TopicQuery(camera_info_topic));
 
   bool found_camera_info = false;
 
@@ -647,6 +788,9 @@ int main(int argc, char** argv) {
       double cx = cam_info->K[2];
       double cy = cam_info->K[5];
 
+      // Compute the scale based on saveAsEXR
+      int scale = saveAsEXR ? 1 : 1000;
+
       // Write the JSON to a file
       std::ofstream ofs(folder_path + "/camera_info.json");
       if (!ofs.is_open()) {
@@ -660,7 +804,7 @@ int main(int argc, char** argv) {
         ofs << "        \"fy\": " << fy << ",\n";
         ofs << "        \"cx\": " << cx << ",\n";
         ofs << "        \"cy\": " << cy << ",\n";
-        ofs << "        \"scale\": " << 1 << "\n";
+        ofs << "        \"scale\": " << scale << "\n";
         ofs << "    }\n";
         ofs << "}\n";
         ofs.close();
@@ -673,9 +817,13 @@ int main(int argc, char** argv) {
   }
 
   if (!found_camera_info) {
-    ROS_WARN("No camera info found on topic '%s' in bag '%s'", camera_info_topic.c_str(), bag_file.c_str());
+    ROS_WARN("No camera info found on topic '%s' in bag '%s'", camera_info_topic.c_str(), rgbBagPath.c_str());
   }
 
-  bag.close();
+  rgbBag.close();
+  depthBag.close();
+
+  ROS_WARN("Completed successfully. Self-terminating.");
+  ros::shutdown();
   return 0;
 }

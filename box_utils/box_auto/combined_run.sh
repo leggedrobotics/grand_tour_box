@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-INPUT_PATH="/media/tutuna/T7/2024-08-14-10-45-39/"
+INPUT_PATH="/media/T7/2024-08-14-10-45-39/"
 mkdir -p ${INPUT_PATH}/combined_files
 mkdir -p ${INPUT_PATH}/log
 
@@ -24,7 +24,7 @@ clear
 echo "Initiate Combined Replaying: ${INPUT_PATH}."
 
 source /opt/ros/noetic/setup.bash
-source /home/tutuna/box_ws/devel/setup.bash
+source /home/box_ws/devel/setup.bash
 
 # sleep 2s
 
