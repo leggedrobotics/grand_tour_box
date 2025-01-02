@@ -45,17 +45,48 @@ def kill_roscore():
                 print(f"Failed to terminate rosmaster process: {e}")
 
 
-def get_bag(pattern, directory=MISSION_DATA):
-    # Get reference bag path
+def get_bag(pattern, directory=MISSION_DATA, auto_download=True):
+    
+    """
+    Finds the matching .bag files in the mission on Kleinram and downloads it.
+
+    If KLEINKRAM_ACTIVE is 'ACTIVE' and `auto_download` is True, it tries downloading 
+    using the MISSION_UUID environment variable. 
+
+    Args:
+        pattern (str): File pattern (e.g. '*.bag').
+        directory (str, optional): Directory to search or download to. Defaults to MISSION_DATA.
+        auto_download (bool, optional): Download from Kleinkram if active. Defaults to True.
+
+    Returns:
+        str: Path to the single matched bag file.
+
+    Raises:
+        ValueError: If zero or multiple files match `pattern`.
+    """
+
+    # Kleinkram currently only supports .bag and .mcap files
+    if not (pattern.endswith('.bag') or pattern.endswith('.mcap')):
+        raise ValueError(f"Pattern must end with '.bag' or '.mcap'. Got: {pattern}")
+
+    # Download pattern matched files from Kleinkram
     if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
         uuid = os.environ["MISSION_UUID"]
-        os.system(f"klein download --mission {uuid} --dest {directory} '{pattern}'")
+        if auto_download:
+            os.system(f"klein download --mission {uuid} --dest {directory} '{pattern}'")
 
+    # Get reference bag path
     files = [str(s) for s in Path(directory).rglob(pattern)]
-    if len(files) != 1:
+
+    if not files:
+        raise FileNotFoundError(f"No matching bags found: {pattern} in directory {directory}. \n"
+        )
+
+    if len(files) > 1:
         raise ValueError(
             f"Error: More or less matching bag files found: {pattern} in directory {directory}: \n" + str(files)
         )
+    
     return files[0]
 
 

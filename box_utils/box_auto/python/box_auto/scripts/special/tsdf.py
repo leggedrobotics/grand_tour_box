@@ -1,3 +1,18 @@
+"""
+Author: Turcan Tuna (tutuna@ethz.ch)
+
+This script provides an eassy application to use the saved depth and RGB images from the ZED2i camera.
+
+Format is roughly the Replica Dataset format which is commonly used among resconstruction / Radience field works.
+
+In a nutshell loads camera intrinsics and poses from JSON and text files, then uses Open3D python API to:
+1. Configure a TSDF volume for 3D reconstruction.
+2. Integrate multiple frames (depth and color) into the TSDF volume based on their respective camera poses.
+3. Extract a triangle mesh from the TSDF volume.
+4. Optionally post-process the mesh to remove small disconnected clusters.
+5. Save the resulting mesh as a PLY file.
+"""
+
 import json
 import numpy as np
 import open3d as o3d

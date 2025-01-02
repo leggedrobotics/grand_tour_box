@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-from box_auto.utils import get_file, MISSION_DATA, run_ros_command
-
+from box_auto.utils import get_file, get_bag, run_ros_command
 
 if __name__ == "__main__":
-    # Find relevant files
-    zed_svos = get_file("*_jetson_zed2i.svo2", MISSION_DATA)
+    # Find input file
+    # Expected 1 per mission.
+    zed_svos = get_file("*_jetson_zed2i.svo2")
 
     # Process ZED 2I SVO2 file
     for zed_svo in zed_svos:
@@ -12,31 +12,22 @@ if __name__ == "__main__":
         return_code = run_ros_command(f"roslaunch zed_wrapper zed2i_replay.launch svo_file:={zed_svo}")
 
         if return_code == 0:
-            print(f"Successfully processed {zed_svo}")
+            print(f"Successfully processed {zed_svo} file.")
         else:
             print(f"Error processing {zed_svo} (Return code: {return_code})")
 
-        _, depth_bag_exists = get_file("*_jetson_zed2i_depth.bag")
-        _, image_bag_exists = get_file("*_jetson_zed2i_images.bag")
-        _, prop_bag_exists  = get_file("*_jetson_zed2i_prop.bag")
-        _, tf_bag_exists    = get_file("*_jetson_zed2i_tf.bag")
+        # Expected output patterns
+        output_patterns = [
+            "*_jetson_zed2i_depth.bag",
+            "*_jetson_zed2i_images.bag",
+            "*_jetson_zed2i_prop.bag",
+            "*_jetson_zed2i_tf.bag"
+        ]
 
-        if not depth_bag_exists:
-            print("Depth bag does not exist!")
-            exit(-1)
+        # Iterate through each output pattern to ensure it is located where its expected.
+        for pattern in output_patterns:
+            get_bag(pattern=pattern, auto_download=False)
 
-        if not image_bag_exists:
-            print("Image bag does not exist!")
-            exit(-1)
-
-        if not prop_bag_exists:
-            print("Prop bag does not exist!")
-            exit(-1)
-
-        if not tf_bag_exists:
-            print("TF bag does not exist!")
-            exit(-1)
-
-        print("Auto terminating.")        
+        print("ZED2i automation script is successfully finished. Self-terminating.")        
 
         exit(0)

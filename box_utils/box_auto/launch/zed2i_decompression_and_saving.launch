@@ -23,7 +23,7 @@
   <arg name="tf_bag_paths" default="[/bag1.bag, bag2.bag, bag3.bag]"/>
   <rosparam param="tf_containing_bag_paths" subst_value="True">$(arg tf_bag_paths) </rosparam >
 
-  <!-- Node -->
+  <!-- Cool node -->
   <node pkg="box_auto" type="decompression_and_saving" name="decompression_and_saving_node" output="screen" required="true">
     <param name="max_color_images" value="$(arg max_color_images)"/>
     <param name="bag_file_directory" value="$(arg bag_file_directory)"/>

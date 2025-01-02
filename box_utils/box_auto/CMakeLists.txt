@@ -114,7 +114,7 @@ add_executable(merge
   src/merge.cpp)
 
 
-add_executable(decompression_and_saving src/decompress_depth.cpp)
+add_executable(zed2i_decompression_and_saving src/zed2i_decompress_and_format_data.cpp)
   
 target_link_libraries(post_processor_node 
 ${catkin_LIBRARIES}
@@ -143,7 +143,7 @@ ${PCL_LIBRARIES}
 ${PROJECT_NAME}
 )
 
-target_link_libraries(decompression_and_saving ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${PROJECT_NAME})
+target_link_libraries(zed2i_decompression_and_saving ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${PROJECT_NAME})
 
 
 find_package(cmake_clang_tools QUIET)
@@ -174,7 +174,7 @@ RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
 
-install(TARGETS decompression_and_saving
+install(TARGETS zed2i_decompression_and_saving
 RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 ## Mark launch files for installation
