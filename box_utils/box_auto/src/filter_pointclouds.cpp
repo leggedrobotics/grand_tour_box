@@ -9,6 +9,29 @@
 #include <pcl/filters/crop_box.h>
 #include <cmath>
 
+// Add custom point type definition for Livox
+struct LivoxPoint {
+    PCL_ADD_POINT4D;           // Adds x,y,z,padding
+    float intensity;           // intensity as float32
+    uint8_t tag;              // tag as uint8
+    uint8_t line;             // line as uint8
+    double timestamp;         // timestamp as float64
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+} EIGEN_ALIGN16;
+
+// Register the point struct with PCL
+POINT_CLOUD_REGISTER_POINT_STRUCT(LivoxPoint,
+    (float, x, x)
+    (float, y, y)
+    (float, z, z)
+    (float, intensity, intensity)
+    (uint8_t, tag, tag)
+    (uint8_t, line, line)
+    (double, timestamp, timestamp)
+)
+
+
+
 // Add helper function to calculate angle
 float calculateAngleAroundZ(float x, float y) {
     float angle = atan2(y, x) * 180.0f / M_PI;
@@ -62,16 +85,34 @@ int main(int argc, char** argv) {
     rosbag::View view1(input_bag1);
     int total_msgs1 = view1.size();
     int processed_msgs1 = 0;
+
     for (const rosbag::MessageInstance& m : view1) {
         if (m.getTopic() == input_topic1) {
             sensor_msgs::PointCloud2::ConstPtr cloud_msg = m.instantiate<sensor_msgs::PointCloud2>();
             if (cloud_msg) {
-                pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>());
+                // In the first bag processing section, replace the point cloud declarations:
+                pcl::PointCloud<LivoxPoint>::Ptr cloud(new pcl::PointCloud<LivoxPoint>());
+
+
+                pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_xyz(new pcl::PointCloud<pcl::PointXYZ>());
                 pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_cloud(new pcl::PointCloud<pcl::PointXYZ>());
                 pcl::PointCloud<pcl::PointXYZ>::Ptr angle_filtered_cloud(new pcl::PointCloud<pcl::PointXYZ>());
 
+
                 pcl::fromROSMsg(*cloud_msg, *cloud);
-                crop_box_filter1.setInputCloud(cloud);
+                
+                
+                for (const auto& point : cloud->points) {
+                    if (point.tag == 0){
+                        pcl::PointXYZ point_xyz;
+                        point_xyz.x = point.x;
+                        point_xyz.y = point.y;
+                        point_xyz.z = point.z;
+                        cloud_xyz->points.push_back(point_xyz);
+                    }
+                }
+
+                crop_box_filter1.setInputCloud(cloud_xyz);
                 crop_box_filter1.filter(*filtered_cloud);
                 
                 // Apply angle filter
