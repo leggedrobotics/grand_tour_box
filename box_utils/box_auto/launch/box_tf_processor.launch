@@ -7,7 +7,7 @@
   <!-- Replay Options -->
   <arg name="use_sim_time" default="true"/>
   <arg name="output_folder" default="/tmp"/>
-  <arg name="tf_bag_paths" default="[/media/tutuna/T7/2024-08-14-10-45-39/2024-08-14-10-45-39_lpc_tf_0.bag, /media/tutuna/T7/2024-08-14-10-45-39/2024-08-14-10-45-39_lpc_tf_1.bag]"/>
+  <arg name="tf_bag_paths" default="[/media/T7/2024-08-14-10-45-39/2024-08-14-10-45-39_lpc_tf_0.bag, /media/T7/2024-08-14-10-45-39/2024-08-14-10-45-39_lpc_tf_1.bag]"/>
 
   <rosparam param="tf_containing_bag_paths" subst_value="True">$(arg tf_bag_paths) </rosparam >
 
