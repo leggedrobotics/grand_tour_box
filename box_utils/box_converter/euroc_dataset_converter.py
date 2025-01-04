@@ -9,36 +9,16 @@ from scipy.spatial.transform import Rotation as R
 import numpy as np
 import yaml
 
-# Configure input and output paths
-rosbags = {
-    "imu0": ("/gt_box/alphasense_driver_node/imu", "*_nuc_alphasense_calib.bag"),
-    "cam0": (
-        "/gt_box/alphasense_driver_node/cam2/color/image/compressed",
-        "/gt_box/alphasense_driver_node/cam2/color/camera_info",
-        "*_nuc_alphasense_calib.bag",
-    ),  # Right
-    "cam1": (
-        "/gt_box/alphasense_driver_node/cam3/color/image/compressed",
-        "/gt_box/alphasense_driver_node/cam3/color/camera_info",
-        "*_nuc_alphasense_calib.bag",
-    ),  # Left
-    "tf_static": ("tf_static", "*_tf_static.bag"),
-}
-output_dir = Path(MISSION_DATA) / "euroc_alphasense" / "grand_tour_box"
-
-# Integrate all the measurements
-tf_lookup = BagTfTransformer(get_bag(rosbags["tf_static"][1], rglob=False))
-
 # Initialize CV Bridge
 bridge = CvBridge()
 
 
-def process_camera_data(topic, camera_info_topic, base_frame_id, bag_pattern, cam_folder):
+def process_camera_data(topic, camera_info_topic, base_frame_id, bag_pattern, cam_folder, tf_lookup):
     data_folder = cam_folder / "data"
     data_folder.mkdir(exist_ok=True, parents=True)
     csv_path = str(cam_folder / "data.csv")
 
-    bag_path = get_bag(bag_pattern)
+    bag_path = get_bag(bag_pattern, rglob=False)
 
     with rosbag.Bag(bag_path, "r") as bag, open(csv_path, "w", newline="") as csvfile:
         for _topic, camera_info_msg, t in bag.read_messages(topics=[camera_info_topic]):
@@ -67,7 +47,7 @@ def process_camera_data(topic, camera_info_topic, base_frame_id, bag_pattern, ca
 def process_imu_data(topic, bag_pattern, imu_folder):
     imu_folder.mkdir(exist_ok=True, parents=True)
     csv_path = str(imu_folder / "data.csv")
-    bag_path = get_bag(bag_pattern)
+    bag_path = get_bag(bag_pattern, rglob=False)
 
     with rosbag.Bag(bag_path, "r") as bag, open(csv_path, "w", newline="") as csvfile:
         writer = csv.writer(csvfile)
@@ -99,56 +79,6 @@ def process_imu_data(topic, bag_pattern, imu_folder):
                 ]
             )
     return msg
-
-
-# Process each bag
-infos = {}
-imu_frame_id = "TBD"  # Will be automaticially infered - IMU is processed before camera
-
-for sensor, data in rosbags.items():
-    folder = output_dir / sensor
-
-    if "cam" in sensor:
-        topic, camera_info_topic, bag_pattern = data
-        T_sensor_base, camera_info_msg = process_camera_data(
-            topic, camera_info_topic, imu_frame_id, bag_pattern, folder
-        )
-        infos[sensor] = {
-            "T_sensor_base": T_sensor_base,
-            "camera_info_msg": camera_info_msg,
-        }
-    elif "imu" in sensor:
-        topic, bag_pattern = data
-        imu_msg = process_imu_data(topic, bag_pattern, folder)
-        imu_frame_id = imu_msg.header.frame_id
-        infos[sensor] = {
-            "imu_msg": imu_msg,
-        }
-
-print("Data conversion completed!")
-
-# Create OKVIS config
-template_file = Path(BOX_AUTO_DIR).parent / "box_converter" / "euroc" / "okvis.yaml"
-updated_parameters = {
-    k: {
-        "T_SC": infos[k]["T_sensor_base"].flatten().tolist(),
-        "image_dimension": [infos[k]["camera_info_msg"].width, infos[k]["camera_info_msg"].height],
-        "distortion_coefficients": list(infos[k]["camera_info_msg"].D),
-        "focal_length": [infos[k]["camera_info_msg"].K[0], infos[k]["camera_info_msg"].K[4]],
-        "principal_point": [infos[k]["camera_info_msg"].K[2], infos[k]["camera_info_msg"].K[5]],
-        "distortion_type": infos[k]["camera_info_msg"].distortion_model,
-    }
-    for k in ["cam0", "cam1"]
-}
-
-# Load the template YAML
-with open(template_file) as stream:
-    template_data = yaml.safe_load(stream)
-
-# Update parameters
-for i, cam_key in enumerate(["cam0", "cam1"]):
-    for k in updated_parameters[cam_key].keys():
-        template_data["cameras"][i][k] = updated_parameters[cam_key][k]
 
 
 def write_opencv_yaml(filename, data_dict):
@@ -203,6 +133,101 @@ def write_opencv_yaml(filename, data_dict):
     fs.release()
 
 
-write_opencv_yaml(output_dir / "okvis_config.yaml", template_data)
+def process(rosbags, tag):
+    # Configure input and output paths
+    output_dir = Path(MISSION_DATA) / "euroc_grand_tour" / tag
+    cams = [k for k in rosbags.keys() if "cam" in k]
 
-print(f"Created yaml for OKVIS (imu not updated) {output_dir}/okvis_config.yaml")
+    # Integrate all the measurements
+    tf_lookup = BagTfTransformer(get_bag(rosbags["tf_static"][1], rglob=False))
+
+    # Process each bag
+    infos = {}
+    imu_frame_id = "TBD"  # Will be automaticially infered - IMU is processed before camera
+
+    for sensor, data in rosbags.items():
+        folder = output_dir / sensor
+
+        if "cam" in sensor:
+            topic, camera_info_topic, bag_pattern = data
+            T_sensor_base, camera_info_msg = process_camera_data(
+                topic, camera_info_topic, imu_frame_id, bag_pattern, folder, tf_lookup
+            )
+            infos[sensor] = {
+                "T_sensor_base": T_sensor_base,
+                "camera_info_msg": camera_info_msg,
+            }
+        elif "imu" in sensor:
+            topic, bag_pattern = data
+            imu_msg = process_imu_data(topic, bag_pattern, folder)
+            imu_frame_id = imu_msg.header.frame_id
+            infos[sensor] = {
+                "imu_msg": imu_msg,
+            }
+
+    print("Data conversion completed!")
+
+    # Create OKVIS config
+    template_file = Path(BOX_AUTO_DIR).parent / "box_converter" / "euroc" / f"okvis_{tag}.yaml"
+    updated_parameters = {
+        k: {
+            "T_SC": infos[k]["T_sensor_base"].flatten().tolist(),
+            "image_dimension": [infos[k]["camera_info_msg"].width, infos[k]["camera_info_msg"].height],
+            "distortion_coefficients": list(infos[k]["camera_info_msg"].D),
+            "focal_length": [infos[k]["camera_info_msg"].K[0], infos[k]["camera_info_msg"].K[4]],
+            "principal_point": [infos[k]["camera_info_msg"].K[2], infos[k]["camera_info_msg"].K[5]],
+            "distortion_type": infos[k]["camera_info_msg"].distortion_model,
+        }
+        for k in cams
+    }
+
+    # Load the template YAML
+    with open(template_file) as stream:
+        template_data = yaml.safe_load(stream)
+
+    # Update parameters
+    for i, cam_key in enumerate(cams):
+        for k in updated_parameters[cam_key].keys():
+            template_data["cameras"][i][k] = updated_parameters[cam_key][k]
+
+    write_opencv_yaml(output_dir / "okvis_config.yaml", template_data)
+    print(f"Created yaml for OKVIS (imu not updated) {output_dir}/okvis_config.yaml")
+
+
+if __name__ == "__main__":
+    alphasense_cfg = {
+        "imu0": ("/gt_box/alphasense_driver_node/imu", "*_nuc_alphasense_calib.bag"),
+        "cam0": (
+            "/gt_box/alphasense_driver_node/cam2/color/image/compressed",
+            "/gt_box/alphasense_driver_node/cam2/color/camera_info",
+            "*_nuc_alphasense_calib.bag",
+        ),  # Right
+        "cam1": (
+            "/gt_box/alphasense_driver_node/cam3/color/image/compressed",
+            "/gt_box/alphasense_driver_node/cam3/color/camera_info",
+            "*_nuc_alphasense_calib.bag",
+        ),  # Left
+        "tf_static": ("tf_static", "*_tf_static.bag"),
+    }
+    process(alphasense_cfg, "alphasense")
+
+    hdr_cfg = {
+        "imu0": ("/gt_box/cpt7/offline_from_novatel_logs/imu", "*_cpt7_raw_imu.bag"),
+        "cam0": (
+            "/gt_box/hdr_left/image_raw/compressed",
+            "/gt_box/hdr_left/camera_info",
+            "*_jetson_hdr_left_calib.bag",
+        ),
+        "cam1": (
+            "/gt_box/hdr_front/image_raw/compressed",
+            "/gt_box/hdr_front/camera_info",
+            "*_jetson_hdr_front_calib.bag",
+        ),
+        "cam2": (
+            "/gt_box/hdr_right/image_raw/compressed",
+            "/gt_box/hdr_right/camera_info",
+            "*_jetson_hdr_right_calib.bag",
+        ),
+        "tf_static": ("tf_static", "*_tf_static.bag"),
+    }
+    process(hdr_cfg, "hdr")
