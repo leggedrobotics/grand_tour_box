@@ -2,7 +2,7 @@
 
 <launch>
   <!-- Parameters -->
-  <arg name="base_path" default="/home/ttuna/Videos/livox_filter/"/>
+  <arg name="base_path" default=""/>
   <arg name="input_bag_name" default="2024-12-09-11-53-11_nuc_livox.bag"/>
   <arg name="output_bag_name" default="2024-12-09-11-53-11_nuc_livox_filtered.bag"/>
 

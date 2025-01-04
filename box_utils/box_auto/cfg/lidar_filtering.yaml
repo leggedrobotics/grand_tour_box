@@ -1,7 +1,7 @@
 mode:
   hesai:
     input_topic:
-      - "/dlio/deskewed_point_cloud"
+      - "/gt_box/hesai/points"
     density_filtering_radius: 0.5   
     density_filtering_min_neighbors: 10
     crop_box:

@@ -24,9 +24,10 @@ USE_STIM320 = False
 USE_CPT7_IMU = True
 
 # Set LiDAR configuration
-USE_LIVOX = True
-USE_HESAI = False
+USE_LIVOX = False
+USE_HESAI = True
 
+# Resolve IMU information
 imu_pattern = None
 if USE_STIM320:
     imu_pattern = "*_jetson_stim.bag"
@@ -39,6 +40,7 @@ if imu_pattern is None:
     print(f"IMU pattern not set correctly: {imu_pattern}")
     exit(-1)
 
+# Resolve LiDAR information
 if USE_HESAI:
     filtered_lidar_pattern = "*_nuc_hesai_filtered.bag"
     lidar_topic = "/gt_box/hesai/points"
@@ -77,7 +79,7 @@ def launch_nodes():
 
     kill_roscore()
 
-    check_duplicate_timestamps(merged_rosbag_path, "/gt_box/hesai/points")
+    check_duplicate_timestamps(merged_rosbag_path, lidar_topic)
 
     start_roscore()
     sleep(1)
