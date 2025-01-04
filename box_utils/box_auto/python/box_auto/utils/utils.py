@@ -6,7 +6,7 @@ from sortedcontainers import SortedDict
 from collections import defaultdict
 import rosbag
 
-WS = "/home/catkin_ws"
+WS = os.environ.get("WS", "/home/catkin_ws")
 PRE = f"source /opt/ros/noetic/setup.bash; source {WS}/devel/setup.bash; "
 MISSION_DATA = os.environ.get("MISSION_DATA", "/tmp_disk")
 BOX_AUTO_SCRIPTS_DIR = str(Path(__file__).parent.parent / "scripts")
@@ -45,17 +45,53 @@ def kill_roscore():
                 print(f"Failed to terminate rosmaster process: {e}")
 
 
-def get_bag(pattern, directory=MISSION_DATA):
-    # Get reference bag path
+def get_bag(pattern, directory=MISSION_DATA, auto_download=True, return_list=False, rglob=True):
+    """
+    Finds the matching .bag files in the mission on Kleinram and downloads it.
+
+    If KLEINKRAM_ACTIVE is 'ACTIVE' and `auto_download` is True, it tries downloading
+    using the MISSION_UUID environment variable.
+
+    Args:
+        pattern (str): File pattern (e.g. '*.bag').
+        directory (str, optional): Directory to search or download to. Defaults to MISSION_DATA.
+        auto_download (bool, optional): Download from Kleinkram if active. Defaults to True.
+
+    Returns:
+        str: Path to the single matched bag file.
+
+    Raises:
+        ValueError: If zero or multiple files match `pattern`.
+    """
+
+    # Kleinkram currently only supports .bag and .mcap files
+    if not (pattern.endswith(".bag") or pattern.endswith(".mcap")):
+        raise ValueError(f"Pattern must end with '.bag' or '.mcap'. Got: {pattern}")
+
+    # Download pattern matched files from Kleinkram
     if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
         uuid = os.environ["MISSION_UUID"]
-        os.system(f"klein download --mission {uuid} --dest {directory} '{pattern}'")
+        if auto_download:
+            os.system(f"klein download --mission {uuid} --dest {directory} '{pattern}'")
 
-    files = [str(s) for s in Path(directory).rglob(pattern)]
-    if len(files) != 1:
+    if rglob:
+        # Get reference bag path
+        files = [str(s) for s in Path(directory).rglob(pattern)]
+    else:
+        # Get reference bag path
+        files = [str(s) for s in Path(directory).glob(pattern)]
+
+    if not files:
+        raise FileNotFoundError(f"No matching bags found: {pattern} in directory {directory}. \n")
+
+    if len(files) > 1:
+        if return_list:
+            return files
+
         raise ValueError(
             f"Error: More or less matching bag files found: {pattern} in directory {directory}: \n" + str(files)
         )
+
     return files[0]
 
 
@@ -89,6 +125,7 @@ def upload_bag(bags):
     else:
         print(f"Kleinkram Inactive - Bags not uploaded: {bags}")
 
+
 def check_duplicate_timestamps(bag_file, topic_name):
     try:
         print(f"Reading bag file: {bag_file}")
@@ -97,7 +134,7 @@ def check_duplicate_timestamps(bag_file, topic_name):
         total_msgs = 0
 
         for topic, msg, t in bag.read_messages(topics=[topic_name]):
-            if hasattr(msg, 'header') and hasattr(msg.header, 'stamp'):
+            if hasattr(msg, "header") and hasattr(msg.header, "stamp"):
                 timestamp = msg.header.stamp.to_nsec()
                 timestamps[timestamp] += 1
                 total_msgs += 1
@@ -117,6 +154,7 @@ def check_duplicate_timestamps(bag_file, topic_name):
         print(f"\nProcessed {total_msgs} messages.")
     except Exception as e:
         print(f"Error: {e}")
+
 
 class RosbagMessageGenerator:
     def __init__(self, bag_paths):
