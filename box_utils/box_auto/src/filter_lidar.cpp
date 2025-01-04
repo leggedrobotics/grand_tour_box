@@ -96,7 +96,7 @@ sensor_msgs::PointCloud2& copyPointsByIndex(sensor_msgs::PointCloud2& out_msg, c
 }
 
 int main(int argc, char** argv) {
-  ros::init(argc, argv, "livox_mid360_filter");
+  ros::init(argc, argv, "lidar_filter");
   ros::NodeHandle nh("~");
 
   bool isGlobalPathAvailable = false;
