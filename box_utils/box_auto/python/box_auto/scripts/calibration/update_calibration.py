@@ -112,11 +112,15 @@ def update_camera_info(calibration):
             with tqdm(total=total_messages, desc=f"Processing {Path(bag_path).name}", unit="msgs") as pbar:
                 for topic, msg, t in rosbag.Bag(bag_path).read_messages():
                     if str(type(msg)).find("CameraInfo") != -1:
-                        key = topic.replace("/camera_info", "")
+                        key = topic.replace("/camera_info", "").replace("/color", "")
+                        found = False
                         for k in calibration.keys():
                             if k.find(key) != -1:
                                 new_msg = calibration[k]
+                                found = True
                                 break
+                        if not found:
+                            raise ValueError(f"Key {key} not found in: " + str(list(calibration.keys())))
 
                         new_msg.header = msg.header
                         outbag.write(topic, new_msg, t)
