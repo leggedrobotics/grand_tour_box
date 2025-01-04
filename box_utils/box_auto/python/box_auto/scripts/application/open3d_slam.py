@@ -54,6 +54,7 @@ def launch_nodes():
     )
     print("Open3D SLAM replaying has been completed.")
     sleep(1)
+    kill_roscore()
 
     output_bag_path = os.path.join(MISSION_DATA, f"{timestamp}_open3d_slam.bag")
     shutil.move(str(Path(MISSION_DATA) / "open3d_slam_replayed.bag"), output_bag_path)

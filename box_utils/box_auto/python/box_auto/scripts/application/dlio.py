@@ -74,6 +74,7 @@ def launch_nodes():
     print("Waiting for 10s before uploading!")
     sleep(10)
     print("Moving and uploading bag!")
+    kill_roscore()
 
     output_bag_path = os.path.join(MISSION_DATA, f"{timestamp}_dlio.bag")
     shutil.move(f"{MISSION_DATA}/{OUTPUT_BAG_NAME}.bag", output_bag_path)
