@@ -34,9 +34,9 @@ publishers:
 
 #### Subscribers ########  NEVER ADD EMPTY LINE HERE OTHERWISE CPP WILL FAIL!!
 subscribers:
-  hesai:
-    topic_name: /dlio/deskewed_point_cloud
-    data_type: pointcloud
+  # hesai:
+  #   topic_name: /dlio/deskewed_point_cloud
+  #   data_type: pointcloud
   livox:
     topic_name: /gt_box/livox/lidar_filtered
     data_type: pointcloud
