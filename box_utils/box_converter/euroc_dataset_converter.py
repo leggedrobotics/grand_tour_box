@@ -231,3 +231,24 @@ if __name__ == "__main__":
         "tf_static": ("tf_static", "*_tf_static.bag"),
     }
     process(hdr_cfg, "hdr")
+
+    zed_cfg = {
+        "imu0": ("/gt_box/cpt7/offline_from_novatel_logs/imu", "*_cpt7_raw_imu.bag"),
+        "cam0": (
+            "/gt_box/hdr_left/image_raw/compressed",
+            "/gt_box/hdr_left/camera_info",
+            "*_jetson_hdr_left_calib.bag",
+        ),
+        "cam1": (
+            "/gt_box/hdr_front/image_raw/compressed",
+            "/gt_box/hdr_front/camera_info",
+            "*_jetson_hdr_front_calib.bag",
+        ),
+        "cam2": (
+            "/gt_box/hdr_right/image_raw/compressed",
+            "/gt_box/hdr_right/camera_info",
+            "*_jetson_hdr_right_calib.bag",
+        ),
+        "tf_static": ("tf_static", "*_tf_static.bag"),
+    }
+    process(zed_cfg, "hdr")
