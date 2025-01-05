@@ -2,7 +2,7 @@ mode:
   hesai:
     input_topic:
       - "/gt_box/hesai/points"
-    density_filtering_radius: 0.5   
+    density_filtering_radius: 0.4
     density_filtering_min_neighbors: 10
     crop_box:
       min: [-0.9, -0.15, -0.05, 1.0]
@@ -14,7 +14,7 @@ mode:
   livox:
     input_topic:
       - "/gt_box/livox/lidar"
-    density_filtering_radius: 0.5   
+    density_filtering_radius: 0.4
     density_filtering_min_neighbors: 10
     crop_box:
       min: [-0.9, -0.15, -0.05, 1.0]
