@@ -3,7 +3,7 @@ from boxi import shell_run
 from pathlib import Path
 import os
 
-MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
+MISSION_DATA = os.environ.get("MISSION_DATA", "/tmp_disk")
 
 
 def main(overwrite: bool, directory: str):

@@ -1,5 +1,7 @@
 <launch>
   <!-- Set ROS parameter for simulation time -->
   <param name="use_sim_time" value="true" />
-  <include file="$(find box_rviz)/launch/replay.launch"></include>
+  <include file="$(find box_rviz)/launch/replay.launch">
+    <arg name="anymal" value="True"/>
+  </include>
 </launch>

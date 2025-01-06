@@ -1,6 +1,3 @@
-# Example usage
-# USAGE: python3 ~/git/grand_tour_box/box_utils/box_auto/scripts/topic_freq.py --folder /mission_data
-
 import rosbag
 import matplotlib
 
@@ -11,8 +8,7 @@ import os
 import pathlib
 import subprocess
 from matplotlib.ticker import ScalarFormatter
-
-MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
+from box_auto.utils import MISSION_DATA
 
 
 def run_rosbag_command(bag_file, output_file):

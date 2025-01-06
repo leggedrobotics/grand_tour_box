@@ -6,8 +6,8 @@
   
   <!-- Replay Options -->
   <arg name="use_sim_time" default="true"/>
-  <arg name="input_filepath" default="/home/tutuna/Videos/stim/2024-09-24-14-57-05.bag"/> 
-  <arg name="output_folder" default="/home/tutuna/Videos/stim"/>
+  <arg name="input_filepath" default=""/> 
+  <arg name="output_folder" default=""/>
 
   <!-- ROS Param -->
   <param name="/use_sim_time" value="$(arg use_sim_time)"/>

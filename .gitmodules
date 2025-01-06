@@ -66,14 +66,6 @@
 	path = box_applications/open3d_slam_private
 	url = git@github.com:leggedrobotics/open3d_slam_private.git
 	branch = dev/grandtour
-[submodule "box_applications/wavemap"]
-	path = box_applications/wavemap
-	url = git@github.com:ethz-asl/wavemap.git
-	branch = feature/alma
-[submodule "box_applications/elevation_mapping_cupy"]
-	path = box_applications/elevation_mapping_cupy
-	url = git@github.com:leggedrobotics/elevation_mapping_cupy.git
-	branch = main
 [submodule "box_applications/dlio"]
 	path = box_applications/dlio
 	url = git@github.com:leggedrobotics/dlio.git
@@ -90,3 +82,9 @@
 	path = box_applications/anymal_d_simple_description
 	url = git@github.com:leggedrobotics/anymal_d_simple_description.git
 	branch = master
+[submodule "box_applications/wavemap"]
+	path = box_applications/wavemap
+	url = git@github.com:ethz-asl/wavemap.git
+[submodule "box_applications/elevation_mapping_cupy"]
+	path = box_applications/elevation_mapping_cupy
+	url = git@github.com:leggedrobotics/elevation_mapping_cupy.git
