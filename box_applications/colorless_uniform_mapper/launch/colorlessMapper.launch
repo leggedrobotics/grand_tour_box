@@ -1,0 +1,33 @@
+<launch>
+    <!-- Parameters -->
+  <arg name="param_file" default="$(find colorless_uniform_mapper)/config/parameters.yaml"/>
+
+  <!-- Enable Player -->
+  <arg name="bag_player" default="true"/>
+
+  <!-- To disable all the effect of rosbag reading, set this as "" -->
+  <arg name="input_rosbag_path" default="/home/ttuna/Videos/elevation_mapping/2024-10-01-11-29-55_dlio_hesai.bag"/>
+
+  <!-- Delay rosbag play. -->
+  <arg name="play_start_delay" default="1"/>
+
+  <!-- Rviz for viz. -->
+  <arg name="rviz" default="true"/>
+
+  <!-- Sim time -->
+  <arg name="use_sim_time" default="true"/>
+  <param name="/use_sim_time" value="$(arg use_sim_time)"/>
+
+  <!-- ColorlessMapper node -->
+  <node pkg="colorless_uniform_mapper" type="colorless_uniform_mapper_node" name="colorless_uniform_mapper" output="screen" required="true">
+    <rosparam command="load" file="$(arg param_file)"/>
+  </node>
+
+  <!-- rviz -->
+  <node pkg="rviz" type="rviz" name="colorless_mapper_rviz" args="-d $(find colorless_uniform_mapper)/rviz/rviz.rviz" if="$(arg rviz)"/>
+  
+    <!-- Rosbag player -->
+  <node pkg="rosbag" type="play" name="olorless_mapper_player" output="screen" launch-prefix="bash -c 'sleep $(arg play_start_delay); $0 $@' xterm -bg lightblue -fg darkslategrey -bd plum -bw 10 -geometry 80x40-50+250 -fn -sony-fixed-medium-r-normal--24-170-100-100-c-120-iso8859-1 -e " args="--clock -r 3 -d 1 $(arg input_rosbag_path)" if="$(arg bag_player)"/>
+
+
+</launch>
