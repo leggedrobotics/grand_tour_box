@@ -82,7 +82,7 @@ def process_imu_data(topic, bag_pattern, imu_folder):
 
 
 def write_opencv_yaml(filename, data_dict):
-    """Garbage code to write yaml correctly to disk for formatting - required for okviz :/"""
+    """Garbage code to write yaml correctly to disk for formatting - required for okvis :/"""
 
     def write_node(fs, node, name):
         """
@@ -176,7 +176,7 @@ def process(rosbags, tag):
             "distortion_coefficients": list(infos[k]["camera_info_msg"].D),
             "focal_length": [infos[k]["camera_info_msg"].K[0], infos[k]["camera_info_msg"].K[4]],
             "principal_point": [infos[k]["camera_info_msg"].K[2], infos[k]["camera_info_msg"].K[5]],
-            "distortion_type": infos[k]["camera_info_msg"].distortion_model,
+            "distortion_type": infos[k]["camera_info_msg"].distortion_model.replace("radtan", "radialtangential"),
         }
         for k in cams
     }
@@ -196,7 +196,8 @@ def process(rosbags, tag):
 
 if __name__ == "__main__":
     alphasense_cfg = {
-        "imu0": ("/gt_box/alphasense_driver_node/imu", "*_nuc_alphasense_calib.bag"),
+        "imu0": ("/gt_box/cpt7/offline_from_novatel_logs/imu", "*_cpt7_raw_imu.bag"),
+        "imu1": ("/gt_box/alphasense_driver_node/imu", "*_nuc_alphasense_calib.bag"),
         "cam0": (
             "/gt_box/alphasense_driver_node/cam2/color/image/compressed",
             "/gt_box/alphasense_driver_node/cam2/color/camera_info",
@@ -207,6 +208,21 @@ if __name__ == "__main__":
             "/gt_box/alphasense_driver_node/cam3/color/camera_info",
             "*_nuc_alphasense_calib.bag",
         ),  # Left
+        "cam2": (
+            "/gt_box/alphasense_driver_node/cam1/color/image/compressed",
+            "/gt_box/alphasense_driver_node/cam1/color/camera_info",
+            "*_nuc_alphasense_calib.bag",
+        ),  # Color
+        "cam3": (
+            "/gt_box/alphasense_driver_node/cam4/color/image/compressed",
+            "/gt_box/alphasense_driver_node/cam4/color/camera_info",
+            "*_nuc_alphasense_calib.bag",
+        ),  # Color
+        "cam4": (
+            "/gt_box/alphasense_driver_node/cam5/color/image/compressed",
+            "/gt_box/alphasense_driver_node/cam5/color/camera_info",
+            "*_nuc_alphasense_calib.bag",
+        ),  # Color
         "tf_static": ("tf_static", "*_tf_static.bag"),
     }
     process(alphasense_cfg, "alphasense")
@@ -235,20 +251,15 @@ if __name__ == "__main__":
     zed_cfg = {
         "imu0": ("/gt_box/cpt7/offline_from_novatel_logs/imu", "*_cpt7_raw_imu.bag"),
         "cam0": (
-            "/gt_box/hdr_left/image_raw/compressed",
-            "/gt_box/hdr_left/camera_info",
-            "*_jetson_hdr_left_calib.bag",
+            "/gt_box/zed2i/zed_node/left/image_rect_color/compressed",
+            "/gt_box/zed2i/zed_node/left/camera_info",
+            "*_jetson_zed2i_images_calib.bag",
         ),
         "cam1": (
-            "/gt_box/hdr_front/image_raw/compressed",
-            "/gt_box/hdr_front/camera_info",
-            "*_jetson_hdr_front_calib.bag",
-        ),
-        "cam2": (
-            "/gt_box/hdr_right/image_raw/compressed",
-            "/gt_box/hdr_right/camera_info",
-            "*_jetson_hdr_right_calib.bag",
+            "/gt_box/zed2i/zed_node/right/image_rect_color/compressed",
+            "/gt_box/zed2i/zed_node/right/camera_info",
+            "*_jetson_zed2i_images_calib.bag",
         ),
         "tf_static": ("tf_static", "*_tf_static.bag"),
     }
-    process(zed_cfg, "hdr")
+    process(zed_cfg, "zed")

@@ -118,7 +118,7 @@ def invert_transform(transform_msg):
     return inv_transform_msg
 
 
-def convert_csv_to_rosbag(input_csv, output_bag, world, sensor):
+def okviz_trajectory_to_bag(input_csv, output_bag, world, sensor):
     """Convert CSV file to ROS bag with pose and tf messages."""
     with rosbag.Bag(output_bag, "w") as bag:
         with open(input_csv, "r") as csvfile:
@@ -176,7 +176,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     print(args.input_csv, args.output_bag, args.world, args.sensor)
     try:
-        convert_csv_to_rosbag(args.input_csv, args.output_bag, args.world, args.sensor)
+        okviz_trajectory_to_bag(args.input_csv, args.output_bag, args.world, args.sensor)
         print(f"Successfully converted {args.input_csv} to {args.output_bag}")
     except Exception as e:
         print(f"Error converting CSV to ROS bag: {str(e)}")
