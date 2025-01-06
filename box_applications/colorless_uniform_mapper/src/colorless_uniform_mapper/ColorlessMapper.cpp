@@ -26,6 +26,8 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl_ros/transforms.h>
 
+#include <unordered_set>
+
 #include <tf2/transform_datatypes.h>
 #include <tf2_eigen/tf2_eigen.h>
 
@@ -52,6 +54,78 @@ ColorlessMapper::ColorlessMapper(ros::NodeHandle& nodeHandle) : nodeHandle_(node
   }
 
   ROS_INFO("Initialized node for dense colorless mapping.");
+}
+
+void ColorlessMapper::dynamicPointRemoval(pcl::PointCloud<PointType>::Ptr cloud, const auto& condition) {
+  // Pre-filter the cloud using a voxel grid for downsampling
+  // pcl::VoxelGrid<PointType> voxelFilter;
+  // voxelFilter.setInputCloud(cloud);
+  // voxelFilter.setLeafSize(0.05f, 0.05f, 0.05f);
+  // voxelFilter.filter(*cloud);
+
+  // Use parallelized partitioning to find points to remove
+  std::vector<int> indicesToRemove;
+  indicesToRemove.reserve(cloud->points.size());
+
+#pragma omp parallel
+  {
+    std::vector<int> localIndicesToRemove;
+
+#pragma omp for nowait
+    for (size_t i = 0; i < cloud->points.size(); ++i) {
+      if (condition(cloud->points[i])) {
+        localIndicesToRemove.push_back(static_cast<int>(i));
+      }
+    }
+
+#pragma omp critical
+    indicesToRemove.insert(indicesToRemove.end(), localIndicesToRemove.begin(), localIndicesToRemove.end());
+  }
+
+  // Optimize removal by creating a new filtered cloud
+  pcl::PointCloud<PointType>::Ptr newCloud(new pcl::PointCloud<PointType>);
+  newCloud->points.reserve(cloud->points.size() - indicesToRemove.size());
+
+  std::unordered_set<int> indicesSet(indicesToRemove.begin(), indicesToRemove.end());
+  for (size_t i = 0; i < cloud->points.size(); ++i) {
+    if (indicesSet.find(static_cast<int>(i)) == indicesSet.end()) {
+      newCloud->points.push_back(cloud->points[i]);
+    }
+  }
+
+  // Swap the filtered cloud back
+  *cloud = *newCloud;
+
+  ROS_INFO_STREAM("Removed " << indicesToRemove.size() << " points dynamically.");
+}
+
+void ColorlessMapper::filterDynamicPoints(pcl::PointCloud<PointType>::Ptr cloud) {
+  {
+    std::lock_guard<std::mutex> lock(cloudHistoryMutex);
+
+    cloudHistory.push_back(cloud);
+    if (cloudHistory.size() > maxHistorySize) {
+      cloudHistory.pop_front();
+    }
+  }
+
+  // Temporal condition: Remove points with significant displacement compared to the previous frame
+  auto condition = [this](const PointType& point) -> bool {
+    std::lock_guard<std::mutex> lock(cloudHistoryMutex);  // Lock during access
+    if (cloudHistory.size() < 2) return false;            // Not enough history to compare
+
+    const auto& previousCloud = cloudHistory[cloudHistory.size() - 2];
+    for (const auto& prevPoint : previousCloud->points) {
+      double displacement =
+          std::sqrt(std::pow(point.x - prevPoint.x, 2) + std::pow(point.y - prevPoint.y, 2) + std::pow(point.z - prevPoint.z, 2));
+      if (displacement < 1) {  // Threshold for displacement
+        return false;          // Point is static
+      }
+    }
+    return true;  // Point is dynamic
+  };
+
+  dynamicPointRemoval(cloud, condition);
 }
 
 bool ColorlessMapper::manageSaveDirectory() {
@@ -256,6 +330,8 @@ void ColorlessMapper::pointCloudCallback(const sensor_msgs::PointCloud2ConstPtr&
     return;
   }
 
+  filterDynamicPoints(pclPointCloud);
+
   {
     // Add point cloud to buffer.
     std::lock_guard<std::mutex> lock(bufferOfPointCloudsMutex_);
@@ -374,7 +450,7 @@ void ColorlessMapper::positionBasedRequestCallback(const geometry_msgs::PointSta
   getLocalPoints(searchPoint);
 }
 
-void ColorlessMapper::getLocalPoints(const pcl::PointXYZI searchPoint) {
+void ColorlessMapper::getLocalPoints(const PointType searchPoint) {
   ROS_DEBUG("Publishing local point cloud.");
   const std::size_t sizeOfMap = mapPointCloud_->points.size();
 

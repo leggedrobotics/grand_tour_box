@@ -132,10 +132,14 @@ class ColorlessMapper {
   bool doesDirectoryExist(const std::string& path);
 
   //! Fetch the points around the robot.
-  void getLocalPoints(const pcl::PointXYZI searchPoint);
+  void getLocalPoints(const PointType searchPoint);
 
   //! Processes the received point cloud.
   void pointCloudCallback(const sensor_msgs::PointCloud2ConstPtr& cloud);
+
+  void filterDynamicPoints(pcl::PointCloud<PointType>::Ptr cloud);
+
+  void dynamicPointRemoval(pcl::PointCloud<PointType>::Ptr cloud, const auto& condition);
 
   //! Save the map callback. Relays message to the function.
   bool saveMapToFileCallback(std_srvs::EmptyRequest& request, std_srvs::EmptyResponse& response);
@@ -216,6 +220,9 @@ class ColorlessMapper {
   mutable std::mutex bufferOfPointCloudsMutex_;
   mutable std::mutex mapMutex_;
   mutable std::mutex poseVectorMutex_;
+  mutable std::mutex cloudHistoryMutex;
+
+  const size_t maxHistorySize = 10;
 
   //! Buffer of incoming point clouds.
   PointCloud::Ptr bufferOfPointClouds_{new PointCloud()};
@@ -245,6 +252,8 @@ class ColorlessMapper {
 
   //! Previously filtered Local patchvoid ColorlessMapper::cropBoxPoseSetCallback_1(const geometry_msgs::PoseStampedConstPtr& pose)
   PointCloud::Ptr previousPatch_{new PointCloud()};
+
+  std::deque<pcl::PointCloud<PointType>::Ptr> cloudHistory;
 };
 
 }  // namespace colorless_uniform_mapper
