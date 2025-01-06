@@ -9,20 +9,9 @@ cameras:
         distortion_type: radialtangential,
         focal_length: [458.654880721, 457.296696463],
         principal_point: [367.215803962, 248.37534061],
-        camera_type: gray, #gray, rgb, gray+depth, rgb+depth
+        camera_type: rgb, #gray, rgb, gray+depth, rgb+depth
         slam_use: okvis} #none, okvis, okvis-depth, okvis-virtual
-     - {T_SC:
-        [ 0.0125552670891, -0.999755099723, 0.0182237714554, -0.0198435579556,
-          0.999598781151, 0.0130119051815, 0.0251588363115, 0.0453689425024,
-          -0.0253898008918, 0.0179005838253, 0.999517347078, 0.00786212447038,
-           0.0, 0.0, 0.0, 1.0],
-        image_dimension: [752, 480],
-        distortion_coefficients: [-0.283683654496, 0.0745128430929, -0.000104738949098, -3.55590700274e-05],
-        distortion_type: radialtangential,
-        focal_length: [457.587426604, 456.13442556],
-        principal_point: [379.99944652, 255.238185386],
-        camera_type: gray, #gray, rgb, gray+depth, rgb+depth
-        slam_use: okvis} #none, okvis, okvis-depth, okvis-virtual
+
      - {T_SC:
         [ 0.0125552670891, -0.999755099723, 0.0182237714554, -0.0198435579556,
           0.999598781151, 0.0130119051815, 0.0251588363115, 0.0453689425024,
@@ -35,35 +24,12 @@ cameras:
         principal_point: [379.99944652, 255.238185386],
         camera_type: rgb, #gray, rgb, gray+depth, rgb+depth
         slam_use: okvis} #none, okvis, okvis-depth, okvis-virtual
-     - {T_SC:
-       [ 0.0125552670891, -0.999755099723, 0.0182237714554, -0.0198435579556,
-         0.999598781151, 0.0130119051815, 0.0251588363115, 0.0453689425024,
-         -0.0253898008918, 0.0179005838253, 0.999517347078, 0.00786212447038,
-           0.0, 0.0, 0.0, 1.0],
-       image_dimension: [752, 480],
-       distortion_coefficients: [-0.283683654496, 0.0745128430929, -0.000104738949098, -3.55590700274e-05],
-       distortion_type: radialtangential,
-       focal_length: [457.587426604, 456.13442556],
-       principal_point: [379.99944652, 255.238185386],
-       camera_type: rgb, #gray, rgb, gray+depth, rgb+depth
-       slam_use: okvis} #none, okvis, okvis-depth, okvis-virtual
-     - {T_SC:
-       [ 0.0125552670891, -0.999755099723, 0.0182237714554, -0.0198435579556,
-         0.999598781151, 0.0130119051815, 0.0251588363115, 0.0453689425024,
-         -0.0253898008918, 0.0179005838253, 0.999517347078, 0.00786212447038,
-           0.0, 0.0, 0.0, 1.0],
-       image_dimension: [752, 480],
-       distortion_coefficients: [-0.283683654496, 0.0745128430929, -0.000104738949098, -3.55590700274e-05],
-       distortion_type: radialtangential,
-       focal_length: [457.587426604, 456.13442556],
-       principal_point: [379.99944652, 255.238185386],
-       camera_type: rgb, #gray, rgb, gray+depth, rgb+depth
-       slam_use: okvis} #none, okvis, okvis-depth, okvis-virtual
+
 
 # additional camera parameters
 camera_parameters:
     timestamp_tolerance: 0.005 # [s] stereo frame out-of-sync tolerance
-    sync_cameras: [0, 1, 2, 3, 4] # the cameras that will be synchronised
+    sync_cameras: [0, 1] # the cameras that will be synchronised
     image_delay: 0.00 # [s] timestamp_camera_correct = timestamp_camera - image_delay
     online_calibration: # some parameters to set the online
         do_extrinsics: false # Do we online-calibrate extrinsics?
@@ -110,7 +76,6 @@ imu_parameters:
          0.0000, 1.0000, 0.0000, 0.0000,
          0.0000, 0.0000, 1.0000, 0.0000,
          0.0000, 0.0000, 0.0000, 1.0000]
-         
 # frontend: detection etc.
 frontend_parameters:
     detection_threshold: 38.0 #42.0 # detection threshold. By default the uniformity radius in pixels

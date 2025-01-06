@@ -1,6 +1,8 @@
 from box_auto.utils import MISSION_DATA, BOX_AUTO_DIR, okviz_trajectory_to_bag, get_bag
 import os
 from pathlib import Path
+import yaml
+import datetime
 
 if __name__ == "__main__":
     runs = {
@@ -8,38 +10,38 @@ if __name__ == "__main__":
             "data_folder": "euroc_grand_tour/alphasense/",
             "okvis_config": "okvis_config_2_bw.yaml",
         },
-        # "alphasense_1_bw": {
-        #     "data_folder": "euroc_grand_tour/alphasense/",
-        #     "okvis_config": "okvis_config_1_bw.yaml",
-        # },
-        # "alphasense_1_rgb": {
-        #     "data_folder": "euroc_grand_tour/alphasense/",
-        #     "okvis_config": "okvis_config_1_rgb.yaml",
-        # },
-        # "alphasense_3_rgb": {
-        #     "data_folder": "euroc_grand_tour/alphasense/",
-        #     "okvis_config": "okvis_config_3_rgb.yaml",
-        # },
-        # "alphasense_5_all": {
-        #     "data_folder": "euroc_grand_tour/alphasense/",
-        #     "okvis_config": "okvis_config_5_all.yaml",
-        # },
-        # "hdr_3_rgb": {
-        #     "data_folder": "euroc_grand_tour/hdr/",
-        #     "okvis_config": "okvis_config_hdr_3rgb.yaml",
-        # },
-        # "hdr_1_rgb": {
-        #     "data_folder": "euroc_grand_tour/hdr/",
-        #     "okvis_config": "okvis_config_hdr_1rgb.yaml",
-        # },
-        # "zed_2_rgb": {
-        #     "data_folder": "euroc_grand_tour/zed/",
-        #     "okvis_config": "okvis_config_zed_2rgb.yaml",
-        # },
-        # "zed_1_rgb": {
-        #     "data_folder": "euroc_grand_tour/zed/",
-        #     "okvis_config": "okvis_config_zed_1rgb.yaml",
-        # },
+        "alphasense_1_bw": {
+            "data_folder": "euroc_grand_tour/alphasense/",
+            "okvis_config": "okvis_config_1_bw.yaml",
+        },
+        "alphasense_1_rgb": {
+            "data_folder": "euroc_grand_tour/alphasense/",
+            "okvis_config": "okvis_config_1_rgb.yaml",
+        },
+        "alphasense_3_rgb": {
+            "data_folder": "euroc_grand_tour/alphasense/",
+            "okvis_config": "okvis_config_3_rgb.yaml",
+        },
+        "alphasense_5_all": {
+            "data_folder": "euroc_grand_tour/alphasense/",
+            "okvis_config": "okvis_config_5_all.yaml",
+        },
+        "hdr_3_rgb": {
+            "data_folder": "euroc_grand_tour/hdr/",
+            "okvis_config": "okvis_config_hdr_3rgb.yaml",
+        },
+        "hdr_1_rgb": {
+            "data_folder": "euroc_grand_tour/hdr/",
+            "okvis_config": "okvis_config_hdr_1rgb.yaml",
+        },
+        "zed_2_rgb": {
+            "data_folder": "euroc_grand_tour/zed/",
+            "okvis_config": "okvis_config_zed_2rgb.yaml",
+        },
+        "zed_1_rgb": {
+            "data_folder": "euroc_grand_tour/zed/",
+            "okvis_config": "okvis_config_zed_1rgb.yaml",
+        },
     }
 
     for k, v in runs.items():
@@ -54,8 +56,22 @@ if __name__ == "__main__":
         print(cmd)
         os.system(cmd)
 
+        metadata = {}
+        okvis_config_path = Path(MISSION_DATA) / (v["data_folder"] + v["okvis_config"])
+        with open(okvis_config_path, "r") as f:
+            metadata["okvis_config"] = f.read()
+
+        euroc_config_path = Path(MISSION_DATA) / v["data_folder"] / "euroc_config.yaml"
+        with open(euroc_config_path, "r") as f:
+            metadata["euroc_config"] = f.read()
+
+        metadata["date"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        metadata_string = yaml.dump(metadata, default_flow_style=False)
+
         # Convert trajectory into rosbag
         livox_bag_path = get_bag("*_nuc_livox.bag")
         input_csv = Path(MISSION_DATA) / v["data_folder"] / "okvis2-slam_trajectory.csv"
-        output_bag = livox_bag_path.replace("_nuc_livox", f"_okvis_{k}")
-        okviz_trajectory_to_bag(input_csv, output_bag, "okvis_world", "cpt7_imu")
+        output_bag = livox_bag_path.replace("_nuc_livox", f"_okvis_wihtout_optimizing_extrinsics_{k}")
+        okviz_trajectory_to_bag(
+            input_csv, output_bag, "okvis_world", "cpt7_imu", metadata_string, "/gt_box/okvis/offline_metadata"
+        )

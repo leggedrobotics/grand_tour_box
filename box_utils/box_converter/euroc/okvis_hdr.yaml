@@ -9,7 +9,7 @@ cameras:
         distortion_type: radialtangential,
         focal_length: [458.654880721, 457.296696463],
         principal_point: [367.215803962, 248.37534061],
-        camera_type: gray, #gray, rgb, gray+depth, rgb+depth
+        camera_type: rgb, #gray, rgb, gray+depth, rgb+depth
         slam_use: okvis} #none, okvis, okvis-depth, okvis-virtual
 
      - {T_SC:
@@ -22,7 +22,7 @@ cameras:
         distortion_type: radialtangential,
         focal_length: [457.587426604, 456.13442556],
         principal_point: [379.99944652, 255.238185386],
-        camera_type: gray, #gray, rgb, gray+depth, rgb+depth
+        camera_type: rgb, #gray, rgb, gray+depth, rgb+depth
         slam_use: okvis} #none, okvis, okvis-depth, okvis-virtual
      
      - {T_SC:
@@ -35,7 +35,7 @@ cameras:
         distortion_type: radialtangential,
         focal_length: [457.587426604, 456.13442556],
         principal_point: [379.99944652, 255.238185386],
-        camera_type: gray, #gray, rgb, gray+depth, rgb+depth
+        camera_type: rgb, #gray, rgb, gray+depth, rgb+depth
         slam_use: okvis} #none, okvis, okvis-depth, okvis-virtual
 
 # additional camera parameters
@@ -49,6 +49,26 @@ camera_parameters:
         sigma_r: 0.01 # T_SCi position prior stdev [m]
         sigma_alpha: 0.05 # T_SCi orientation prior stdev [rad]
 
+# IMU CPT7 values increase by 10
+# imu_parameters:
+#     use: true
+#     a_max: 176.0 # acceleration saturation [m/s^2]
+#     g_max: 7.8 # gyro saturation [rad/s]
+#     sigma_a_c: 0.005928679556103585 # accelerometer noise density [m/s^2/sqrt(Hz)]
+#     sigma_aw_c: 1.9343728437189512e-04 # accelerometer drift noise density [m/s^2/sqrt(Hz)]
+#     sigma_g_c: 1.1139130517065622e-04 # gyro noise density [rad/s/sqrt(Hz)]
+#     sigma_gw_c: 1.1954327324940076e-06 # gyro drift noise density [rad/s^s/sqrt(Hz)]
+#     sigma_bg: 0.01 # gyro bias prior [rad/s]
+#     sigma_ba: 0.1 # accelerometer bias prior [m/s^2]
+#     g: 9.81007 # Earth's acceleration due to gravity [m/s^2]
+#     g0: [ 0.0, 0.0, 0.0 ] # initial gyro bias [rad/s]
+#     a0: [ 0.0, 0.0, 0.0 ] # initial accelerometer bias [m/s^2]
+#     # transform Body-Sensor (IMU)
+#     T_BS:
+#         [1.0000, 0.0000, 0.0000, 0.0000,
+#          0.0000, 1.0000, 0.0000, 0.0000,
+#          0.0000, 0.0000, 1.0000, 0.0000,
+#          0.0000, 0.0000, 0.0000, 1.0000]
 imu_parameters:
     use: true
     a_max: 176.0 # acceleration saturation [m/s^2]
@@ -68,7 +88,6 @@ imu_parameters:
          0.0000, 1.0000, 0.0000, 0.0000,
          0.0000, 0.0000, 1.0000, 0.0000,
          0.0000, 0.0000, 0.0000, 1.0000]
-
 # frontend: detection etc.
 frontend_parameters:
     detection_threshold: 38.0 #42.0 # detection threshold. By default the uniformity radius in pixels
@@ -87,7 +106,7 @@ estimator_parameters:
     num_loop_closure_frames: 3 # number of loop closure frames in optimisation window
     num_imu_frames: 3 # number of frames linked by most recent nonlinear IMU error terms
     do_loop_closures: true # whether to do VI-SLAM or VIO
-    do_final_ba: false # Whether to run a full final BA
+    do_final_ba: true # Whether to run a full final BA
     enforce_realtime: false # whether to limit the time budget for optimisation
     realtime_min_iterations: 3 # minimum number of iterations always performed
     realtime_max_iterations: 10 # never do more than these, even if not converged
@@ -98,6 +117,6 @@ estimator_parameters:
 
 # some options for how and what to output
 output_parameters:
-    display_matches: true  # displays debug video and matches. May be slow.
+    display_matches: false  # displays debug video and matches. May be slow.
     display_overhead: false # debug overhead image. Is slow.
 

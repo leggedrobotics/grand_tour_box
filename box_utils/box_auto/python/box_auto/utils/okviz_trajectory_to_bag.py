@@ -8,6 +8,7 @@ import csv
 import numpy as np
 from geometry_msgs.msg import Transform, TransformStamped
 from tf.transformations import quaternion_matrix, quaternion_from_matrix
+from std_msgs.msg import String
 
 
 def create_pose_stamped(timestamp, x, y, z, qx, qy, qz, qw, world):
@@ -118,9 +119,11 @@ def invert_transform(transform_msg):
     return inv_transform_msg
 
 
-def okviz_trajectory_to_bag(input_csv, output_bag, world, sensor):
+def okviz_trajectory_to_bag(input_csv, output_bag, world, sensor, cfg_str=None, cfg_topic=None):
     """Convert CSV file to ROS bag with pose and tf messages."""
     with rosbag.Bag(output_bag, "w") as bag:
+        write_cfg_str = cfg_str is not None and cfg_topic is not None
+
         with open(input_csv, "r") as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
@@ -131,6 +134,12 @@ def okviz_trajectory_to_bag(input_csv, output_bag, world, sensor):
                 seconds = timestamp // 10**9
                 nanoseconds = timestamp % 10**9
                 ros_time = rospy.Time(seconds, nanoseconds)
+
+                if write_cfg_str:
+                    cfg_msg = String()
+                    cfg_msg.data = cfg_str
+                    bag.write(cfg_topic, cfg_msg, ros_time)
+                    write_cfg_str = False
 
                 # Create pose stamped message
                 pose_msg = create_pose_stamped(

@@ -193,6 +193,11 @@ def process(rosbags, tag):
     write_opencv_yaml(output_dir / "okvis_config.yaml", template_data)
     print(f"Created yaml for OKVIS (imu not updated) {output_dir}/okvis_config.yaml")
 
+    euroc_cfg_path = str(output_dir / "euroc_config.yaml")
+    # Write the dictionary to the YAML file
+    with open(euroc_cfg_path, "w") as f:
+        yaml.dump(rosbags, f, default_flow_style=False)
+
 
 if __name__ == "__main__":
     alphasense_cfg = {
@@ -263,3 +268,25 @@ if __name__ == "__main__":
         "tf_static": ("tf_static", "*_tf_static.bag"),
     }
     process(zed_cfg, "zed")
+
+    alphasense_imus_cfg = {
+        "imu0": ("/gt_box/cpt7/offline_from_novatel_logs/imu", "*_cpt7_raw_imu.bag"),
+        "imu1": ("/gt_box/alphasense_driver_node/imu", "*_nuc_alphasense_calib.bag"),
+        "imu2": ("/gt_box/ap20/imu", "*_jetson_ap20_synced.bag"),
+        "imu3": ("/gt_box/zed2i/zed_node/imu_raw/data", "*_jetson_zed2i_prop.bag"),
+        "imu4": ("/gt_box/stim320/imu", "*_jetson_stim.bag"),
+        "imu5": ("/gt_box/adis16475_node/imu", "*_jetson_adis.bag"),
+        "imu6": ("/gt_box/livox/imu_si_compliant", "*_nuc_livox.bag"),
+        "cam0": (
+            "/gt_box/alphasense_driver_node/cam2/color/image/compressed",
+            "/gt_box/alphasense_driver_node/cam2/color/camera_info",
+            "*_nuc_alphasense_calib.bag",
+        ),  # Right
+        "cam1": (
+            "/gt_box/alphasense_driver_node/cam3/color/image/compressed",
+            "/gt_box/alphasense_driver_node/cam3/color/camera_info",
+            "*_nuc_alphasense_calib.bag",
+        ),  # Left
+        "tf_static": ("tf_static", "*_tf_static.bag"),
+    }
+    process(alphasense_imus_cfg, "alphasense_imu")
