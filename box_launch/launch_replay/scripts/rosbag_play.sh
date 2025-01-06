@@ -29,6 +29,7 @@ done
 # Array of keys to filter
 keys=(    
     "_cpt7_ie_tc.bag"
+    "_cpt7_raw_imu.bag"
     "_gt_tf.bag"
     "_lpc_state_estimator"
     "_lpc_locomotion"
@@ -42,9 +43,13 @@ keys=(
     "_jetson_hdr_left_calib.bag"
     "_jetson_hdr_front_calib.bag"
     "_nuc_hesai_post_processed.bag"
+    "_dlio.bag"
+    # "_nuc_alphasense_color.bag"
+    # "_jetson_zed2i_tf.bag"
+    # "_jetson_zed2i_prop.bag"
+    # "_jetson_zed2i_images.bag"
+    # "_jetson_zed2i_depth.bag"
     # "_jetson_ap20_synced.bag"
-    # "_cpt7_raw_imu.bag"
-    # "_cpt7_ie_tc.bag"
     # "_nuc_utils.bag"
     # "_nuc_tf.bag"
     # "_nuc_alphasense.bag"
@@ -52,11 +57,6 @@ keys=(
     # "_jetson_stim.bag"
     # "_jetson_ap20_aux.bag"
     # "_jetson_adis.bag"
-    #"_jetson_zed2i_tf.bag"
-    #"_jetson_zed2i_prop.bag"
-    #"_jetson_zed2i_images.bag"
-    #"_jetson_zed2i_depth.bag"
-    #"_jetson_hdr_front_rect.bag"
 )
 
 # Find all .bag files and filter them

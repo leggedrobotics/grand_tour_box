@@ -41,6 +41,45 @@ apt install kitware-archive-keyring -y
 apt install cmake=3.19.2-0kitware1ubuntu20.04.1 cmake-data=3.19.2-0kitware1ubuntu20.04.1 -y
 apt install libgoogle-glog-dev libglfw3-dev liblua5.2-dev -y
 apt install python3-catkin-tools libc++-dev libc++abi-dev -y 
+apt install libxinerama-dev -y
+apt install libxcursor-dev -y
+apt install ros-noetic-tf-conversions -y
+# Use: install_deps_ubuntu.sh [ assume-yes ]
+set -ev
+
+SUDO=${SUDO:=sudo} # SUDO=command in docker (running as root, sudo not available)
+if [ "$1" == "assume-yes" ]; then
+    APT_CONFIRM="--assume-yes"
+else
+    APT_CONFIRM=""
+fi
+
+dependencies=(
+    # Open3D deps
+    xorg-dev
+    libglu1-mesa-dev
+    python3-dev
+    # Filament build-from-source deps
+    libsdl2-dev
+    libc++-7-dev
+    libc++abi-7-dev
+    ninja-build
+    libxi-dev
+    # OpenBLAS build-from-source deps
+    gfortran
+    # ML deps
+    libtbb-dev
+    # Headless rendering deps
+    libosmesa6-dev
+    # RealSense deps
+    libudev-dev
+    autoconf
+    libtool
+)
+for package in "${dependencies[@]}"; do
+    apt install "$APT_CONFIRM" "$package" -y
+done
+
 
 # Dependencies: novatel_oem7_driver - cpt7
 cd /home/catkin_ws/src/grand_tour_box/box_drivers/novatel_oem7_driver
@@ -62,6 +101,13 @@ pip3 install matplotlib # graph_msf
 pip3 uninstall kleinkram -y
 pip3 install kleinkram
 
+# Dependencies for box_auto imu_timesync
+pip3 install torch
+pip3 install rerun-sdk
+
+# 
+pip3 install sortedcontainers
+pip3 install rosnumpy
 
 # Dependencies: box_auto - hesai.py
 mkdir -p /home/rsl/git/grand_tour_box/box_bringup/bringup_hesai/config
@@ -92,6 +138,12 @@ apt update -y
 source /opt/ros/noetic/setup.bash
 source /home/opencv_gtsam_ws/devel/setup.bash
 cd /home/catkin_ws
+
+export CUDA_HOME=/usr/local/cuda
+export PATH=$CUDA_HOME/bin:$PATH
+export LD_LIBRARY_PATH=$CUDA_HOME/lib64:$LD_LIBRARY_PATH
+export PATH=/usr/local/cuda/bin${PATH:+:${PATH}}
+
 catkin build direct_lidar_inertial_odometry
 catkin build box_auto
 

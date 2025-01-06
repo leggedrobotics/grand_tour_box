@@ -2,7 +2,7 @@ import rosbag
 from pathlib import Path
 import os
 
-MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
+MISSION_DATA = os.environ.get("MISSION_DATA", "/tmp_disk")
 
 
 def process_rosbag_imu(input_bag, imu_topic, new_frame_id, out_bag_path):

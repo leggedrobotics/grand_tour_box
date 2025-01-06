@@ -6,16 +6,18 @@ import shutil
 from box_auto.utils import (
     MISSION_DATA,
     BOX_AUTO_SCRIPTS_DIR,
+    ARTIFACT_FOLDER,
     get_bag,
     upload_bag,
     run_ros_command,
     kill_roscore,
     start_roscore,
 )
+from pathlib import Path
 
 # It is up-to-debate how we want to use this node. We regardless need the deskewed point cloud and some sort of pose estimation.
 # If the ground truth poses are available, we can use them instead of dlio_poses.
-PATTERNS = ["*_dlio.bag", "*_tf_static.bag"]
+PATTERNS = ["*[0-9]_dlio.bag", "*_tf_static.bag"]
 
 
 def launch_nodes():
@@ -41,16 +43,23 @@ def launch_nodes():
     kill_roscore()
     start_roscore()
     sleep(1)
+
+    p = Path(ARTIFACT_FOLDER) / "open3d_slam"
+    p.mkdir(exist_ok=True, parents=True)
+    p = str(p)
+
     run_ros_command(
-        f"roslaunch open3d_slam_ros grandtour_replay.launch rosbag_filepath:={merged_rosbag_path}  map_saving_folder:={MISSION_DATA}",
-        background=True,
+        f"roslaunch open3d_slam_ros grandtour_replay.launch rosbag_filepath:={merged_rosbag_path}  map_saving_folder:={p}",
+        background=False,
     )
+    print("Open3D SLAM replaying has been completed.")
     sleep(1)
+    kill_roscore()
 
     output_bag_path = os.path.join(MISSION_DATA, f"{timestamp}_open3d_slam.bag")
+    shutil.move(str(Path(MISSION_DATA) / "open3d_slam_replayed.bag"), output_bag_path)
 
-    shutil.move(f"{MISSION_DATA}/open3d_slam_replayed.bag", output_bag_path)
-
+    print("Replayed bag is renamed. Uploading.")
     upload_bag(output_bag_path)
 
 

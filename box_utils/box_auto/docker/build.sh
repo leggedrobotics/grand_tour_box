@@ -14,7 +14,7 @@ print_usage() {
     echo "  --kleinkram         Build kleinkram configuration"
     echo "  --kleinkram_minimal Build kleinkram minimal configuration"
     echo "  --ros2              Build ROS2 configuration"
-    echo "  --full              Build full configuration"
+    echo "  --bridge            Build ROS1 and ROS2 bridge container configuration"
     echo "  --help              Show this help message"
     echo "  --no-cache          Build without using cache"
     echo ""
@@ -48,8 +48,8 @@ while [[ $# -gt 0 ]]; do
             TAG_SUFFIX=""
             shift
             ;;
-        --full)
-            BUILD_TYPE="full"
+        --bridge)
+            BUILD_TYPE="bridge"
             TAG_SUFFIX=""
             shift
             ;;

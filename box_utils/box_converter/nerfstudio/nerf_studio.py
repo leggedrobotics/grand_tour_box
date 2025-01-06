@@ -15,8 +15,7 @@ from sensor_msgs.msg import CameraInfo, CompressedImage
 
 from torchvision.io.image import read_image
 from torchvision.models.segmentation import fcn_resnet50, FCN_ResNet50_Weights
-
-MISSION_DATA = os.environ.get("MISSION_DATA", "/mission_data")
+from box_auto.utils import MISSION_DATA
 
 
 def get_bag(directory, pattern):
@@ -154,7 +153,7 @@ class ImageSaver:
 
         cv2.imwrite(str(image_path), cv_image)
 
-        if self.config["create_mask_based_on_semantics"]:
+        if self.config["nerfstudio"]["create_mask_based_on_semantics"]:
             # Pretty bad implementaion
             img = read_image(str(image_path))
             batch = self.preprocess(img).unsqueeze(0)
@@ -205,7 +204,7 @@ class ImageSaver:
             "p1": str(camera_info.D[2]),
             "p2": str(camera_info.D[3]),
         }
-        if self.config["create_mask_based_on_semantics"]:
+        if self.config["nerfstudio"]["create_mask_based_on_semantics"]:
             frame_data["mask_path"] = f"./mask/{image_filename}"
         self.frame_data["frames"].append(frame_data)
         return True
@@ -227,7 +226,7 @@ def main():
         config = yaml.safe_load(f)
 
     input_folder = args.mission_data
-    tf_bag_path, suc = get_bag(args.mission_data, "*_tf_static_dlio.bag")
+    tf_bag_path, suc = get_bag(args.mission_data, "*_tf_static_dlio_tf.bag")
 
     # Load camera infos
     camera_infos = {}
@@ -242,6 +241,7 @@ def main():
                 camera_infos[camera["image_topic"]] = msg
                 camera_keys[camera["image_topic"]] = camera["name"]
                 break
+
     # Initialize TF listener
     tf_listener = BagTfTransformer(tf_bag_path)
 

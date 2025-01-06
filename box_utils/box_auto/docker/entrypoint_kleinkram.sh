@@ -9,13 +9,6 @@ cd $HOME
 klein endpoint set $ENDPOINT
 klein login --key $APIKEY
 
-if [ ! -d "/mission_data" ]; then
-    mkdir "/mission_data"
-    echo "Directory /mission_data created."
-else
-    echo "Directory /mission_data already exists."
-fi
-
 export KLEINKRAM_ACTIVE=ACTIVE
 
 # Enable sudo access without password
@@ -34,7 +27,8 @@ if [ $# -gt 0 ]; then
     source /opt/ros/noetic/setup.bash || { echo "Failed to source ROS"; exit 1; }
     source /home/opencv_gtsam_ws/devel/setup.bash || { echo "Failed to source OpenCV"; exit 1; }
     source /home/catkin_ws/devel/setup.bash || { echo "Failed to source Catkin workspace"; exit 1; }
-    "$@"
+    eval "$@"
+    exit $?
 else
     bash --rcfile /root/.bashrc
 fi

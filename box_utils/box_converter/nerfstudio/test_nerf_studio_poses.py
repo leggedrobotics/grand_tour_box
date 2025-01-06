@@ -52,6 +52,6 @@ def main(input_json_path, output_ply_path):
 
 # Example usage
 if __name__ == "__main__":
-    input_json = "/media/jonfrey/BoxiS4-2TB/deployment_day_1_subfolder/nerf_studio/transforms.json"  # Replace with your input JSON file path
-    output_ply = "/media/jonfrey/BoxiS4-2TB/deployment_day_1_subfolder/nerf_studio/camera_points.ply"  # Replace with your desired output PLY file path
+    input_json = "/media/jonfrey/BoxiS4-2TB/deployment_day_1/2024-10-01-11-29-55/nerf_studio/transforms.json"  # Replace with your input JSON file path
+    output_ply = "/media/jonfrey/BoxiS4-2TB/deployment_day_1/2024-10-01-11-29-55/nerf_studio/camera_points.ply"  # Replace with your desired output PLY file path
     main(input_json, output_ply)

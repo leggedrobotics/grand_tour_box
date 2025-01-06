@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
 
-MISSION_DATA = Path(os.environ.get("MISSION_DATA", "/mission_data"))
+MISSION_DATA = Path(os.environ.get("MISSION_DATA", "/tmp_disk"))
 
 # Paths
 rgb_folder = MISSION_DATA / "nerf_studio/rgb"

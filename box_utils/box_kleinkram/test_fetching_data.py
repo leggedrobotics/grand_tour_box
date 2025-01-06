@@ -3,6 +3,8 @@ import gdown
 import os
 import json
 from pathlib import Path
+from box_auto.utils import WS
+import datetime
 
 # Resolve the full path of the JSON file
 file_path = os.path.expanduser("~/.kleinkram.json")
@@ -31,14 +33,14 @@ else:
     auth_token = data["credentials"]["https://api.datasets.leggedrobotics.com"]["auth_token"]
 
 
-project_uuid = "3c97a27e-4180-4e40-b8af-59714de54a87"  # input("Project UUID:")
+project_uuid = "3c97a27e-4180-4e40-b8af-59714de54a87"  # GrandTour
+project_uuid = "e5a38ae3-78b9-45c1-b682-1cc956f70791"  # GrandTourDev
 
 
 url = "https://api.datasets.leggedrobotics.com/action/listActions"
-metadata_folder = "/data/GrandTour/kleinkram_actions"
-artifacts_folder = Path(metadata_folder) / "artifacts"
+artifacts_folder = Path(WS) / "box_utils" / "box_kleinkram" / "artifacts"
 artifacts_folder.mkdir(exist_ok=True, parents=True)
-download = True
+download = False
 
 params = {"project_uuid": f"{project_uuid}", "take": 20, "skip": 0, "sortBy": "createdAt", "sortDirection": "DESC"}
 
@@ -47,22 +49,40 @@ headers = {
     "cookie": f"refreshtoken={refresh_token}; authtoken={auth_token}",
 }
 response = requests.get(url, headers=headers, params=params)
+started_within_hours = 2
 
+overview = {}
 if response.status_code == 200:
     actions = response.json()
     for action in actions[0]:
-        action_uuid = action["uuid"]
-        artifact_url = action["artifact_url"]
+        if action["template"]["name"] == "ap20_python_online_matcher_v4":
+            if action["state"] == "DONE" or action["state"] == "FAILED":
+                start_time = datetime.datetime.fromisoformat(action["executionStartedAt"].replace("Z", "+00:00"))
+                current_time = datetime.datetime.now(datetime.timezone.utc)
+                time_difference = current_time - start_time
 
-        if artifact_url is None:
-            print(f"No artifact found for action {action_uuid}")
-            continue
+                if time_difference.total_seconds() <= (started_within_hours * 3600):  # Convert hours to seconds
+                    print("LOGGING ACTION")
+                    exit_code = action["exit_code"]
+                    action_uuid = action["uuid"]
+                    artifact_url = action["artifact_url"]
+                    overview[action_uuid] = exit_code
 
-        print(f"Downloading artifact for action {action_uuid}: {artifact_url}")
+                    if artifact_url is None:
+                        print(f"No artifact found for action {action_uuid}")
+                        continue
 
-        if download:
-            action_artifact_folder = artifacts_folder / action_uuid
-            action_artifact_folder.mkdir(exist_ok=True, parents=True)
-            gdown.download_folder(artifact_url, output=str(action_artifact_folder))
+                    print(f"Downloading artifact for action {action_uuid}: {artifact_url}")
+
+                    if download:
+                        action_artifact_folder = artifacts_folder / action_uuid
+                        action_artifact_folder.mkdir(exist_ok=True, parents=True)
+                        gdown.download_folder(artifact_url, output=str(action_artifact_folder))
+
+
+print("Overview:")
+for action_uuid, exit_code in overview.items():
+    print(f"{action_uuid}: {exit_code}")
+
 else:
     print(f"Error {response.status_code}: {response.text}")

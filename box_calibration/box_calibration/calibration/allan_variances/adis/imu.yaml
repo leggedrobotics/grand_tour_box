@@ -1,10 +1,10 @@
 #Accelerometer
-accelerometer_noise_density: 0.05764150097334351 
-accelerometer_random_walk: 0.0265782162388619 
+accelerometer_noise_density: 0.05764150097334351    # [ m / s^2 / sqrt(Hz) ]   ( accel "white noise" )
+accelerometer_random_walk: 0.0265782162388619       # [ m / s^3 / sqrt(Hz) ].  ( accel bias diffusion )
 
 #Gyroscope
-gyroscope_noise_density: 3.2349448775712573e-05 
-gyroscope_random_walk: 2.0220324385008243e-06 
+gyroscope_noise_density: 3.2349448775712573e-05     # [ rad / s / sqrt(Hz) ]   ( gyro "white noise" )
+gyroscope_random_walk: 2.0220324385008243e-06       # [ rad / s^2 / sqrt(Hz) ] ( gyro bias diffusion )
 
 rostopic: '/gt_box/adis16475_node/imu' #Make sure this is correct
 update_rate: 200.0 #Make sure this is correct

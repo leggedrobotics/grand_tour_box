@@ -1,6 +1,6 @@
 #!/bin/bash
 # author: Jonas Frey
-MISSION_DATA_MOUNT="--volume $MISSION_DATA:/mission_data"
+MISSION_DATA_MOUNT="--volume $MISSION_DATA:/tmp_disk"
 
 set -e
 
@@ -16,7 +16,7 @@ Optional:
   --image=NAME             Override default image name (default: rslethz/grand_tour_box)
   --no-it                  Don't run in interactive mode
   --command=CMD            Run specific command in container
-  --mission-data=PATH      Mount mission data directory to /mission_data
+  --mission-data=PATH      Mount mission data directory to /tmp_disk
   --debug                  Mount grand_tour_box repo for development
   --env
 "
@@ -40,11 +40,11 @@ for i in "$@"; do
         --type=*)
             TYPE=${i#*=}
             case $TYPE in
-                kleinkram|kleinkram_minimal|ros2|full)
+                kleinkram|kleinkram_minimal|ros2|bridge)
                     IMAGE_TYPE=$TYPE
                     ;;
                 *)
-                    echo "Error: Invalid type. Must be one of: kleinkram, kleinkram_minimal, ros2, full"
+                    echo "Error: Invalid type. Must be one of: kleinkram, kleinkram_minimal, ros2, bridge"
                     echo "$__usage"
                     exit 1
                     ;;
@@ -70,7 +70,7 @@ for i in "$@"; do
         --mission-data=*)
             MISSION_DATA=${i#*=}
             if [ -d "$MISSION_DATA" ]; then
-                MISSION_DATA_MOUNT="--volume $MISSION_DATA:/mission_data"
+                MISSION_DATA_MOUNT="--volume $MISSION_DATA:/tmp_disk"
             else
                 echo "Error: Mission data path does not exist: $MISSION_PATH"
                 exit 1
@@ -127,13 +127,10 @@ echo "  Debug mode: ${DEBUG_MOUNT:+enabled}"
 echo "  Command: ${COMMAND:-default shell}"
 echo ""
 
-docker run --privileged \
+eval docker run --privileged \
     $INTERACTIVE_FLAG \
     $REMOVE_FLAG \
-    --volume=$XSOCK:/root/.X11-unix:rw \
-    --volume=$XAUTH:/root/.docker.xauth:rw \
-    --env="QT_X11_NO_MITSHM=1" \
-    --env="XAUTHORITY=/root/.docker.xauth" \
+    -v /tmp/.X11-unix:/tmp/.X11-unix \
     --env="DISPLAY=$DISPLAY" \
     --ulimit rtprio=99 \
     --cap-add=sys_nice \
@@ -146,3 +143,9 @@ docker run --privileged \
     $FULL_IMAGE \
     $COMMAND
 
+exit $?
+
+    # --volume=$XSOCK:/root/.X11-unix:rw \
+    # --volume=$XAUTH:/root/.docker.xauth:rw \
+    # --env="QT_X11_NO_MITSHM=1" \
+    # --env="XAUTHORITY=/root/.docker.xauth" \
