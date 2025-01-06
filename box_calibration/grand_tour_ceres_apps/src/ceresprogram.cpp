@@ -120,6 +120,28 @@ ceres::ResidualBlockId CameraCameraProgram::addExtrinsicResidualFromObservations
     PinholeCamera camera_j(PinholeProjection(camera_parameter_packs.at(camera_j_name).width,
                                              camera_parameter_packs.at(camera_j_name).height),
                            camera_parameter_packs.at(camera_j_name).distortion_type);
+    if (!has_initialised_extrinsics.contains(camera_i_name) or !has_initialised_extrinsics.contains(camera_j_name)) {
+        if (has_initialised_extrinsics[camera_i_name]) {
+            Eigen::Affine3d T_cambundle_cami = SE3Transform::toEigenAffine(
+                    camera_parameter_packs.at(camera_i_name).T_bundle_sensor);
+            Eigen::Affine3d T_cami_camj = observation_i.T_sensor_model * observation_j.T_sensor_model.inverse();
+            Eigen::Affine3d T_cambundle_camj = T_cambundle_cami * T_cami_camj;
+            SE3Transform::assignToData(T_cambundle_camj,
+                                       camera_parameter_packs.at(camera_j_name).T_bundle_sensor);
+            has_initialised_extrinsics[camera_j_name] = true;
+            std::cout << "Initialising: " << camera_j_name << std::endl << T_cambundle_camj.matrix() << std::endl;
+        }
+        if (has_initialised_extrinsics[camera_j_name]) {
+            Eigen::Affine3d T_cambundle_camj = SE3Transform::toEigenAffine(
+                    camera_parameter_packs.at(camera_j_name).T_bundle_sensor);
+            Eigen::Affine3d T_camj_cami = observation_j.T_sensor_model * observation_i.T_sensor_model.inverse();
+            Eigen::Affine3d T_cambundle_cami = T_cambundle_camj * T_camj_cami;
+            SE3Transform::assignToData(T_cambundle_cami,
+                                       camera_parameter_packs.at(camera_i_name).T_bundle_sensor);
+            has_initialised_extrinsics[camera_i_name] = true;
+            std::cout << "Initialising: " << camera_i_name << std::endl << T_cambundle_cami.matrix() << std::endl;
+        }
+    }
 
     std::set<unsigned int> matching_ids(input_common_ids.begin(), input_common_ids.end());
     Eigen::Matrix3Xd model_points(3, matching_ids.size());

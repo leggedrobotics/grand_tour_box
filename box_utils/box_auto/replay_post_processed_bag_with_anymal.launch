@@ -1,7 +1,7 @@
 <launch>
 
   
-  <arg name="input_rosbag_path" default="/home/tutuna/box_ws/src/grand_tour_box/box_drivers/novatel_oem7_driver/src/novatel_oem7_driver/data/compare_hesai/combined2/withcpt/merge/merged_all.bag"/>
+  <arg name="input_rosbag_path" default="/home/box_ws/src/grand_tour_box/box_drivers/novatel_oem7_driver/src/novatel_oem7_driver/data/compare_hesai/combined2/withcpt/merge/merged_all.bag"/>
   
   <param name="/use_sim_time" value="true"/>
   <arg name="node_start_delay" default="2.0" />
@@ -16,7 +16,7 @@
    <!-- <node pkg="tf" type="static_transform_publisher" name="box_to_robot" args="0.2178 0.076 0.0036 0 -1.5707963 1.5707963 base box_base 10" /> -->
  
 
-  <node pkg="rviz" name="rviz" type="rviz" args="-d /home/tutuna/box_ws/src/grand_tour_box/box_post_processing/rviz/rviz.rviz" required="true"/>
+  <node pkg="rviz" name="rviz" type="rviz" args="-d /home/box_ws/src/grand_tour_box/box_post_processing/rviz/rviz.rviz" required="true"/>
 
   <node pkg="rosbag" type="play" name="player" output="screen" launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@' xterm -bg lightblue -fg darkslategrey -bd plum -bw 10 -geometry 80x40-50+250 -fn -sony-fixed-medium-r-normal--24-170-100-100-c-120-iso8859-1 -e " args="--clock -r 2 $(arg input_rosbag_path)"/>
 
@@ -29,7 +29,7 @@
 
 
 
-  <rosparam command="load" file="/home/tutuna/box_ws/src/grand_tour_box/box_drivers/novatel_oem7_driver/src/novatel_oem7_driver/data/compare_hesai/combined2/tf_sandbox/2024-08-14-10-45-39_lpc.yaml"/>
+  <rosparam command="load" file="/home/box_ws/src/grand_tour_box/box_drivers/novatel_oem7_driver/src/novatel_oem7_driver/data/compare_hesai/combined2/tf_sandbox/2024-08-14-10-45-39_lpc.yaml"/>
   <!-- Needs xterm -->
   <!-- sudo apt install xterm -->
 

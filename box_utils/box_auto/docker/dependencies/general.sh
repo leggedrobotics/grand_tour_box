@@ -11,6 +11,7 @@ apt install -y curl # if you haven't already installed curl
 apt install -y lsb-release
 apt install -y openssh-client
 apt install -y git-all
+apt install -y wget
 
 apt update -y
 
@@ -19,12 +20,8 @@ apt install -y python3-opencv
 apt install -y python3-pip
 pip3 install tqdm
 pip3 install --upgrade pip
-# pip install rerun-sdk
-
 
 pip3 install kleinkram
-
-
 
 mkdir -p /root/.ssh
 ssh-keyscan github.com >> /root/.ssh/known_hosts

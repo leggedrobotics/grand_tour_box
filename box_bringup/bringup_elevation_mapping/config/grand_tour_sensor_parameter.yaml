@@ -1,4 +1,4 @@
-plugin_config_file: '$(rospack find bringup_elevation_mapping)/config/anymal_plugin_config.yaml'
+plugin_config_file: '$(rospack find bringup_elevation_mapping)/config/grand_tour_plugin_config.yaml'
 
 pointcloud_channel_fusions:
   rgb: 'color'
@@ -32,12 +32,23 @@ publishers:
     basic_layers: ['inpaint']
     fps: 5.0
 
-#### Subscribers ########
+#### Subscribers ########  NEVER ADD EMPTY LINE HERE OTHERWISE CPP WILL FAIL!!
 subscribers:
-  heasi:
-    topic_name: /gt_box/hesai/points
+  hesai:
+    topic_name: /dlio/deskewed_point_cloud
     data_type: pointcloud
-
   livox:
-    topic_name: /gt_box/livox/points
+    topic_name: /gt_box/livox/lidar_filtered
     data_type: pointcloud
+  hdr_front:
+    topic_name: /gt_box/hdr_front_rect/image_rect/compressed
+    camera_info_topic_name: /gt_box/hdr_front_rect/camera_info
+    data_type: image
+  hdr_left:
+    topic_name: /gt_box/hdr_left_rect/image_rect/compressed
+    camera_info_topic_name: /gt_box/hdr_left_rect/camera_info
+    data_type: image
+  hdr_right:
+    topic_name: /gt_box/hdr_right_rect/image_rect/compressed
+    camera_info_topic_name: /gt_box/hdr_right_rect/camera_info
+    data_type: image

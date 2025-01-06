@@ -2,7 +2,7 @@
   <!-- Run wavemap -->
   <!-- General arguments -->
   <arg name="param_file"
-       default="/home/jonfrey/git/grand_tour_box/box_bringup/bringup_wavemap/config/hesai_xt32.yaml"
+       default="/home/jonfrey/git/grand_tour_box/box_bringup/bringup_wavemap/config/both.yaml"
        doc="Name of the file from which to read wavemap's server params."/>
   
 
@@ -13,7 +13,7 @@
        default="true"
        doc="Automatically launch Rviz."/>
   <arg name="rviz_config"
-       default="$(find bringup_wavemap)/config/livox.rviz"/>
+       default="$(find bringup_wavemap)/config/wavemap.rviz"/>
 
   <!-- Dataset params -->
   <arg name="rosbag_path"

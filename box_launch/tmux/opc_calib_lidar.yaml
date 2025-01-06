@@ -17,7 +17,7 @@ windows:
     - shell_command:
       - source /opt/ros/noetic/setup.bash
       - source ~/catkin_ws/devel/setup.bash
-      - roslaunch bringup_fkie fkie.launch
+      - roslaunch bringup_fkie fkie_opc.launch
           autostart_launch_files:="
             $(rospack find box_rviz)/launch/lidar.launch
             $(rospack find grand_tour_calibration_viewers)/launch/all_cameras.launch

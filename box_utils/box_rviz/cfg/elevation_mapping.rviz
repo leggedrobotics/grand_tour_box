@@ -1,0 +1,1301 @@
+Panels:
+  - Class: rviz/Displays
+    Help Height: 138
+    Name: Displays
+    Property Tree Widget:
+      Expanded:
+        - /Hesai Single1/Autocompute Value Bounds1
+        - /Livox Single1/Autocompute Value Bounds1
+        - /Hesai Single Plain1/Autocompute Value Bounds1
+        - /Livox Single Plain1/Autocompute Value Bounds1
+      Splitter Ratio: 0.4832535982131958
+    Tree Height: 303
+  - Class: rviz/Selection
+    Name: Selection
+  - Class: rviz/Tool Properties
+    Expanded:
+      - /Interact1
+      - /2D Nav Goal1
+    Name: Tool Properties
+    Splitter Ratio: 0.5886790156364441
+  - Class: rviz/Views
+    Expanded:
+      - /Current View1
+    Name: Views
+    Splitter Ratio: 0.5
+  - Class: rviz/Time
+    Experimental: false
+    Name: Time
+    SyncMode: 0
+    SyncSource: HesaiXT32 Lidar
+  - Class: rviz/Views
+    Expanded:
+      - /Current View1
+    Name: Views
+    Splitter Ratio: 0.5
+  - Class: rviz/Displays
+    Help Height: 138
+    Name: Displays
+    Property Tree Widget:
+      Expanded:
+        - /Global Options1
+        - /Lidar1
+        - /ZED2i1
+        - /HDR1
+        - /Camera1/Visibility1
+        - /GridMap1
+        - /WavemapMap1
+        - /WavemapMap1/Render voxels1
+        - /Trav1
+        - /Height1
+        - /Hesai Single1/Autocompute Value Bounds1
+        - /Livox Single1/Autocompute Value Bounds1
+        - /Hesai Single Plain1/Autocompute Value Bounds1
+        - /Livox Single Plain1/Autocompute Value Bounds1
+      Splitter Ratio: 0.5601415038108826
+    Tree Height: 1484
+Preferences:
+  PromptSaveOnExit: true
+Toolbars:
+  toolButtonStyle: 2
+Visualization Manager:
+  Class: ""
+  Displays:
+    - Alpha: 0.10000000149011612
+      Cell Size: 0.25
+      Class: rviz/Grid
+      Color: 0; 0; 0
+      Enabled: false
+      Line Style:
+        Line Width: 0.029999999329447746
+        Value: Lines
+      Name: Grid
+      Normal Cell Count: 0
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Plane: XY
+      Plane Cell Count: 100
+      Reference Frame: box_base
+      Value: false
+    - Class: rviz/TF
+      Enabled: false
+      Frame Timeout: 15
+      Frames:
+        All Enabled: true
+      Marker Alpha: 1
+      Marker Scale: 0.25
+      Name: TF
+      Show Arrows: true
+      Show Axes: true
+      Show Names: true
+      Tree:
+        {}
+      Update Interval: 0
+      Value: false
+    - Alpha: 1
+      Class: rviz/RobotModel
+      Collision Enabled: false
+      Enabled: true
+      Links:
+        All Links Enabled: true
+        Expand Joint Details: false
+        Expand Link Details: false
+        Expand Tree: false
+        LF_FOOT:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        LF_HAA_drive:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        LF_HFE_drive:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        LF_HFE_output:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        LF_HIP:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        LF_KFE_drive:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        LF_SHANK:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        LF_THIGH:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        LF_hip_fixed:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        LF_shank_fixed:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        LF_thigh_fixed:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        LH_FOOT:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        LH_HAA_drive:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        LH_HFE_drive:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        LH_HFE_output:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        LH_HIP:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        LH_KFE_drive:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        LH_SHANK:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        LH_THIGH:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        LH_hip_fixed:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        LH_shank_fixed:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        LH_thigh_fixed:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        Link Tree Style: Links in Alphabetic Order
+        RF_FOOT:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        RF_HAA_drive:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        RF_HFE_drive:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        RF_HFE_output:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        RF_HIP:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        RF_KFE_drive:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        RF_SHANK:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        RF_THIGH:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        RF_hip_fixed:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        RF_shank_fixed:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        RF_thigh_fixed:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        RH_FOOT:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        RH_HAA_drive:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        RH_HFE_drive:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        RH_HFE_output:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        RH_HIP:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        RH_KFE_drive:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        RH_SHANK:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        RH_THIGH:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        RH_hip_fixed:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        RH_shank_fixed:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        RH_thigh_fixed:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        base:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        base_inertia:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        battery:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        body_top:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        bottom_shell:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        depth_camera_front_lower_camera:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        depth_camera_front_lower_camera_parent:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        depth_camera_front_lower_depth_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        depth_camera_front_lower_depth_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        depth_camera_front_upper_camera:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        depth_camera_front_upper_camera_parent:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        depth_camera_front_upper_depth_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        depth_camera_front_upper_depth_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        depth_camera_left_camera:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        depth_camera_left_camera_parent:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        depth_camera_left_depth_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        depth_camera_left_depth_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        depth_camera_rear_lower_camera:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        depth_camera_rear_lower_camera_parent:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        depth_camera_rear_lower_depth_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        depth_camera_rear_lower_depth_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        depth_camera_rear_upper_camera:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        depth_camera_rear_upper_camera_parent:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        depth_camera_rear_upper_depth_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        depth_camera_rear_upper_depth_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        depth_camera_right_camera:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        depth_camera_right_camera_parent:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        depth_camera_right_depth_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        depth_camera_right_depth_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        docking_socket:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        face_front:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        face_rear:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        face_shell_front:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        face_shell_rear:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        hbc_receiver:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        imu_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        lidar:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        lidar_parent:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        top_shell:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        wide_angle_camera_front_camera:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        wide_angle_camera_front_camera_parent:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        wide_angle_camera_rear_camera:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        wide_angle_camera_rear_camera_parent:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+      Name: ANYmal
+      Robot Description: anymal_description
+      TF Prefix: ""
+      Update Interval: 0
+      Value: true
+      Visual Enabled: true
+    - Alpha: 1
+      Class: rviz/RobotModel
+      Collision Enabled: false
+      Enabled: true
+      Links:
+        All Links Enabled: true
+        Expand Joint Details: false
+        Expand Link Details: false
+        Expand Tree: false
+        Link Tree Style: Links in Alphabetic Order
+        adis16475_imu:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        alphasense_base:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        alphasense_front_center:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        alphasense_front_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        alphasense_front_right:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        alphasense_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        alphasense_right:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        ap20_imu:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        base:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        box_base:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        box_base_model:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cam1_sensor_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        cam2_sensor_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        cam3_sensor_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        cam4_sensor_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        cam5_sensor_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        cpt7_antenna_back:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        cpt7_antenna_front:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        cpt7_imu:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        hdr_base:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        hdr_front:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        hdr_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        hdr_right:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        hesai_lidar:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        hesai_model:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        imu_sensor_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        livox_imu:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        livox_lidar:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        livox_model:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        prism:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        prism_model:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        stim320_imu:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        zed2i_base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        zed2i_camera_center:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        zed2i_imu_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        zed2i_left_camera_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        zed2i_left_camera_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        zed2i_right_camera_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        zed2i_right_camera_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        zed_base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+      Name: Boxi
+      Robot Description: robot_description
+      TF Prefix: ""
+      Update Interval: 0
+      Value: true
+      Visual Enabled: true
+    - Class: rviz/Group
+      Displays:
+        - Class: rviz/Image
+          Enabled: true
+          Image Topic: /gt_box/throttled/alphasense_driver_node/cam5
+          Max Value: 1
+          Median window: 5
+          Min Value: 0
+          Name: Alphasense Right
+          Normalize Range: true
+          Queue Size: 2
+          Transport Hint: compressed
+          Unreliable: false
+          Value: true
+        - Class: rviz/Image
+          Enabled: true
+          Image Topic: /gt_box/throttled/alphasense_driver_node/cam2
+          Max Value: 1
+          Median window: 5
+          Min Value: 0
+          Name: Alphasense Front Right
+          Normalize Range: true
+          Queue Size: 2
+          Transport Hint: compressed
+          Unreliable: false
+          Value: true
+        - Class: rviz/Image
+          Enabled: true
+          Image Topic: /gt_box/throttled/alphasense_driver_node/cam1
+          Max Value: 1
+          Median window: 5
+          Min Value: 0
+          Name: Alphasense Front Middle
+          Normalize Range: true
+          Queue Size: 2
+          Transport Hint: compressed
+          Unreliable: false
+          Value: true
+        - Class: rviz/Image
+          Enabled: true
+          Image Topic: /gt_box/throttled/alphasense_driver_node/cam3
+          Max Value: 1
+          Median window: 5
+          Min Value: 0
+          Name: Alphasense Front Left
+          Normalize Range: true
+          Queue Size: 2
+          Transport Hint: compressed
+          Unreliable: false
+          Value: true
+        - Class: rviz/Image
+          Enabled: true
+          Image Topic: /gt_box/throttled/alphasense_driver_node/cam4
+          Max Value: 1
+          Median window: 5
+          Min Value: 0
+          Name: Alphasense Left
+          Normalize Range: true
+          Queue Size: 2
+          Transport Hint: compressed
+          Unreliable: false
+          Value: true
+      Enabled: false
+      Name: Alphasense
+    - Class: rviz/Group
+      Displays:
+        - Alpha: 1
+          Class: rviz_plugin_tutorials/Imu
+          Color: 204; 51; 204
+          Enabled: true
+          History Length: 1
+          Name: Adis IMU
+          Queue Size: 10
+          Topic: /gt_box/adis16475_node/imu
+          Unreliable: false
+          Value: true
+        - Alpha: 1
+          Class: rviz_plugin_tutorials/Imu
+          Color: 204; 51; 204
+          Enabled: false
+          History Length: 1
+          Name: Livox IMU
+          Queue Size: 10
+          Topic: /gt_box/livox/imu
+          Unreliable: false
+          Value: false
+        - Alpha: 1
+          Class: rviz_plugin_tutorials/Imu
+          Color: 204; 51; 204
+          Enabled: false
+          History Length: 1
+          Name: Alphasense IMU
+          Queue Size: 10
+          Topic: /gt_box/alphasense_driver_node/imu
+          Unreliable: false
+          Value: false
+        - Alpha: 1
+          Class: rviz_plugin_tutorials/Imu
+          Color: 204; 51; 204
+          Enabled: false
+          History Length: 1
+          Name: Stim320 IMU
+          Queue Size: 10
+          Topic: /gt_box/stim320
+          Unreliable: false
+          Value: false
+      Enabled: false
+      Name: IMU
+    - Class: rviz/Group
+      Displays:
+        - Alpha: 0.10000000149011612
+          Autocompute Intensity Bounds: true
+          Autocompute Value Bounds:
+            Max Value: 10
+            Min Value: -10
+            Value: true
+          Axis: Z
+          Channel Name: intensity
+          Class: rviz/PointCloud2
+          Color: 0; 0; 0
+          Color Transformer: FlatColor
+          Decay Time: 10
+          Enabled: true
+          Invert Rainbow: false
+          Max Color: 255; 255; 255
+          Min Color: 0; 0; 0
+          Name: HesaiXT32 Lidar
+          Position Transformer: XYZ
+          Queue Size: 10
+          Selectable: true
+          Size (Pixels): 1
+          Size (m): 0.009999999776482582
+          Style: Points
+          Topic: /dlio/deskewed_point_cloud
+          Unreliable: false
+          Use Fixed Frame: true
+          Use rainbow: true
+          Value: true
+        - Alpha: 1
+          Autocompute Intensity Bounds: true
+          Autocompute Value Bounds:
+            Max Value: 32.98099899291992
+            Min Value: -20.378999710083008
+            Value: true
+          Axis: Z
+          Channel Name: intensity
+          Class: rviz/PointCloud2
+          Color: 252; 175; 62
+          Color Transformer: FlatColor
+          Decay Time: 0
+          Enabled: false
+          Invert Rainbow: false
+          Max Color: 255; 255; 255
+          Min Color: 0; 0; 0
+          Name: Livox Lidar
+          Position Transformer: XYZ
+          Queue Size: 10
+          Selectable: true
+          Size (Pixels): 3
+          Size (m): 0.009999999776482582
+          Style: Flat Squares
+          Topic: /gt_box/livox/lidar
+          Unreliable: false
+          Use Fixed Frame: true
+          Use rainbow: true
+          Value: false
+      Enabled: true
+      Name: Lidar
+    - Class: rviz/Group
+      Displays:
+        - Class: rviz/Image
+          Enabled: true
+          Image Topic: /gt_box/throttled/gt_box/zed2i_driver_node/right/image_rect_color
+          Max Value: 1
+          Median window: 5
+          Min Value: 0
+          Name: ZED2i Right
+          Normalize Range: true
+          Queue Size: 2
+          Transport Hint: compressed
+          Unreliable: false
+          Value: true
+        - Class: rviz/Image
+          Enabled: true
+          Image Topic: /gt_box/throttled/gt_box/zed2i_driver_node/left/image_rect_color
+          Max Value: 1
+          Median window: 5
+          Min Value: 0
+          Name: ZED2i Left
+          Normalize Range: true
+          Queue Size: 2
+          Transport Hint: compressed
+          Unreliable: false
+          Value: true
+        - Alpha: 1
+          Autocompute Intensity Bounds: true
+          Autocompute Value Bounds:
+            Max Value: 10
+            Min Value: -10
+            Value: true
+          Axis: Z
+          Channel Name: intensity
+          Class: rviz/PointCloud2
+          Color: 255; 255; 255
+          Color Transformer: RGB8
+          Decay Time: 0
+          Enabled: true
+          Invert Rainbow: false
+          Max Color: 255; 255; 255
+          Min Color: 0; 0; 0
+          Name: ZED2i PointCloud
+          Position Transformer: XYZ
+          Queue Size: 10
+          Selectable: true
+          Size (Pixels): 3
+          Size (m): 0.009999999776482582
+          Style: Flat Squares
+          Topic: /gt_box/zed2i_driver_node/point_cloud/cloud_registered
+          Unreliable: false
+          Use Fixed Frame: true
+          Use rainbow: true
+          Value: true
+      Enabled: false
+      Name: ZED2i
+    - Class: rviz/Group
+      Displays:
+        - Class: rviz/Image
+          Enabled: true
+          Image Topic: /gt_box/hdr_right_rect/image_rect
+          Max Value: 1
+          Median window: 5
+          Min Value: 0
+          Name: HDR Right
+          Normalize Range: true
+          Queue Size: 2
+          Transport Hint: compressed
+          Unreliable: false
+          Value: true
+        - Class: rviz/Image
+          Enabled: true
+          Image Topic: /gt_box/hdr_left_rect/image_rect
+          Max Value: 1
+          Median window: 5
+          Min Value: 0
+          Name: HDR Left
+          Normalize Range: true
+          Queue Size: 2
+          Transport Hint: compressed
+          Unreliable: false
+          Value: true
+        - Class: rviz/Image
+          Enabled: true
+          Image Topic: /gt_box/hdr_front_rect/image_rect
+          Max Value: 1
+          Median window: 5
+          Min Value: 0
+          Name: HDR Front
+          Normalize Range: true
+          Queue Size: 2
+          Transport Hint: compressed
+          Unreliable: false
+          Value: true
+      Enabled: true
+      Name: HDR
+    - Class: rviz/Camera
+      Enabled: false
+      Image Rendering: background and overlay
+      Image Topic: /gt_box/hdr_front_rect/image_rect
+      Name: Camera
+      Overlay Alpha: 0.5
+      Queue Size: 2
+      Transport Hint: compressed
+      Unreliable: false
+      Value: false
+      Visibility:
+        "": true
+        ANYmal: false
+        Alphasense:
+          Alphasense Front Left: true
+          Alphasense Front Middle: true
+          Alphasense Front Right: true
+          Alphasense Left: true
+          Alphasense Right: true
+          Value: true
+        Boxi: false
+        Grid: true
+        GridMap: true
+        HDR:
+          HDR Front: true
+          HDR Left: true
+          HDR Right: true
+          Value: true
+        IMU:
+          Adis IMU: true
+          Alphasense IMU: true
+          Livox IMU: true
+          Stim320 IMU: true
+          Value: true
+        Lidar:
+          HesaiXT32 Lidar: true
+          Livox Lidar: true
+          Value: true
+        TF: false
+        Value: true
+        ZED2i:
+          Value: true
+          ZED2i Left: true
+          ZED2i PointCloud: true
+          ZED2i Right: true
+      Zoom Factor: 1
+    - Alpha: 0
+      Autocompute Intensity Bounds: true
+      Class: grid_map_rviz_plugin/GridMap
+      Color: 200; 200; 200
+      Color Layer: rgb
+      Color Transformer: ColorLayer
+      Enabled: true
+      Height Layer: elevation
+      Height Transformer: GridMapLayer
+      History Length: 1
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 10
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: GridMap
+      Show Grid Lines: true
+      Topic: /gt_box/elevation_mapping/elevation_map_raw
+      Unreliable: false
+      Use Rainbow: false
+      Value: true
+    - Class: wavemap_rviz_plugin/WavemapMap
+      Enabled: true
+      Name: WavemapMap
+      Queue Size: 10
+      Render slice:
+        Alpha: 1
+        Color mode: Probability
+        Enable: false
+        Max log odds: 1e+06
+        Min log odds: -1e+06
+        Slice height: 0
+      Render voxels:
+        Alpha: 0
+        Cell selector: Surface
+        Color mode: Height
+        Enable: true
+        Flat color: 0; 0; 255
+        Frame rate:
+          Max update time: 20
+        Log odds threshold: 0.0010000000474974513
+        Max log odds: 1e+06
+        Min log odds: 0.0010000000474974513
+        Termination height: 0
+        Unknown log odds: 9.999999747378752e-05
+      Source: File
+      Topic: ""
+      Unreliable: false
+      Value: true
+    - Alpha: 0
+      Autocompute Intensity Bounds: true
+      Class: grid_map_rviz_plugin/GridMap
+      Color: 200; 200; 200
+      Color Layer: traversability
+      Color Transformer: IntensityLayer
+      Enabled: true
+      Height Layer: elevation
+      Height Transformer: GridMapLayer
+      History Length: 1
+      Invert Rainbow: false
+      Max Color: 32; 74; 135
+      Max Intensity: 10
+      Min Color: 255; 0; 0
+      Min Intensity: 0
+      Name: Trav
+      Show Grid Lines: true
+      Topic: /gt_box/elevation_mapping/elevation_map_raw
+      Unreliable: false
+      Use Rainbow: false
+      Value: true
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Class: grid_map_rviz_plugin/GridMap
+      Color: 200; 200; 200
+      Color Layer: elevation
+      Color Transformer: IntensityLayer
+      Enabled: true
+      Height Layer: elevation
+      Height Transformer: GridMapLayer
+      History Length: 1
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 10
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: Height
+      Show Grid Lines: true
+      Topic: /gt_box/elevation_mapping/elevation_map_raw
+      Unreliable: false
+      Use Rainbow: true
+      Value: true
+    - Alpha: 0
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -5
+        Value: false
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 0; 0; 0
+      Color Transformer: Intensity
+      Decay Time: 0
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Min Color: 0; 0; 0
+      Name: Hesai Single
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.009999999776482582
+      Style: Points
+      Topic: /dlio/deskewed_point_cloud
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
+    - Alpha: 0
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -5
+        Value: false
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 0; 0; 0
+      Color Transformer: Intensity
+      Decay Time: 0.30000001192092896
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Min Color: 0; 0; 0
+      Name: Livox Single
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.009999999776482582
+      Style: Points
+      Topic: /gt_box/livox/lidar
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -5
+        Value: false
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 0; 255; 0
+      Color Transformer: FlatColor
+      Decay Time: 0
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Min Color: 0; 0; 0
+      Name: Hesai Single Plain
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.009999999776482582
+      Style: Points
+      Topic: /dlio/deskewed_point_cloud
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -5
+        Value: false
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 0; 0; 255
+      Color Transformer: FlatColor
+      Decay Time: 0.30000001192092896
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Min Color: 0; 0; 0
+      Name: Livox Single Plain
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.009999999776482582
+      Style: Points
+      Topic: /gt_box/livox/lidar
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
+  Enabled: true
+  Global Options:
+    Background Color: 255; 255; 255
+    Default Light: true
+    Fixed Frame: dlio_map
+    Frame Rate: 30
+  Name: root
+  Tools:
+    - Class: rviz/Interact
+      Hide Inactive Objects: true
+    - Class: rviz/MoveCamera
+    - Class: rviz/Select
+    - Class: rviz/FocusCamera
+    - Class: rviz/Measure
+    - Class: rviz/SetInitialPose
+      Theta std deviation: 0.2617993950843811
+      Topic: /initialpose
+      X std deviation: 0.5
+      Y std deviation: 0.5
+    - Class: rviz/SetGoal
+      Topic: /goal
+    - Class: rviz/PublishPoint
+      Single click: true
+      Topic: /clicked_point
+    - Class: center_frame_tool/CenterFrameTool
+      Frame: base
+    - Class: gazebo_play_tool/GazeboPlayTool
+    - Class: rviz_gazebo_interaction/RobotRespawner
+  Value: true
+  Views:
+    Current:
+      Class: rviz/Orbit
+      Distance: 6.389616966247559
+      Enable Stereo Rendering:
+        Stereo Eye Separation: 0.05999999865889549
+        Stereo Focal Distance: 1
+        Swap Stereo Eyes: false
+        Value: false
+      Field of View: 0.7853981852531433
+      Focal Point:
+        X: -0.3410925567150116
+        Y: 1.811519980430603
+        Z: -0.5151306390762329
+      Focal Shape Fixed Size: false
+      Focal Shape Size: 0.05000000074505806
+      Invert Z Axis: false
+      Name: Current View
+      Near Clip Distance: 0.009999999776482582
+      Pitch: 0.38539886474609375
+      Target Frame: box_base
+      Yaw: 4.3653883934021
+    Saved:
+      - Class: rviz/Orbit
+        Distance: 21.833446502685547
+        Enable Stereo Rendering:
+          Stereo Eye Separation: 0.05999999865889549
+          Stereo Focal Distance: 1
+          Swap Stereo Eyes: false
+          Value: false
+        Field of View: 0.7853981852531433
+        Focal Point:
+          X: -0.7716822624206543
+          Y: 1.530248761177063
+          Z: -2.225466012954712
+        Focal Shape Fixed Size: false
+        Focal Shape Size: 0.05000000074505806
+        Invert Z Axis: false
+        Name: Boxi Paper
+        Near Clip Distance: 0.009999999776482582
+        Pitch: 0.4503988027572632
+        Target Frame: box_base
+        Yaw: 5.105386257171631
+Window Geometry:
+  Alphasense Front Left:
+    collapsed: false
+  Alphasense Front Middle:
+    collapsed: false
+  Alphasense Front Right:
+    collapsed: false
+  Alphasense Left:
+    collapsed: false
+  Alphasense Right:
+    collapsed: false
+  Camera:
+    collapsed: false
+  Displays:
+    collapsed: false
+  HDR Front:
+    collapsed: false
+  HDR Left:
+    collapsed: false
+  HDR Right:
+    collapsed: false
+  Height: 2096
+  Hide Left Dock: false
+  Hide Right Dock: false
+  QMainWindow State: 000000ff00000000fd00000004000000000000018d0000064bfc0200000018fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb0000001a004b0069006e006500630074002000430061006d0065007200610000000191000001010000000000000000fb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb000000100044006900730070006c006100790073000000030100000135000000c900fffffffb0000001a004b0069006e006500630074002000430061006d0065007200610000000000ffffffff0000000000000000fb0000000c00430061006d006500720061000000003d0000064b0000001600fffffffb00000016005a006f006f006d002000430061006d0065007200610100000131000000160000000000000000fb0000001c0054006800650072006d0061006c002000430061006d006500720061010000014d000000160000000000000000fb0000001a0042006c00610063006b0066006c0079002000720065006100720000000000ffffffff0000000000000000fb0000001c0042006c00610063006b0066006c0079002000660072006f006e00740000000000ffffffff0000000000000000fb0000000a0049006d0061006700650200000df00000019100000280000001e0fb0000000a0049006d006100670065000000006e000003cd0000000000000000fb0000000a0049006d00610067006502000005b40000033b00000280000001e0fb0000000a0049006d006100670065000000006e000008b60000000000000000fb0000000a0049006d006100670065000000006e000008b60000000000000000fb0000000a0049006d006100670065000000006e000008b60000000000000000fb0000000a0049006d006100670065000000006e000007f20000000000000000fb0000000c00430061006d00650072006100000000bf000005c90000000000000000fb0000000c00430061006d006500720061000000003d000005640000000000000000fb0000000c00430061006d006500720061010000003d0000064b000000000000000000000001000001ac000006b0fc0200000009fc0000003d000006b0000000e60100001cfa000000010100000002fb0000000a005600690065007700730100000000ffffffff0000010000fffffffb000000100044006900730070006c0061007900730100000d0c000001ac0000015600fffffffb0000001e0054006f006f006c002000500072006f0070006500720074006900650073000000003c000000b80000005c00fffffffc0000003d000002b70000000000fffffffa000000000100000003fb00000012005000610074006800500061006e0065006c0000000000ffffffff0000000000000000fb00000012005000610074006800500061006e0065006c0100000000ffffffff0000000000000000fb0000000a0056006900650077007300000004ba000001720000010000fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b20000000000000000fb000000140046006500650064006200610063006b00200031000000003d000000360000000000000000fb000000140046006500650064006200610063006b002000340000000079000000360000000000000000fb000000140046006500650064006200610063006b0020003300000000b5000000360000000000000000fb000000140046006500650064006200610063006b0020003200000000f1000000360000000000000000fb0000000c0052006500730075006c0074000000012d0000003600000000000000000000000200000f9a00000182fc0100000001fb0000001e0054006f006f006c002000500072006f007000650072007400690065007300000000000000075a00000000000000000000000300000eb800000120fc0100000014fb0000001e0041006c00700068006100730065006e007300650020004c0065006600740000000000000000cc000000a200fffffffb0000002a0041006c00700068006100730065006e00730065002000460072006f006e00740020004c00650066007400000000d2000000f7000000ca00fffffffb0000002e0041006c00700068006100730065006e00730065002000460072006f006e00740020004d006900640064006c006500000001cf0000010d000000dd00fffffffb0000002c0041006c00700068006100730065006e00730065002000460072006f006e007400200052006900670068007400000002e200000103000000d300fffffffb000000200041006c00700068006100730065006e0073006500200052006900670068007400000003eb000000dd000000aa00fffffffb000000100048004400520020004c0065006600740100000000000004ef0000007200fffffffb00000012004800440052002000460072006f006e007401000004f5000004dc0000007b00fffffffb000000140048004400520020004d006900640064006c00650100000697000001540000000000000000fb0000001200480044005200200052006900670068007401000009d7000004e10000007b00fffffffb00000014005a00450044003200690020004c0065006600740000000174000004160000007c00fffffffb00000016005a00450044003200690020005200690067006800740000000590000003d50000008400fffffffb0000001e0048004400520020004c006500660074002000280052004f005300320029000000058c000001a20000000000000000fb000000100048004400520020004c0065006600740000000d43000002880000000000000000fb00000022004800440052002000430065006e007400650072002000280052004f0053003200290000000734000002020000000000000000fb00000020004800440052002000520049006700680074002000280052004f005300320029000000093c000001bc0000000000000000fb0000000a0049006d0061006700650100000ae6000001d10000000000000000fb0000000a0049006d0061006700650100000cc3000002c40000000000000000fb0000000a0049006d0061006700650100000f930000021a0000000000000000fb0000000800540069006d006500000000000000073f000004f300fffffffb0000000800540069006d0065010000000000000450000000000000000000000d06000006b000000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  Selection:
+    collapsed: false
+  Time:
+    collapsed: false
+  Tool Properties:
+    collapsed: false
+  Views:
+    collapsed: false
+  Width: 3768
+  X: 72
+  Y: 27
+  ZED2i Left:
+    collapsed: false
+  ZED2i Right:
+    collapsed: false

@@ -17,7 +17,7 @@ windows:
     - shell_command:
       - source /opt/ros/noetic/setup.bash
       - source ~/catkin_ws/devel/setup.bash
-      - roslaunch bringup_fkie fkie.launch
+      - roslaunch bringup_fkie fkie_nuc.launch
           autostart_launch_files:="
             $(rospack find box_recording)/launch/rosbag_record_node.launch
             $(rospack find box_health)/launch/box_health.launch

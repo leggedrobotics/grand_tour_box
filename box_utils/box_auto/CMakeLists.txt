@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.5)
 project(box_auto)
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
 
 ## Source: https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
 #add_compile_options(-Wall -Wextra -Wpedantic -O3)
@@ -27,6 +29,11 @@ set(CATKIN_PACKAGE_DEPENDENCIES
   tf2_geometry_msgs
   rosbag
   interactive_markers
+  sensor_msgs
+  pcl_ros
+  pcl_conversions
+  rospy
+  cv_bridge
   )
 
 # We pass the path of the `FindXYZ.cmake` files to `CMAKE_MODULE_PATH`
@@ -36,8 +43,7 @@ list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
 #list(APPEND LIBRARIES ".....so.0")
 #list(APPEND LIBRARIES ".......so")
 
-#find_package(gflags REQUIRED)
-# find_package(Glog REQUIRED)
+find_package(OpenCV REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(OpenMP QUIET)
 if (OpenMP_FOUND)
@@ -48,16 +54,24 @@ find_package(catkin REQUIRED COMPONENTS
   ${CATKIN_PACKAGE_DEPENDENCIES}
   )
 
+
+catkin_python_setup()
+
 catkin_package(
   INCLUDE_DIRS
   include
   LIBRARIES
   yaml-cpp
   ${PROJECT_NAME}
-  CATKIN_DEPENDS
+  CATKIN_DEPENDS 
   ${CATKIN_PACKAGE_DEPENDENCIES}
   DEPENDS
 )
+
+## Link libraries
+link_directories(${PCL_LIBRARY_DIRS})
+add_definitions(${PCL_DEFINITIONS})
+
 
 #Include directory#
 include_directories(${PROJECT_SOURCE_DIR})
@@ -65,6 +79,7 @@ include_directories(${PROJECT_SOURCE_DIR})
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIRS}
   ${YAML_CPP_INCLUDE_DIR}
   ${OpenMP_CXX_INCLUDE_DIRS}
@@ -89,12 +104,18 @@ target_link_libraries(${PROJECT_NAME}
 add_executable(post_processor_node
   src/post_processor_node.cpp)
 
+add_executable(filter_pointclouds
+  src/filter_pointclouds.cpp)
+
 add_executable(tf_processor_node
   src/tf_processor_node.cpp)
-
+  
 add_executable(merge
   src/merge.cpp)
 
+
+add_executable(zed2i_decompression_and_saving src/zed2i_decompress_and_format_data.cpp)
+  
 target_link_libraries(post_processor_node 
 ${catkin_LIBRARIES}
 ${gflags_LIBRARIES}
@@ -115,6 +136,14 @@ ${gflags_LIBRARIES}
 ${GLOG_LIBRARIES}
 ${PROJECT_NAME}
 )
+
+target_link_libraries(filter_pointclouds 
+${catkin_LIBRARIES}
+${PCL_LIBRARIES}
+${PROJECT_NAME}
+)
+
+target_link_libraries(zed2i_decompression_and_saving ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${PROJECT_NAME})
 
 
 find_package(cmake_clang_tools QUIET)
@@ -140,3 +169,15 @@ RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
 
+install(TARGETS filter_pointclouds
+RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
+
+install(TARGETS zed2i_decompression_and_saving
+RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+## Mark launch files for installation
+install(DIRECTORY launch/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+)

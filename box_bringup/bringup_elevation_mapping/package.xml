@@ -6,6 +6,7 @@
   <maintainer email="jonfrey@ethz.ch">Jonas Frey</maintainer>
   <license>Proprietary</license>
   <depend>elevation_mapping_cupy</depend>
+  <depend>box_rviz</depend>
   <export>
   </export>
 </package>
