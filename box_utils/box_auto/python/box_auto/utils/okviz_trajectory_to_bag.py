@@ -127,9 +127,6 @@ def okviz_trajectory_to_bag(input_csv, output_bag, world, sensor, cfg_str=None, 
         with open(input_csv, "r") as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
-                timestamp_sec = float(row["timestamp"]) / 1e9  # Convert ns to sec
-                ros_time = rospy.Time(timestamp_sec)
-
                 timestamp = int(row["timestamp"])
                 seconds = timestamp // 10**9
                 nanoseconds = timestamp % 10**9
