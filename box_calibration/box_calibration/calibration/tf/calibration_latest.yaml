@@ -1,278 +1,266 @@
-alphasense_base_to_alphasense_front_center:
-  pitch: 0.0
-  roll: 0.0
-  x: 0.0
-  y: 0.0
-  yaw: 0.0
-  z: 0.0
-alphasense_base_to_alphasense_front_left:
-  pitch: -0.00014711161899083613
-  roll: 0.0006882061227900081
-  x: -0.05588828684678065
-  y: -0.0004362348092338848
-  yaw: 0.01668131626525946
-  z: 0.0009337428287707299
-alphasense_base_to_alphasense_front_right:
-  pitch: 0.0023488144134871103
-  roll: 0.0015453620956870518
-  x: 0.05439605657077311
-  y: 0.00110812849385648
-  yaw: -0.0039022984515695684
-  z: 0.000183952666981152
-alphasense_base_to_alphasense_left:
-  pitch: -1.4003461183499593
-  roll: 1.4677664226947946
-  x: -0.1018683273131092
-  y: 0.01148184705378867
-  yaw: -1.6333936723932858
-  z: -0.06812270626250211
-alphasense_base_to_alphasense_right:
-  pitch: 1.4081469404315063
-  roll: 1.3897014259837484
-  x: 0.1040927212683422
-  y: 0.01443061669248741
-  yaw: 1.580711935402037
-  z: -0.06927065200519426
-alphasense_cam1_helper_joint:
-  pitch: 0.0
-  roll: 0.0
-  x: 0.0
-  y: 0.0
-  yaw: 0.0
-  z: 0.0
-alphasense_cam2_helper_joint:
-  pitch: 0.0
-  roll: 0.0
-  x: 0.0
-  y: 0.0
-  yaw: 0.0
-  z: 0.0
-alphasense_cam3_helper_joint:
-  pitch: 0.0
-  roll: 0.0
-  x: 0.0
-  y: 0.0
-  yaw: 0.0
-  z: 0.0
-alphasense_cam4_helper_joint:
-  pitch: 0.0
-  roll: 0.0
-  x: 0.0
-  y: 0.0
-  yaw: 0.0
-  z: 0.0
-alphasense_cam5_helper_joint:
-  pitch: 0.0
-  roll: 0.0
-  x: 0.0
-  y: 0.0
-  yaw: 0.0
-  z: 0.0
-base_to_boxbase:
-  pitch: 0.0
-  roll: 3.1415126
+base_to_box_base:
   x: -0.07640380000000001
   y: -0.03612243722439489
-  yaw: 0.0
   z: -0.28027610916731677
-box_base_to_adis16475_imu:
-  pitch: 0.001000000000000112
-  roll: 3.141
-  x: 0.329
-  y: -0.012
-  yaw: -1.571
-  z: 0.155
-box_base_to_alphasense_base:
-  pitch: -0.001000000000000112
-  roll: 1.3969999999999998
-  x: 0.369
-  y: -0.046
-  yaw: 1.571
-  z: 0.068
-box_base_to_ap20_imu_frame:
+  roll: 3.1415126
   pitch: 0.0
-  roll: -1.569
+  yaw: 0.0
+box_base_to_alphasense_base:
+  x: 0.36687155943347416
+  y: -0.03830813086502131
+  z: 0.07453013261509792
+  roll: 1.3941719992601669
+  pitch: 0.010250586182529497
+  yaw: 1.5615060083917738
+alphasense_base_to_alphasense_front_center:
+  x: 0.0
+  y: 0.0
+  z: 0.0
+  roll: 0.0
+  pitch: 0.0
+  yaw: 0.0
+alphasense_base_to_alphasense_front_right:
+  x: 0.05439605657077311
+  y: 0.00110812849385648
+  z: 0.000183952666981152
+  roll: 0.0015453620956870518
+  pitch: 0.0023488144134871103
+  yaw: -0.0039022984515695684
+alphasense_base_to_alphasense_front_left:
+  x: -0.05588828684678065
+  y: -0.0004362348092338848
+  z: 0.0009337428287707299
+  roll: 0.0006882061227900081
+  pitch: -0.00014711161899083613
+  yaw: 0.01668131626525946
+alphasense_base_to_alphasense_left:
+  x: -0.1018683273131092
+  y: 0.01148184705378867
+  z: -0.06812270626250211
+  roll: 1.4677664226947946
+  pitch: -1.4003461183499593
+  yaw: -1.6333936723932858
+alphasense_base_to_alphasense_right:
+  x: 0.1040927212683422
+  y: 0.01443061669248741
+  z: -0.06927065200519426
+  roll: 1.3897014259837484
+  pitch: 1.4081469404315063
+  yaw: 1.580711935402037
+alphasense_cam1_helper_joint:
+  x: 0.0
+  y: 0.0
+  z: 0.0
+  roll: 0.0
+  pitch: 0.0
+  yaw: 0.0
+alphasense_cam2_helper_joint:
+  x: 0.0
+  y: 0.0
+  z: 0.0
+  roll: 0.0
+  pitch: 0.0
+  yaw: 0.0
+alphasense_cam3_helper_joint:
+  x: 0.0
+  y: 0.0
+  z: 0.0
+  roll: 0.0
+  pitch: 0.0
+  yaw: 0.0
+alphasense_cam4_helper_joint:
+  x: 0.0
+  y: 0.0
+  z: 0.0
+  roll: 0.0
+  pitch: 0.0
+  yaw: 0.0
+alphasense_cam5_helper_joint:
+  x: 0.0
+  y: 0.0
+  z: 0.0
+  roll: 0.0
+  pitch: 0.0
+  yaw: 0.0
+box_base_to_ap20_imu_frame:
   x: 0.004
   y: -0.102
-  yaw: 0.0
   z: 0.002
-box_base_to_cpt7_imu_frame:
+  roll: -1.569
   pitch: 0.0
-  roll: 0.0
+  yaw: 0.0
+box_base_to_cpt7_imu_frame:
   x: 0.0
   y: 0.0
-  yaw: 0.0
   z: 0.0
-box_base_to_hdr_base:
-  pitch: -0.005295339705939872
-  roll: 1.5695357104726813
-  x: 0.3706498593115575
-  y: -0.045793811092542616
-  yaw: 1.5757591115891132
-  z: 0.10248918024974726
-box_base_to_hesai_lidar:
-  pitch: 0.013243490379749812
-  roll: -3.139726986653073
-  x: 0.30310389132115084
-  y: -0.041178409916753304
-  yaw: -1.5661958844756523
-  z: -0.01436841499958079
+  roll: 0.0
+  pitch: 0.0
+  yaw: 0.0
 box_base_to_imu_alphasense:
-  pitch: 0.0
-  roll: 0.0
-  x: 0.297
-  y: -0.068
-  yaw: 0.0
-  z: 0.157
-box_base_to_imu_stim320:
-  pitch: 0.0
-  roll: -3.14
-  x: 0.297
-  y: -0.068
-  yaw: 0.0
-  z: 0.157
-box_base_to_livox_lidar:
-  pitch: -0.0037082045563212596
-  roll: 0.014933087423307193
-  x: 0.30315259407904327
-  y: -0.04593898511009952
-  yaw: 0.00022641211746011366
-  z: -0.11021104776388646
-box_base_to_prism:
-  pitch: 8.476180490823992e-08
-  roll: -0.00018554035658516687
-  x: 0.3100932646926672
-  y: -0.0430744457984906
-  yaw: -4.4692134413170075e-06
-  z: -0.24129543365838635
-box_base_to_zed_base:
-  pitch: -0.17254788775130692
-  roll: 0.012520293350500448
-  x: 0.3883216527930939
-  y: -0.046502903173948465
-  yaw: 0.0005154886137377148
-  z: 0.13247608919311352
-calibration_metadata:
-  camera: 2024-11-05-20-54-25
-  imu: cad
-  lidar: 2024-11-05-15-57-38
-  prism: 2024-11-17-21-59-02
+  x: 0.3122328693699912
+  y: -0.04700282489433668
+  z: 0.06552857662802512
+  roll: 0.004007133889262088
+  pitch: 0.07359622772469199
+  yaw: 0.0034442001631734527
 cpt7_imu_frame_to_cpt7_antenna_back:
-  pitch: 0.0
-  roll: 0.0
   x: -0.4404038
   y: -0.0361
-  yaw: 0.0
   z: -0.048868
-cpt7_imu_frame_to_cpt7_antenna_front:
-  pitch: 0.0
   roll: 0.0
+  pitch: 0.0
+  yaw: 0.0
+cpt7_imu_frame_to_cpt7_antenna_front:
   x: 0.13924890003
   y: -0.0361
-  yaw: 0.0
   z: -0.193298
-hdr_base_to_hdr_front:
-  pitch: 0.0
   roll: 0.0
+  pitch: 0.0
+  yaw: 0.0
+box_base_to_adis16475_imu:
+  x: 0.19689826041257086
+  y: -0.0033932270071012627
+  z: 0.1163894922253037
+  roll: -3.116408334045991
+  pitch: -0.02599472526827662
+  yaw: -1.5868033653796174
+box_base_to_imu_stim320:
+  x: 0.2957044989290818
+  y: -0.061128744866863934
+  z: 0.16350284167378368
+  roll: 3.1413487385824572
+  pitch: 0.0026837131690162774
+  yaw: -0.0006173323019130506
+box_base_to_hdr_base:
+  x: 0.3684293699056733
+  y: -0.03772867663980787
+  z: 0.10901934198914183
+  roll: 1.566761382569578
+  pitch: 0.005968594292302232
+  yaw: 1.5662772665523235
+hdr_base_to_hdr_front:
   x: 0.0
   y: 0.0
-  yaw: 0.0
   z: 0.0
+  roll: 0.0
+  pitch: 0.0
+  yaw: 0.0
 hdr_base_to_hdr_left:
-  pitch: -1.3862302785271512
-  roll: 3.119939898381636
   x: -0.10262937623039327
   y: 0.001666769368641803
-  yaw: -3.106441929114243
   z: -0.07654582949182541
+  roll: 3.119939898381636
+  pitch: -1.3862302785271512
+  yaw: -3.106441929114243
 hdr_base_to_hdr_right:
-  pitch: 1.4011932837626668
-  roll: -3.1318882190189763
   x: 0.10220167371954061
   y: 0.0004468476554254988
-  yaw: -3.128968871054785
   z: -0.0768012729379894
+  roll: -3.1318882190189763
+  pitch: 1.4011932837626668
+  yaw: -3.128968871054785
+box_base_to_hesai_lidar:
+  x: 0.30124877107935666
+  y: -0.033792163092416165
+  z: -0.008073477131669393
+  roll: -3.1369486215758
+  pitch: 0.0019805316850838306
+  yaw: -1.5756556464922145
 hesai_lidar_to_hesai_model:
-  pitch: 0.0
-  roll: 0.0
   x: 0.0
   y: 0.0
-  yaw: 0.0
   z: 0.0
+  roll: 0.0
+  pitch: 0.0
+  yaw: 0.0
+box_base_to_livox_lidar:
+  x: 0.3015132782353226
+  y: -0.03963341396078992
+  z: -0.10385596784673101
+  roll: 0.0036822006438869638
+  pitch: -0.0065355662095669675
+  yaw: -0.009196872823420462
 livox_lidar_to_livox_imu:
-  pitch: 0.003704410078168019
-  roll: -0.01493402909580321
-  x: 0.017701222952315798
-  y: 0.022322319776006797
-  yaw: -0.0002817615648045343
-  z: -0.04119279434948331
+  x: 0.010345155644958567
+  y: 0.02230473401793912
+  z: -0.03321072091454344
+  roll: 1.3012471833274481e-05
+  pitch: 0.0013399243834499863
+  yaw: 0.013811439276354849
 livox_lidar_to_livox_model:
-  pitch: 0.0
-  roll: 0.0
   x: 0.0
   y: 0.0
-  yaw: 0.0
   z: 0.0
+  roll: 0.0
+  pitch: 0.0
+  yaw: 0.0
+box_base_to_prism:
+  x: 0.3088378015503127
+  y: -0.038312997211241984
+  z: -0.2349441159711169
+  roll: -0.011435578719671628
+  pitch: -0.0028301090309741372
+  yaw: -0.009469461201022983
 prism_to_prism_model:
-  pitch: 0.0
-  roll: 0.0
   x: 0.0
   y: 0.0
-  yaw: 0.0
   z: 0.0
-stim320_imu_to_box_base_model:
-  pitch: 0.0
   roll: 0.0
-  x: 0.0
-  y: 0.0
+  pitch: 0.0
   yaw: 0.0
-  z: 0.0
+box_base_to_zed_base:
+  x: 0.3860119024185725
+  y: -0.03826681684699128
+  z: 0.13906222400738338
+  roll: 0.0010935776147606626
+  pitch: -0.17536119475552625
+  yaw: -0.0069876802519153415
 zed2i_base_helper_joint:
-  pitch: 0.0
-  roll: 0.0
   x: 0.0
   y: 0.0
-  yaw: 0.0
   z: 0.0
-zed2i_base_to_camera_center:
-  pitch: 0.0
   roll: 0.0
+  pitch: 0.0
+  yaw: 0.0
+zed2i_base_to_camera_center:
   x: 0.0
   y: 0.0
-  yaw: 0.0
   z: 0.015
-zed_camera_center_to_zed_left:
-  pitch: 0.0
   roll: 0.0
+  pitch: 0.0
+  yaw: 0.0
+zed_camera_center_to_zed_left:
   x: -0.01
   y: 0.06
-  yaw: 0.0
   z: 0.0
+  roll: 0.0
+  pitch: 0.0
+  yaw: 0.0
 zed_left_camera_frame_to_zed_imu:
-  pitch: -0.0016340951511886193
-  roll: -0.014839648900484392
-  x: -0.018217154116409506
-  y: -0.022301806004378644
-  yaw: -0.013291993667093365
-  z: -0.0008856939711400641
+  x: -0.011088185839056129
+  y: -0.01797474514903879
+  z: 0.003867770928391731
+  roll: -0.0033553520617319267
+  pitch: 0.0002177568575432165
+  yaw: -0.006636189988197866
+zed_left_to_left_optical:
+  x: 0.0
+  y: 0.0
+  z: 0.0
+  roll: -1.5707963267948968
+  pitch: 1.7948966757330709e-09
+  yaw: -1.570796325
 zed_left_optical_to_zed_right_optical:
-  pitch: -0.000934217493818279
-  roll: 0.0012354475722688087
   x: 0.11944778465524945
   y: 7.601316482012954e-05
-  yaw: -0.0017344986767793113
   z: 6.435579031036781e-05
-zed_left_to_left_optical:
-  pitch: 1.7948966757330709e-09
-  roll: -1.5707963267948968
-  x: 0.0
-  y: 0.0
-  yaw: -1.570796325
-  z: 0.0
+  roll: 0.0012354475722688087
+  pitch: -0.000934217493818279
+  yaw: -0.0017344986767793113
 zed_right_to_right_optical:
-  pitch: -1.5707963267948966
-  roll: 1.570796325
   x: 0.0
   y: 0.0
-  yaw: 0.0
   z: 0.0
+  roll: 1.570796325
+  pitch: -1.5707963267948966
+  yaw: 0.0
