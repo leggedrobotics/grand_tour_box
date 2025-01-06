@@ -8,9 +8,10 @@
 <xacro:property name="calib" value="${xacro.load_yaml(calib_file)}"/>
 
   <!-- Wrong export origins in CAD - the coorect ones are xyz="0.0764038 -0.0361 0.2802790" -->
+  <!-- 0.0764038 -0.0461 0.2602790 manually tuned values -->
   <link name="base"/>
   <joint name="cpt7_to_robot_base" type="fixed">
-    <origin xyz="0.0764038 -0.0461 0.2602790" rpy="3.1415126 0.0 0.0" />
+    <origin xyz="0.0764038 -0.0361 0.2802790" rpy="3.1415126 0.0 0.0" />
     <parent link="base" />
     <child link="box_base" />
   </joint>
