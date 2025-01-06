@@ -2,13 +2,9 @@ from __future__ import annotations
 
 import os
 import shutil
+from argparse import ArgumentParser
 from pathlib import Path
-from typing import Any
-from typing import List
-from typing import Mapping
-from typing import Optional
-from typing import Sequence
-from typing import Tuple, Dict
+from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
 
 import numpy as np
 import rosbag
@@ -48,6 +44,7 @@ HUMANS_MAX_SIZE = 4096
 
 # model, class_ids, confidence, max_size
 DetectorConfig = Tuple[YOLO, List[int], float, Optional[int]]
+
 MODELS: Dict[str, DetectorConfig] = {
     "faces11": (FACE_MODEL11, FACE_MODEL11_CIDS, FACE_MODEL11_CONF, None),
     "faces_plates11": (
@@ -60,12 +57,6 @@ MODELS: Dict[str, DetectorConfig] = {
     "full11": (MODEL11, MODEL11_CIDS, MODEL11_CONF, HUMANS_MAX_SIZE),
 }
 
-# blur settings
-BLUR_CLASS_IDS = (0,)  # (1, 2)  # 0 for sign
-FORWARD_BUFFER = 4
-BACKWARD_BUFFER = 4
-BLUR_SIZE = 25
-
 # annotators
 BOX_ANNOTATOR = sv.BoxAnnotator()
 LABEL_ANNOTATOR = sv.LabelAnnotator()
@@ -73,12 +64,7 @@ BLUR_ANNOTATOR = sv.BlurAnnotator()
 
 # other settings
 FRAME_RATE = 10
-DRAW_BOXES = True
-
-# TODO: remove this
-DATA_PATH = Path(__file__).parent.parent.parent.parent.parent / "data"
-FILE_PATH = DATA_PATH / "pilatus.bag"
-OUT_PATH = DATA_PATH / "out.bag"
+DRAW_BOXES = False
 
 
 def fetch_multiple_files_kleinkram(patterns):
@@ -171,8 +157,7 @@ def _compute_number_of_detections(
     then we compute the number of connected components of the resuling graph
     by computing the dimension of the kernel of the laplacian matrix
     $$
-    L = D - A
-    \mathrm{dim}\ker(L)
+    \mathrm{dim}\ker(L) \quad \text{wehre} \quad L := D - A
     $$
     """
 
@@ -287,6 +272,7 @@ def anonymize_bag(
     - `out_path` path to output bagfile
     - `image_topics` mapping from input image topics to output image topics
     """
+
     with rosbag.Bag(str(in_path), "r") as in_bag, rosbag.Bag(
         str(out_path), "w", compression="lz4"
     ) as out_bag:
@@ -328,10 +314,35 @@ def anonymize_bag(
 
 
 if __name__ == "__main__":
+    parser = ArgumentParser(description="Anonymize images in a bag file.")
+    parser.add_argument(
+        "--input", type=str, required=True, help="Comma seperated list of bags."
+    )
+    parser.add_argument(
+        "--output",
+        type=str,
+        required=True,
+        help="Output bag file path ending with .bag",
+    )
+    parser.add_argument(
+        "--topics",
+        type=str,
+        required=True,
+        help="key:value pairs of input and output topics",
+        nargs="+",
+    )
+
+    args = parser.parse_args()
+
+    try:
+        image_topics = dict(kv.split(":") for kv in args.topics)
+    except Exception as e:
+        raise ValueError(
+            "Failed to parse topics, must specify them in the format 'key:value'"
+        ) from e
+
     anonymize_bag(
-        FILE_PATH,
-        OUT_PATH,
-        image_topics={
-            "/gt_box/hdr_front/image_raw/compressed": "/gt_box/hdr_front/image_anonymized/compressed"
-        },
+        Path(args.input),
+        Path(args.output),
+        image_topics=image_topics,
     )
