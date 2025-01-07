@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<launch>
+  <!-- Parameters -->
+  <arg name="base_path" default=""/>
+  <arg name="input_bag_name" default="2024-12-09-11-53-11_nuc_livox.bag"/>
+  <arg name="output_bag_name" default="2024-12-09-11-53-11_nuc_livox_filtered.bag"/>
+
+  <!-- if this is set, above paremeters are overidden -->
+  <arg name="global_input_bag_path" default=""/>
+  <arg name="global_output_bag_path" default=""/>
+  <arg name="operation_mode" default="livox"/> <!-- livox or hesai -->
+
+  <!-- Output topic rewrite is optional, by default input topic will be reused. -->
+  <arg name="output_topic" default=""/>
+
+  <!-- The filtering   parammmeters are here -->
+  <rosparam file="$(find box_auto)/cfg/lidar_filtering.yaml" command="load"/>
+  
+  <!-- Lets go. -->
+  <node name="box_lidar_filter" pkg="box_auto" type="filter_lidar_node" output="screen" required="True">
+    <param name="operation_mode"  value="$(arg operation_mode)"/>
+    <param name="base_path"  value="$(arg base_path)"/>
+    <param name="input_bag_name"  value="$(arg input_bag_name)"/>
+    <param name="output_bag_name" value="$(arg output_bag_name)"/>
+    <param name="output_topic" value="$(arg output_topic)"/>
+    <param name="global_output_bag_path" value="$(arg global_output_bag_path)"/>
+    <param name="global_input_bag_path" value="$(arg global_input_bag_path)"/>
+  </node>
+
+</launch>
