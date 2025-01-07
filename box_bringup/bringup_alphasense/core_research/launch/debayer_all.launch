@@ -1,10 +1,10 @@
 <launch>
 
 <include file="$(find bringup_alphasense)/launch/debayer_single_camera.launch">
-    <arg name="camera_name" value="alphasense_front_left"/>
+    <arg name="camera_name" value="alphasense_front_center"/>
     <arg name="input_topic" value="alphasense_driver_node/cam1"/>
     <arg name="output_prefix" value="alphasense_driver_node/cam1"/>
-    <arg name="output_frame" value="alphasense_front_left"/>
+    <arg name="output_frame" value="alphasense_front_center"/>
     <arg name="debayer/enabled" value="false"/>
     <arg name="white_balance/enabled" value="false"/>
     <arg name="undistortion/calibration_file" value="$(find box_calibration)/calibration/alphasense/cam1.yaml"/>
@@ -21,10 +21,10 @@
 </include>
 
 <include file="$(find bringup_alphasense)/launch/debayer_single_camera.launch">
-    <arg name="camera_name" value="alphasense_front_center"/>
+    <arg name="camera_name" value="alphasense_front_left"/>
     <arg name="input_topic" value="alphasense_driver_node/cam3"/>
     <arg name="output_prefix" value="alphasense_driver_node/cam3"/>
-    <arg name="output_frame" value="alphasense_front_center"/>
+    <arg name="output_frame" value="alphasense_front_left"/>
     <arg name="debayer/enabled" value="true"/>
     <arg name="white_balance/enabled" value="false"/>
     <arg name="undistortion/calibration_file" value="$(find box_calibration)/calibration/alphasense/cam3.yaml"/>
