@@ -467,9 +467,6 @@ if __name__ == "__main__":
     calibration_graph.add_edge("zed2i_right_camera_optical_frame", "zed2i_right_camera_frame",
                                xyz=[0, 0, 0],
                                rpy=[1.570796325, -1.570796325, 0.0])
-    calibration_graph.add_edge("stim320_imu", "box_base_model",
-                               xyz=[0.0, -0.0, 0.0],
-                               rpy=[-0.0, -0.000, -0.000])
     calibration_graph.add_edge("livox_lidar", "livox_model", transform=identity)
     calibration_graph.add_edge("cpt7_imu", "cpt7_antenna_front",
                                xyz=[0.13924890003, -0.0361, -0.193298],
@@ -479,6 +476,7 @@ if __name__ == "__main__":
                                rpy=[0, 0, 0])
     calibration_graph.add_edge("prism", "prism_model", transform=identity)
     calibration_graph.add_edge("hesai_lidar", "hesai_model", transform=identity)
+    calibration_graph.add_edge("cpt7_imu", "box_base_model", transform=identity)
     calibration_graph.add_edge("cpt7_imu", "box_base", transform=identity)
     calibration_graph.add_edge("box_base", "base",
                                xyz=[0.0764038, -0.0361, -0.2802790],
@@ -488,7 +486,7 @@ if __name__ == "__main__":
 
     # # Define the desired structure for the new graph
     new_structure = [
-        ("base", "box_base", "base_to_boxbase"),
+        ("base", "box_base", "base_to_box_base"),
         ("box_base", "alphasense_base", "box_base_to_alphasense_base"),
         ("alphasense_base", "cam1_sensor_frame", "alphasense_base_to_alphasense_front_center"),
         ("alphasense_base", "cam2_sensor_frame", "alphasense_base_to_alphasense_front_right"),
@@ -507,7 +505,6 @@ if __name__ == "__main__":
         ("cpt7_imu", "cpt7_antenna_front", "cpt7_imu_frame_to_cpt7_antenna_front"),
         ("box_base", "adis16475_imu", "box_base_to_adis16475_imu"),
         ("box_base", "stim320_imu", "box_base_to_imu_stim320"),
-        ("stim320_imu", "box_base_model", "stim320_imu_to_box_base_model"),
         ("box_base", "hdr_base", "box_base_to_hdr_base"),
         ("hdr_base", "hdr_front", "hdr_base_to_hdr_front"),
         ("hdr_base", "hdr_left", "hdr_base_to_hdr_left"),
