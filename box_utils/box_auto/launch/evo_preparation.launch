@@ -2,11 +2,11 @@
   <!-- Arguments -->
 
   <!-- Folder of the bag files -->
-  <arg name="bag_file_directory" default="/home/tutuna/Videos/evo_integration_heap/" />
+  <arg name="bag_file_directory" default="" />
 
   <!-- Where the output files will be generated. -->
   <!-- Be careful that files ending with `.tum` will be cleaned at this folder on every run. -->
-  <arg name="output_folder_path" default="/home/tutuna/Videos/evo_integration_heap/test_space" />
+  <arg name="output_folder_path" default="" />
 
   <!-- Interpolate -->
   <!-- Whether to attempt /tf based interpolation and tranformation -->

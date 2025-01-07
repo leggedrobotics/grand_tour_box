@@ -27,7 +27,7 @@ from box_auto.utils import (
     ARTIFACT_FOLDER,
 )
 
-PATTERNS = ["*_jetson_ap20_robot.bag", "*_cpt7_raw_imu.bag", "*_cpt7_ie_tc.bag", "*_tf_static.bag"] #, "*_nuc_cpt7.bag"
+PATTERNS = ["*_jetson_ap20_robot.bag", "*_cpt7_raw_imu.bag", "*_cpt7_ie_tc.bag", "*_tf_static.bag"]
 
 """
 Exit Codes:
