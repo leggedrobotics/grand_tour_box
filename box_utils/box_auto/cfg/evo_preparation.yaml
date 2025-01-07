@@ -1,0 +1,41 @@
+# The target sensor frame.
+target_frame: cpt7_imu
+
+# If topic entry is left empty "", the bag only going to be used for /tf & /tf_static reading and not for topic reading
+bag_topic_pairs:
+  - bag: _cpt7_ie_tc.bag
+    topic: /gt_box/inertial_explorer/tc/odometry
+    frame: box_base
+  - bag: _dlio.bag
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+  - bag: _lpc_state_estimator.bag
+    topic: /state_estimator/pose_in_odom
+    frame: base
+  - bag: _jetson_zed2i_prop.bag
+    topic: /gt_box/zed2i/zed_node/odom
+    frame: zed_base_link
+  - bag: open3d_slam_replayed.bag
+    topic: /open3d_slam/optimized_poses_as_odometry
+    frame: hesai_lidar
+  - bag: _okvis_alphasense_2_bw.bag
+    topic: /gt_box/okviz/pose
+    frame: cpt7_imu
+  - bag: _okvis_with_final_ba_alphasense_2_bw.bag
+    topic: /gt_box/okviz/pose
+    frame: cpt7_imu
+  - bag: _okvis_hdr_3_rgb.bag
+    topic: /gt_box/okviz/pose
+    frame: cpt7_imu
+  - bag: _okvis_zed_2_rgb.bag
+    topic: /gt_box/okviz/pose
+    frame: cpt7_imu
+  - bag: _jetson_zed2i_tf.bag
+    topic: ""
+    frame: ""
+  - bag: _nuc_tf.bag
+    topic: ""
+    frame: ""
+  - bag: _tf_static.bag
+    topic: ""
+    frame: ""

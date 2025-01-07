@@ -12,6 +12,7 @@ from .utils import (
     get_file,
     upload_bag,
     check_duplicate_timestamps,
+    find_and_extract_non_matching,
     RosbagMessageGenerator,
 )
 from .gps_utils import GPS_utils
@@ -25,6 +26,7 @@ __all__ = [
     "ARTIFACT_FOLDER",
     "run_ros_command",
     "check_duplicate_timestamps",
+    "find_and_extract_non_matching",
     "start_roscore",
     "kill_roscore",
     "get_bag",

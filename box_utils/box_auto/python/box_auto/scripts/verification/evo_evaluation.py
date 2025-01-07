@@ -1,0 +1,127 @@
+#!/usr/bin/env python3
+
+from time import sleep
+from box_auto.utils import (
+    WS,
+    MISSION_DATA,
+    BOX_AUTO_SCRIPTS_DIR,
+    get_bag,
+    upload_bag,
+    run_ros_command,
+    find_and_extract_non_matching,
+)
+import os
+from pathlib import Path
+import time
+import yaml
+import shutil
+
+def load_config(config_path):
+    with open(config_path, "r") as f:
+        config = yaml.safe_load(f)
+    return config
+
+if __name__ == "__main__":
+    # Ground truth
+    ENABLE_VIZ = False
+    USE_IE = True
+    USE_GMSF = False
+
+    if USE_IE:
+        GT_PATTERN = "*_cpt7_ie_tc.bag"
+    elif USE_GMSF:
+        GT_PATTERN = "not_implemented"
+
+    # Prepare for evo.
+    evo_prep_config_path = os.path.join(f"{WS}" + "/src/grand_tour_box/box_utils/box_auto/cfg/evo_preparation.yaml")
+    evo_prep_config = load_config(evo_prep_config_path)
+
+    # Retrieve the to-be-prepared bags from config.
+    PATTERNS = []
+    for pair in evo_prep_config["bag_topic_pairs"]:
+        bag_name = pair.get("bag")
+        if bag_name.startswith("_"):
+            bag_name = "*" + bag_name
+        PATTERNS.append(bag_name)
+
+    # Iterate through each output pattern to ensure it is located where its expected.
+    for pattern in PATTERNS:
+        get_bag(pattern=pattern, auto_download=False, rglob=False)
+    
+    # Get the mission time for folder naming
+    # CPT7 is the ground truth and expected.
+    timeAsString = find_and_extract_non_matching(MISSION_DATA, GT_PATTERN)
+
+    # Create the output folder for the evo evaluations.
+    p = Path(MISSION_DATA) / f"{timeAsString}_evo_evaluations"
+    if p.exists():
+        # Remove all contents, including folders
+        for item in p.iterdir():
+            if item.is_dir():
+                shutil.rmtree(item)  # Remove directories
+            else:
+                item.unlink()  # Remove files
+    else:
+        p.mkdir(exist_ok=True, parents=True)
+    p = str(p)
+
+
+    # Run the evo preparation.
+    run_ros_command(
+        f"roslaunch box_auto evo_preparation.launch bag_file_directory:={MISSION_DATA} output_folder_path:={p} config_path:={evo_prep_config_path} prefix:={timeAsString}" ,
+        background=False,
+    )
+    print("\033[92mEVO preparation finished.\033[0m")
+    sleep(1)
+
+    ape_config_path = os.path.join(f"{WS}" + "/src/grand_tour_box/box_utils/box_auto/cfg/evo_evaluation_ape.yaml")
+    evo_prep_config = load_config(ape_config_path)
+
+    EVALUATION_PATTERN = []
+
+    for _, param_set in list(evo_prep_config.items()):
+        if isinstance(param_set, (bool, str)):
+            continue
+        estimated_file = param_set.get("estimated_file")
+        reference_file = param_set.get("reference_file")
+
+        if estimated_file.startswith("_"):
+            estimated_file = timeAsString + estimated_file
+        if reference_file.startswith("_"):
+            reference_file = timeAsString + reference_file
+
+        EVALUATION_PATTERN.append(estimated_file)
+        EVALUATION_PATTERN.append(reference_file)
+
+    # Iterate through each pattern to ensure it is located where its expected.
+    for pattern in EVALUATION_PATTERN:
+        get_bag(pattern=pattern, auto_download=False, rglob=False, directory=p)
+
+    # Create the output folder for the evo evaluations.
+    p_ape = Path(p) / f"{timeAsString}_ape_results"
+    p_ape.mkdir(exist_ok=True, parents=True)
+    p_ape = str(p_ape)
+
+    run_ros_command(
+        f'python3 {BOX_AUTO_SCRIPTS_DIR}/verification/grandtour_SE3_APE.py --config={ape_config_path} --input_folder_path={p} --output_dir_name={p_ape} --prefix={timeAsString} --disable_viz'
+    )
+    sleep(1)
+
+    rpe_config_path = os.path.join(f"{WS}" + "/src/grand_tour_box/box_utils/box_auto/cfg/evo_evaluation_rpe.yaml")
+
+    p_rpe = Path(p) / f"{timeAsString}_rpe_results"
+    p_rpe.mkdir(exist_ok=True, parents=True)
+    p_rpe = str(p_rpe)
+
+    run_ros_command(
+        f'python3 {BOX_AUTO_SCRIPTS_DIR}/verification/grandtour_SE3_RPE.py  --config={rpe_config_path} --input_folder_path={p} --output_dir_name={p_rpe} --prefix={timeAsString} --disable_viz'
+    )
+    sleep(1)
+
+    # point_relation_config = os.path.join(f"{WS}" + "/src/grand_tour_box/box_utils/box_auto/cfg/evo_evaluation_point_relation.yaml")
+    # point_relation_output_folder = f"{timeAsString}_point_relation_results"
+    # run_ros_command(
+    #     f'python3 {BOX_AUTO_SCRIPTS_DIR}/verification/grandtour_point_relation.py --config={point_relation_config} --input_folder_path={p} --output_dir_name={point_relation_output_folder}'
+    # )
+
+    # Deploy .zip file reader e.g.
