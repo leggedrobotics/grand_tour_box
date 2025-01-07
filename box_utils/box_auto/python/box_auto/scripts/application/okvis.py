@@ -66,36 +66,36 @@ if __name__ == "__main__":
 
     runs_imu = {
         "alphasense_2_bw_cpt7": {
-            "data_folder": "euroc_grand_tour/alphasense_imu/cpt7",
+            "data_folder": "euroc_grand_tour/alphasense_imu/cpt7/",
             "okvis_config": "okvis_config_2_bw.yaml",
         },
         "alphasense_2_bw_alphasense": {
-            "data_folder": "euroc_grand_tour/alphasense_imu/alphasense",
+            "data_folder": "euroc_grand_tour/alphasense_imu/alphasense/",
             "okvis_config": "okvis_config_2_bw.yaml",
         },
         "alphasense_2_bw_ap20": {
-            "data_folder": "euroc_grand_tour/alphasense_imu/ap20",
+            "data_folder": "euroc_grand_tour/alphasense_imu/ap20/",
             "okvis_config": "okvis_config_2_bw.yaml",
         },
         "alphasense_2_bw_zed": {
-            "data_folder": "euroc_grand_tour/alphasense_imu/zed",
+            "data_folder": "euroc_grand_tour/alphasense_imu/zed/",
             "okvis_config": "okvis_config_2_bw.yaml",
         },
         "alphasense_2_bw_stim": {
-            "data_folder": "euroc_grand_tour/alphasense_imu/stim",
+            "data_folder": "euroc_grand_tour/alphasense_imu/stim/",
             "okvis_config": "okvis_config_2_bw.yaml",
         },
         "alphasense_2_bw_adis": {
-            "data_folder": "euroc_grand_tour/alphasense_imu/adis",
+            "data_folder": "euroc_grand_tour/alphasense_imu/adis/",
             "okvis_config": "okvis_config_2_bw.yaml",
         },
         "alphasense_2_bw_livox": {
-            "data_folder": "euroc_grand_tour/alphasense_imu/livox",
+            "data_folder": "euroc_grand_tour/alphasense_imu/livox/",
             "okvis_config": "okvis_config_2_bw.yaml",
         },
     }
 
-    for k, v in runs.items():
+    for k, v in runs_imu.items():
         run_script = f"{BOX_AUTO_DIR}/docker/run.sh"
 
         relativ_euroc_data = v["data_folder"]
