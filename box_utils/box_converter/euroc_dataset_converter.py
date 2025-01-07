@@ -11,7 +11,7 @@ import yaml
 
 # Initialize CV Bridge
 bridge = CvBridge()
-SKIP_WRITE = True
+SKIP_WRITE = False
 
 
 def process_camera_data(topic, camera_info_topic, bag_pattern, cam_folder):
@@ -174,7 +174,10 @@ def process(rosbags, tag):
 
         for k in cams:
             t_sensor_base, q_sensor_base = tf_lookup.lookupTransform(
-                infos[imu]["imu_msg"].header.frame_id, infos[k]["camera_info_msg"].header.frame_id, latest=True
+                infos[imu]["imu_msg"].header.frame_id,
+                infos[k]["camera_info_msg"].header.frame_id,
+                time=None,
+                latest=True,
             )
             T_sensor_base = np.eye(4)
             T_sensor_base[:3, :3] = R.from_quat(q_sensor_base).as_matrix()
