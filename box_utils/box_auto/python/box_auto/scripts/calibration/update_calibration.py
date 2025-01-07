@@ -115,10 +115,20 @@ def update_camera_info(calibration):
                         key = topic.replace("/camera_info", "").replace("/color", "")
                         found = False
                         for k in calibration.keys():
-                            if k.find(key) != -1:
+                            if key in k:
                                 new_msg = calibration[k]
                                 found = True
                                 break
+                            else:
+                                try:
+                                    key1 = key.split("/")[2]  # camera identification
+                                    key2 = key.split("/")[4]  # left right identification
+                                    if key1 in k and key2 in k and "zed" in key:
+                                        new_msg = calibration[k]
+                                        found = True
+                                        break
+                                except:
+                                    pass
                         if not found:
                             raise ValueError(f"Key {key} not found in: " + str(list(calibration.keys())))
 

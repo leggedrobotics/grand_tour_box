@@ -15,6 +15,7 @@ from .utils import (
     RosbagMessageGenerator,
 )
 from .gps_utils import GPS_utils
+from .okviz_trajectory_to_bag import okviz_trajectory_to_bag
 
 __all__ = [
     "WS",
@@ -32,4 +33,5 @@ __all__ = [
     "upload_bag",
     "GPS_utils",
     "RosbagMessageGenerator",
+    "okviz_trajectory_to_bag",
 ]
