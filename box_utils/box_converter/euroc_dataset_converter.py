@@ -11,6 +11,7 @@ import yaml
 
 # Initialize CV Bridge
 bridge = CvBridge()
+SKIP_WRITE = False
 
 
 def process_camera_data(topic, camera_info_topic, bag_pattern, cam_folder):
@@ -22,6 +23,8 @@ def process_camera_data(topic, camera_info_topic, bag_pattern, cam_folder):
 
     with rosbag.Bag(bag_path, "r") as bag, open(csv_path, "w", newline="") as csvfile:
         for _topic, camera_info_msg, t in bag.read_messages(topics=[camera_info_topic]):
+            if SKIP_WRITE:
+                return camera_info_msg
             break
 
         writer = csv.writer(csvfile)
@@ -46,6 +49,10 @@ def process_imu_data(topic, bag_pattern, imu_folder):
     bag_path = get_bag(bag_pattern, rglob=False)
 
     with rosbag.Bag(bag_path, "r") as bag, open(csv_path, "w", newline="") as csvfile:
+        if SKIP_WRITE:
+            for _topic, msg, _t in bag.read_messages(topics=[topic]):
+                return msg
+
         writer = csv.writer(csvfile)
         writer.writerow(
             [
@@ -143,7 +150,7 @@ def process(rosbags, tag):
 
     for sensor, data in rosbags.items():
         folder = output_dir / sensor
-
+        print(f"Processing: {sensor}")
         if "cam" in sensor:
             topic, camera_info_topic, bag_pattern = data
             camera_info_msg = process_camera_data(topic, camera_info_topic, bag_pattern, folder)
@@ -167,7 +174,10 @@ def process(rosbags, tag):
 
         for k in cams:
             t_sensor_base, q_sensor_base = tf_lookup.lookupTransform(
-                infos[imu].header.frame_id, infos[k]["camera_info_msg"].header.frame_id
+                infos[imu]["imu_msg"].header.frame_id,
+                infos[k]["camera_info_msg"].header.frame_id,
+                time=None,
+                latest=True,
             )
             T_sensor_base = np.eye(4)
             T_sensor_base[:3, :3] = R.from_quat(q_sensor_base).as_matrix()

@@ -39,11 +39,11 @@ CONFIG = {
             "/gt_box/cpt7/gps/imu",
             "/gt_box/cpt7/offline_from_novatel_logs/imu",
         ],
-        "out_pattern": "_nuc_cpt7_intrinsics.bag",
+        "out_pattern": ["_nuc_cpt7_intrinsics.bag", "_cpt7_raw_intrinsics.bag"],
         "frequency": 100,
     },
     "alphasense": {
-        "pattern": "_nuc_alphasense.bag",
+        "pattern": "_nuc_alphasense_calib.bag",
         "topics": ["/gt_box/alphasense_driver_node/imu"],
         "out_pattern": "_nuc_alphasense_intrinsics.bag",
         "frequency": 200,
@@ -64,20 +64,25 @@ def process_bags(calibrations) -> None:
         # Angular velocity covariance
         angular_velocity_covariance = [gyro_variance, 0.0, 0.0, 0.0, gyro_variance, 0.0, 0.0, 0.0, gyro_variance]
 
-        input_bag_path = get_bag("*" + v["pattern"])
-        output_bag_path = input_bag_path.replace(v["pattern"], v["out_pattern"])
+        if not type(v["pattern"]) is list:
+            v["pattern"] = [v["pattern"]]
+            v["out_pattern"] = v["out_pattern"]
 
-        with rosbag.Bag(input_bag_path, "r") as input_bag, rosbag.Bag(output_bag_path, "w") as output_bag:
-            with tqdm(total=input_bag.get_message_count(), desc=f"Processing {k}") as pbar:
-                for topic, msg, t in input_bag.read_messages():
-                    if topic in v["topics"]:
-                        msg.linear_acceleration_covariance = linear_acceleration_covariance
-                        msg.angular_velocity_covariance = angular_velocity_covariance
+        for pattern, out_pattern in zip(v["pattern"], v["out_pattern"]):
+            input_bag_path = get_bag("*" + pattern)
+            output_bag_path = input_bag_path.replace(pattern, out_pattern)
 
-                    output_bag.write(topic, msg, t)
-                    pbar.update(1)
+            with rosbag.Bag(input_bag_path, "r") as input_bag, rosbag.Bag(output_bag_path, "w") as output_bag:
+                with tqdm(total=input_bag.get_message_count(), desc=f"Processing {k}") as pbar:
+                    for topic, msg, t in input_bag.read_messages():
+                        if topic in v["topics"]:
+                            msg.linear_acceleration_covariance = linear_acceleration_covariance
+                            msg.angular_velocity_covariance = angular_velocity_covariance
 
-        upload_bag(output_bag_path)
+                        output_bag.write(topic, msg, t)
+                        pbar.update(1)
+
+            upload_bag(output_bag_path)
 
 
 def load_calibrations():

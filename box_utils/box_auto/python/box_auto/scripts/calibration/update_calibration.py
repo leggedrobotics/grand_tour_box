@@ -14,7 +14,7 @@ CAMERA_INFO_PATTERNS = [
     "*_jetson_hdr_right_updated.bag",
     "*_jetson_hdr_left_updated.bag",
     "*_jetson_hdr_front_updated.bag",
-    "*_nuc_alphasense.bag",
+    "*_nuc_alphasense_updated.bag",
     "*_jetson_zed2i_images.bag",
 ]
 

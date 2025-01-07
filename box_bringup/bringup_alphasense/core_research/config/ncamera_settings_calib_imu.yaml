@@ -116,6 +116,6 @@ ncamera:
   num_cams: 4                     # 1 - 8
   cams:
     0: *standard_camera_config
-    1: *standard_camera_config_rotated            # Front middle
-    2: *standard_camera_config_rotated            # Front right
-    3: *standard_camera_config_rotated            # Front left
+    1: *standard_camera_config_rotated            # front_center
+    2: *standard_camera_config_rotated            # front_right
+    3: *standard_camera_config_rotated            # front_left
