@@ -16,12 +16,38 @@ import time
 import yaml
 import shutil
 
+def version_to_tuple(version):
+    # Split version by '.' and keep only numeric parts
+    numeric_parts = []
+    for part in version.split("."):
+        # Extract leading numeric portion of each part
+        numeric_part = ''.join(c for c in part if c.isdigit())
+        if numeric_part:
+            numeric_parts.append(int(numeric_part))
+    return tuple(numeric_parts)
+
+
 def load_config(config_path):
     with open(config_path, "r") as f:
         config = yaml.safe_load(f)
     return config
 
 if __name__ == "__main__":
+
+    IS_POINT_DISTANCES_SUPPORTED = False
+    from evo import __version__
+    evo_version_tuple = version_to_tuple(__version__)
+    required_version_tuple = (1, 30, 1)
+
+    # Check if the version meets the required version
+    if evo_version_tuple < required_version_tuple:
+        print(f"\033[91mEvo version {__version__} is less than the required version {'.'.join(map(str, required_version_tuple))}. Point_distances not supported.\033[0m")
+        IS_POINT_DISTANCES_SUPPORTED = False
+    else:
+        print(f"\033[92mEvo version {__version__} meets the required version.\033[0m")
+        IS_POINT_DISTANCES_SUPPORTED = True
+
+
     # Ground truth
     ENABLE_VIZ = False
     USE_IE = True
@@ -118,10 +144,13 @@ if __name__ == "__main__":
     )
     sleep(1)
 
-    # point_relation_config = os.path.join(f"{WS}" + "/src/grand_tour_box/box_utils/box_auto/cfg/evo_evaluation_point_relation.yaml")
-    # point_relation_output_folder = f"{timeAsString}_point_relation_results"
-    # run_ros_command(
-    #     f'python3 {BOX_AUTO_SCRIPTS_DIR}/verification/grandtour_point_relation.py --config={point_relation_config} --input_folder_path={p} --output_dir_name={point_relation_output_folder}'
-    # )
+    if IS_POINT_DISTANCES_SUPPORTED:
+        point_relation_config_path = os.path.join(f"{WS}" + "/src/grand_tour_box/box_utils/box_auto/cfg/evo_evaluation_point_relation.yaml")
+        p_point_relation = Path(p) / f"{timeAsString}_point_relation_results"
+        p_point_relation.mkdir(exist_ok=True, parents=True)
+        p_point_relation = str(p_point_relation)
+        run_ros_command(
+            f'python3 {BOX_AUTO_SCRIPTS_DIR}/verification/grandtour_point_relation.py --config={point_relation_config_path} --input_folder_path={p} --output_dir_name={p_point_relation} --prefix={timeAsString} --disable_viz'
+        )
 
     # Deploy .zip file reader e.g.

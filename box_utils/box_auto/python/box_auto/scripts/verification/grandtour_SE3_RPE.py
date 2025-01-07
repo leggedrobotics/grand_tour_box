@@ -28,7 +28,7 @@ SETTINGS.plot_show_axis = True
 import matplotlib.pyplot as plt
 
 
-def run_ate(test_name, reference_file, estimated_file, params, output_path, disable_viz, relation):
+def run_rpe(test_name, reference_file, estimated_file, params, output_path, disable_viz, relation):
 
     traj_reference = file_interface.read_tum_trajectory_file(reference_file)
     traj_estimated = file_interface.read_tum_trajectory_file(estimated_file)
@@ -195,8 +195,8 @@ def process_directory(base_path, output_dir, config, disable_viz, prefix):
         params = test_params.get("parameters", {})
         print(f"\033[92mProcessing test: {test_name}\033[0m")
         print(f"\033[92mEstimated file: {estimated_file}, Reference file: {reference_file}\033[0m")
-        run_ate(test_name, base_path + reference_file, base_path + estimated_file, params, output_dir, disable_viz, "translation_part")
-        run_ate(test_name, base_path + reference_file, base_path + estimated_file, params, output_dir, disable_viz, "rotation_angle_deg")
+        run_rpe(test_name, base_path + reference_file, base_path + estimated_file, params, output_dir, disable_viz, "translation_part")
+        run_rpe(test_name, base_path + reference_file, base_path + estimated_file, params, output_dir, disable_viz, "rotation_angle_deg")
 
 def load_config(config_path):
     with open(config_path, "r") as f:

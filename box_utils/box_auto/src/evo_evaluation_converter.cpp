@@ -1,5 +1,7 @@
 #include <XmlRpcValue.h>
+#include <geometry_msgs/PointStamped.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <nav_msgs/Odometry.h>
 #include <ros/ros.h>
 #include <rosbag/bag.h>
@@ -301,6 +303,45 @@ void parseRosbagToTum(const std::string& bagPath, const std::string& topicName, 
           geometry_msgs::PoseStamped transformed_pose = matrixToPose(transformedPoseAsMat, targetFrame, poseCov->header.stamp);
 
           double timestamp = poseCov->header.stamp.toSec();
+          const auto& position = transformed_pose.pose.position;
+          const auto& orientation = transformed_pose.pose.orientation;
+
+          tumFile << timestamp << " " << position.x << " " << position.y << " " << position.z << " " << orientation.x << " "
+                  << orientation.y << " " << orientation.z << " " << orientation.w << std::endl;
+
+        } catch (const tf2::TransformException& ex) {
+          ROS_ERROR_STREAM("Failed to transform pose: " << ex.what());
+          bag.close();
+          tumFile.close();
+          return;
+        }
+      }
+
+    } else if (msg.getDataType() == "geometry_msgs/PointStamped") {
+      geometry_msgs::PointStamped::ConstPtr point = msg.instantiate<geometry_msgs::PointStamped>();
+
+      if (point) {
+        try {
+          geometry_msgs::TransformStamped transform =
+              tf_buffer.lookupTransform(targetFrame, sourceFrame, point->header.stamp, ros::Duration(0.2));
+
+          // Convert poseCov pose to PoseStamped
+          geometry_msgs::PoseStamped pose;
+          pose.header = point->header;
+          pose.pose.position = point->point;
+
+          // Set the orientation to identity (no rotation)
+          pose.pose.orientation.x = 0.0;
+          pose.pose.orientation.y = 0.0;
+          pose.pose.orientation.z = 0.0;
+          pose.pose.orientation.w = 1.0;
+
+          Eigen::Matrix4d poseAsMat = poseToMatrix(pose);
+          Eigen::Matrix4d transformAsMat = transformToMatrix(transform);
+          Eigen::Matrix4d transformedPoseAsMat = poseAsMat * transformAsMat;
+          geometry_msgs::PoseStamped transformed_pose = matrixToPose(transformedPoseAsMat, targetFrame, point->header.stamp);
+
+          double timestamp = point->header.stamp.toSec();
           const auto& position = transformed_pose.pose.position;
           const auto& orientation = transformed_pose.pose.orientation;
 

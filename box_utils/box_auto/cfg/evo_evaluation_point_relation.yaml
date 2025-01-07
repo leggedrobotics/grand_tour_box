@@ -1,31 +1,33 @@
 visualize: True
 dlio:
-  estimated_file: "2024-11-14-13-45-37_dlio_evo.tum"
-  reference_file: "2024-11-14-13-45-37_cpt7_ie_tc_evo.tum"
+  estimated_file: "_dlio_evo.tum"
+  reference_file: "_jetson_ap20_robot_evo.tum"
   parameters:
-    t_max_diff: 0.02
+    t_max_diff: 0.01
     t_offset: 0.0
     n_to_align: -1
     correct_scale: False
-    relation: "translation_part" #translation_part # angle_deg
+    delta: 1
+    unit: "m" #m or frame
 
 o3d:
   estimated_file: "open3d_slam_replayed_evo.tum"
-  reference_file: "2024-11-14-13-45-37_cpt7_ie_tc_evo.tum"
+  reference_file: "_jetson_ap20_robot_evo.tum"
   parameters:
-    t_max_diff: 0.02
+    t_max_diff: 0.01
     t_offset: 0.0
-    n_to_align: 1500
-    correct_scale: True
-    relation: "translation_part"
+    n_to_align: -1
+    correct_scale: False
+    delta: 1
+    unit: "m" #m or frame
 
 se:
-  estimated_file: "2024-11-14-13-45-37_lpc_state_estimator_evo.tum"
-  reference_file: "2024-11-14-13-45-37_cpt7_ie_tc_evo.tum"
+  estimated_file: "_lpc_state_estimator_evo.tum"
+  reference_file: "_jetson_ap20_robot_evo.tum"
   parameters:
-    t_max_diff: 0.02
+    t_max_diff: 0.01
     t_offset: 0.0
-    n_to_align: 10000
+    n_to_align: -1
     correct_scale: False
-    relation: "translation_part"
- 
+    delta: 1
+    unit: "m" #m or frame

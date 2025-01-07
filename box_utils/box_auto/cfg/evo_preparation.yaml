@@ -30,6 +30,9 @@ bag_topic_pairs:
   - bag: _okvis_zed_2_rgb.bag
     topic: /gt_box/okviz/pose
     frame: cpt7_imu
+  - bag: _jetson_ap20_robot.bag
+    topic: "/gt_box/ap20/prism_position"
+    frame: "prism"
   - bag: _jetson_zed2i_tf.bag
     topic: ""
     frame: ""
