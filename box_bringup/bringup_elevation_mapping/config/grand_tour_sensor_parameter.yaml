@@ -18,25 +18,25 @@ image_channel_fusions:
 
 publishers:
   elevation_map_raw:
-    layers: ['elevation', 'traversability', 'variance', 'rgb', 'upper_bound']
+    layers: ['elevation', 'traversability', 'variance', 'rgb', 'upper_bound', 'inpaint', 'smooth', 'min_filter']
     basic_layers: ['elevation', 'traversability']
     fps: 5.0
 
-  elevation_map_recordable:
-    layers: ['elevation', 'traversability', 'variance', 'rgb']
-    basic_layers: ['elevation', 'traversability']
-    fps: 2.0
+  # elevation_map_recordable:
+  #   layers: ['elevation', 'traversability', 'variance', 'rgb']
+  #   basic_layers: ['elevation', 'traversability']
+  #   fps: 2.0
 
-  filtered_elevation_map:
-    layers: ['inpaint', 'smooth', 'min_filter', 'upper_bound']
-    basic_layers: ['inpaint']
-    fps: 5.0
+  # filtered_elevation_map:
+  #   layers: ['inpaint', 'smooth', 'min_filter', 'upper_bound']
+  #   basic_layers: ['inpaint']
+  #   fps: 5.0
 
 #### Subscribers ########  NEVER ADD EMPTY LINE HERE OTHERWISE CPP WILL FAIL!!
 subscribers:
-  hesai:
-    topic_name: /dlio/deskewed_point_cloud
-    data_type: pointcloud
+  # hesai:
+  #   topic_name: /dlio/deskewed_point_cloud
+  #   data_type: pointcloud
   livox:
     topic_name: /gt_box/livox/lidar_filtered
     data_type: pointcloud

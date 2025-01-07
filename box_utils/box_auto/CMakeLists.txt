@@ -104,12 +104,12 @@ target_link_libraries(${PROJECT_NAME}
 add_executable(post_processor_node
   src/post_processor_node.cpp)
 
-add_executable(filter_pointclouds
-  src/filter_pointclouds.cpp)
-
 add_executable(tf_processor_node
   src/tf_processor_node.cpp)
   
+add_executable(filter_lidar_node
+  src/filter_lidar.cpp)
+
 add_executable(merge
   src/merge.cpp)
 
@@ -138,7 +138,7 @@ ${GLOG_LIBRARIES}
 ${PROJECT_NAME}
 )
 
-target_link_libraries(filter_pointclouds 
+target_link_libraries(filter_lidar_node 
 ${catkin_LIBRARIES}
 ${PCL_LIBRARIES}
 ${PROJECT_NAME}
@@ -150,7 +150,7 @@ target_link_libraries(evo_conversion_node ${catkin_LIBRARIES} ${OpenCV_LIBRARIES
 
 find_package(cmake_clang_tools QUIET)
 if(cmake_clang_tools_FOUND)
-  message(STATUS "Run clang tooling for target " post_processor_node)
+  message(STATUS "Run clang tooling for target " post_processor_node filter_lidar_node)
   add_clang_tooling(
     TARGETS post_processor_node
     SOURCE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/include
@@ -171,7 +171,7 @@ RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
 
-install(TARGETS filter_pointclouds
+install(TARGETS filter_lidar_node
 RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
