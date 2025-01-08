@@ -12,9 +12,11 @@ from .utils import (
     get_file,
     upload_bag,
     check_duplicate_timestamps,
+    find_and_extract_non_matching,
     RosbagMessageGenerator,
 )
 from .gps_utils import GPS_utils
+from .okviz_trajectory_to_bag import okviz_trajectory_to_bag
 
 __all__ = [
     "WS",
@@ -25,6 +27,7 @@ __all__ = [
     "ARTIFACT_FOLDER",
     "run_ros_command",
     "check_duplicate_timestamps",
+    "find_and_extract_non_matching",
     "start_roscore",
     "kill_roscore",
     "get_bag",
@@ -32,4 +35,5 @@ __all__ = [
     "upload_bag",
     "GPS_utils",
     "RosbagMessageGenerator",
+    "okviz_trajectory_to_bag",
 ]

@@ -15,11 +15,20 @@ from box_auto.utils import (
     check_duplicate_timestamps,
 )
 
+PATTERNS = None
+OUTPUT_BAG_NAME = "dlio_replayed"
+
+# TODO make these env var. ?
+# Set IMU configuration
 USE_STIM320 = False
 USE_CPT7_IMU = True
 
-imu_pattern = None
+# Set LiDAR configuration
+USE_LIVOX = False
+USE_HESAI = True
 
+# Resolve IMU information
+imu_pattern = None
 if USE_STIM320:
     imu_pattern = "*_jetson_stim.bag"
     imu_topic = "/gt_box/stim320/imu"
@@ -31,8 +40,23 @@ if imu_pattern is None:
     print(f"IMU pattern not set correctly: {imu_pattern}")
     exit(-1)
 
-PATTERNS = [imu_pattern, "*_tf_static.bag", "*_nuc_hesai_post_processed.bag"]
-OUTPUT_BAG_NAME = "dlio_replayed"
+# Resolve LiDAR information prefer filtered pointclouds
+if USE_HESAI:
+    lidar_topic = "/gt_box/hesai/points"
+    try:
+        get_bag("*_nuc_hesai_filtered.bag")
+        PATTERNS = [imu_pattern, "*_tf_static.bag", "*_nuc_hesai_filtered.bag"]
+    except Exception:
+        PATTERNS = [imu_pattern, "*_tf_static.bag", "*_nuc_hesai_post_processed.bag"]
+elif USE_LIVOX:
+    try:
+        get_bag("*_nuc_livox_filtered.bag")
+        PATTERNS = [imu_pattern, "*_tf_static.bag", "*_nuc_livox_filtered.bag"]
+    except:
+        PATTERNS = [imu_pattern, "*_tf_static.bag", "*_nuc_livox.bag"]
+    lidar_topic = "/gt_box/livox/lidar"
+else:
+    raise ValueError("Use Livox or Hesai")
 
 
 def launch_nodes():
@@ -61,12 +85,12 @@ def launch_nodes():
 
     kill_roscore()
 
-    check_duplicate_timestamps(merged_rosbag_path, "/gt_box/hesai/points")
+    check_duplicate_timestamps(merged_rosbag_path, lidar_topic)
 
     start_roscore()
     sleep(1)
     run_ros_command(
-        f"roslaunch direct_lidar_inertial_odometry dlio_replay.launch input_rosbag_path:={merged_rosbag_path}  output_rosbag_folder_path:={MISSION_DATA} output_rosbag_name:={OUTPUT_BAG_NAME} imu_topic:={imu_topic}",
+        f"roslaunch direct_lidar_inertial_odometry dlio_replay.launch input_rosbag_path:={merged_rosbag_path}  output_rosbag_folder_path:={MISSION_DATA} output_rosbag_name:={OUTPUT_BAG_NAME} imu_topic:={imu_topic} pointcloud_topic:={lidar_topic}",
         background=True,
     )
     sleep(5)
