@@ -90,7 +90,7 @@ if __name__ == "__main__":
     print("\033[92mEVO preparation finished.\033[0m")
     sleep(1)
 
-    ape_config_path = os.path.join(WS, "/src/grand_tour_box/box_utils/box_auto/cfg/evo_evaluation_ape.yaml")
+    ape_config_path = os.path.join(WS, "src/grand_tour_box/box_utils/box_auto/cfg/evo_evaluation_ape.yaml")
     ape_config = load_config(ape_config_path)
 
     EVALUATION_PATTERN = []
@@ -136,7 +136,7 @@ if __name__ == "__main__":
 
     if IS_POINT_DISTANCES_SUPPORTED:
         point_relation_config_path = os.path.join(
-            WS, "/src/grand_tour_box/box_utils/box_auto/cfg/evo_evaluation_point_relation.yaml"
+            WS, "src/grand_tour_box/box_utils/box_auto/cfg/evo_evaluation_point_relation.yaml"
         )
         p_point_relation = Path(p) / f"{time_as_string}_point_relation_results"
         p_point_relation.mkdir(exist_ok=True)
