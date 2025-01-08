@@ -6,7 +6,7 @@ x-common-config: &common-config
     ssh:
       default: "$HOME/.ssh/jonfrey_ws"
   image: rslethz/grand_tour_box:kleinkram
-  # runtime: nvidia
+  runtime: nvidia
   # network_mode: host
   privileged: true
   environment:
