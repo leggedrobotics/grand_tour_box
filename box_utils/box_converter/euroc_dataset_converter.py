@@ -11,7 +11,7 @@ import yaml
 
 # Initialize CV Bridge
 bridge = CvBridge()
-SKIP_WRITE = False
+SKIP_WRITE = True
 
 
 def process_camera_data(topic, camera_info_topic, bag_pattern, cam_folder):
@@ -170,7 +170,7 @@ def process(rosbags, tag):
     for imu in imus:
         # Create OKVIS config
         template_file = Path(BOX_AUTO_DIR).parent / "box_converter" / "euroc" / f"okvis_{tag}.yaml"
-        updated_parameters = []
+        updated_parameters = {}
 
         for k in cams:
             t_sensor_base, q_sensor_base = tf_lookup.lookupTransform(
