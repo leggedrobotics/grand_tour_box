@@ -46,12 +46,12 @@ DetectorConfig = Tuple[YOLO, List[int], float, Optional[int]]
 
 MODELS: Dict[str, DetectorConfig] = {
     "faces11": (FACE_MODEL11, FACE_MODEL11_CIDS, FACE_MODEL11_CONF, None),
-    # "faces_plates11": (
-    #     FACE_PLATE_MODEL11,
-    #     FACE_PLATE_MODEL11_CIDS,
-    #     FACE_PLATE_MODEL11_CONF,
-    #     None,
-    # ),
+    "faces_plates11": (
+        FACE_PLATE_MODEL11,
+        FACE_PLATE_MODEL11_CIDS,
+        FACE_PLATE_MODEL11_CONF,
+        None,
+    ),
     "faces8": (FACE_MODEL8, FACE_MODEL8_CIDS, FACE_MODEL8_CONF, None),
     "full11": (MODEL11, MODEL11_CIDS, MODEL11_CONF, HUMANS_MAX_SIZE),
 }
@@ -64,6 +64,40 @@ BLUR_ANNOTATOR = sv.BlurAnnotator()
 # other settings
 FRAME_RATE = 10
 DRAW_BOXES = False
+
+# config for running the anonymization action
+# key: camera name, is arbitrary and only used for logging
+# value: topics..., file_glob
+# Some notes:
+# - we return the file with a `_anonymized` suffix to the same folder as the original file
+# - the original file is not modified
+ACTION_CAMERAS_CFG: Dict[str, Tuple[str, ...]] = {
+    "cam0-4": (
+        "/gt_box/alphasense_driver_node/cam2/color/image/compressed",
+        "/gt_box/alphasense_driver_node/cam3/color/image/compressed",
+        "/gt_box/alphasense_driver_node/cam1/color/image/compressed",
+        "/gt_box/alphasense_driver_node/cam5/color/image/compressed",
+        "/gt_box/alphasense_driver_node/cam4/color/image/compressed",
+        "*_nuc_alphasense.bag",
+    ),
+    "cam5": (
+        "/gt_box/hdr_left/image_raw/compressed",
+        "*_jetson_hdr_left.bag",
+    ),
+    "cam6": (
+        "/gt_box/hdr_front/image_raw/compressed",
+        "*_jetson_hdr_front.bag",
+    ),
+    "cam7": (
+        "/gt_box/hdr_right/image_raw/compressed",
+        "*_jetson_hdr_right.bag",
+    ),
+    "cam8-9": (
+        "/gt_box/zed2i/zed_node/left/image_rect_color/compressed",
+        "/gt_box/zed2i/zed_node/right/image_rect_color/compressed",
+        "*_jetson_zed2i_images.bag",
+    ),
+}
 
 
 def fetch_multiple_files_kleinkram(patterns):
@@ -318,35 +352,6 @@ def anonymize_bag(
     print("reindexing bag...")
     out_bag.reindex()
     print(f"done anonymizing {in_path} -> {out_path}")
-
-
-ACTION_CAMERAS_CFG: Dict[str, Tuple[str, ...]] = {
-    "cam0-4": (
-        "/gt_box/alphasense_driver_node/cam2/color/image/compressed",
-        "/gt_box/alphasense_driver_node/cam3/color/image/compressed",
-        "/gt_box/alphasense_driver_node/cam1/color/image/compressed",
-        "/gt_box/alphasense_driver_node/cam5/color/image/compressed",
-        "/gt_box/alphasense_driver_node/cam4/color/image/compressed",
-        "*_nuc_alphasense.bag",
-    ),  # Color
-    "cam5": (
-        "/gt_box/hdr_left/image_raw/compressed",
-        "*_jetson_hdr_left.bag",
-    ),
-    "cam6": (
-        "/gt_box/hdr_front/image_raw/compressed",
-        "*_jetson_hdr_front.bag",
-    ),
-    "cam7": (
-        "/gt_box/hdr_right/image_raw/compressed",
-        "*_jetson_hdr_right.bag",
-    ),
-    "cam8-9": (
-        "/gt_box/zed2i/zed_node/left/image_rect_color/compressed",
-        "/gt_box/zed2i/zed_node/right/image_rect_color/compressed",
-        "*_jetson_zed2i_images.bag",
-    ),
-}
 
 
 def process_camera_topics(file_desc: str, image_topics: Sequence[str]) -> None:
