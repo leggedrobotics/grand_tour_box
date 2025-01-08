@@ -98,6 +98,28 @@ services:
       hdr_timestamp_adjuster:
         condition: service_completed_successfully
 
+
+  # Input:
+  # - _nuc_alphasense_calib.bag
+  # - _jetson_hdr_left_calib.bag
+  # - _jetson_hdr_fr_jetson_hdr_front_calibont_calib.bag
+  # - _jeston_hdr_right_calib.bag
+  # - _jetson_zed2i_images_calib
+  # Output:
+  # - _nuc_alphasense_calib_anonymized.bag
+  # - _jetson_hdr_left_calib_anonymized.bag
+  # - _jetson_hdr_fr_jetson_hdr_front_calibont_calib_anonymized.bag
+  # - _jeston_hdr_right_calib_anonymized.bag
+  # - _jetson_zed2i_images_calib_anonymized.bag
+  image_anonymizer:
+    <<: *common-config
+    container_name: image_anonymizer
+    command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/general/anonymize_images.py --action-mode"]
+    depends_on:
+      calibration:
+        condition: service_completed_successfully
+
+
   # Input:
   #   - ap20_aux.bag
   # Output:
