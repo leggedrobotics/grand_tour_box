@@ -45,7 +45,7 @@ def kill_roscore():
                 print(f"Failed to terminate rosmaster process: {e}")
 
 
-def get_bag(pattern, directory=MISSION_DATA, auto_download=True, return_list=False, rglob=True):
+def get_bag(pattern, directory=MISSION_DATA, auto_download=True, return_list=False, rglob=False):
     """
     Finds the matching .bag files in the mission on Kleinram and downloads it.
 
@@ -93,6 +93,7 @@ def get_bag(pattern, directory=MISSION_DATA, auto_download=True, return_list=Fal
 
     return files[0]
 
+
 def find_and_extract_non_matching(directory, pattern):
     """
     Find files matching the pattern in the specified directory and extract the part of the filename
@@ -125,7 +126,8 @@ def find_and_extract_non_matching(directory, pattern):
 
     return non_matching
 
-def get_file(pattern, directory=MISSION_DATA):
+
+def get_file(pattern, directory=MISSION_DATA, rglob=False):
     """
     Find a single file matching the given pattern in the specified directory.
 
@@ -137,7 +139,11 @@ def get_file(pattern, directory=MISSION_DATA):
         tuple: (file path, success flag)
     """
 
-    files = list(Path(directory).rglob(pattern))
+    if rglob:
+        files = list(Path(directory).rglob(pattern))
+    else:
+        files = list(Path(directory).glob(pattern))
+
     if len(files) != 1:
         print(f"Error: Found {len(files)} matching files for pattern {pattern} in directory {directory}")
         return None, False
