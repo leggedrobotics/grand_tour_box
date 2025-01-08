@@ -115,6 +115,7 @@ add_executable(merge
 
 
 add_executable(zed2i_decompression_and_saving src/zed2i_decompress_and_format_data.cpp)
+add_executable(evo_conversion_node src/evo_evaluation_converter.cpp)
   
 target_link_libraries(post_processor_node 
 ${catkin_LIBRARIES}
@@ -144,6 +145,7 @@ ${PROJECT_NAME}
 )
 
 target_link_libraries(zed2i_decompression_and_saving ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${PROJECT_NAME})
+target_link_libraries(evo_conversion_node ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${PROJECT_NAME})
 
 
 find_package(cmake_clang_tools QUIET)
@@ -176,6 +178,11 @@ ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
 
 install(TARGETS zed2i_decompression_and_saving
 RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+install(TARGETS evo_conversion_node
+RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
 
 ## Mark launch files for installation
 install(DIRECTORY launch/

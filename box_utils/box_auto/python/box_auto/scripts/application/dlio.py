@@ -40,18 +40,24 @@ if imu_pattern is None:
     print(f"IMU pattern not set correctly: {imu_pattern}")
     exit(-1)
 
-# Resolve LiDAR information
+# Resolve LiDAR information prefer filtered pointclouds
 if USE_HESAI:
-    filtered_lidar_pattern = "*_nuc_hesai_filtered.bag"
     lidar_topic = "/gt_box/hesai/points"
-    PATTERNS = [imu_pattern, "*_tf_static.bag", "*_nuc_hesai_post_processed.bag"]
+    try:
+        get_bag("*_nuc_hesai_filtered.bag")
+        PATTERNS = [imu_pattern, "*_tf_static.bag", "*_nuc_hesai_filtered.bag"]
+    except Exception:
+        PATTERNS = [imu_pattern, "*_tf_static.bag", "*_nuc_hesai_post_processed.bag"]
 elif USE_LIVOX:
-    filtered_lidar_pattern = "*_nuc_livox_filtered.bag"
+    try:
+        get_bag("*_nuc_livox_filtered.bag")
+        PATTERNS = [imu_pattern, "*_tf_static.bag", "*_nuc_livox_filtered.bag"]
+    except:
+        PATTERNS = [imu_pattern, "*_tf_static.bag", "*_nuc_livox.bag"]
     lidar_topic = "/gt_box/livox/lidar"
-    PATTERNS = [imu_pattern, "*_tf_static.bag", "*_nuc_livox.bag"]
+else:
+    raise ValueError("Use Livox or Hesai")
 
-if get_bag(filtered_lidar_pattern):
-    PATTERNS = [imu_pattern, "*_tf_static.bag", filtered_lidar_pattern]
 
 def launch_nodes():
     os.environ["ROS_MASTER_URI"] = "http://localhost:11311"
