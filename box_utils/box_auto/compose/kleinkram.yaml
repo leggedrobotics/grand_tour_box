@@ -1,10 +1,10 @@
 x-common-config: &common-config
   entrypoint: "/entrypoint.sh"
   build:
-    context: "$HOME/workspace/grand_tour_box/box_utils/box_auto/docker"
-    dockerfile: "$HOME/workspace/grand_tour_box/box_utils/box_auto/docker/box_kleinkram.Dockerfile"
+    context: "$HOME/git/grand_tour_box/box_utils/box_auto/docker"
+    dockerfile: "$HOME/git/grand_tour_box/box_utils/box_auto/docker/box_kleinkram.Dockerfile"
     ssh:
-      default: "$HOME/.ssh/id_ed25519"
+      default: "$HOME/.ssh/jonfrey_ws"
   image: rslethz/grand_tour_box:kleinkram
   # runtime: nvidia
   # network_mode: host

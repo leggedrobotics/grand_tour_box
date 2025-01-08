@@ -13,8 +13,6 @@ d = generate_distutils_setup(
     package_data={},
     install_requires=[
         "sortedcontainers",
-        "supervision",
-        "ultralytics",
     ],
 )
 
