@@ -351,21 +351,17 @@ ACTION_CAMERAS_CFG: Dict[str, Tuple[str, ...]] = {
 
 def process_camera_topics(file_desc: str, image_topics: Sequence[str]) -> None:
     original_bag = Path(cast(str, get_bag(file_desc)))
+    anonymized_bag = original_bag.parent / f"{original_bag.stem}_anonymized.bag"
 
     # store the intermediate bags in a temporary directory
-    in_bag = original_bag
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        out_bag = Path(tmp_dir) / f"{token_hex(32)}.bag"
+    tmp_bag = anonymized_bag.parent / f"{token_hex(32)}.bag"
+    shutil.copy(original_bag, tmp_bag)
 
-        for topic in image_topics:
-            anonymize_bag(in_bag, out_bag, {topic: topic})
-            os.remove(in_bag)
-            in_bag = out_bag
+    for topic in image_topics:
+        anonymize_bag(tmp_bag, anonymized_bag, {topic: topic})
+        shutil.move(anonymized_bag, tmp_bag)
 
-        anonymized_bag_name = original_bag.name.replace(".bag", "_anonymized.bag")
-        anonymized_bag = original_bag.parent / anonymized_bag_name
-        os.rename(in_bag, anonymized_bag)
-
+    shutil.move(tmp_bag, anonymized_bag)
     upload_bag(anonymize_bag)
 
 
