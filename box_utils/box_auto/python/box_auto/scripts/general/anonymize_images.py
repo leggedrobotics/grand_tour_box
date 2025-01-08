@@ -4,7 +4,9 @@ import os
 import shutil
 from argparse import ArgumentParser
 from pathlib import Path
-from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple, cast
+from secrets import token_hex
+import tempfile
 
 import numpy as np
 import rosbag
@@ -12,6 +14,8 @@ import supervision as sv
 from cv_bridge import CvBridge
 from std_msgs.msg import Int32
 from ultralytics import YOLO
+
+from box_auto.utils import get_bag, upload_bag
 
 # NOTE: use conda env img_anon
 
@@ -313,6 +317,55 @@ def anonymize_bag(
     print(f"done anonymizing {in_path} -> {out_path}")
 
 
+ACTION_CAMERAS_CFG: Dict[str, Tuple[str, ...]] = {
+    "cam0-4": (
+        "/gt_box/alphasense_driver_node/cam2/color/image/compressed",
+        "/gt_box/alphasense_driver_node/cam3/color/image/compressed",
+        "/gt_box/alphasense_driver_node/cam1/color/image/compressed",
+        "/gt_box/alphasense_driver_node/cam5/color/image/compressed",
+        "/gt_box/alphasense_driver_node/cam4/color/image/compressed",
+        "*_nuc_alphasense_calib.bag",
+    ),  # Color
+    "cam5": (
+        "/gt_box/hdr_left/image_raw/compressed",
+        "*_jetson_hdr_left_calib.bag",
+    ),
+    "cam6": (
+        "/gt_box/hdr_front/image_raw/compressed",
+        "*_jetson_hdr_front_calib.bag",
+    ),
+    "cam7": (
+        "/gt_box/hdr_right/image_raw/compressed",
+        "*_jetson_hdr_right_calib.bag",
+    ),
+    "cam8-9": (
+        "/gt_box/zed2i/zed_node/left/image_rect_color/compressed",
+        "/gt_box/zed2i/zed_node/right/image_rect_color/compressed",
+        "*_jetson_zed2i_images_calib.bag",
+    ),
+}
+
+
+def process_camera_topics(file_desc: str, image_topics: Sequence[str]) -> None:
+    original_bag = Path(cast(str, get_bag(file_desc)))
+
+    # store the intermediate bags in a temporary directory
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        in_bag = Path(tmp_dir) / f"{token_hex(32)}.bag"
+        out_bag = Path(tmp_dir) / f"{token_hex(32)}.bag"
+        os.rename(original_bag, in_bag)
+
+        for topic in image_topics:
+            anonymize_bag(in_bag, out_bag, {topic: topic})
+            os.rename(out_bag, in_bag)
+
+        anonymized_bag_name = original_bag.name.replace(".bag", "_anonymized.bag")
+        anonymized_bag = original_bag.parent / anonymized_bag_name
+        os.rename(in_bag, anonymized_bag)
+
+    upload_bag(anonymize_bag)
+
+
 if __name__ == "__main__":
     parser = ArgumentParser(description="Anonymize images in a bag file.")
     parser.add_argument(
@@ -331,18 +384,28 @@ if __name__ == "__main__":
         help="key:value pairs of input and output topics",
         nargs="+",
     )
+    parser.add_argument(
+        "--action_mode",
+        action="store_true",
+        help="run in kleinkram action mode",
+    )
 
     args = parser.parse_args()
 
-    try:
-        image_topics = dict(kv.split(":") for kv in args.topics)
-    except Exception as e:
-        raise ValueError(
-            "Failed to parse topics, must specify them in the format 'key:value'"
-        ) from e
+    if args.action_mode:
+        for camera, desc in ACTION_CAMERAS_CFG.items():
+            print(f"processing camera {camera}")
+            process_camera_topics(desc[-1], desc[:-1])
+    else:
+        try:
+            image_topics = dict(kv.split(":") for kv in args.topics)
+        except Exception as e:
+            raise ValueError(
+                "Failed to parse topics, must specify them in the format 'key:value'"
+            ) from e
 
-    anonymize_bag(
-        Path(args.input),
-        Path(args.output),
-        image_topics=image_topics,
-    )
+        anonymize_bag(
+            Path(args.input),
+            Path(args.output),
+            image_topics=image_topics,
+        )
