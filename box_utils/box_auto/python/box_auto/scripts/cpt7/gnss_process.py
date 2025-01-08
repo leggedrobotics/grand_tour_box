@@ -61,15 +61,16 @@ def main():
                 text=True,  # Ensure outputs are returned as strings
             )
             time.sleep(2)
-
+            print(results.returncode, results.stdout)
             if results.returncode == 1:
+                print(results.returncode, results.stdout)
                 if "_ERROR_ No records were decoded" in results.stdout:
                     exit(1)
-                elif "_ERROR_ TBD" in results.stdout:
-                    exit(2)
-                else:
+                elif "_ERROR_ Failed to download base station data from " in results.stdout:
                     exit(3)
-            exit(0)
+                else:
+                    exit(4)
+    exit(0)
 
 
 if __name__ == "__main__":
