@@ -174,7 +174,7 @@ std::vector<BagTopicFrame> parseBagTopicPairs(const XmlRpc::XmlRpcValue& param) 
 }
 
 void parseRosbagToTum(const std::string& bagPath, const std::string& topicName, const std::string& outputPath, tf2_ros::Buffer& tf_buffer,
-                      const std::string& targetFrame, const std::string& sourceFrame, bool enable_interpolation) {
+                      const std::string& targetFrame, const std::string& sourceFrame, bool enable_interpolation, rosbag::Bag& outputBag) {
   rosbag::Bag bag;
   try {
     bag.open(bagPath, rosbag::bagmode::Read);
@@ -233,10 +233,13 @@ void parseRosbagToTum(const std::string& bagPath, const std::string& topicName, 
             Eigen::Matrix4d transformAsMat = transformToMatrix(transform);
             Eigen::Matrix4d transformedPoseAsMat = poseAsMat * transformAsMat;
             transformed_pose = matrixToPose(transformedPoseAsMat, targetFrame, odometry->header.stamp);
-
-            // geometry_msgs::PoseStamped transformed_pose;
-            // tf2::doTransform(pose, transformed_pose, transform);
           }
+          nav_msgs::Odometry asOdom;
+          asOdom.header = odometry->header;
+          asOdom.child_frame_id = targetFrame;
+          asOdom.pose.pose = transformed_pose.pose;
+
+          outputBag.write(topicName, odometry->header.stamp, asOdom);
 
           double timestamp = odometry->header.stamp.toSec();
           const auto& position = transformed_pose.pose.position;
@@ -260,13 +263,17 @@ void parseRosbagToTum(const std::string& bagPath, const std::string& topicName, 
           geometry_msgs::TransformStamped transform =
               tf_buffer.lookupTransform(targetFrame, sourceFrame, pose->header.stamp, ros::Duration(0.2));
 
-          // geometry_msgs::PoseStamped transformed_pose;
-          // tf2::doTransform(*pose, transformed_pose, transform);
-
           Eigen::Matrix4d poseAsMat = poseToMatrix(*pose);
           Eigen::Matrix4d transformAsMat = transformToMatrix(transform);
           Eigen::Matrix4d transformedPoseAsMat = poseAsMat * transformAsMat;
           geometry_msgs::PoseStamped transformed_pose = matrixToPose(transformedPoseAsMat, targetFrame, pose->header.stamp);
+
+          nav_msgs::Odometry asOdom;
+          asOdom.header = pose->header;
+          asOdom.child_frame_id = targetFrame;
+          asOdom.pose.pose = transformed_pose.pose;
+
+          outputBag.write(topicName, pose->header.stamp, asOdom);
 
           double timestamp = pose->header.stamp.toSec();
           const auto& position = transformed_pose.pose.position;
@@ -294,13 +301,17 @@ void parseRosbagToTum(const std::string& bagPath, const std::string& topicName, 
           pose.header = poseCov->header;
           pose.pose = poseCov->pose.pose;
 
-          // geometry_msgs::PoseStamped transformed_pose;
-          // tf2::doTransform(pose, transformed_pose, transform);
-
           Eigen::Matrix4d poseAsMat = poseToMatrix(pose);
           Eigen::Matrix4d transformAsMat = transformToMatrix(transform);
           Eigen::Matrix4d transformedPoseAsMat = poseAsMat * transformAsMat;
           geometry_msgs::PoseStamped transformed_pose = matrixToPose(transformedPoseAsMat, targetFrame, poseCov->header.stamp);
+
+          nav_msgs::Odometry asOdom;
+          asOdom.header = poseCov->header;
+          asOdom.child_frame_id = targetFrame;
+          asOdom.pose.pose = transformed_pose.pose;
+
+          outputBag.write(topicName, poseCov->header.stamp, asOdom);
 
           double timestamp = poseCov->header.stamp.toSec();
           const auto& position = transformed_pose.pose.position;
@@ -537,6 +548,16 @@ int main(int argc, char** argv) {
 
   ROS_INFO_STREAM("\033[1;32mTF processing has been completed successfully.\033[0m");
 
+  rosbag::Bag outputBag;
+  outputBag.setCompression(rosbag::compression::LZ4);
+  std::string outputBagPath = outputDir + "/" + missionPrefix + "_evaluation_pose_collections.bag";
+  try {
+    outputBag.open(outputBagPath, rosbag::bagmode::Write);
+  } catch (const rosbag::BagException& e) {
+    ROS_ERROR_STREAM("Failed to open bag file: " << e.what());
+    return -1;
+  }
+
   for (const auto& triplet : bagTopicPairs) {
     std::string bagPath = bag_file_directory + triplet.bag;
     std::string topicName = triplet.topic;
@@ -560,9 +581,9 @@ int main(int argc, char** argv) {
 
     ROS_INFO_STREAM("\033[1;32mProcessing: " << bagPath << " (Topic: " << topicName << ") -> " << outputPath << ".\033[0m");
 
-    parseRosbagToTum(bagPath, topicName, outputPath, tf_buffer, targetFrame, sourceFrame, enable_interpolation);
+    parseRosbagToTum(bagPath, topicName, outputPath, tf_buffer, targetFrame, sourceFrame, enable_interpolation, outputBag);
   }
-
+  outputBag.close();
   ROS_INFO("Processing completed.");
   ros::Duration(1.0).sleep();
   ROS_INFO_STREAM("\033[1;32mProcessing completed. Self-terminating.\033[0m");

@@ -118,7 +118,7 @@ if __name__ == "__main__":
     p_ape.mkdir()
     p_ape = str(p_ape)
 
-    os.system(
+    run_ros_command(
         f"python3 {BOX_AUTO_SCRIPTS_DIR}/verification/grandtour_SE3_APE.py --config={ape_config_path} --input_folder_path={p} --output_dir_name={p_ape} --prefix={time_as_string} --disable_viz"
     )
     sleep(1)
@@ -129,7 +129,7 @@ if __name__ == "__main__":
     p_rpe.mkdir()
     p_rpe = str(p_rpe)
 
-    os.system(
+    run_ros_command(
         f"python3 {BOX_AUTO_SCRIPTS_DIR}/verification/grandtour_SE3_RPE.py  --config={rpe_config_path} --input_folder_path={p} --output_dir_name={p_rpe} --prefix={time_as_string} --disable_viz"
     )
     sleep(1)
@@ -141,7 +141,7 @@ if __name__ == "__main__":
         p_point_relation = Path(p) / f"{time_as_string}_point_relation_results"
         p_point_relation.mkdir(exist_ok=True)
         p_point_relation = str(p_point_relation)
-        os.system(
+        run_ros_command(
             f"python3 {BOX_AUTO_SCRIPTS_DIR}/verification/grandtour_point_relation.py --config={point_relation_config_path} --input_folder_path={p} --output_dir_name={p_point_relation} --prefix={time_as_string} --disable_viz"
         )
 
