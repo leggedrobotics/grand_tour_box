@@ -25,7 +25,7 @@ if USE_LEGGED_ESTIMATOR and not USE_DLIO:
     PATTERNS = ["*[0-9]_dlio.bag", "*_lpc_state_estimator.bag", "*_tf_static.bag"]
     prior_frame = "base"
     pose_topic = "/state_estimator/pose_in_odom"
-    
+
 else:
     PATTERNS = ["*[0-9]_dlio.bag", "*_tf_static.bag"]
     prior_frame = "hesai_lidar"
@@ -69,7 +69,7 @@ def launch_nodes():
     kill_roscore()
 
     output_bag_path = os.path.join(MISSION_DATA, f"{timestamp}_open3d_slam.bag")
-    shutil.move(str(Path(MISSION_DATA) / "open3d_slam_replayed.bag"), output_bag_path)
+    shutil.move(str(Path(p) / "open3d_slam_replayed.bag"), output_bag_path)
 
     print("Replayed bag is renamed. Uploading.")
     upload_bag(output_bag_path)
