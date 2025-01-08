@@ -9,7 +9,7 @@ cameras:
         distortion_type: radialtangential,
         focal_length: [458.654880721, 457.296696463],
         principal_point: [367.215803962, 248.37534061],
-        camera_type: rgb, #gray, rgb, gray+depth, rgb+depth
+        camera_type: gray, #gray, rgb, gray+depth, rgb+depth
         slam_use: okvis} #none, okvis, okvis-depth, okvis-virtual
      - {T_SC:
         [ 0.0125552670891, -0.999755099723, 0.0182237714554, -0.0198435579556,
@@ -21,7 +21,7 @@ cameras:
         distortion_type: radialtangential,
         focal_length: [457.587426604, 456.13442556],
         principal_point: [379.99944652, 255.238185386],
-        camera_type: rgb, #gray, rgb, gray+depth, rgb+depth
+        camera_type: gray, #gray, rgb, gray+depth, rgb+depth
         slam_use: okvis} #none, okvis, okvis-depth, okvis-virtual
      - {T_SC:
         [ 0.0125552670891, -0.999755099723, 0.0182237714554, -0.0198435579556,
