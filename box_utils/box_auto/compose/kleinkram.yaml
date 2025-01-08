@@ -1,12 +1,12 @@
 x-common-config: &common-config
   entrypoint: "/entrypoint.sh"
   build:
-    context: "$HOME/git/grand_tour_box/box_utils/box_auto/docker"
-    dockerfile: "$HOME/git/grand_tour_box/box_utils/box_auto/docker/box.Dockerfile"
+    context: "$HOME/workspace/grand_tour_box/box_utils/box_auto/docker"
+    dockerfile: "$HOME/workspace/grand_tour_box/box_utils/box_auto/docker/box_kleinkram.Dockerfile"
     ssh:
-      default: "$HOME/.ssh/jonfrey_ws"
+      default: "$HOME/.ssh/id_ed25519"
   image: rslethz/grand_tour_box:kleinkram
-  runtime: nvidia
+  # runtime: nvidia
   # network_mode: host
   privileged: true
   environment:
@@ -114,7 +114,7 @@ services:
   image_anonymizer:
     <<: *common-config
     container_name: image_anonymizer
-    command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/general/anonymize_images.py --action-mode"]
+    command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/general/anonymize_images.py"]
     depends_on:
       calibration:
         condition: service_completed_successfully
