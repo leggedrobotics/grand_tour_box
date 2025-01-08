@@ -13,6 +13,72 @@ import os
 from pathlib import Path
 import yaml
 import shutil
+from evo.tools import file_interface
+from fpdf import FPDF
+import pandas as pd
+
+
+def save_results_as_pdf(results, output_pdf_path):
+    """
+    Create a table of results and save it as a PDF.
+
+    Args:
+        results (list of dict): Each dictionary contains result name, mean, and std.
+        output_pdf_path (str): Path to save the PDF.
+    """
+    # Convert results to a DataFrame
+    df = pd.DataFrame(results)
+
+    # Create a PDF object
+    pdf = FPDF()
+    pdf.set_auto_page_break(auto=True, margin=15)
+    pdf.add_page()
+    pdf.set_font("Arial", size=10)
+
+    # Add Title
+    pdf.set_font("Arial", style="B", size=14)
+    pdf.cell(0, 10, txt="APE Results Summary", ln=True, align="C")
+    pdf.ln(5)  # Add a space after the title
+
+    # Dynamically calculate column widths based on the number of columns
+    max_width = pdf.w - 20  # Total width available for the table
+    col_widths = [max_width / len(df.columns)] * len(df.columns)
+
+    # Adjust column width for "Result Name" (first column)
+    col_widths[0] = max_width * 0.4  # 40% of the total width for "Result Name"
+    remaining_width = max_width - col_widths[0]
+    for i in range(1, len(col_widths)):
+        col_widths[i] = remaining_width / (len(col_widths) - 1)
+
+    row_height = 8  # Base row height
+
+    # Add headers
+    pdf.set_font("Arial", style="B", size=10)
+    headers = df.columns.tolist()
+    for i, col_name in enumerate(headers):
+        pdf.cell(col_widths[i], row_height, col_name, border=1, align="C")
+    pdf.ln(row_height)
+
+    # Add rows
+    pdf.set_font("Arial", size=10)
+    for _, row in df.iterrows():
+        max_cell_height = row_height  # Track the maximum height for the current row
+        y_start = pdf.get_y()  # Remember the starting y-coordinate of the row
+        for i, item in enumerate(row):
+            if i == 0:  # For the "Result Name" column
+                x_start = pdf.get_x()
+                # Write wrapped text using MultiCell
+                pdf.multi_cell(col_widths[i], row_height, str(item), border=1, align="L")
+                max_cell_height = max(max_cell_height, pdf.get_y() - y_start)  # Update max height
+                pdf.set_xy(x_start + col_widths[i], y_start)  # Reset cursor for the next cell
+            else:  # For other columns
+                pdf.cell(col_widths[i], row_height, str(item), border=1, align="C")
+
+        pdf.ln(max_cell_height)  # Move to the next row using the tallest cell's height
+
+    # Save PDF
+    pdf.output(output_pdf_path)
+    print(f"PDF saved to: {output_pdf_path}")
 
 
 def version_to_tuple(version):
@@ -144,5 +210,32 @@ if __name__ == "__main__":
         run_ros_command(
             f"python3 {BOX_AUTO_SCRIPTS_DIR}/verification/grandtour_point_relation.py --config={point_relation_config_path} --input_folder_path={p} --output_dir_name={p_point_relation} --prefix={time_as_string} --disable_viz"
         )
+
+    results_summary = []
+    DIRECTORIES = [p_point_relation, p_ape, p_rpe]
+    for dir in DIRECTORIES:
+        res_paths = get_bag(pattern="*.zip", auto_download=False, rglob=True, return_list=True, directory=dir)
+        # Collect stats
+        for res_path in res_paths:
+
+            # Get Rid of .zip extension
+            res_name = res_path.split("/")[-1][:-4]
+
+            # Read results
+            res = file_interface.load_res_file(res_path, load_trajectories=True)
+
+            # Collect stats
+            results_summary.append(
+                {
+                    "Result Name": res_name,
+                    "Mean": res.stats["mean"],
+                    "STD": res.stats["std"],
+                    "RMSE": res.stats["rmse"],
+                }
+            )
+
+    # Save results as PDF
+    output_pdf = "/evo_results_summary.pdf"
+    save_results_as_pdf(results_summary, MISSION_DATA + output_pdf)
 
     # Deploy .zip file reader e.g.
