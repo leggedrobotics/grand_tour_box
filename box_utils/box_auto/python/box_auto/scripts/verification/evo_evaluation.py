@@ -65,12 +65,7 @@ if __name__ == "__main__":
     evo_prep_config = load_config(evo_prep_config_path)
 
     # Retrieve the to-be-prepared bags from config.
-    PATTERNS = []
-    for pair in evo_prep_config["bag_topic_pairs"]:
-        bag_name = pair.get("bag")
-        if bag_name.startswith("_"):
-            bag_name = "*" + bag_name
-        PATTERNS.append(bag_name)
+    PATTERNS = ["*" + v["bag"] for v in evo_prep_config["bag_topic_pairs"]]
 
     # Iterate through each output pattern to ensure it is located where its expected.
     for pattern in PATTERNS:
@@ -83,14 +78,8 @@ if __name__ == "__main__":
     # Create the output folder for the evo evaluations.
     p = Path(MISSION_DATA) / f"{time_as_string}_evo_evaluations"
     if p.exists():
-        # Remove all contents, including folders
-        for item in p.iterdir():
-            if item.is_dir():
-                shutil.rmtree(item)  # Remove directories
-            else:
-                item.unlink()  # Remove files
-    else:
-        p.mkdir(exist_ok=True, parents=True)
+        shutil.rmtree(p)
+    p.mkdir(parents=True)
     p = str(p)
 
     # Run the evo preparation.
@@ -102,11 +91,11 @@ if __name__ == "__main__":
     sleep(1)
 
     ape_config_path = os.path.join(WS, "/src/grand_tour_box/box_utils/box_auto/cfg/evo_evaluation_ape.yaml")
-    evo_prep_config = load_config(ape_config_path)
+    ape_config = load_config(ape_config_path)
 
     EVALUATION_PATTERN = []
 
-    for _, param_set in list(evo_prep_config.items()):
+    for _, param_set in list(ape_config.items()):
         if isinstance(param_set, (bool, str)):
             continue
         estimated_file = param_set.get("estimated_file")
@@ -126,7 +115,7 @@ if __name__ == "__main__":
 
     # Create the output folder for the evo evaluations.
     p_ape = Path(p) / f"{time_as_string}_ape_results"
-    p_ape.mkdir(exist_ok=True, parents=True)
+    p_ape.mkdir()
     p_ape = str(p_ape)
 
     os.system(
@@ -137,7 +126,7 @@ if __name__ == "__main__":
     rpe_config_path = os.path.join(WS, "src/grand_tour_box/box_utils/box_auto/cfg/evo_evaluation_rpe.yaml")
 
     p_rpe = Path(p) / f"{time_as_string}_rpe_results"
-    p_rpe.mkdir(exist_ok=True, parents=True)
+    p_rpe.mkdir()
     p_rpe = str(p_rpe)
 
     os.system(
@@ -150,7 +139,7 @@ if __name__ == "__main__":
             WS, "/src/grand_tour_box/box_utils/box_auto/cfg/evo_evaluation_point_relation.yaml"
         )
         p_point_relation = Path(p) / f"{time_as_string}_point_relation_results"
-        p_point_relation.mkdir(exist_ok=True, parents=True)
+        p_point_relation.mkdir(exist_ok=True)
         p_point_relation = str(p_point_relation)
         os.system(
             f"python3 {BOX_AUTO_SCRIPTS_DIR}/verification/grandtour_point_relation.py --config={point_relation_config_path} --input_folder_path={p} --output_dir_name={p_point_relation} --prefix={time_as_string} --disable_viz"
