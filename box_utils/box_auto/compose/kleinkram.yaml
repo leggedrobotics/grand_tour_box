@@ -2,7 +2,7 @@ x-common-config: &common-config
   entrypoint: "/entrypoint.sh"
   build:
     context: "$HOME/git/grand_tour_box/box_utils/box_auto/docker"
-    dockerfile: "$HOME/git/grand_tour_box/box_utils/box_auto/docker/box.Dockerfile"
+    dockerfile: "$HOME/git/grand_tour_box/box_utils/box_auto/docker/box_kleinkram.Dockerfile"
     ssh:
       default: "$HOME/.ssh/jonfrey_ws"
   image: rslethz/grand_tour_box:kleinkram
@@ -116,7 +116,7 @@ services:
   #   - _nuc_livox.bag
   #   - _jetson_adis.bag
   #   - _nuc_cpt7_post_processed.bag
-  #   - _cpt7_raw_imu
+  #   - _cpt7_raw_imu.bag
   #   - _nuc_alphasense_calib.bag
   # Output:
   #   - _jetson_ap20_intrinsics.bag
@@ -134,6 +134,28 @@ services:
       calibration:
         condition: service_completed_successfully
       ap20_python_online_matcher:
+        condition: service_completed_successfully
+
+
+
+  # Input:
+  # - _nuc_alphasense_calib.bag
+  # - _jetson_hdr_left_calib.bag
+  # - _jetson_hdr_front_calib.bag
+  # - _jeston_hdr_right_calib.bag
+  # - _jetson_zed2i_images_calib.bag
+  # Output:
+  # - _nuc_alphasense_anonymized.bag
+  # - _jetson_hdr_left_anonymized.bag
+  # - _jetson_hdr_front_anonymized.bag
+  # - _jeston_hdr_right_anonymized.bag
+  # - _jetson_zed2i_images_anonymized.bag
+  image_anonymizer:
+    <<: *common-config
+    container_name: image_anonymizer
+    command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/general/anonymize_images.py"]
+    depends_on:
+      calibration:
         condition: service_completed_successfully
 
 
