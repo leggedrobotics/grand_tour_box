@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import os
 import shutil
-import tempfile
 from pathlib import Path
 from secrets import token_hex
 from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple, cast
@@ -138,9 +137,7 @@ def _get_detections(image: np.ndarray) -> sv.Detections:
     return sv.Detections.merge(dets)
 
 
-def _tracked_detections(
-    detections: sv.Detections, tracker: sv.ByteTrack
-) -> Tuple[sv.Detections, sv.Detections]:
+def _tracked_detections(detections: sv.Detections, tracker: sv.ByteTrack) -> Tuple[sv.Detections, sv.Detections]:
     """\
     tracks detections using a tracker, this slightly improves the detection quality
     over using frame by frame detections
@@ -151,9 +148,7 @@ def _tracked_detections(
     return tracked_dets, detections
 
 
-def _blur_image(
-    image: np.ndarray, detections: tuple[sv.Detections, sv.Detections], draw_boxes: bool
-) -> np.ndarray:
+def _blur_image(image: np.ndarray, detections: tuple[sv.Detections, sv.Detections], draw_boxes: bool) -> np.ndarray:
     """\
     applies blurs to images based on detections
 
@@ -177,9 +172,7 @@ def _blur_image(
 EPS = 1e-6
 
 
-def _compute_number_of_detections(
-    detections: Tuple[sv.Detections, sv.Detections]
-) -> int:
+def _compute_number_of_detections(detections: Tuple[sv.Detections, sv.Detections]) -> int:
     r"""\
     computes the number of detections by computing the
     connected components of the union of all detections
@@ -246,9 +239,7 @@ def _process_images(
     return ret
 
 
-def _msg_to_image(
-    msg: Any, cv_bridge: CvBridge, compressed: bool
-) -> Tuple[np.ndarray, bool]:
+def _msg_to_image(msg: Any, cv_bridge: CvBridge, compressed: bool) -> Tuple[np.ndarray, bool]:
     """\
     deser an image message using cv_bridge
     """
@@ -283,9 +274,7 @@ def _write_images_to_bag(
     """
     assert len(metadata) == len(images_with_detections)
 
-    for (timestamp, topic, compress), (image, n_dets) in zip(
-        metadata, images_with_detections
-    ):
+    for (timestamp, topic, compress), (image, n_dets) in zip(metadata, images_with_detections):
         # write the image
         msg = _image_to_msg(image, cv_bridge, compressed=compress)
         msg.header.stamp = timestamp
@@ -312,9 +301,7 @@ def anonymize_bag(
     - `image_topics` mapping from input image topics to output image topics
     """
 
-    with rosbag.Bag(str(in_path), "r") as in_bag, rosbag.Bag(
-        str(out_path), "w", compression="lz4"
-    ) as out_bag:
+    with rosbag.Bag(str(in_path), "r") as in_bag, rosbag.Bag(str(out_path), "w", compression="lz4") as out_bag:
         cv_bridge = CvBridge()
         print("anonymizing images...")
 
@@ -338,9 +325,7 @@ def anonymize_bag(
             metadata = (t, image_topics[topic], is_compressed)
             raw_detection = _get_detections(image)
             detections = _tracked_detections(raw_detection, tracker)
-            blurred_image, n_dets = _process_image(
-                image, detections, draw_boxes=DRAW_BOXES
-            )
+            blurred_image, n_dets = _process_image(image, detections, draw_boxes=DRAW_BOXES)
             _write_images_to_bag(
                 out_bag,
                 cv_bridge,
@@ -356,7 +341,7 @@ def anonymize_bag(
 
 def process_camera_topics(file_desc: str, image_topics: Sequence[str]) -> None:
     original_bag = Path(cast(str, get_bag(file_desc)))
-    anonymized_bag = original_bag.parent / f"{original_bag.stem}_anonymized.bag"
+    anonymized_bag = Path(str(original_bag).replace("_calib.bag", "_anonymized.bag"))
 
     # store the intermediate bags in a temporary directory
     tmp_bag = anonymized_bag.parent / f"{token_hex(32)}.bag"

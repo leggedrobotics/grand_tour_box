@@ -116,7 +116,7 @@ services:
   #   - _nuc_livox.bag
   #   - _jetson_adis.bag
   #   - _nuc_cpt7_post_processed.bag
-  #   - _cpt7_raw_imu
+  #   - _cpt7_raw_imu.bag
   #   - _nuc_alphasense_calib.bag
   # Output:
   #   - _jetson_ap20_intrinsics.bag
@@ -141,15 +141,15 @@ services:
   # Input:
   # - _nuc_alphasense_calib.bag
   # - _jetson_hdr_left_calib.bag
-  # - _jetson_hdr_fr_jetson_hdr_front_calibont_calib.bag
+  # - _jetson_hdr_front_calib.bag
   # - _jeston_hdr_right_calib.bag
-  # - _jetson_zed2i_images_calib
+  # - _jetson_zed2i_images_calib.bag
   # Output:
-  # - _nuc_alphasense_calib_anonymized.bag
-  # - _jetson_hdr_left_calib_anonymized.bag
-  # - _jetson_hdr_fr_jetson_hdr_front_calibont_calib_anonymized.bag
-  # - _jeston_hdr_right_calib_anonymized.bag
-  # - _jetson_zed2i_images_calib_anonymized.bag
+  # - _nuc_alphasense_anonymized.bag
+  # - _jetson_hdr_left_anonymized.bag
+  # - _jetson_hdr_front_anonymized.bag
+  # - _jeston_hdr_right_anonymized.bag
+  # - _jetson_zed2i_images_anonymized.bag
   image_anonymizer:
     <<: *common-config
     container_name: image_anonymizer
