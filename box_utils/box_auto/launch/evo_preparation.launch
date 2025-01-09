@@ -19,8 +19,6 @@
   <!-- Mission Prefix -->
   <arg name="prefix" default="" />
 
-  
-
   <!-- Parammmeters are here -->
   <rosparam file="$(arg config_path)" command="load"/>
 
