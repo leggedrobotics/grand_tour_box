@@ -7,26 +7,35 @@ import rospy
 import os
 import tf2_msgs.msg
 import geometry_msgs.msg
-
 from box_auto.utils import get_bag, upload_bag
+
+
+def d(stamp):
+    return rospy.Duration(stamp.secs, stamp.nsecs)
+
+
+def d_from_sec(s):
+    return rospy.Duration.from_sec(s)
 
 
 class LastMatch:
     """Class for keeping track of an item in inventory."""
 
     def __init__(self, imu_debug_msg, timestamp_debug_msg):
-        self.imu_arrivial_ros_time = imu_debug_msg.header.stamp.to_sec()
+        self.imu_arrivial_ros_time = imu_debug_msg.header.stamp
         self.imu_counter = imu_debug_msg.header.seq
-        self.imu_time = imu_debug_msg.imu.header.stamp.to_sec()
+        self.imu_time = imu_debug_msg.imu.header.stamp
         self.imu_seq = imu_debug_msg.imu.header.seq
-
-        self.timestamp_time = timestamp_debug_msg.timestamp.data.to_sec()
+        self.timestamp_time = timestamp_debug_msg.timestamp.data
 
         self.imu_debug_msg = imu_debug_msg
         self.timestamp_debug_msg = timestamp_debug_msg
 
     def get_line_delay(self):
-        return self.imu_arrivial_ros_time - self.timestamp_time
+        if self.imu_arrivial_ros_time > self.timestamp_time:
+            return (self.imu_arrivial_ros_time - self.timestamp_time).to_sec()
+        else:
+            return -(self.timestamp_time - self.imu_arrivial_ros_time).to_sec()
 
     def line_delay_valid(self):
         delay = self.get_line_delay()  # timestamp arrives before imu but not more than 3ms
@@ -36,23 +45,28 @@ class LastMatch:
         res = {}
         res["N_imu_messages"] = self.imu_seq - other.imu_seq
         res["N_imu_count"] = self.imu_counter - other.imu_counter
-        res["N_imu_time"] = round(float(self.imu_time - other.imu_time) / 0.005)
+        res["N_imu_time"] = round(float((self.imu_time - other.imu_time).to_sec()) / 0.005)
+
         res["AP20_time_accuracy_check"] = (
-            abs(float(other.imu_time + res["N_imu_time"] * 0.005) - self.imu_time) < 0.0005
+            abs(((other.imu_time.to_sec() + res["N_imu_time"] * 0.005) - self.imu_time.to_sec())) < 0.0005
         )
-        res["N_imu_arrivial_ros_time"] = round(float(self.imu_arrivial_ros_time - other.imu_arrivial_ros_time) / 0.005)
-        res["N_timestamp_time"] = round(float(self.timestamp_time - other.timestamp_time) / 0.005)
+        res["N_imu_arrivial_ros_time"] = round(
+            (self.imu_arrivial_ros_time.to_sec() - other.imu_arrivial_ros_time.to_sec()) / 0.005
+        )
+
+        res["N_timestamp_time"] = round((self.timestamp_time.to_sec() - other.timestamp_time.to_sec()) / 0.005)
         res["HardwareTS_time_accuracy_check"] = (
-            abs((other.timestamp_time + res["N_timestamp_time"] * 0.005) - self.timestamp_time) < 0.001
+            abs((other.timestamp_time.to_sec() + (res["N_timestamp_time"] * 0.005) - self.timestamp_time.to_sec()))
+            < 0.001
         )
-        res["HardwareTS_shutdown_timestamp"] = (self.timestamp_time - other.timestamp_time) < 0.001
+        res["HardwareTS_shutdown_timestamp"] = (self.timestamp_time.to_sec() - other.timestamp_time.to_sec()) < 0.001
         res["ROS_arrivial_time_check"] = self.line_delay_valid()
         res["ROS_arrivial_line_delay"] = self.get_line_delay()
 
         return res
 
     def publish(self, bag, counter):
-        self.imu_debug_msg.imu.header.stamp = rospy.Time.from_sec(self.timestamp_time)
+        self.imu_debug_msg.imu.header.stamp = self.timestamp_time
         self.imu_debug_msg.imu.header.seq = counter
         self.imu_debug_msg.imu.header.frame_id = "ap20_imu"
         bag.write("/gt_box/ap20/imu", self.imu_debug_msg.imu, self.imu_debug_msg.imu.header.stamp)
@@ -79,7 +93,7 @@ def read_bag_file(bag_path):
 
     all_matches = []
     counter_ts = 0
-    output_bag_path = bag_path.replace("jetson_ap20_aux", "jetson_ap20_synced")
+    output_bag_path = bag_path.replace("jetson_ap20_aux", "jetson_ap20_synced_new")
 
     if os.path.exists(output_bag_path):
         os.remove(output_bag_path)
@@ -99,13 +113,13 @@ def read_bag_file(bag_path):
 
                 if len(position_debug_data) > 0:
                     position = position_debug_data.popleft()
-                    t = position.position.header.stamp.to_sec()
+                    t = position.position.header.stamp  # .to_sec()
                     ref = -1
                     for i in range(len(all_matches)):
 
                         if all_matches[i].imu_time > t:
                             ref = i
-                            delta = all_matches[i].imu_time - t
+                            delta = (all_matches[i].imu_time - t).to_sec()
                             break
 
                     if ref > 0 and ref != -1:
@@ -116,7 +130,7 @@ def read_bag_file(bag_path):
                             new_ts = p1.timestamp_time + ((p2.timestamp_time - p1.timestamp_time) * rate)
 
                             new_pose_stamped_msgs = PoseStamped()
-                            new_pose_stamped_msgs.header.stamp = rospy.Time.from_sec(new_ts)
+                            new_pose_stamped_msgs.header.stamp = new_ts
                             new_pose_stamped_msgs.header.seq = counter_ts
                             new_pose_stamped_msgs.header.frame_id = "leica_total_station"
                             new_pose_stamped_msgs.pose.position = position.position.point
@@ -132,7 +146,7 @@ def read_bag_file(bag_path):
                             )
 
                             new_odometry_msg = Odometry()
-                            new_odometry_msg.header.stamp = rospy.Time.from_sec(new_ts)
+                            new_odometry_msg.header.stamp = new_ts
                             new_odometry_msg.header.seq = counter_ts
                             new_odometry_msg.header.frame_id = "leica_total_station"
                             new_odometry_msg.child_frame_id = "prism"
@@ -157,7 +171,7 @@ def read_bag_file(bag_path):
                             # Create and write the /tf message
                             tf_msg = tf2_msgs.msg.TFMessage()
                             transform = geometry_msgs.msg.TransformStamped()
-                            transform.header.stamp = rospy.Time.from_sec(new_ts)
+                            transform.header.stamp = new_ts
                             transform.header.frame_id = "leica_total_station"
                             transform.child_frame_id = "prism"
                             transform.transform.translation.x = position.position.point.x
@@ -172,7 +186,7 @@ def read_bag_file(bag_path):
                             bag_out.write("/tf", tf_msg, transform.header.stamp)
 
                             new_msg = PointStamped()
-                            new_msg.header.stamp = rospy.Time.from_sec(new_ts)
+                            new_msg.header.stamp = new_ts
                             new_msg.header.seq = counter_ts
                             new_msg.header.frame_id = "leica_total_station"
                             new_msg.point.x = position.position.point.x
