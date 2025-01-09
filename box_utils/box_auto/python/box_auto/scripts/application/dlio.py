@@ -42,19 +42,23 @@ if imu_pattern is None:
 
 # Resolve LiDAR information prefer filtered pointclouds
 if USE_HESAI:
-    lidar_topic = "/gt_box/hesai/points"
+
     try:
         get_bag("*_nuc_hesai_filtered.bag")
         PATTERNS = [imu_pattern, "*_tf_static.bag", "*_nuc_hesai_filtered.bag"]
+        lidar_topic = "/gt_box/hesai/points_filtered"
     except Exception:
         PATTERNS = [imu_pattern, "*_tf_static.bag", "*_nuc_hesai_post_processed.bag"]
+        lidar_topic = "/gt_box/hesai/points"
 elif USE_LIVOX:
     try:
         get_bag("*_nuc_livox_filtered.bag")
         PATTERNS = [imu_pattern, "*_tf_static.bag", "*_nuc_livox_filtered.bag"]
+        lidar_topic = "/gt_box/livox/lidar_filtered"
     except:
         PATTERNS = [imu_pattern, "*_tf_static.bag", "*_nuc_livox.bag"]
-    lidar_topic = "/gt_box/livox/lidar"
+        lidar_topic = "/gt_box/livox/lidar"
+
 else:
     raise ValueError("Use Livox or Hesai")
 
