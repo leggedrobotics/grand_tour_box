@@ -3,8 +3,8 @@
 <launch>
   <!-- Parameters -->
   <arg name="base_path" default=""/>
-  <arg name="input_bag_name" default="2024-12-09-11-53-11_nuc_livox.bag"/>
-  <arg name="output_bag_name" default="2024-12-09-11-53-11_nuc_livox_filtered.bag"/>
+  <arg name="input_bag_name" default=""/>
+  <arg name="output_bag_name" default=""/>
 
   <!-- if this is set, above paremeters are overidden -->
   <arg name="global_input_bag_path" default=""/>

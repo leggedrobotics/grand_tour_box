@@ -123,6 +123,11 @@ int main(int argc, char** argv) {
     std::string base_path = "/tmp/";
     nh.getParam("base_path", base_path);
 
+    // Ensure base_path ends with a trailing '/'
+    if (!base_path.empty() && base_path.back() != '/') {
+      base_path += '/';
+    }
+
     std::string input_bag_name = "input.bag";
     std::string output_bag_name = "output.bag";
     nh.getParam("input_bag_name", input_bag_name);
@@ -428,7 +433,7 @@ int main(int argc, char** argv) {
     }
 
     processed++;
-    if (processed % 500 == 0) {
+    if ( (processed % 500 == 0) || (processed == 1) || (processed == total_msgs) ) {
       ROS_INFO("Processed %lu / %lu messages", (unsigned long)processed, (unsigned long)total_msgs);
     }
   }
