@@ -26,76 +26,13 @@ import datetime
 
 if __name__ == "__main__":
     runs = {
-        "alphasense_2_bw": {
-            "data_folder": "euroc_grand_tour/alphasense/",
-            "okvis_config": "okvis_config_2_bw.yaml",
-        },
-        "alphasense_1_bw": {
-            "data_folder": "euroc_grand_tour/alphasense/",
-            "okvis_config": "okvis_config_1_bw.yaml",
-        },
-        "alphasense_1_rgb": {
-            "data_folder": "euroc_grand_tour/alphasense/",
-            "okvis_config": "okvis_config_1_rgb.yaml",
-        },
-        "alphasense_3_rgb": {
-            "data_folder": "euroc_grand_tour/alphasense/",
-            "okvis_config": "okvis_config_3_rgb.yaml",
-        },
-        "alphasense_5_all": {
-            "data_folder": "euroc_grand_tour/alphasense/",
-            "okvis_config": "okvis_config_5_all.yaml",
-        },
-        "hdr_3_rgb": {
-            "data_folder": "euroc_grand_tour/hdr/",
-            "okvis_config": "okvis_config_hdr_3rgb.yaml",
-        },
-        "hdr_1_rgb": {
-            "data_folder": "euroc_grand_tour/hdr/",
-            "okvis_config": "okvis_config_hdr_1rgb.yaml",
-        },
-        "zed_2_rgb": {
-            "data_folder": "euroc_grand_tour/zed/",
-            "okvis_config": "okvis_config_zed_2rgb.yaml",
-        },
-        "zed_1_rgb": {
-            "data_folder": "euroc_grand_tour/zed/",
-            "okvis_config": "okvis_config_zed_1rgb.yaml",
+        "imu0_alphasense_2_bw": {
+            "data_folder": "euroc_grand_tour/all_cameras/",
+            "okvis_config": "okvis_config_imu0_alphasense_2_bw.yaml",
         },
     }
 
-    runs_imu = {
-        "alphasense_2_bw_cpt7": {
-            "data_folder": "euroc_grand_tour/alphasense_imu/cpt7/",
-            "okvis_config": "okvis_config_2_bw.yaml",
-        },
-        "alphasense_2_bw_alphasense": {
-            "data_folder": "euroc_grand_tour/alphasense_imu/alphasense/",
-            "okvis_config": "okvis_config_2_bw.yaml",
-        },
-        "alphasense_2_bw_ap20": {
-            "data_folder": "euroc_grand_tour/alphasense_imu/ap20/",
-            "okvis_config": "okvis_config_2_bw.yaml",
-        },
-        "alphasense_2_bw_zed": {
-            "data_folder": "euroc_grand_tour/alphasense_imu/zed/",
-            "okvis_config": "okvis_config_2_bw.yaml",
-        },
-        "alphasense_2_bw_stim": {
-            "data_folder": "euroc_grand_tour/alphasense_imu/stim/",
-            "okvis_config": "okvis_config_2_bw.yaml",
-        },
-        "alphasense_2_bw_adis": {
-            "data_folder": "euroc_grand_tour/alphasense_imu/adis/",
-            "okvis_config": "okvis_config_2_bw.yaml",
-        },
-        "alphasense_2_bw_livox": {
-            "data_folder": "euroc_grand_tour/alphasense_imu/livox/",
-            "okvis_config": "okvis_config_2_bw.yaml",
-        },
-    }
-
-    for k, v in runs_imu.items():
+    for k, v in runs.items():
         run_script = f"{BOX_AUTO_DIR}/docker/run.sh"
 
         relativ_euroc_data = v["data_folder"]
@@ -122,7 +59,7 @@ if __name__ == "__main__":
         # Convert trajectory into rosbag
         livox_bag_path = get_bag("*_nuc_livox.bag")
         input_csv = Path(MISSION_DATA) / v["data_folder"] / "okvis2-slam_trajectory.csv"
-        output_bag = livox_bag_path.replace("_nuc_livox", f"_okvis_wihtout_optimizing_extrinsics_{k}")
+        output_bag = livox_bag_path.replace("_nuc_livox", f"_okvis_{k}")
         okviz_trajectory_to_bag(
             input_csv, output_bag, "okvis_world", "cpt7_imu", metadata_string, "/gt_box/okvis/offline_metadata"
         )
