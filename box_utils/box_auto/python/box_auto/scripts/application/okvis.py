@@ -30,6 +30,18 @@ if __name__ == "__main__":
             "data_folder": "euroc_grand_tour/all_cameras/",
             "okvis_config": "okvis_config_imu0_alphasense_2_bw.yaml",
         },
+        "imu0_alphasense_3_rgb": {
+            "data_folder": "euroc_grand_tour/alphasense_rgb/",
+            "okvis_config": "okvis_config_imu0_alphasense_3_rgb.yaml",
+        },
+        "imu0_hdr_3_rgb": {
+            "data_folder": "euroc_grand_tour/hdr/",
+            "okvis_config": "okvis_config_imu0_hdr_3_rgb.yaml",
+        },
+        "imu0_zed_2_rgb": {
+            "data_folder": "euroc_grand_tour/zed/",
+            "okvis_config": "okvis_config_imu0_zed_2_rgb.yaml",
+        },
     }
 
     for k, v in runs.items():
