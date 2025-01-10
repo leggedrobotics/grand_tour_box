@@ -433,7 +433,7 @@ int main(int argc, char** argv) {
     }
 
     processed++;
-    if ( (processed % 500 == 0) || (processed == 1) || (processed == total_msgs) ) {
+    if ((processed % 500 == 0) || (processed == 1) || (processed == total_msgs)) {
       ROS_INFO("Processed %lu / %lu messages", (unsigned long)processed, (unsigned long)total_msgs);
     }
   }
