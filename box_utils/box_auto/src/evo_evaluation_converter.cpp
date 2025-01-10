@@ -19,10 +19,11 @@
 #include <vector>
 
 // Define a struct to store each triplet
-struct BagTopicFrame {
-  std::string bag;
-  std::string topic;
-  std::string frame;
+struct PrepPrameters {
+  std::string bag = "";
+  std::string topic = "";
+  std::string frame = "";
+  std::string outputName = "";
 };
 
 geometry_msgs::PoseStamped transformToPose(const geometry_msgs::TransformStamped& transform) {
@@ -128,8 +129,8 @@ geometry_msgs::TransformStamped invertTransform(const geometry_msgs::TransformSt
   return inverted_transform;
 }
 
-std::vector<BagTopicFrame> parseBagTopicPairs(const XmlRpc::XmlRpcValue& param) {
-  std::vector<BagTopicFrame> bagTopicPairs;
+std::vector<PrepPrameters> parseBagTopicPairs(const XmlRpc::XmlRpcValue& param) {
+  std::vector<PrepPrameters> bagTopicPairs;
 
   // Validate the parameter is an array
   if (param.getType() != XmlRpc::XmlRpcValue::TypeArray) {
@@ -145,29 +146,36 @@ std::vector<BagTopicFrame> parseBagTopicPairs(const XmlRpc::XmlRpcValue& param) 
     }
 
     // Extract bag, topic, and frame
-    BagTopicFrame triplet;
+    PrepPrameters quartet;
     if (param[i].hasMember("bag") && param[i]["bag"].getType() == XmlRpc::XmlRpcValue::TypeString) {
-      triplet.bag = static_cast<std::string>(param[i]["bag"]);
+      quartet.bag = static_cast<std::string>(param[i]["bag"]);
     } else {
       ROS_ERROR("Missing or invalid 'bag' in entry %d.", i);
       continue;
     }
 
     if (param[i].hasMember("topic") && param[i]["topic"].getType() == XmlRpc::XmlRpcValue::TypeString) {
-      triplet.topic = static_cast<std::string>(param[i]["topic"]);
+      quartet.topic = static_cast<std::string>(param[i]["topic"]);
     } else {
       ROS_ERROR("Missing or invalid 'topic' in entry %d.", i);
       continue;
     }
 
     if (param[i].hasMember("frame") && param[i]["frame"].getType() == XmlRpc::XmlRpcValue::TypeString) {
-      triplet.frame = static_cast<std::string>(param[i]["frame"]);
+      quartet.frame = static_cast<std::string>(param[i]["frame"]);
     } else {
       ROS_ERROR("Missing or invalid 'frame' in entry %d.", i);
       continue;
     }
 
-    bagTopicPairs.push_back(triplet);
+    if (param[i].hasMember("test_name") && param[i]["test_name"].getType() == XmlRpc::XmlRpcValue::TypeString) {
+      quartet.outputName = static_cast<std::string>(param[i]["test_name"]);
+    } else {
+      ROS_ERROR("Missing or invalid 'test_name' in entry %d.", i);
+      continue;
+    }
+
+    bagTopicPairs.push_back(quartet);
   }
 
   return bagTopicPairs;
@@ -398,6 +406,7 @@ void processTF(const std::vector<std::string>& tfContainingBags, tf2_ros::Buffer
     bags.back().open(path, rosbag::bagmode::Read);
   }
 
+  ROS_INFO_STREAM("Combining TF for offline reading.");
   std::vector<std::string> tf_topics{"/tf", "/tf_static"};
   rosbag::View combined_view;
   for (auto& tfbag : bags) {
@@ -487,18 +496,19 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  std::vector<BagTopicFrame> bagTopicPairs = parseBagTopicPairs(param);
+  std::vector<PrepPrameters> bagTopicPairs = parseBagTopicPairs(param);
 
   // Output the parsed results for verification
-  for (auto& triplet : bagTopicPairs) {
-    if ((!missionPrefix.empty()) && (triplet.bag[0] == '_')) {
-      triplet.bag = missionPrefix + triplet.bag;
+  for (auto& quartet : bagTopicPairs) {
+    if ((!missionPrefix.empty()) && (quartet.bag[0] == '_')) {
+      quartet.bag = missionPrefix + quartet.bag;
     }
 
-    if (triplet.frame.empty()) {
-      ROS_INFO_STREAM("\033[1;33mOnly tf Bag: " << triplet.bag << "\033[0m");
+    if (quartet.frame.empty()) {
+      ROS_INFO_STREAM("\033[1;33mOnly tf Bag: " << quartet.bag << "\033[0m");
     } else {
-      ROS_INFO_STREAM("Bag: " << triplet.bag << ", Topic: " << triplet.topic << ", Frame: " << triplet.frame);
+      ROS_INFO_STREAM("Bag: " << quartet.bag << ", Topic: " << quartet.topic << ", Frame: " << quartet.frame
+                              << ", Output Name: " << quartet.outputName);
     }
   }
 
@@ -516,8 +526,8 @@ int main(int argc, char** argv) {
 
   std::vector<std::string> tfContainingBags;
 
-  for (const auto& triplet : bagTopicPairs) {
-    tfContainingBags.push_back(bag_file_directory + triplet.bag);
+  for (const auto& quartet : bagTopicPairs) {
+    tfContainingBags.push_back(bag_file_directory + quartet.bag);
   }
 
   if (tfContainingBags.empty()) {
@@ -558,10 +568,11 @@ int main(int argc, char** argv) {
     return -1;
   }
 
-  for (const auto& triplet : bagTopicPairs) {
-    std::string bagPath = bag_file_directory + triplet.bag;
-    std::string topicName = triplet.topic;
-    std::string sourceFrame = triplet.frame;
+  for (const auto& quartet : bagTopicPairs) {
+    std::string bagPath = bag_file_directory + quartet.bag;
+    std::string topicName = quartet.topic;
+    std::string sourceFrame = quartet.frame;
+    std::string outputName = quartet.outputName;
 
     if (topicName.empty()) {
       continue;
@@ -570,14 +581,14 @@ int main(int argc, char** argv) {
     ROS_INFO_STREAM("Bag Path: " << bagPath);
     ROS_INFO_STREAM("Topic Name: " << topicName);
     ROS_INFO_STREAM("Source Frame: " << sourceFrame);
+    ROS_INFO_STREAM("Test Name: " << outputName);
 
-    std::string bagname = "";
-    if (triplet.bag.size() > 4 && triplet.bag.substr(triplet.bag.size() - 4) == ".bag") {
-      bagname = triplet.bag.substr(0, triplet.bag.size() - 4);
+    std::string bagname = outputName;
+    if (outputName.empty()) {
+      bagname = quartet.bag.substr(0, quartet.bag.size() - 4);
     }
 
-    // std::string bagName = std::filesystem::path(bagPath).stem().string();
-    std::string outputPath = outputDir + "/" + bagname + "_evo.tum";
+    std::string outputPath = (std::filesystem::path(outputDir) / (bagname + ".tum")).string();
 
     ROS_INFO_STREAM("\033[1;32mProcessing: " << bagPath << " (Topic: " << topicName << ") -> " << outputPath << ".\033[0m");
 
