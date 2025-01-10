@@ -3,6 +3,9 @@ target_frame: cpt7_imu
 
 # If topic entry is left empty "", the bag only going to be used for /tf & /tf_static reading and not for topic reading
 bag_topic_pairs:
+  - bag: _gt_pose.bag
+    topic: /gt_box/ground_truth/odometry
+    frame: box_base
   - bag: _cpt7_ie_tc.bag
     topic: /gt_box/inertial_explorer/tc/odometry
     frame: box_base
@@ -15,7 +18,7 @@ bag_topic_pairs:
   - bag: _jetson_zed2i_prop.bag
     topic: /gt_box/zed2i/zed_node/odom
     frame: zed_base_link
-  - bag: open3d_slam_replayed.bag
+  - bag: _open3d_slam.bag
     topic: /open3d_slam/optimized_poses_as_odometry
     frame: hesai_lidar
   - bag: _okvis_alphasense_2_bw.bag

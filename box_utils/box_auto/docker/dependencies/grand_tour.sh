@@ -109,10 +109,17 @@ pip3 install rerun-sdk
 pip3 install sortedcontainers
 pip3 install rosnumpy
 
+# anonymization script
+pip3 install ultralytics
+pip3 install supervision
+
 # Dependencies: box_auto - hesai.py
 mkdir -p /home/rsl/git/grand_tour_box/box_bringup/bringup_hesai/config
 ln -s /home/catkin_ws/src/grand_tour_box/box_bringup/bringup_hesai/config/PandarXT-32_firetime_correction.csv  /home/rsl/git/grand_tour_box/box_bringup/bringup_hesai/config/PandarXT-32_firetime_correction.csv
 ln -s /home/catkin_ws/src/grand_tour_box/box_bringup/bringup_hesai/config/PandarXT-32.csv  /home/rsl/git/grand_tour_box/box_bringup/bringup_hesai/config/PandarXT-32.csv
+
+# Dependencies: box_auto - evo_evaluation
+pip3 install fpdf -y
 
 # Dependencies: direct_lidar_inertial_odometry
 apt install -y libomp-dev libpcl-dev libeigen3-dev
@@ -131,6 +138,7 @@ apt install -y ros-noetic-diagnostic-updater
 apt install -y libgflags-dev
 apt install -y ros-noetic-interactive-markers
 apt install -y ros-noetic-tf2-eigen
+
 
 apt update -y
 
