@@ -176,7 +176,7 @@ std::map<std::string, CameraCovariance> ROSCameraCameraProgram::computeCovarianc
 
 bool ROSCameraCameraProgram::getReprojectionResiduals(ceres::Problem &problem,
                                                       const ceres::ResidualBlockId &residual_block,
-                                                      Eigen::Matrix2Xf &residuals) {
+                                                      Eigen::Matrix2Xf &residuals) const {
 
     // Loop over each residual block
     const ceres::CostFunction *cost_function = problem.GetCostFunctionForResidualBlock(residual_block);
@@ -205,6 +205,24 @@ bool ROSCameraCameraProgram::getReprojectionResiduals(ceres::Problem &problem,
 
     return true;
 }
+
+std::map<std::string, std::vector<Observations2dReprojectionResiduals>>
+ROSCameraCameraProgram::getObservationsAndResiduals2D() const {
+    std::map<std::string, std::vector<Observations2dReprojectionResiduals>> result;
+    for (const auto &[stamp, observations_map]: parsed_alignment_data.observations) {
+        for (const auto &[name, observation]: observations_map) {
+            if (intrinsics_residuals_of_camera_at_time.contains(name) and
+                intrinsics_residuals_of_camera_at_time.at(name).contains(stamp)) {
+                Eigen::Matrix2Xf reprojection_residuals;
+                this->getReprojectionResiduals(
+                        problem_->getProblem(),
+                        intrinsics_residuals_of_camera_at_time.at(name).at(stamp), reprojection_residuals);
+                result[name].push_back({observation.observations2d, reprojection_residuals.cast<double>()});
+            }
+        }
+    }
+    return result;
+};
 
 bool ROSCameraCameraProgram::handleAddExtrinsicsCost(unsigned long long stamp,
                                                      Observations2dModelPoints3dPointIDsPose3dSensorName &new_observation,
@@ -248,9 +266,9 @@ bool ROSCameraCameraProgram::handleAddExtrinsicsCost(unsigned long long stamp,
 
         has_initialised_extrinsics[origin_camera_frame_id] = true;
         if (!has_initialised_extrinsics.contains(new_observation.sensor_name) and
-        !has_initialised_extrinsics.contains(other_sensor_name)) {
+            !has_initialised_extrinsics.contains(other_sensor_name)) {
             ROS_DEBUG_STREAM("Not adding extrinsics sample between: " + new_observation.sensor_name + " and "
-            + other_sensor_name);
+                             + other_sensor_name);
             continue;
         }
         CameraCameraProgram::extrinsics_residuals_of_cameras_at_time[
@@ -339,8 +357,8 @@ bool ROSCameraCameraProgram::resetProblem() {
 
 bool ROSCameraCameraProgram::rebuildProblemFromLoggedROSAlignmentData() {
     // Compute covariance of board poses
-    this->resetStateFromLoggedObservations();
-    this->filterOutOutliersFromLoggedObservations(3.0);
+//    this->resetStateFromLoggedObservations();
+    this->filterOutOutliersFromLoggedObservations(2.0);
     this->resetStateFromLoggedObservations();
     return true;
 }
@@ -397,7 +415,8 @@ void ROSCameraCameraProgram::resetStateFromLoggedObservations() {
     this->resetProblem();
     for (const auto &[name, data_at_time]: logged_ros_alignment_data_) {
         for (const auto &[stamp, msg]: data_at_time) {
-            addAlignmentData(ros::Time::now(), msg, true);
+            addAlignmentData(ros::Time(stamp/1000000000ul, (stamp % 1000000000ul)),
+                             msg, true);
         }
     }
     n_samples_last_solve_ = CameraCameraProgram::parsed_alignment_data.unique_timestamps.size();
@@ -431,15 +450,18 @@ bool ROSCameraCameraProgram::writeCalibrationOutput() {
     }
     std::map<std::string, CameraParameterPack> camera_parameters_by_rostopic;
     auto covariance_sigmas = this->computeCovariances();
-
+    auto intrinsics_residuals = this->getObservationsAndResiduals2D();
     for (const auto &[frameid, params]: camera_parameter_packs) {
         camera_parameters_by_rostopic[frameid2rostopic_.at(frameid)] = params;
         covariance_sigmas[frameid2rostopic_.at(frameid)] = covariance_sigmas[frameid];
+        intrinsics_residuals[frameid2rostopic_.at(frameid)] = intrinsics_residuals[frameid];
     }
 
     SerialiseCameraParameters(write_path.string(), camera_parameters_by_rostopic,
                               GetTimeNowString(calibration_time).str(),
-                              std::make_shared<std::map<std::string, CameraCovariance>>(covariance_sigmas));
+                              std::make_shared<std::map<std::string, CameraCovariance>>(covariance_sigmas),
+                              std::make_shared<std::map<std::string, std::vector<Observations2dReprojectionResiduals>>>(
+                                      intrinsics_residuals));
 
     ROS_INFO_STREAM("Wrote output calibrations to: " + write_path.string());
     return true;
@@ -483,21 +505,21 @@ void ROSCameraCameraProgram::setExtrinsicParametersConstBeforeOpt() {
         if (!extrinsics_residuals_of_cameras_at_time.contains(name)) {
             continue;
         }
-            problem_->getProblem().SetParameterBlockConstant(params.T_bundle_sensor);
+        problem_->getProblem().SetParameterBlockConstant(params.T_bundle_sensor);
     }
 }
 
 void ROSCameraCameraProgram::setBoardPoseParametersConst() {
-    for (const auto& [cam_name, board_packs] : board_pose_parameter_packs) {
-        for (const auto& [stamp, board_param] : board_packs) {
+    for (const auto &[cam_name, board_packs]: board_pose_parameter_packs) {
+        for (const auto &[stamp, board_param]: board_packs) {
             problem_->getProblem().SetParameterBlockConstant(board_param->T_sensor_board);
         }
     }
 }
 
 void ROSCameraCameraProgram::setBoardPoseParametersVariable() {
-    for (const auto& [cam_name, board_packs] : board_pose_parameter_packs) {
-        for (const auto& [stamp, board_param] : board_packs) {
+    for (const auto &[cam_name, board_packs]: board_pose_parameter_packs) {
+        for (const auto &[stamp, board_param]: board_packs) {
             problem_->getProblem().SetParameterBlockVariable(board_param->T_sensor_board);
         }
     }
@@ -521,8 +543,8 @@ fs::path ROSCameraCameraProgram::fetchOutputPath() {
 
 std::map<std::string, int> ROSCameraCameraProgram::getTotalInAndOutExtrinsicEdges() {
     std::map<std::string, int> total_edge_count;
-    for (const auto& [name, other_cam_map] : camera_camera_adjacency_count) {
-        for (const auto &[other_name, count] : other_cam_map) {
+    for (const auto &[name, other_cam_map]: camera_camera_adjacency_count) {
+        for (const auto &[other_name, count]: other_cam_map) {
             total_edge_count[name] += count;
         }
     }

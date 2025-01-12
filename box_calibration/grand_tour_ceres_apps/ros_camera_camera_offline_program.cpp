@@ -15,7 +15,7 @@ ROSCameraCameraOfflineProgram::ROSCameraCameraOfflineProgram(ROSCameraCameraPars
     std::cout << parser.bag_paths.size() << std::endl;
 
     bool all_paths_valid = true;
-    for (const auto& bag : parser.bag_paths) {
+    for (const auto &bag: parser.bag_paths) {
         if (!fs::exists(bag)) {
             std::cerr << "Error: File path does not exist: " << bag << std::endl;
             all_paths_valid = false;
@@ -43,7 +43,7 @@ void ROSCameraCameraOfflineProgram::run() {
     // set state from logged data
 
     std::map<std::string, int> total_edge_count = getTotalInAndOutExtrinsicEdges();
-    for (const auto& [name, count] : total_edge_count) {
+    for (const auto &[name, count]: total_edge_count) {
         std::cout << name << " has " << count << " in and out edges" << std::endl;
     }
 
@@ -54,8 +54,8 @@ void ROSCameraCameraOfflineProgram::run() {
     {
         ScopedTimer timer;
         const bool success = this->Solve();
-//        this->rebuildProblemFromLoggedROSAlignmentData();
-//        this->Solve();
+        this->rebuildProblemFromLoggedROSAlignmentData();
+        this->Solve();
         std::cout << "Solve converged: " << std::boolalpha << success << std::endl;
         std::cout << "Computing covariances..." << std::endl;
         const auto covariances = this->computeCovariances();
@@ -64,19 +64,19 @@ void ROSCameraCameraOfflineProgram::run() {
             std::cout << covariance.rtvec_sigma.transpose() << std::endl;
             std::cout << covariance.fxfycxcy_sigma.transpose() << std::endl;
         }
-            ROS_DEBUG("Covariance and ros publishing executed in: %f seconds", timer.elapsed().count());
+        ROS_DEBUG("Covariance and ros publishing executed in: %f seconds", timer.elapsed().count());
     }
     // write results
     this->writeCalibrationOutput();
 }
 
 bool ROSCameraCameraOfflineProgram::loadRosbagsIntoProgram() {
-    std::map <std::string, std::string> detectiontopic2imagetopic;
-    for (const auto& [image_topic, _ ]: rostopic2frameid_) {
+    std::map<std::string, std::string> detectiontopic2imagetopic;
+    for (const auto &[image_topic, _]: rostopic2frameid_) {
         const std::string detection_topic = image_topic + detection_suffix;
         detectiontopic2imagetopic[detection_topic] = image_topic;
     }
-    for (const auto& bag_path : bag_paths) {
+    for (const auto &bag_path: bag_paths) {
         try {
             rosbag::Bag bag;
             bag.open(bag_path, rosbag::bagmode::Read);
@@ -84,19 +84,21 @@ bool ROSCameraCameraOfflineProgram::loadRosbagsIntoProgram() {
 
             // Set up a view for predefined topics only
             rosbag::View view(bag);
-            for (const auto& connection_info : view.getConnections()) {
-                const std::string& detection_topic = connection_info->topic;
+            for (const auto &connection_info: view.getConnections()) {
+                const std::string &detection_topic = connection_info->topic;
                 // Process only if the topic is in the predefined list
                 if (detectiontopic2imagetopic.find(detection_topic) != rostopic2frameid_.end()) {
                     rosbag::View topic_view(bag, rosbag::TopicQuery(detection_topic));
-                    for (const auto& m : topic_view) {
+                    for (const auto &m: topic_view) {
                         // Check if the message type is sensor_msgs/Image
                         grand_tour_camera_detection_msgs::CameraDetectionsConstPtr detection_msg =
                                 m.instantiate<grand_tour_camera_detection_msgs::CameraDetections>();
                         if (detection_msg != nullptr) {
-                            this->addAlignmentData(detection_msg->header.stamp,
-                                                   *detection_msg,
-                                                   true);
+                            if (this->addAlignmentData(detection_msg->header.stamp,
+                                                       *detection_msg,
+                                                       true)) {
+                                this->logged_ros_alignment_data_[detection_msg->header.frame_id][detection_msg->header.stamp.toNSec()] = *detection_msg;
+                            }
                             calibration_time = detection_msg->header.stamp;
                         }
                     }
@@ -104,7 +106,7 @@ bool ROSCameraCameraOfflineProgram::loadRosbagsIntoProgram() {
             }
 
             bag.close();
-        } catch (const rosbag::BagException& e) {
+        } catch (const rosbag::BagException &e) {
             std::cerr << "Error reading bag file " << bag_path << ": " << e.what() << std::endl;
         }
     }

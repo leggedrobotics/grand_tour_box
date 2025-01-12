@@ -79,7 +79,11 @@ protected:
 
     bool getReprojectionResiduals(ceres::Problem &problem,
                                   const ceres::ResidualBlockId &residual_block,
-                                  Eigen::Matrix2Xf &residuals);
+                                  Eigen::Matrix2Xf &residuals) const;
+
+    std::map<std::string, std::vector<Observations2dReprojectionResiduals>>
+            getObservationsAndResiduals2D() const;
+
 
     bool rebuildProblemFromLoggedROSAlignmentData();
 

@@ -128,7 +128,7 @@ YAML::Emitter &AddComment(YAML::Emitter &out, const std::string &comment) {
     return out;
 }
 
-YAML::Node EigenToYAML(const Eigen::VectorXd &vec) {
+YAML::Node EigenVectorXdToYAML(const Eigen::VectorXd &vec) {
     YAML::Node node;
     for (int i = 0; i < vec.size(); ++i) {
         node.push_back(vec[i]);
@@ -136,10 +136,27 @@ YAML::Node EigenToYAML(const Eigen::VectorXd &vec) {
     return node;
 }
 
+YAML::Node EigenMatrixXdToYAML(const Eigen::MatrixXd &matrix) {
+    YAML::Node node;
+    for (int i = 0; i < matrix.rows(); ++i) {
+        YAML::Node row = YAML::Node(YAML::NodeType::Sequence);
+        row.SetStyle(YAML::EmitterStyle::Flow);
+        for (int j = 0; j < matrix.cols(); ++j) {
+            row.push_back(matrix(i, j));
+        }
+        node.push_back(row);
+    }
+    return node;
+}
+
 bool SerialiseCameraParameters(const std::string &output_path,
                                const std::map<std::string, CameraParameterPack> &camera_parameter_packs,
                                const std::string comment,
-                               std::shared_ptr<std::map<std::string, CameraCovariance>> covariances) {
+                               std::shared_ptr<std::map<std::string, CameraCovariance>> covariances,
+                               std::shared_ptr<std::map<std::string, std::vector<Observations2dReprojectionResiduals>>> intrinsics_residuals) {
+    std::string comment_no_newlines = comment;
+    std::replace(comment_no_newlines.begin(), comment_no_newlines.end(), '\n', ' ');
+    comment_no_newlines = "#" + comment_no_newlines;
     YAML::Node node;
 
     int index = 0;
@@ -190,16 +207,33 @@ bool SerialiseCameraParameters(const std::string &output_path,
         cam_node["distortion_coeffs"] = dist_coeffs;
 
         if (covariances != nullptr and covariances->contains(cam_name)) {
-            cam_node["covariances"]["rtvec_sigma"] = EigenToYAML(covariances->at(cam_name).rtvec_sigma);
-            cam_node["covariances"]["fxfycxcy_sigma"] = EigenToYAML(covariances->at(cam_name).fxfycxcy_sigma);
+            cam_node["covariances"]["rtvec_sigma"] = EigenVectorXdToYAML(covariances->at(cam_name).rtvec_sigma);
+            cam_node["covariances"]["fxfycxcy_sigma"] = EigenVectorXdToYAML(covariances->at(cam_name).fxfycxcy_sigma);
+        }
+
+        if (intrinsics_residuals != nullptr and intrinsics_residuals->contains(cam_name)
+        and !intrinsics_residuals->at(cam_name).empty()) {
+            std::filesystem::path output_dir = std::filesystem::path(output_path).parent_path();
+            // Replace potential unsafe characters in cam_name with underscores
+            std::string safe_cam_name = cam_name + "_intrinsics_residuals";
+            std::replace_if(safe_cam_name.begin(), safe_cam_name.end(),
+                            [](char c) { return !std::isalnum(c) && c != '_'; }, '_');
+            // Assign the safe path to cam_node
+            std::filesystem::path safe_file_path = output_dir / (safe_cam_name + ".yaml");
+            YAML::Node residuals_node;
+            for (int i = 0; i < intrinsics_residuals->at(cam_name).size(); i++) {
+                residuals_node[i]["observations2d"] = EigenMatrixXdToYAML(intrinsics_residuals->at(cam_name).at(i).observations2d);
+                residuals_node[i]["reprojection_residuals2d"] = EigenMatrixXdToYAML(intrinsics_residuals->at(cam_name).at(i).reprojection_residuals);
+            }
+            std::ofstream fout(safe_file_path);
+            fout << comment_no_newlines << std::endl;
+            fout << residuals_node;
+            cam_node["residuals_path"] = safe_file_path.string();
         }
 
         node["cam" + std::to_string(index++)] = cam_node;
     }
     std::ofstream fout(output_path);
-    std::string comment_no_newlines = comment;
-    std::replace(comment_no_newlines.begin(), comment_no_newlines.end(), '\n', ' ');
-    comment_no_newlines = "#" + comment_no_newlines;
     fout << comment_no_newlines << std::endl;
     fout << node;
     return true;

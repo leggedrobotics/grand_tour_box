@@ -18,6 +18,11 @@ struct Observations2dModelPoints3dPointIDsPose3dSensorName {
     std::string sensor_name;
 };
 
+struct Observations2dReprojectionResiduals {
+    Eigen::Matrix2Xd observations2d;
+    Eigen::Matrix2Xd reprojection_residuals;
+};
+
 struct CameraCamera2D3DTargetDetectionData {
     std::set<unsigned long long> unique_timestamps;
     std::map<unsigned long long, std::map<std::string, Observations2dModelPoints3dPointIDsPose3dSensorName>> observations;
