@@ -6,6 +6,9 @@
 #define GRAND_TOUR_CERES_APPS_ROS_CAMERA_CAMERA_PROGRAM_H
 
 
+#include <sensor_msgs/Image.h>
+#include <rosbag/view.h>
+#include <rosbag/bag.h>
 #include <ros/callback_queue.h>
 #include <gtboxcalibration/detectiongraphutils.h>
 #include "gtboxcalibration/voxel_2d.h"
@@ -18,11 +21,6 @@
 #include <gtboxcalibration/ceresprograms.h>
 
 
-struct CameraCovariance {
-    Eigen::VectorXd rtvec_sigma;
-    Eigen::VectorXd fxfycxcy_sigma;
-};
-
 class ROSCameraCameraProgram : public CameraCameraProgram {
 
 public:
@@ -31,6 +29,7 @@ public:
     bool isValid() const {
         return is_valid;
     }
+
 private:
     std::filesystem::path fetchOutputPath();
     bool computeAndPopulateInitialGuessModelPose(Observations2dModelPoints3dPointIDsPose3dSensorName &observation);
@@ -61,10 +60,14 @@ private:
 
     void resetStateFromLoggedObservations();
 
+    fs::path fetchOutputPath();
+
 protected:
     bool addAlignmentData(ros::Time timestamp,
                           const grand_tour_camera_detection_msgs::CameraDetections &camera_detections,
                           bool force);
+
+    std::map<std::string, CameraCovariance> computeCovariances();
 
     void setBoardPoseParametersConst();
 
@@ -94,6 +97,8 @@ protected:
     double max_intersample_displacement_m = 1e-4;
     double association_time_tolerance_secs_ = 0.5;
 
+    std::string output_path;
+
     std::map<std::string, unsigned long> frame_id_to_vertex_mapping_;
 
     std::map<std::string, std::map<
@@ -106,6 +111,7 @@ protected:
     gt_box::graph_utils::Graph codetection_graph_;
     bool is_valid = false;
     ros::Time calibration_time;
+    bool ready_for_extrinsics_ = false;
 
     bool writeCalibrationOutput();
 
@@ -116,6 +122,8 @@ protected:
     void setExtrinsicParametersConstBeforeOpt();
 
     void setExtrinsicParametersVariableBeforeOpt();
+
+    std::map<std::string, int> getTotalInAndOutExtrinsicEdges();
 };
 
 

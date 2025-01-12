@@ -14,6 +14,7 @@ struct ROSCameraCameraParser {
     std::string rostopic_frameid_mapping_path;
     std::vector<std::string> bag_paths;
     bool is_valid = false;
+    std::string output_path;
 };
 
 std::map<std::string, std::string> LoadRostopicFrameIDMapping(const std::string yaml_path);

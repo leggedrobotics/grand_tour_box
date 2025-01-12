@@ -55,7 +55,6 @@ private:
     void publishParamsAndSigmas(const std::string &name,
                                 const Eigen::VectorXd &rvectvec_sigma, const Eigen::VectorXd &fxfycxcy_sigma) const;
 
-    std::map<std::string, CameraCovariance> computeCovariances();
 
     void publishAllParamsAndSigmas(const std::map<std::string, CameraCovariance> &covariances) const;
 
@@ -90,7 +89,6 @@ private:
     std::mutex ceres_problem_mutex_;
 
     bool do_optimize_ = true;
-    bool ready_for_extrinsics_ = false;
 
 };
 

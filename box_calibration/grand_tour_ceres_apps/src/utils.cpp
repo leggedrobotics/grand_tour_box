@@ -54,13 +54,13 @@ CameraCamera2D3DTargetDetectionData FetchMulticamera2D3DDetectionData(std::strin
 }
 
 std::map<std::string, CameraParameterPack>
-PopulateCameraParameterPacks(const std::string& intrinsics_yaml_path, const std::string& extrinsics_path) {
+PopulateCameraParameterPacks(const std::string &intrinsics_yaml_path, const std::string &extrinsics_path) {
 
     const YAML::Node kalibr_data = YAML::LoadFile(intrinsics_yaml_path);
     const auto extrinsics = FetchExtrinsicsFromYamlPath(extrinsics_path);
 
     std::map<std::string, CameraParameterPack> result = FetchIntrinsicsAsCameraPackFromYaml(kalibr_data);
-    for (const auto& [name, _ ] : result) {
+    for (const auto &[name, _]: result) {
         const auto transform = extrinsics.at(name);
         SE3Transform::assignToData(transform, result[name].T_bundle_sensor);
     }
@@ -79,9 +79,9 @@ std::map<std::string, CameraParameterPack> FetchIntrinsicsAsCameraPackFromYaml(c
         const auto resolution = cam_data["resolution"].as<std::vector<int>>();
 
         memcpy(result[rostopic].fxfycxcy,
-                    intrinsics.data(), PinholeProjection::NUM_PARAMETERS * sizeof(double));
+               intrinsics.data(), PinholeProjection::NUM_PARAMETERS * sizeof(double));
         memcpy(result[rostopic].dist_coeffs,
-                    distortion_coeffs.data(), Distortion::NUM_PARAMETERS * sizeof(double));
+               distortion_coeffs.data(), Distortion::NUM_PARAMETERS * sizeof(double));
         result[rostopic].width = resolution[0];
         result[rostopic].height = resolution[1];
 
@@ -123,18 +123,27 @@ std::map<std::string, Eigen::Affine3d> FetchExtrinsicsFromYaml(const YAML::Node 
     return eigen_results;
 }
 
-YAML::Emitter& AddComment(YAML::Emitter& out, const std::string& comment) {
+YAML::Emitter &AddComment(YAML::Emitter &out, const std::string &comment) {
     out << YAML::Comment(comment);
     return out;
 }
 
-bool SerialiseCameraParameters(const std::string& output_path,
+YAML::Node EigenToYAML(const Eigen::VectorXd &vec) {
+    YAML::Node node;
+    for (int i = 0; i < vec.size(); ++i) {
+        node.push_back(vec[i]);
+    }
+    return node;
+}
+
+bool SerialiseCameraParameters(const std::string &output_path,
                                const std::map<std::string, CameraParameterPack> &camera_parameter_packs,
-                               const std::string comment) {
+                               const std::string comment,
+                               std::shared_ptr<std::map<std::string, CameraCovariance>> covariances) {
     YAML::Node node;
 
     int index = 0;
-    for (const auto&[cam_name, pack]: camera_parameter_packs) {
+    for (const auto &[cam_name, pack]: camera_parameter_packs) {
         YAML::Node cam_node;
 
         YAML::Node dist_coeffs = YAML::Node(YAML::NodeType::Sequence);
@@ -179,6 +188,12 @@ bool SerialiseCameraParameters(const std::string& output_path,
         cam_node["T_bundle_camera"] = T_bundle_cam_node;
         cam_node["rostopic"] = cam_name;
         cam_node["distortion_coeffs"] = dist_coeffs;
+
+        if (covariances != nullptr and covariances->contains(cam_name)) {
+            cam_node["covariances"]["rtvec_sigma"] = EigenToYAML(covariances->at(cam_name).rtvec_sigma);
+            cam_node["covariances"]["fxfycxcy_sigma"] = EigenToYAML(covariances->at(cam_name).fxfycxcy_sigma);
+        }
+
         node["cam" + std::to_string(index++)] = cam_node;
     }
     std::ofstream fout(output_path);
@@ -249,8 +264,8 @@ PrismPositionDetectionData LoadPrismPositions(std::string json_path) {
         std::ifstream f(json_path);
         data = nlohmann::json::parse(f);
     }
-    for (const auto& stamp_data: data.items()) {
-        const std::string& stamp = stamp_data.key();
+    for (const auto &stamp_data: data.items()) {
+        const std::string &stamp = stamp_data.key();
         std::vector<double> position_data = stamp_data.value().get<std::vector<double>>();
         Eigen::Map<Eigen::Vector3d> position(position_data.data());
         result[std::stoull(stamp)] = position;

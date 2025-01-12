@@ -71,6 +71,7 @@ struct CameraCameraProgram : CeresProgram {
     std::map<std::string,
             std::map<std::string,
             std::map<unsigned long long, ceres::ResidualBlockId>>> extrinsics_residuals_of_cameras_at_time;
+    std::map<std::string, std::map<std::string, int>> camera_camera_adjacency_count;
     std::string origin_camera_frame_id;
 
     ceres::ResidualBlockId

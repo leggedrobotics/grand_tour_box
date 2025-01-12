@@ -11,6 +11,10 @@
 #include <ceres/ceres.h>
 #include <ceres/rotation.h>
 
+struct CameraCovariance {
+    Eigen::VectorXd rtvec_sigma;
+    Eigen::VectorXd fxfycxcy_sigma;
+};
 
 template<typename T, typename = void>
 struct has_static_n_parameters : std::false_type {

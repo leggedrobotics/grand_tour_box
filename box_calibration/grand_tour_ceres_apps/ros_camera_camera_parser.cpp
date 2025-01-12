@@ -29,6 +29,9 @@ ROSCameraCameraParser::ROSCameraCameraParser(std::string program_name, int argc,
             .nargs(argparse::nargs_pattern::any) // Allows variadic arguments
             .default_value(std::vector<std::string>{}) // Default to an empty vector if none are provided
             .action([](const std::string& value) { return value; });
+    program.add_argument("--output_path")
+            .help("Path where the output calibration yaml will be saved.")
+            .default_value("output_camera_camera_calibration.yaml"); // Default to an empty vector if none are provided
     try {
         program.parse_args(argc, argv);
     }
@@ -50,6 +53,7 @@ ROSCameraCameraParser::ROSCameraCameraParser(std::string program_name, int argc,
     // Retrieve the list of bags
     std::vector<std::string> bags = program.get<std::vector<std::string>>("--bags");
     bag_paths = bags;
+    output_path = program.get<std::string>("--output_path");
 }
 
 std::map<std::string, std::string> LoadRostopicFrameIDMapping(const std::string yaml_path) {

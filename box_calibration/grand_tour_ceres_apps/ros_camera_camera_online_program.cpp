@@ -305,57 +305,6 @@ ROSCameraCameraOnlineProgram::publishAllParamsAndSigmas(
     }
 }
 
-std::map<std::string, CameraCovariance> ROSCameraCameraOnlineProgram::computeCovariances() {
-    if (ready_for_extrinsics_) {
-        this->setExtrinsicParametersVariableBeforeOpt();
-    }
-    std::map<std::string, CameraCovariance> covariances;
-    std::map<std::string, bool> do_compute_extrinsics;
-    std::vector<const double *> diagonal_covariance_blocks;
-    for (const auto &[name, params]: camera_parameter_packs) {
-        if (!intrinsics_residuals_of_camera_at_time.contains(name) or
-            intrinsics_residuals_of_camera_at_time.at(name).empty()) {
-            continue;
-        }
-        diagonal_covariance_blocks.push_back(params.fxfycxcy);
-        const bool compute_extrinsics_sigma = extrinsics_residuals_of_cameras_at_time.contains(name) and
-                                              !extrinsics_residuals_of_cameras_at_time.at(name).empty();
-        if (compute_extrinsics_sigma) {
-            diagonal_covariance_blocks.push_back(params.T_bundle_sensor);
-            do_compute_extrinsics[name] = true;
-        }
-    }
-    const auto covariance_object = problem_->ComputeSubBlockCovariance(diagonal_covariance_blocks);
-    if (covariance_object == nullptr) {
-        ROS_ERROR_STREAM("Failed to compute covariance");
-        return covariances;
-    }
-    for (const auto &[name, params]: camera_parameter_packs) {
-        if (!intrinsics_residuals_of_camera_at_time.contains(name) or
-            intrinsics_residuals_of_camera_at_time.at(name).empty()) {
-            continue;
-        }
-        std::vector<Eigen::MatrixXd> intrinsics_extrinsics_covariance;
-        std::vector<const double *> local_params;
-        local_params.push_back(params.fxfycxcy);
-        if (do_compute_extrinsics.contains(name)) {
-            local_params.push_back(params.T_bundle_sensor);
-        }
-        CameraCovariance local_covariance;
-        if (problem_->FetchSubBlockCovariance(covariance_object, local_params,
-                                              intrinsics_extrinsics_covariance)) {
-            local_covariance.fxfycxcy_sigma =
-                    intrinsics_extrinsics_covariance[0].diagonal().array().sqrt();
-            if (do_compute_extrinsics.contains(name)) {
-                local_covariance.rtvec_sigma =
-                        intrinsics_extrinsics_covariance[1].diagonal().array().sqrt();
-            }
-            covariances[name] = local_covariance;
-        }
-    }
-    return covariances;
-}
-
 void ROSCameraCameraOnlineProgram::publishParamsAndSigmas(const std::string &name,
                                                           const Eigen::VectorXd &rvectvec_sigma,
                                                           const Eigen::VectorXd &fxfycxcy_sigma) const {

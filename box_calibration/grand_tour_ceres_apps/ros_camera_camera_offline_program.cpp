@@ -5,6 +5,7 @@
 
 #include "ros_camera_camera_offline_program.h"
 #include "ros_utils.h"
+#include "ros_camera_camera_program.h"
 #include <filesystem>
 
 namespace fs = std::filesystem;
@@ -28,6 +29,7 @@ ROSCameraCameraOfflineProgram::ROSCameraCameraOfflineProgram(ROSCameraCameraPars
     is_valid = !parser.bag_paths.empty() && all_paths_valid;
     std::cout << is_valid << std::endl;
     bag_paths = parser.bag_paths;
+    ready_for_extrinsics_ = true;
 }
 
 bool ROSCameraCameraOfflineProgram::publishDetectionsUsed(
@@ -40,14 +42,29 @@ void ROSCameraCameraOfflineProgram::run() {
     loadRosbagsIntoProgram();
     // set state from logged data
 
+    std::map<std::string, int> total_edge_count = getTotalInAndOutExtrinsicEdges();
+    for (const auto& [name, count] : total_edge_count) {
+        std::cout << name << " has " << count << " in and out edges" << std::endl;
+    }
+
     // solve
     this->setExtrinsicParametersVariableBeforeOpt();
     problem_->solver_options_.max_num_iterations = 200;
     ROS_DEBUG_STREAM("Solving...");
     {
         ScopedTimer timer;
-        this->Solve();
-        ROS_DEBUG("Covariance and ros publishing executed in: %f seconds", timer.elapsed().count());
+        const bool success = this->Solve();
+//        this->rebuildProblemFromLoggedROSAlignmentData();
+//        this->Solve();
+        std::cout << "Solve converged: " << std::boolalpha << success << std::endl;
+        std::cout << "Computing covariances..." << std::endl;
+        const auto covariances = this->computeCovariances();
+        for (const auto &[name, covariance]: covariances) {
+            std::cout << "Camera: " << name << std::endl;
+            std::cout << covariance.rtvec_sigma.transpose() << std::endl;
+            std::cout << covariance.fxfycxcy_sigma.transpose() << std::endl;
+        }
+            ROS_DEBUG("Covariance and ros publishing executed in: %f seconds", timer.elapsed().count());
     }
     // write results
     this->writeCalibrationOutput();
