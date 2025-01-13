@@ -2,7 +2,7 @@ from box_auto.utils import get_bag, upload_bag, run_ros_command, BOX_AUTO_SCRIPT
 
 
 if __name__ == "__main__":
-    dlio_bag = get_bag("*_dlio.bag")
+    dlio_bag = get_bag("*[0-9]_dlio.bag")
     tf_static_bag = get_bag("*_tf_static_start_end.bag")
 
     out_bag = dlio_bag.replace("_dlio.bag", "_tf_static_dlio_tf.bag")
