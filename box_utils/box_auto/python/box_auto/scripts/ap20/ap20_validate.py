@@ -73,7 +73,7 @@ def process_prism_position_bag(input_bag_path, output_bag_path, skip_check):
             input_bag.close()
             output_bag.close()
             upload_bag(output_bag_path)
-            exit(3)
+            exit(0)
         else:
             print("Warning: Median differences exceed 3 mm! - Nothing will be written to robot.bag")
             # Close bags
