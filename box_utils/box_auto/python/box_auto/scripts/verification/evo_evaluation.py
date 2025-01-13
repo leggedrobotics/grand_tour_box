@@ -100,6 +100,8 @@ def load_config(config_path):
 
 if __name__ == "__main__":
 
+    CONFIG_NAME = "evo_evaluations"
+
     IS_POINT_DISTANCES_SUPPORTED = False
     from evo import __version__
 
@@ -118,20 +120,22 @@ if __name__ == "__main__":
 
     # Ground truth
     ENABLE_VIZ = False
-    USE_IE = True
-    USE_GMSF = False
+    USE_IE = False
+    USE_GMSF = True
 
     if USE_IE:
         GT_PATTERN = "*_cpt7_ie_tc.bag"
     elif USE_GMSF:
-        GT_PATTERN = "not_implemented"
+        GT_PATTERN = "*_gt_pose.bag"
 
-    # Prepare for evo.
-    evo_prep_config_path = os.path.join(f"{WS}" + "/src/grand_tour_box/box_utils/box_auto/cfg/evo_preparation.yaml")
-    evo_prep_config = load_config(evo_prep_config_path)
+    # Evaluation Configuration.
+    evaluation_config_path = os.path.join(
+        f"{WS}" + "/src/grand_tour_box/box_utils/box_auto/cfg/" + CONFIG_NAME + ".yaml"
+    )
+    evaluation_config = load_config(evaluation_config_path)
 
     # Retrieve the to-be-prepared bags from config.
-    PATTERNS = ["*" + v["bag"] for v in evo_prep_config["bag_topic_pairs"]]
+    PATTERNS = ["*" + v["bag"] for v in evaluation_config["bag_topic_pairs"]]
 
     # Iterate through each output pattern to ensure it is located where its expected.
     for pattern in PATTERNS:
@@ -150,30 +154,22 @@ if __name__ == "__main__":
 
     # Run the evo preparation.
     run_ros_command(
-        f"roslaunch box_auto evo_preparation.launch bag_file_directory:={MISSION_DATA} output_folder_path:={p} config_path:={evo_prep_config_path} prefix:={time_as_string}",
+        f"roslaunch box_auto evo_preparation.launch bag_file_directory:={MISSION_DATA} output_folder_path:={p} config_path:={evaluation_config_path} prefix:={time_as_string}",
         background=False,
     )
     print("\033[92mEVO preparation finished.\033[0m")
     sleep(1)
 
-    ape_config_path = os.path.join(WS, "src/grand_tour_box/box_utils/box_auto/cfg/evo_evaluation_ape.yaml")
-    ape_config = load_config(ape_config_path)
-
     EVALUATION_PATTERN = []
-
-    for _, param_set in list(ape_config.items()):
-        if isinstance(param_set, (bool, str)):
+    for param_set in evaluation_config["bag_topic_pairs"]:
+        if param_set.get("test_name") == "":
             continue
-        estimated_file = param_set.get("estimated_file")
-        reference_file = param_set.get("reference_file")
 
+        estimated_file = param_set.get("test_name") + ".tum"
         if estimated_file.startswith("_"):
             estimated_file = time_as_string + estimated_file
-        if reference_file.startswith("_"):
-            reference_file = time_as_string + reference_file
 
         EVALUATION_PATTERN.append(estimated_file)
-        EVALUATION_PATTERN.append(reference_file)
 
     # Iterate through each pattern to ensure it is located where its expected.
     for pattern in EVALUATION_PATTERN:
@@ -185,36 +181,35 @@ if __name__ == "__main__":
     p_ape = str(p_ape)
 
     run_ros_command(
-        f"python3 {BOX_AUTO_SCRIPTS_DIR}/verification/grandtour_SE3_APE.py --config={ape_config_path} --input_folder_path={p} --output_dir_name={p_ape} --prefix={time_as_string} --disable_viz"
+        f"python3 {BOX_AUTO_SCRIPTS_DIR}/verification/grandtour_SE3_APE.py --config={evaluation_config_path} --input_folder_path={p} --output_dir_name={p_ape} --prefix={time_as_string} --disable_viz"
     )
     sleep(1)
-
-    rpe_config_path = os.path.join(WS, "src/grand_tour_box/box_utils/box_auto/cfg/evo_evaluation_rpe.yaml")
 
     p_rpe = Path(p) / f"{time_as_string}_rpe_results"
     p_rpe.mkdir()
     p_rpe = str(p_rpe)
 
     run_ros_command(
-        f"python3 {BOX_AUTO_SCRIPTS_DIR}/verification/grandtour_SE3_RPE.py  --config={rpe_config_path} --input_folder_path={p} --output_dir_name={p_rpe} --prefix={time_as_string} --disable_viz"
+        f"python3 {BOX_AUTO_SCRIPTS_DIR}/verification/grandtour_SE3_RPE.py  --config={evaluation_config_path} --input_folder_path={p} --output_dir_name={p_rpe} --prefix={time_as_string} --disable_viz"
     )
     sleep(1)
 
     if IS_POINT_DISTANCES_SUPPORTED:
-        point_relation_config_path = os.path.join(
-            WS, "src/grand_tour_box/box_utils/box_auto/cfg/evo_evaluation_point_relation.yaml"
-        )
         p_point_relation = Path(p) / f"{time_as_string}_point_relation_results"
         p_point_relation.mkdir(exist_ok=True)
         p_point_relation = str(p_point_relation)
         run_ros_command(
-            f"python3 {BOX_AUTO_SCRIPTS_DIR}/verification/grandtour_point_relation.py --config={point_relation_config_path} --input_folder_path={p} --output_dir_name={p_point_relation} --prefix={time_as_string} --disable_viz"
+            f"python3 {BOX_AUTO_SCRIPTS_DIR}/verification/grandtour_point_relation.py --config={evaluation_config_path} --input_folder_path={p} --output_dir_name={p_point_relation} --prefix={time_as_string} --disable_viz"
         )
 
     results_summary = []
     DIRECTORIES = [p_point_relation, p_ape, p_rpe]
     for dir in DIRECTORIES:
-        res_paths = get_bag(pattern="*.zip", auto_download=False, rglob=True, return_list=True, directory=dir)
+        res_paths = get_bag(
+            pattern="*.zip", auto_download=False, rglob=True, return_list=True, directory=dir, return_upon_no_files=True
+        )
+        if res_paths is None:
+            continue
         # Collect stats
         for res_path in res_paths:
 
@@ -228,11 +223,14 @@ if __name__ == "__main__":
             results_summary.append(
                 {
                     "Result Name": res_name,
-                    "Mean": res.stats["mean"],
-                    "STD": res.stats["std"],
-                    "RMSE": res.stats["rmse"],
+                    "Mean": round(res.stats["mean"], 4),
+                    "STD": round(res.stats["std"], 4),
+                    "RMSE": round(res.stats["rmse"], 4),
                 }
             )
+
+    # Sort results by "Result Name"
+    results_summary = sorted(results_summary, key=lambda x: x["Result Name"])
 
     # Save results as PDF
     output_pdf = "/evo_results_summary.pdf"

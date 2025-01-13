@@ -6,12 +6,11 @@ import os
 import yaml
 from evo.core.trajectory import PoseTrajectory3D
 from evo.core import sync
-from evo.tools import plot, file_interface, log
+from evo.tools import plot, file_interface
 import evo.main_ape as main_ape
 import evo.main_rpe as main_rpe
 from evo.core.metrics import PoseRelation
 from evo.core.metrics import Unit
-import evo.common_ape_rpe as common
 from evo.tools.settings import SETTINGS
 import matplotlib.cm as cm
 import matplotlib as mpl
@@ -26,6 +25,8 @@ SETTINGS.plot_show_axis = True
 
 # magic plot configuration
 import matplotlib.pyplot as plt
+
+plt.rcParams.update({"figure.max_open_warning": 0})
 
 
 def run_eval(test_name, reference_file, estimated_file, params, output_path, disable_viz, mode):
@@ -51,41 +52,55 @@ def run_eval(test_name, reference_file, estimated_file, params, output_path, dis
     else:
         alignment_post_fix = str(n_to_align)
 
-
     correct_scale = params.get("correct_scale", False)
 
-    test_name +=  "_point_distances_" + alignment_post_fix
+    test_name += "_point_distances_" + alignment_post_fix
 
     # Reference, estimated trajectory, t_max_diff, t_offset. t_max_diff is by default 10ms (0.01)
-    
-    traj_reference_raw, traj_estimated = sync.associate_trajectories(traj_reference, traj_estimated, t_max_diff, t_offset)
+
+    traj_reference_raw, traj_estimated = sync.associate_trajectories(
+        traj_reference, traj_estimated, t_max_diff, t_offset
+    )
 
     traj_reference = PoseTrajectory3D(
         positions_xyz=np.stack(traj_reference_raw._positions_xyz, 0),
         orientations_quat_wxyz=np.stack(traj_estimated._orientations_quat_wxyz, 0),
-        timestamps=np.array(traj_reference_raw.timestamps))
+        timestamps=np.array(traj_reference_raw.timestamps),
+    )
 
     results = []
     fig_title = ""
     if mode == "ate":
         save_prefix = "ate"
         fig_title = "Absolute Translation Error (ATE) Trajectory"
-        result = main_ape.ape(traj_reference, traj_estimated, est_name=test_name, ref_name="AP20",
-                                pose_relation=PoseRelation.point_distance, 
-                                align=True,
-                                align_origin=False,
-                                n_to_align=n_to_align,
-                                correct_scale=correct_scale
-                            )
+        result = main_ape.ape(
+            traj_reference,
+            traj_estimated,
+            est_name=test_name,
+            ref_name="AP20",
+            pose_relation=PoseRelation.point_distance,
+            align=True,
+            align_origin=False,
+            n_to_align=n_to_align,
+            correct_scale=correct_scale,
+        )
     elif mode == "rte":
         save_prefix = "rte"
         fig_title = "Relative Translation Error (RTE) Trajectory"
-        result = main_rpe.rpe(traj_reference, traj_estimated, est_name=test_name, ref_name="AP20", 
-                                pose_relation=PoseRelation.point_distance, delta=delta, delta_unit=delta_unit, 
-                                all_pairs=False, align=True, correct_scale=correct_scale, n_to_align=n_to_align, 
-                                support_loop=False)
-
-
+        result = main_rpe.rpe(
+            traj_reference,
+            traj_estimated,
+            est_name=test_name,
+            ref_name="AP20",
+            pose_relation=PoseRelation.point_distance,
+            delta=delta,
+            delta_unit=delta_unit,
+            all_pairs=False,
+            align=True,
+            correct_scale=correct_scale,
+            n_to_align=n_to_align,
+            support_loop=False,
+        )
 
     results.append(result)
     print(result)
@@ -98,18 +113,16 @@ def run_eval(test_name, reference_file, estimated_file, params, output_path, dis
     ax.set_ylabel("Y [m]")
     ax.set_zlabel("Z [m]")
 
-    plot.traj(ax, plot.PlotMode.xyz, traj_reference, style="--", alpha=0.5, label= "Ref.")
-    plot.traj(ax, plot.PlotMode.xyz, traj_estimated, style="-", alpha=0.5, label= " "  + test_name + " ")
+    plot.traj(ax, plot.PlotMode.xyz, traj_reference, style="--", alpha=0.5, label="Ref.")
+    plot.traj(ax, plot.PlotMode.xyz, traj_estimated, style="-", alpha=0.5, label=" " + test_name + " ")
 
     ax.view_init(elev=30, azim=45)
 
-    min_map=result.stats["min"]
-    max_map=result.stats["max"]
+    min_map = result.stats["min"]
+    max_map = result.stats["max"]
     pos = traj_estimated.positions_xyz
     norm = mpl.colors.Normalize(vmin=min_map, vmax=max_map, clip=True)
-    mapper = cm.ScalarMappable(
-        norm=norm,
-        cmap=SETTINGS.plot_trajectory_cmap)
+    mapper = cm.ScalarMappable(norm=norm, cmap=SETTINGS.plot_trajectory_cmap)
     array = result.np_arrays["error_array"]
     mapper.set_array(array)
     colors = [mapper.to_rgba(a) for a in array]
@@ -118,109 +131,118 @@ def run_eval(test_name, reference_file, estimated_file, params, output_path, dis
     ax.autoscale_view(True, True, True)
     plot.set_aspect_equal(ax)
 
+    cbar = fig.colorbar(mapper, ticks=[min_map, (max_map - (max_map - min_map) / 2), max_map], ax=ax)
+    cbar.ax.set_yticklabels(
+        ["{0:0.3f}".format(min_map), "{0:0.3f}".format(max_map - (max_map - min_map) / 2), "{0:0.3f}".format(max_map)]
+    )
 
-    cbar = fig.colorbar(
-    mapper, ticks=[min_map, (max_map - (max_map - min_map) / 2), max_map],
-    ax=ax)
-    cbar.ax.set_yticklabels([
-        "{0:0.3f}".format(min_map),
-        "{0:0.3f}".format(max_map - (max_map - min_map) / 2),
-        "{0:0.3f}".format(max_map)
-    ])
-
-    cbar.set_label(save_prefix + '[m]', labelpad=20)
+    cbar.set_label(save_prefix + "[m]", labelpad=20)
 
     cbar.ax.yaxis.label.set_size(25)
-    cbar.ax.tick_params(labelsize=25) 
+    cbar.ax.tick_params(labelsize=25)
     ax.legend(frameon=True)
 
-    fig.savefig(output_path + "/"+ save_prefix+"_3d_plot_" + test_name + ".png", dpi=600)
+    fig.savefig(output_path + "/" + save_prefix + "_3d_plot_" + test_name + ".png", dpi=600)
 
-    file_interface.save_res_file(output_path + "/"+save_prefix+"_results_" + test_name+ ".zip", results[0],
-                                    confirm_overwrite=not True)
+    file_interface.save_res_file(
+        output_path + "/" + save_prefix + "_results_" + test_name + ".zip", results[0], confirm_overwrite=not True
+    )
 
+    print("ATE compared_pose_pairs %d pairs" % (len(results[0].np_arrays["error_array"])))
+    print("rmse %f m" % results[0].stats["rmse"])
+    print("mean %f m" % results[0].stats["mean"])
+    print("median %f m" % results[0].stats["median"])
+    print("std %f m" % results[0].stats["std"])
+    print("min %f m" % results[0].stats["min"])
+    print("max %f m" % results[0].stats["max"])
 
-    print ("ATE compared_pose_pairs %d pairs"%(len(results[0].np_arrays["error_array"])))
-    print ("rmse %f m"%results[0].stats['rmse'])
-    print ("mean %f m"%results[0].stats['mean'])
-    print ("median %f m"%results[0].stats['median'])
-    print ("std %f m"%results[0].stats['std'])
-    print ("min %f m"%results[0].stats['min'])
-    print ("max %f m"%results[0].stats['max'])
-
-
-    plot_x_dimension  = "seconds"
+    plot_x_dimension = "seconds"
     # Plot the raw metric values.
     fig_stats = plt.figure(figsize=SETTINGS.plot_figsize)
-    if (plot_x_dimension == "distances"
-            and "distances_from_start" in results[0].np_arrays):
+    if plot_x_dimension == "distances" and "distances_from_start" in results[0].np_arrays:
         x_array = results[0].np_arrays["distances_from_start"]
         x_label = "$d$ (m)"
-    elif (plot_x_dimension == "seconds"
-            and "seconds_from_start" in results[0].np_arrays):
+    elif plot_x_dimension == "seconds" and "seconds_from_start" in results[0].np_arrays:
         x_array = results[0].np_arrays["seconds_from_start"]
         x_label = "$t$ (s)"
     else:
         x_array = None
         x_label = "index"
 
-
     plot.error_array(
-        fig_stats.gca(), results[0].np_arrays["error_array"], x_array=x_array,
-        statistics={
-            s: results[0].stats[s]
-            for s in SETTINGS.plot_statistics if s not in ("min", "max")
-        }, name=results[0].info["label"], title=results[0].info["title"],
-        xlabel=x_label)
-    
-    fig_stats.savefig(output_path + "/"+save_prefix+"_statistics_" + test_name + ".png", dpi=600)
+        fig_stats.gca(),
+        results[0].np_arrays["error_array"],
+        x_array=x_array,
+        statistics={s: results[0].stats[s] for s in SETTINGS.plot_statistics if s not in ("min", "max")},
+        name=results[0].info["label"],
+        title=results[0].info["title"],
+        xlabel=x_label,
+    )
 
-    
-    if disable_viz == True:
+    fig_stats.savefig(output_path + "/" + save_prefix + "_statistics_" + test_name + ".png", dpi=600)
+
+    if disable_viz:
         return
     else:
         plt.tight_layout()
         plt.show()
 
-def process_directory(base_path, output_dir, config, disable_viz, prefix):
-    
-    # Base path
-    if not base_path.endswith('/'):
-        base_path += '/'
 
-    # Per test params
-    for test_name, test_params in list(config.items()):
-        if isinstance(test_params, (bool, str)):
+def process_directory(base_path, output_dir, config, disable_viz, prefix):
+
+    for param_set in config["bag_topic_pairs"]:
+        if param_set.get("test_name") == "":
             continue
-        estimated_file = test_params.get("estimated_file")
-        reference_file = test_params.get("reference_file")
-        
+
+        test_name = param_set.get("test_name")
+        eval_params = param_set["evaluations"]
+        ref_file = eval_params.get("point_relation")["reference_file"]
+
+        if not ref_file:
+            continue
+
+        reference_file = os.path.join(base_path, ref_file + ".tum")
+        estimated_file = test_name + ".tum"
         if estimated_file.startswith("_"):
             estimated_file = prefix + estimated_file
-        if reference_file.startswith("_"):
-            reference_file = prefix + reference_file
 
-        params = test_params.get("parameters", {})
+        estimated_file = os.path.join(base_path, estimated_file)
+        params = eval_params.get("parameters")
+
         print(f"\033[92mProcessing test: {test_name}\033[0m")
         print(f"\033[92mEstimated file: {estimated_file}, Reference file: {reference_file}\033[0m")
-        run_eval(test_name, base_path + reference_file, base_path + estimated_file, params, output_dir, disable_viz, "ate")
-        run_eval(test_name, base_path + reference_file, base_path + estimated_file, params, output_dir, disable_viz, "rte")
+        run_eval(test_name, reference_file, estimated_file, params, output_dir, disable_viz, "ate")
+        run_eval(test_name, reference_file, estimated_file, params, output_dir, disable_viz, "rte")
+
 
 def load_config(config_path):
     with open(config_path, "r") as f:
         config = yaml.safe_load(f)
     return config
 
+
 if __name__ == "__main__":
 
     import argparse
 
-    parser = argparse.ArgumentParser(description="Run APE evaluation for multiple tests.")
-    
+    parser = argparse.ArgumentParser(description="Run ATE and RTE evaluation for multiple tests.")
+
     # Define command-line arguments
     parser.add_argument("--config", type=str, required=True, help="Path to the configuration YAML file")
-    parser.add_argument("--input_folder_path", type=str, required=True,  default="mission_data/", help="Mission data subdirectory (default: 'mission_data/')")
-    parser.add_argument("--output_dir_name", type=str, required=True, default="results/", help="Directory to save output plots and results (default: 'results/')")
+    parser.add_argument(
+        "--input_folder_path",
+        type=str,
+        required=True,
+        default="mission_data/",
+        help="Mission data subdirectory (default: 'mission_data/')",
+    )
+    parser.add_argument(
+        "--output_dir_name",
+        type=str,
+        required=True,
+        default="results/",
+        help="Directory to save output plots and results (default: 'results/')",
+    )
     parser.add_argument("--prefix", type=str, required=True, default="results/", help="The prefix for files.")
     parser.add_argument("--disable_viz", action="store_true", help="Disable vizualization (default: False)")
 
@@ -238,4 +260,3 @@ if __name__ == "__main__":
     config = load_config(CONFIG_PATH)
 
     process_directory(INPUT_FOLDER_PATH, OUTPUT_DIR_NAME, config, DISABLE_VIZ, PREFIX)
-    
