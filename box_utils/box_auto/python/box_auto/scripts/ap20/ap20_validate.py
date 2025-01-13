@@ -27,22 +27,6 @@ def process_prism_position_bag(input_bag_path, output_bag_path, skip_check):
 
     first_position = prism_positions[0][0]
 
-    # Write filtered messages to new bag
-    valid_positions = []
-    for msg, t in prism_positions:
-        # Calculate distance from the first position
-        distance = np.sqrt(
-            (msg.point.x - first_position.point.x) ** 2
-            + (msg.point.y - first_position.point.y) ** 2
-            + (msg.point.z - first_position.point.z) ** 2
-        )
-
-        # Only write messages beyond 20 cm (0.2 m) from the first position
-        if distance > 0.2 or not skip_check:
-            output_bag.write("/gt_box/ap20/prism_position", msg, t)
-
-        valid_positions.append(msg)
-
     # Verify median of first and last 20 messages
     if len(prism_positions) < 40:
         input_bag.close()
@@ -73,7 +57,7 @@ def process_prism_position_bag(input_bag_path, output_bag_path, skip_check):
             input_bag.close()
             output_bag.close()
             upload_bag(output_bag_path)
-            exit(0)
+            exit(3)
         else:
             print("Warning: Median differences exceed 3 mm! - Nothing will be written to robot.bag")
             # Close bags
