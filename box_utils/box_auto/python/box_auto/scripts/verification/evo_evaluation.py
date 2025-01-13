@@ -100,6 +100,8 @@ def load_config(config_path):
 
 if __name__ == "__main__":
 
+    CONFIG_NAME = "evo_dlio_ablation"
+
     IS_POINT_DISTANCES_SUPPORTED = False
     from evo import __version__
 
@@ -118,8 +120,8 @@ if __name__ == "__main__":
 
     # Ground truth
     ENABLE_VIZ = False
-    USE_IE = True
-    USE_GMSF = False
+    USE_IE = False
+    USE_GMSF = True
 
     if USE_IE:
         GT_PATTERN = "*_cpt7_ie_tc.bag"
@@ -127,7 +129,9 @@ if __name__ == "__main__":
         GT_PATTERN = "*_gt_pose.bag"
 
     # Evaluation Configuration.
-    evaluation_config_path = os.path.join(f"{WS}" + "/src/grand_tour_box/box_utils/box_auto/cfg/evo_preparation.yaml")
+    evaluation_config_path = os.path.join(
+        f"{WS}" + "/src/grand_tour_box/box_utils/box_auto/cfg/" + CONFIG_NAME + ".yaml"
+    )
     evaluation_config = load_config(evaluation_config_path)
 
     # Retrieve the to-be-prepared bags from config.
@@ -201,7 +205,11 @@ if __name__ == "__main__":
     results_summary = []
     DIRECTORIES = [p_point_relation, p_ape, p_rpe]
     for dir in DIRECTORIES:
-        res_paths = get_bag(pattern="*.zip", auto_download=False, rglob=True, return_list=True, directory=dir)
+        res_paths = get_bag(
+            pattern="*.zip", auto_download=False, rglob=True, return_list=True, directory=dir, return_upon_no_files=True
+        )
+        if res_paths is None:
+            continue
         # Collect stats
         for res_path in res_paths:
 
@@ -220,6 +228,9 @@ if __name__ == "__main__":
                     "RMSE": round(res.stats["rmse"], 4),
                 }
             )
+
+    # Sort results by "Result Name"
+    results_summary = sorted(results_summary, key=lambda x: x["Result Name"])
 
     # Save results as PDF
     output_pdf = "/evo_results_summary.pdf"

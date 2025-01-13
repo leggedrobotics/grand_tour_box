@@ -407,7 +407,7 @@ void processTF(const std::vector<std::string>& tfContainingBags, tf2_ros::Buffer
   }
 
   ROS_INFO_STREAM("Combining TF for offline reading.");
-  std::vector<std::string> tf_topics{"/tf", "/tf_static"};
+  std::vector<std::string> tf_topics{"/tf_static"};  //"/tf"
   rosbag::View combined_view;
   for (auto& tfbag : bags) {
     combined_view.addQuery(tfbag, rosbag::TopicQuery(tf_topics));

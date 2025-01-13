@@ -45,7 +45,9 @@ def kill_roscore():
                 print(f"Failed to terminate rosmaster process: {e}")
 
 
-def get_bag(pattern, directory=MISSION_DATA, auto_download=True, return_list=False, rglob=False):
+def get_bag(
+    pattern, directory=MISSION_DATA, auto_download=True, return_list=False, rglob=False, return_upon_no_files=False
+):
     """
     Finds the matching .bag files in the mission on Kleinram and downloads it.
 
@@ -81,6 +83,9 @@ def get_bag(pattern, directory=MISSION_DATA, auto_download=True, return_list=Fal
         files = [str(s) for s in Path(directory).glob(pattern)]
 
     if not files:
+        if return_upon_no_files:
+            return None
+
         raise FileNotFoundError(f"No matching bags found: {pattern} in directory {directory}. \n")
 
     if len(files) > 1:
