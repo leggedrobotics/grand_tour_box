@@ -13,7 +13,7 @@
   <arg name="enable_interpolation" default="false" />
 
   <!-- Parameters are here -->
-  <arg name="config_path" default="$(find box_auto)/cfg/evo_preparation.yaml" />
+  <arg name="config_path" default="$(find box_auto)/cfg/evo_evaluations.yaml" />
 
 
   <!-- Mission Prefix -->
