@@ -4,7 +4,20 @@ import os
 import shutil
 from pathlib import Path
 from secrets import token_hex
-from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple, cast
+from typing import (
+    Any,
+    Dict,
+    List,
+    Mapping,
+    Optional,
+    Sequence,
+    Tuple,
+    cast,
+    NamedTuple,
+    Union,
+)
+import time
+from datetime import timedelta, datetime
 
 import numpy as np
 import rosbag
@@ -12,16 +25,28 @@ import supervision as sv
 from cv_bridge import CvBridge
 from std_msgs.msg import Int32
 from ultralytics import YOLO
+import pickle
 
 from box_auto.utils import get_bag, upload_bag
+
+DEBUG = bool(os.environ.get("DEBUG_ANON", False))
+os.environ.setdefault("YOLO_VERBOSE", "False")
 
 # yolo settings
 MODELS_PATH = Path(__file__).parent.parent.parent.parent.parent / "models"
 
+# mounted by container for debugging
+DATA_DIR = Path("/tmp_disk") / "bm"
+
 FACE_MODEL11_PATH = MODELS_PATH / "yolov11m-faces.pt"
 FACE_MODEL11 = YOLO(FACE_MODEL11_PATH)
 FACE_MODEL11_CIDS = [0]
-FACE_MODEL11_CONF = 0.05
+FACE_MODEL11_CONF = 0.10
+
+FACE_MODEL11L_PATH = DATA_DIR.parent / "yolov11l-faces.pt"
+FACE_MODEL11L = YOLO(FACE_MODEL11L_PATH)
+FACE_MODEL11L_CIDS = [0]
+FACE_MODEL11L_CONF = 0.10
 
 FACE_MODEL8_PATH = MODELS_PATH / "yolov8s-faces.pt"
 FACE_MODEL8 = YOLO(FACE_MODEL8_PATH)
@@ -44,7 +69,8 @@ HUMANS_MAX_SIZE = 4096
 DetectorConfig = Tuple[YOLO, List[int], float, Optional[int]]
 
 MODELS: Dict[str, DetectorConfig] = {
-    "faces11": (FACE_MODEL11, FACE_MODEL11_CIDS, FACE_MODEL11_CONF, None),
+    # "faces11": (FACE_MODEL11, FACE_MODEL11_CIDS, FACE_MODEL11_CONF, None),
+    "faces11l": (FACE_MODEL11L, FACE_MODEL11L_CIDS, FACE_MODEL11L_CONF, None),
     "faces_plates11": (
         FACE_PLATE_MODEL11,
         FACE_PLATE_MODEL11_CIDS,
@@ -62,7 +88,7 @@ BLUR_ANNOTATOR = sv.BlurAnnotator()
 
 # other settings
 FRAME_RATE = 10
-DRAW_BOXES = False
+DRAW_BOXES = DEBUG
 
 # config for running the anonymization action
 # key: camera name, is arbitrary and only used for logging
@@ -137,7 +163,9 @@ def _get_detections(image: np.ndarray) -> sv.Detections:
     return sv.Detections.merge(dets)
 
 
-def _tracked_detections(detections: sv.Detections, tracker: sv.ByteTrack) -> Tuple[sv.Detections, sv.Detections]:
+def _tracked_detections(
+    detections: sv.Detections, tracker: sv.ByteTrack
+) -> Tuple[sv.Detections, sv.Detections]:
     """\
     tracks detections using a tracker, this slightly improves the detection quality
     over using frame by frame detections
@@ -148,15 +176,19 @@ def _tracked_detections(detections: sv.Detections, tracker: sv.ByteTrack) -> Tup
     return tracked_dets, detections
 
 
-def _blur_image(image: np.ndarray, detections: tuple[sv.Detections, sv.Detections], draw_boxes: bool) -> np.ndarray:
+def _blur_image(
+    image: np.ndarray, detections: tuple[sv.Detections, sv.Detections], draw_boxes: bool
+) -> np.ndarray:
     """\
     applies blurs to images based on detections
 
     If `draw_boxes` is True, we also draw lables and bounding boxes
     around the detections. This is useful for debugging
     """
+
     # filter class ids and blur
     tracked, raw = detections
+
     image = BLUR_ANNOTATOR.annotate(image, tracked)
     image = BLUR_ANNOTATOR.annotate(image, raw)
 
@@ -172,7 +204,9 @@ def _blur_image(image: np.ndarray, detections: tuple[sv.Detections, sv.Detection
 EPS = 1e-6
 
 
-def _compute_number_of_detections(detections: Tuple[sv.Detections, sv.Detections]) -> int:
+def _compute_number_of_detections(
+    detections: Tuple[sv.Detections, sv.Detections]
+) -> int:
     r"""\
     computes the number of detections by computing the
     connected components of the union of all detections
@@ -220,26 +254,24 @@ def _process_image(
     """\
     blurs an image base on a tuple of detections, and compuets the number of detections
     """
+
     blurred = _blur_image(image, detections, draw_boxes=draw_boxes)
     n_dets = _compute_number_of_detections(detections)
     return blurred, n_dets
 
 
-def _process_images(
-    images: Sequence[np.ndarray],
-    detections: Sequence[Tuple[sv.Detections, sv.Detections]],
-    draw_boxes: bool,
-) -> List[Tuple[np.ndarray, int]]:
+def _flip_image(image: np.ndarray) -> np.ndarray:
     """\
-    does the same as _process_image but for a batch of images
+    rotates the imgae
     """
-    ret: List[Tuple[np.ndarray, int]] = []
-    for image, dets in zip(images, detections):
-        ret.append(_process_image(image, dets, draw_boxes=draw_boxes))
-    return ret
+    # opencv really doesnt like negative strides
+    # so we need to copy to realize the view
+    return np.flipud(np.fliplr(image)).copy()
 
 
-def _msg_to_image(msg: Any, cv_bridge: CvBridge, compressed: bool) -> Tuple[np.ndarray, bool]:
+def _msg_to_image(
+    msg: Any, cv_bridge: CvBridge, compressed: bool, flipped: bool
+) -> Tuple[np.ndarray, bool]:
     """\
     deser an image message using cv_bridge
     """
@@ -248,50 +280,241 @@ def _msg_to_image(msg: Any, cv_bridge: CvBridge, compressed: bool) -> Tuple[np.n
     else:
         img = cv_bridge.imgmsg_to_cv2(msg, desired_encoding="passthrough")
 
+    if flipped:
+        img = _flip_image(img)
+
     if len(img.shape) == 2:
-        return np.stack([img] * 3, axis=-1)
-    return img
+        img = np.stack([img] * 3, axis=-1)
+        return img, True
+    return img, False
 
 
-def _image_to_msg(raw: np.ndarray, cv_bridge: CvBridge, compressed: bool = True) -> Any:
+def _image_to_msg(
+    raw: np.ndarray,
+    cv_bridge: CvBridge,
+    compressed: bool = True,
+    grayscale: bool = True,
+) -> Any:
     """\
     ser an image using cv_bridge
     """
+
+    if grayscale:
+        raw = raw[..., 0]
+
     if compressed:
         return cv_bridge.cv2_to_compressed_imgmsg(raw, dst_format="jpg")
     else:
         return cv_bridge.cv2_to_imgmsg(raw, encoding="passthrough")
 
 
-def _write_images_to_bag(
+def _write_image_to_bag(
     bag: rosbag.Bag,
     cv_bridge: CvBridge,
-    metadata: Sequence[tuple[int, str, bool]],
-    images_with_detections: Sequence[Tuple[np.ndarray, int]],
+    metadata: tuple[int, str, bool, bool, bool],
+    image: np.ndarray,
+    n_dets: int,
 ) -> None:
     """\
     writes images with corresponding metadata to an open bagfile
     """
-    assert len(metadata) == len(images_with_detections)
+    timestamp, topic, compressed, flipped, grayscale = metadata
 
-    for (timestamp, topic, compress), (image, n_dets) in zip(metadata, images_with_detections):
-        # write the image
-        msg = _image_to_msg(image, cv_bridge, compressed=compress)
-        msg.header.stamp = timestamp
-        bag.write(topic, msg, timestamp)
+    if flipped:
+        image = _flip_image(image)
 
-        # write number of detections
-        n_dets_msg = Int32()
-        n_dets_msg.data = n_dets
-        bag.write(f"{topic}/n_detections", n_dets_msg, timestamp)
+    # write the image
+    msg = _image_to_msg(image, cv_bridge, compressed=compressed, grayscale=grayscale)
+    msg.header.stamp = timestamp
+    bag.write(topic, msg, timestamp)
+
+    # write number of detections
+    n_dets_msg = Int32()
+    n_dets_msg.data = n_dets
+    bag.write(f"{topic}/n_detections", n_dets_msg, timestamp)
+
+
+# ts: (N), sid: (N), bbox: (N, 8)
+DetectionBoxes = Tuple[np.ndarray, np.ndarray, np.ndarray]
+
+
+class CameraInfo(NamedTuple):
+    K: np.ndarray
+    D: np.ndarray
+    R: np.ndarray
+    P: np.ndarray
+
+
+def _msg_to_camera_info(msg: Any) -> CameraInfo:
+    """\
+    converts a camera info message to a tuple of numpy arrays
+    """
+    return CameraInfo(
+        np.array(msg.K).reshape((3, 3)),
+        np.array(msg.D),
+        np.array(msg.R),
+        np.array(msg.P).reshape((3, 4)),
+    )
+
+
+def _extrac_camera_info(bag: rosbag.Bag, cinfo_topic: str) -> CameraInfo:
+    """\
+    extracts camera info from a bagfile
+    """
+    for _, msg, _ in bag.read_messages(topics=[cinfo_topic]):
+        return _msg_to_camera_info(msg)
+    raise ValueError(f"no camera info found for topic {cinfo_topic}")
+
+
+def _detections_to_frame_data(
+    dets: Tuple[sv.Detections, sv.Detections],
+    ts: int,
+    seq_id: int,
+    flipped: bool,
+    hw: Tuple[int, int],
+) -> DetectionBoxes:
+    """\
+    converts sv.Detections to a frame detection tuple to store in a file
+    """
+    raw, tracked = dets
+
+    bboxes_xyxy = raw.xyxy.tolist() + tracked.xyxy.tolist()
+    bboxes_quad_point: List[List[float]] = []
+    for x1, y1, x2, y2 in bboxes_xyxy:
+        if flipped:
+            h, w = hw
+            x1, x2 = w - x2, w - x1
+            y1, y2 = h - y2, h - y1
+
+        bboxes_quad_point.append([x1, y1, x2, y1, x2, y2, x1, y2])
+
+    N = len(bboxes_quad_point)
+    return (np.ones(N) * ts, np.ones(N) * seq_id, np.array(bboxes_quad_point))
+
+
+LOG_INTERVAL = 10
+
+
+class FrameDetections(NamedTuple):
+    ts: np.ndarray
+    sid: np.ndarray
+    points: np.ndarray
+    cinfo: CameraInfo
+    image_topic: str
+    cinfo_topic: str
+    bag_path: Path
+
+
+def run_model_inference(
+    bag_path: Path,
+    image_topics: Sequence[str],
+    cinfo_topics: Sequence[str],
+    start: Optional[Union[datetime, int]],
+    duration: Optional[Union[timedelta, int]],
+    flip_images_for_inference: bool = False,
+) -> Dict[str, FrameDetections]:
+    assert len(image_topics) == len(cinfo_topics)
+
+    if isinstance(start, datetime):
+        start = int(start.timestamp())
+    if isinstance(duration, timedelta):
+        duration = int(duration.total_seconds())
+
+    with rosbag.Bag(str(bag_path), "r") as bag:
+        detection_data: Dict[
+            str, Tuple[List[np.ndarray], List[np.ndarray], List[np.ndarray]]
+        ] = {topic: ([], [], []) for topic in image_topics}
+        cinfo_dct = {
+            topic: _extrac_camera_info(bag, cinfo_topic)
+            for topic, cinfo_topic in zip(image_topics, cinfo_topics)
+        }
+
+        # needed for reading images
+        cv_bridge = CvBridge()
+
+        trackers = {
+            topic: sv.ByteTrack(
+                frame_rate=FRAME_RATE,
+                minimum_matching_threshold=0.05,
+                track_activation_threshold=0.05,
+            )
+            for topic in image_topics
+        }
+
+        image_msg_count = 0
+        t0 = time.monotonic()
+
+        for topic, msg, t in bag.read_messages():
+            # skip messages that are not images or outside the time range
+            if (
+                start is not None
+                and duration is not None
+                and (t.to_sec() <= start or t.to_sec() >= start + duration)
+                or topic not in image_topics
+            ):
+                continue
+
+            is_compressed = "CompressedImage" in type(msg)._type
+            image, _ = _msg_to_image(
+                msg, cv_bridge, is_compressed, flipped=flip_images_for_inference
+            )
+
+            raw_detection = _get_detections(image)
+            detections = _tracked_detections(raw_detection, trackers[topic])
+
+            ts, sid, bboxs = _detections_to_frame_data(
+                detections,
+                t.to_nsec(),
+                image_msg_count,
+                flipped=flip_images_for_inference,
+                hw=tuple(image.shape[:2]),  # type: ignore
+            )
+
+            # we have zero detections we skip the frame
+            if bboxs.size:
+                detection_data[topic][0].append(ts)
+                detection_data[topic][1].append(sid)
+                detection_data[topic][2].append(bboxs)
+
+            if not image_msg_count % LOG_INTERVAL:
+                images_per_second = LOG_INTERVAL / (time.monotonic() - t0)
+                print(
+                    f"inference... {image_msg_count:6d} at timestamp {t}, {images_per_second:.2f} images/s"
+                )
+                t0 = time.monotonic()
+
+            image_msg_count += 1
+
+        ret = {}
+        for image_topic, cinfo_topic in zip(image_topics, cinfo_topics):
+            ts = np.concatenate(detection_data[image_topic][0], axis=0)
+            sid = np.concatenate(detection_data[image_topic][1], axis=0)
+            points = np.concatenate(detection_data[image_topic][2], axis=0)
+
+            fd = FrameDetections(
+                ts=ts,
+                sid=sid,
+                points=points,
+                cinfo=cinfo_dct[image_topic],
+                image_topic=image_topic,
+                cinfo_topic=cinfo_topic,
+                bag_path=bag_path,
+            )
+            ret[image_topic] = fd
+
+        return ret
 
 
 def anonymize_bag(
     in_path: Path,
     out_path: Path,
-    image_topics: Mapping[str, str],
+    image_topic: str,
+    cinfo_topic: str,
+    flipped_image: bool,
     head: Optional[int] = None,
-):
+    start: Optional[int] = None,
+    duration: Optional[int] = None,
+) -> None:
     """\
     blurs faces and license plates in images from rosbag file
     we implicitly assume that all images in a bagfile can be interpreted as a single video
@@ -301,37 +524,95 @@ def anonymize_bag(
     - `image_topics` mapping from input image topics to output image topics
     """
 
-    with rosbag.Bag(str(in_path), "r") as in_bag, rosbag.Bag(str(out_path), "w", compression="lz4") as out_bag:
+    with rosbag.Bag(str(in_path), "r") as in_bag, rosbag.Bag(
+        str(out_path), "w", compression="lz4"
+    ) as out_bag:
+        detection_data: list[FrameDetections] = []
         cv_bridge = CvBridge()
-        print("anonymizing images...")
 
+        print("getting camera info...")
+        cinfo = _extrac_camera_info(in_bag, cinfo_topic)
+
+        print("anonymizing images...")
         tracker = sv.ByteTrack(
             frame_rate=FRAME_RATE,
-            minimum_matching_threshold=0.1,
+            minimum_matching_threshold=0.05,
             track_activation_threshold=0.05,
         )
-        for idx, (topic, msg, t) in enumerate(in_bag.read_messages()):
-            if idx % 50 == 0:
-                print(f"processing message {idx:6d} @ {t}")
-            if topic not in image_topics:
+        image_msg_count = 0
+        t0 = time.monotonic()
+
+        for topic, msg, t in in_bag.read_messages():
+
+            if (
+                start
+                and duration
+                and (t.to_sec() <= start or t.to_sec() >= start + duration)
+            ):
+                continue
+
+            if topic != image_topic:
                 out_bag.write(topic, msg, t)
                 continue
-            if head is not None and idx >= head:
-                break
 
             is_compressed = "CompressedImage" in type(msg)._type
-            image = _msg_to_image(msg, cv_bridge, is_compressed)
 
-            metadata = (t, image_topics[topic], is_compressed)
+            image, grayscale = _msg_to_image(
+                msg, cv_bridge, is_compressed, flipped_image
+            )
+            metadata = (
+                t,
+                f"{image_topic}_anon",
+                is_compressed,
+                flipped_image,
+                grayscale,
+            )
+
             raw_detection = _get_detections(image)
             detections = _tracked_detections(raw_detection, tracker)
-            blurred_image, n_dets = _process_image(image, detections, draw_boxes=DRAW_BOXES)
-            _write_images_to_bag(
-                out_bag,
-                cv_bridge,
-                [metadata],
-                [(blurred_image, n_dets)],
+
+            detection_data.append(
+                _detections_to_frame_data(
+                    detections,
+                    t.to_nsec(),
+                    image_msg_count,
+                    flipped=flipped_image,
+                    hw=tuple(image.shape[:2]),  # type: ignore
+                )
             )
+
+            blurred_image, n_dets = _process_image(
+                image, detections, draw_boxes=DRAW_BOXES
+            )
+            _write_image_to_bag(out_bag, cv_bridge, metadata, blurred_image, n_dets)
+
+            if not image_msg_count % LOG_INTERVAL:
+                images_per_second = LOG_INTERVAL / (time.monotonic() - t0)
+                print(
+                    f"processing image {image_msg_count:6d} at timestamp {t}, {images_per_second:.2f} images/s"
+                )
+                t0 = time.monotonic()
+
+            image_msg_count += 1
+            if head is not None and image_msg_count >= head:
+                break
+
+        dets_ts_stacked: List[np.ndarray] = [d[0] for d in detection_data]
+        dets_sid_stacked: List[np.ndarray] = [d[1] for d in detection_data]
+        dets_bbox_stacked: List[np.ndarray] = [
+            d[2] for d in detection_data if d[0].size > 0
+        ]
+
+        detection_data_compact = {
+            "ts": np.concatenate(dets_ts_stacked, axis=0),
+            "sid": np.concatenate(dets_sid_stacked, axis=0),
+            "points": np.concatenate(dets_bbox_stacked, axis=0),
+            "topic": image_topic,
+            "cinfo": cinfo,
+        }
+
+        with open(out_path.with_suffix(".pkl"), "wb") as f:
+            pickle.dump(detection_data_compact, f)
 
     # reindex the bag
     print("reindexing bag...")
@@ -339,23 +620,94 @@ def anonymize_bag(
     print(f"done anonymizing {in_path} -> {out_path}")
 
 
-def process_camera_topics(file_desc: str, image_topics: Sequence[str]) -> None:
-    original_bag = Path(cast(str, get_bag(file_desc)))
-    anonymized_bag = Path(str(original_bag).replace("_calib.bag", "_anonymized.bag"))
+RUN_ALL = {
+    "alphasense": (
+        [
+            (
+                f"/gt_box/alphasense_driver_node/cam{i}/color_corrected/image/compressed",
+                f"/gt_box/alphasense_driver_node/cam{i}/color/camera_info",
+            )
+            for i in range(1, 6)
+        ],
+        False,
+        DATA_DIR / "2024-10-01-11-29-55_nuc_alphasense_cor.bag",
+    ),
+    "hdr_left": (
+        [
+            (
+                "/gt_box/hdr_front_rect/image_rect/compressed",
+                "/gt_box/hdr_front_rect/camera_info",
+            ),
+        ],
+        False,
+        DATA_DIR / "2024-10-01-11-29-55_jetson_hdr_front_rect.bag",
+    ),
+    "hdr_front": (
+        [
+            (
+                "/gt_box/hdr_left_rect/image_rect/compressed",
+                "/gt_box/hdr_left_rect/camera_info",
+            ),
+        ],
+        False,
+        DATA_DIR / "2024-10-01-11-29-55_jetson_hdr_left_rect.bag",
+    ),
+    "hdr_right": (
+        [
+            (
+                "/gt_box/hdr_right_rect/image_rect/compressed",
+                "/gt_box/hdr_right_rect/camera_info",
+            ),
+        ],
+        False,
+        DATA_DIR / "2024-10-01-11-29-55_jetson_hdr_right_rect.bag",
+    ),
+    "zed2i": (
+        [
+            (
+                "/gt_box/zed2i/zed_node/left/image_rect_color/compressed",
+                "/gt_box/zed2i/zed_node/left/camera_info",
+            ),
+            (
+                "/gt_box/zed2i/zed_node/right/image_rect_color/compressed",
+                "/gt_box/zed2i/zed_node/right/camera_info",
+            ),
+        ],
+        True,
+        DATA_DIR / "2024-10-01-11-29-55_jetson_zed2i_images.bag",
+    ),
+}
 
-    # store the intermediate bags in a temporary directory
-    tmp_bag = anonymized_bag.parent / f"{token_hex(32)}.bag"
-    shutil.copy(original_bag, tmp_bag)
+START_TS = 1727775099
+DURATION = 5
 
-    for topic in image_topics:
-        anonymize_bag(tmp_bag, anonymized_bag, {topic: topic})
-        shutil.move(anonymized_bag, tmp_bag)
 
-    shutil.move(tmp_bag, anonymized_bag)
-    upload_bag(anonymize_bag)
+def run_debug() -> None:
+    out_dir = DATA_DIR / f"out_{time.time_ns()}"
+    out_dir.mkdir(exist_ok=True)
+    for camera, (topics, flipped, file) in RUN_ALL.items():
+        image_topics = [t[0] for t in topics]
+        cinfo_topics = [t[1] for t in topics]
+
+        print(f"running {camera}...")
+        frame_detections = run_model_inference(
+            file,
+            image_topics,
+            cinfo_topics,
+            start=START_TS,
+            duration=DURATION,
+            flip_images_for_inference=flipped,
+        )
+
+        path = out_dir / f"{camera}_frame_detections.pkl"
+        with open(path, "wb") as f:
+            pickle.dump(frame_detections, f)
+
+
+def main() -> int:
+    run_debug()
+    return 0
 
 
 if __name__ == "__main__":
-    for camera, desc in ACTION_CAMERAS_CFG.items():
-        print(f"processing camera {camera}")
-        process_camera_topics(desc[-1], desc[:-1])
+    raise SystemExit(main())
