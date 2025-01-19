@@ -100,7 +100,7 @@ def load_config(config_path):
 
 if __name__ == "__main__":
 
-    CONFIG_NAME = "evo_evaluations"
+    CONFIG_NAME = "evo_evaluations_test"
 
     IS_POINT_DISTANCES_SUPPORTED = False
     from evo import __version__

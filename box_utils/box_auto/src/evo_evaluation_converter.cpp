@@ -199,6 +199,21 @@ void parseRosbagToTum(const std::string& bagPath, const std::string& topicName, 
   tumFile.precision(std::numeric_limits<double>::max_digits10);
   tumFile << poseLogFileHeader_ << std::endl;
 
+  //# (x, y, z, rotation about X axis, rotation about Y axis, rotation about Z axis)
+  const std::string covarianceFileHeader = "# timestamp x y z roll pitch yaw";
+  std::ofstream possibleCovarianceFile;
+
+  std::string covOutputPath = outputPath.substr(0, outputPath.size() - 4) + "_covariance.tum";
+
+  possibleCovarianceFile.open(covOutputPath, std::ios_base::app);
+  possibleCovarianceFile.precision(std::numeric_limits<double>::max_digits10);
+  possibleCovarianceFile << covarianceFileHeader << std::endl;
+
+  if (!possibleCovarianceFile.is_open()) {
+    ROS_ERROR_STREAM("Failed to open possibleCovarianceFile: " << covOutputPath);
+    return;
+  }
+
   if (!tumFile.is_open()) {
     ROS_ERROR_STREAM("Failed to open output file: " << outputPath);
     return;
@@ -304,6 +319,10 @@ void parseRosbagToTum(const std::string& bagPath, const std::string& topicName, 
           geometry_msgs::TransformStamped transform =
               tf_buffer.lookupTransform(targetFrame, sourceFrame, poseCov->header.stamp, ros::Duration(0.2));
 
+          ROS_INFO_STREAM("\033[1;32mTarget Frame: " << targetFrame << "\033[0m");
+          ROS_INFO_STREAM("\033[1;32mSource Frame: " << sourceFrame << "\033[0m");
+          ROS_INFO_STREAM("\033[1;32mTransform: " << transform << "\033[0m");
+
           // Convert poseCov pose to PoseStamped
           geometry_msgs::PoseStamped pose;
           pose.header = poseCov->header;
@@ -327,6 +346,28 @@ void parseRosbagToTum(const std::string& bagPath, const std::string& topicName, 
 
           tumFile << timestamp << " " << position.x << " " << position.y << " " << position.z << " " << orientation.x << " "
                   << orientation.y << " " << orientation.z << " " << orientation.w << std::endl;
+
+          // Eigen::Matrix<double, 6, 6> covariance_matrix;
+          // for (int row = 0; row < 6; ++row) {
+          //   for (int col = 0; col < 6; ++col) {
+          //     covariance_matrix(row, col) = poseCov->pose.covariance[row * 6 + col];
+          //   }
+          // }
+
+          // possibleCovarianceFile << timestamp << " " << covariance_matrix.squaredNorm() << std::endl;
+
+          auto estGnssOfflinePoseMeasUnaryNoiseList = poseCov->pose.covariance;
+          Eigen::Matrix<double, 6, 1> estGnssOfflinePoseMeasUnaryNoise;
+          estGnssOfflinePoseMeasUnaryNoise << sqrt(estGnssOfflinePoseMeasUnaryNoiseList[0]), sqrt(estGnssOfflinePoseMeasUnaryNoiseList[7]),
+              sqrt(estGnssOfflinePoseMeasUnaryNoiseList[14]), sqrt(estGnssOfflinePoseMeasUnaryNoiseList[21]),
+              sqrt(estGnssOfflinePoseMeasUnaryNoiseList[28]), sqrt(estGnssOfflinePoseMeasUnaryNoiseList[35]);
+
+          // possibleCovarianceFile << timestamp << " " << estGnssOfflinePoseMeasUnaryNoise[0] << " " <<  << std::endl;
+          possibleCovarianceFile << timestamp;
+          for (int i = 0; i < estGnssOfflinePoseMeasUnaryNoise.size(); ++i) {
+            possibleCovarianceFile << " " << estGnssOfflinePoseMeasUnaryNoise[i];
+          }
+          possibleCovarianceFile << std::endl;
 
         } catch (const tf2::TransformException& ex) {
           ROS_ERROR_STREAM("Failed to transform pose: " << ex.what());

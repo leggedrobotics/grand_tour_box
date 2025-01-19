@@ -1,0 +1,61 @@
+# The target sensor frame.
+target_frame: prism
+
+# If topic entry is left empty "", the bag only going to be used for /tf & /tf_static reading and not for topic reading
+bag_topic_pairs:
+  - bag: _gt_pose.bag
+    test_name: "gmsf_gt"
+    topic: /gt_box/ground_truth/pose_with_covariance
+    frame: box_base
+    evaluations:
+      parameters:
+        t_max_diff: 0.01
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+    #
+  - bag: _cpt7_ie_tc.bag
+    test_name: "offline_ie"
+    topic: /gt_box/inertial_explorer/tc/gt_poses_novatel
+    frame: box_base
+    evaluations:
+      parameters:
+        t_max_diff: 0.01
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: "ap20_robot"
+
+    #
+  - bag: _jetson_ap20_robot.bag
+    test_name: "ap20_robot"
+    topic: "/gt_box/ap20/prism_position"
+    frame: "prism"
+    evaluations:
+      parameters:
+        t_max_diff: 0.01
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+    #
+  - bag: _tf_static.bag
+    test_name: ""
+    topic: ""
+    frame: ""
