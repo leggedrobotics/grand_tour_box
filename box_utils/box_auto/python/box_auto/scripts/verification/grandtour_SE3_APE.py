@@ -56,7 +56,6 @@ def run_ape(test_name, reference_file, estimated_file, params, output_path, disa
     test_name += "_" + relation_post_fix + "_" + alignment_post_fix
 
     # Reference, estimated trajectory, t_max_diff, t_offset. t_max_diff is by default 10ms (0.01)
-
     traj_reference, traj_estimated = sync.associate_trajectories(traj_reference, traj_estimated, t_max_diff, t_offset)
 
     results = []
@@ -64,7 +63,7 @@ def run_ape(test_name, reference_file, estimated_file, params, output_path, disa
         traj_reference,
         traj_estimated,
         est_name=test_name,
-        ref_name="IE",
+        ref_name="GMSF_offline",
         pose_relation=relation,
         align=True,
         align_origin=False,
@@ -120,13 +119,22 @@ def run_ape(test_name, reference_file, estimated_file, params, output_path, disa
         output_path + "/ape_results_" + test_name + ".zip", results[0], confirm_overwrite=not True
     )
 
-    print("APE compared_pose_pairs %d pairs" % (len(results[0].np_arrays["error_array"])))
-    print("rmse %f m" % results[0].stats["rmse"])
-    print("mean %f m" % results[0].stats["mean"])
-    print("median %f m" % results[0].stats["median"])
-    print("std %f m" % results[0].stats["std"])
-    print("min %f m" % results[0].stats["min"])
-    print("max %f m" % results[0].stats["max"])
+    if relation == PoseRelation.translation_part:
+        print("APE compared_pose_pairs %d pairs" % (len(results[0].np_arrays["error_array"])))
+        print("rmse %f m" % results[0].stats["rmse"])
+        print("mean %f m" % results[0].stats["mean"])
+        print("median %f m" % results[0].stats["median"])
+        print("std %f m" % results[0].stats["std"])
+        print("min %f m" % results[0].stats["min"])
+        print("max %f m" % results[0].stats["max"])
+    elif relation == PoseRelation.rotation_angle_deg:
+        print("APE compared_pose_pairs %d pairs" % (len(results[0].np_arrays["error_array"])))
+        print("rmse %f deg" % results[0].stats["rmse"])
+        print("mean %f deg" % results[0].stats["mean"])
+        print("median %f deg" % results[0].stats["median"])
+        print("std %f deg" % results[0].stats["std"])
+        print("min %f deg" % results[0].stats["min"])
+        print("max %f deg" % results[0].stats["max"])
 
     plot_x_dimension = "seconds"
     # Plot the raw metric values.

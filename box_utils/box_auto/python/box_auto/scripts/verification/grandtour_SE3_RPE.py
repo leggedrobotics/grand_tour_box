@@ -74,7 +74,7 @@ def run_rpe(test_name, reference_file, estimated_file, params, output_path, disa
         traj_reference,
         traj_estimated,
         est_name=test_name,
-        ref_name="IE",
+        ref_name="GMSF_offline",
         pose_relation=relation,
         delta=delta,
         delta_unit=delta_unit,
