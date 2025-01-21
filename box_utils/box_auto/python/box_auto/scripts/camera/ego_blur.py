@@ -1,21 +1,21 @@
 from __future__ import annotations
 
+import time
+import warnings
+from enum import Enum
+from pathlib import Path
+from typing import Any, Dict, List, NamedTuple, Optional, Sequence, Tuple, cast
+
+import cv2
+import numpy as np
+import rosbag
 import torch
 import torchvision
-from typing import List, Tuple, Optional, Any, Sequence, Dict, NamedTuple, cast
-import numpy as np
-from enum import Enum
-import time
-
-import rosbag
+import tqdm
 from cv_bridge import CvBridge
 from std_msgs.msg import Int32
-import tqdm
-import warnings
 
 from box_auto.utils import get_bag, upload_bag
-from pathlib import Path
-import cv2
 
 warnings.filterwarnings("ignore", category=UserWarning)
 
