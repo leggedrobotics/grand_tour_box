@@ -505,6 +505,24 @@ def run_model_inference(
         return ret
 
 
+def fix_lense_distortions() -> None: ...
+
+
+import cv2
+
+
+def export_images(bag_path: Path, out_dir: Path, topic: str) -> None:
+    with rosbag.Bag(str(bag_path), "r") as bag:
+        cv_bridge = CvBridge()
+
+        for im_id, (_, msg, t) in enumerate(bag.read_messages(topics=[topic])):
+            is_compressed = "CompressedImage" in type(msg)._type
+            image, _ = _msg_to_image(msg, cv_bridge, is_compressed, flipped=False)
+
+            out_path = out_dir / f"{im_id:06d}.jpg"
+            cv2.imwrite(str(out_path), image)
+
+
 def anonymize_bag(
     in_path: Path,
     out_path: Path,
@@ -632,7 +650,7 @@ RUN_ALL = {
         False,
         DATA_DIR / "2024-10-01-11-29-55_nuc_alphasense_cor.bag",
     ),
-    "hdr_left": (
+    "hdr_front": (
         [
             (
                 "/gt_box/hdr_front_rect/image_rect/compressed",
@@ -642,7 +660,7 @@ RUN_ALL = {
         False,
         DATA_DIR / "2024-10-01-11-29-55_jetson_hdr_front_rect.bag",
     ),
-    "hdr_front": (
+    "hdr_left": (
         [
             (
                 "/gt_box/hdr_left_rect/image_rect/compressed",
@@ -686,6 +704,13 @@ def run_debug() -> None:
     out_dir = DATA_DIR / f"out_{time.time_ns()}"
     out_dir.mkdir(exist_ok=True)
     for camera, (topics, flipped, file) in RUN_ALL.items():
+
+        for tid, topic in enumerate(topics):
+            dir_path = out_dir / f"{camera}_{tid}"
+            dir_path.mkdir()
+            export_images(file, dir_path, topic[0])
+
+        continue
         image_topics = [t[0] for t in topics]
         cinfo_topics = [t[1] for t in topics]
 
