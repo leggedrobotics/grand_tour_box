@@ -130,10 +130,7 @@ echo ""
 eval docker run --privileged \
     $INTERACTIVE_FLAG \
     $REMOVE_FLAG \
-    --volume=$XSOCK:/root/.X11-unix:rw \
-    --volume=$XAUTH:/root/.docker.xauth:rw \
-    --env="QT_X11_NO_MITSHM=1" \
-    --env="XAUTHORITY=/root/.docker.xauth" \
+    -v /tmp/.X11-unix:/tmp/.X11-unix \
     --env="DISPLAY=$DISPLAY" \
     --ulimit rtprio=99 \
     --cap-add=sys_nice \
@@ -147,3 +144,8 @@ eval docker run --privileged \
     $COMMAND
 
 exit $?
+
+    # --volume=$XSOCK:/root/.X11-unix:rw \
+    # --volume=$XAUTH:/root/.docker.xauth:rw \
+    # --env="QT_X11_NO_MITSHM=1" \
+    # --env="XAUTHORITY=/root/.docker.xauth" \

@@ -1,0 +1,4 @@
+<launch>
+  <node pkg="box_dev" type="update_elevation_map.py" name="elevation_map_adjuster" output="screen">
+  </node>
+</launch> 

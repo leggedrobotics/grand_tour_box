@@ -9,6 +9,7 @@ from tf.msg import tfMessage
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 from geometry_msgs.msg import PoseWithCovarianceStamped, PoseStamped, TransformStamped
+from nav_msgs.msg import Odometry
 from tf_bag import BagTfTransformer
 from rosbag import Bag
 import matplotlib.pyplot as plt
@@ -27,7 +28,7 @@ from box_auto.utils import (
     ARTIFACT_FOLDER,
 )
 
-PATTERNS = ["*_jetson_ap20_robot.bag", "*_cpt7_raw_imu.bag", "*_cpt7_ie_tc.bag", "*_tf_static.bag", "*_nuc_cpt7.bag"]
+PATTERNS = ["*_jetson_ap20_robot.bag", "*_cpt7_raw_imu.bag", "*_cpt7_ie_tc.bag", "*_tf_static.bag"]
 
 """
 Exit Codes:
@@ -333,6 +334,13 @@ def convert_csv_to_bag(
             pose_stamped.pose = pose_with_cov.pose.pose
             pose_gt_bag.write("/gt_box/ground_truth/pose_stamped", pose_stamped, stamp)
 
+            # Create and write nav_msgs/Odometry message
+            odometry = Odometry()
+            odometry.header = pose_with_cov.header
+            odometry.pose.pose = pose_with_cov.pose.pose
+            odometry.child_frame_id = child_frame_id
+            pose_gt_bag.write("/gt_box/ground_truth/odometry", odometry, stamp)
+
             # Create and populate the TransformStamped message
             transform = TransformStamped()
             transform.header = pose_with_cov.header
@@ -347,7 +355,7 @@ def convert_csv_to_bag(
             transform.transform.rotation.z = qz
             transform.transform.rotation.w = qw
 
-            # Optionally, invert the transform if needed
+            # Invert the transform to allow multi-child 1 parent tree.
             transformed_data = invert_transform(transform)
 
             # Create a TFMessage and add the TransformStamped object
@@ -385,9 +393,14 @@ def launch_nodes():
     merged_rosbag_path = os.path.join(MISSION_DATA, "merged_for_graph_msf.bag")
 
     if True:
-        os.system(
-            f"python3 {BOX_AUTO_SCRIPTS_DIR}/general/merge_bags.py --input={inputs} --output={merged_rosbag_path}"
-        )
+        # Check if merged_rosbag_path already exists
+        if os.path.exists(merged_rosbag_path):
+            print(f"Using existing merged rosbag at {merged_rosbag_path}")
+        else:
+            print(f"Merging bags into {merged_rosbag_path}")
+            os.system(
+                f"python3 {BOX_AUTO_SCRIPTS_DIR}/general/merge_bags.py --input={inputs} --output={merged_rosbag_path}"
+            )
         start_roscore()
         sleep(1)
 
@@ -409,6 +422,8 @@ def launch_nodes():
             'rosservice call /graph_msf/trigger_offline_optimization "max_optimization_iterations: 1000\nsave_covariance: true"'
         )
         kill_roscore()
+
+    print("GMSF processing finished. Converting the data.")
 
     # Convert tf_statics to debug bag
     tf_static_path = get_bag("*_tf_static.bag")

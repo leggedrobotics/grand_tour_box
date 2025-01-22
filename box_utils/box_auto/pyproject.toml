@@ -1,0 +1,4 @@
+[tool.pyright]
+# we need to do this due to a supervision 0.25 bug,
+# otherwise pylance and pyright will scream at you
+reportPrivateImportUsage = false

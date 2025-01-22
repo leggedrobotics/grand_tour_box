@@ -2,7 +2,7 @@ x-common-config: &common-config
   entrypoint: "/entrypoint.sh"
   build:
     context: "$HOME/git/grand_tour_box/box_utils/box_auto/docker"
-    dockerfile: "$HOME/git/grand_tour_box/box_utils/box_auto/docker/box.Dockerfile"
+    dockerfile: "$HOME/git/grand_tour_box/box_utils/box_auto/docker/box_kleinkram.Dockerfile"
     ssh:
       default: "$HOME/.ssh/jonfrey_ws"
   image: rslethz/grand_tour_box:kleinkram
@@ -83,8 +83,18 @@ services:
         condition: service_completed_successfully
 
   # Input:
+  #   - _alphasense.bag
+  # Output:
+  #   - _alphasense_updated.bag
+  alphasense_fix_frame_id:
+    <<: *common-config
+    container_name: alphasense_fix_frame_id
+    command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/camera/alphasense_fix_frame_id.py"]
+
+
+  # Input:
   #   - hdr_updated.bag
-  #   - alphasense.bag
+  #   - alphasense_updated.bag
   # Output:
   #   - alphasense_calib.bag
   #   - hdr_calib.bag
@@ -97,6 +107,57 @@ services:
     depends_on:
       hdr_timestamp_adjuster:
         condition: service_completed_successfully
+      alphasense_fix_frame_id:
+        condition: service_completed_successfully
+
+  # Input:
+  #   - _jetson_ap20_synced.bag
+  #   - _jetson_stim.bag
+  #   - _nuc_livox.bag
+  #   - _jetson_adis.bag
+  #   - _nuc_cpt7_post_processed.bag
+  #   - _cpt7_raw_imu.bag
+  #   - _nuc_alphasense_calib.bag
+  # Output:
+  #   - _jetson_ap20_intrinsics.bag
+  #   - _jetson_stim_intrinsics.bag
+  #   - _nuc_livox_intrinsics.bag
+  #   - _jetson_adis_intrinsics.bag
+  #   - _nuc_cpt7_intrinsics.bag
+  #   - _cpt7_raw_intrinsics.bag
+  #   - _nuc_alphasense_intrinsics.bag
+  imu_intrinsics:
+    <<: *common-config
+    container_name: imu_intrinsics
+    command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/calibration/update_imu_intrinsics.py"]
+    depends_on:
+      calibration:
+        condition: service_completed_successfully
+      ap20_python_online_matcher:
+        condition: service_completed_successfully
+
+
+
+  # Input:
+  # - _nuc_alphasense_calib.bag
+  # - _jetson_hdr_left_calib.bag
+  # - _jetson_hdr_front_calib.bag
+  # - _jeston_hdr_right_calib.bag
+  # - _jetson_zed2i_images_calib.bag
+  # Output:
+  # - _nuc_alphasense_anonymized.bag
+  # - _jetson_hdr_left_anonymized.bag
+  # - _jetson_hdr_front_anonymized.bag
+  # - _jeston_hdr_right_anonymized.bag
+  # - _jetson_zed2i_images_anonymized.bag
+  image_anonymizer:
+    <<: *common-config
+    container_name: image_anonymizer
+    command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/general/anonymize_images.py"]
+    depends_on:
+      calibration:
+        condition: service_completed_successfully
+
 
   # Input:
   #   - ap20_aux.bag
@@ -151,7 +212,7 @@ services:
         condition: service_completed_successfully
   
   # Input:
-  #   - hesai.bag
+  #   - hesai_post_processed.bag
   #   - tf_static.bag
   # Output:
   #   - dlio.bag
@@ -227,23 +288,23 @@ services:
   #       condition: service_completed_successfully
 
   # Input:
-  #   - alphasense_calib.bag
+  #   - _nuc_alphasense_intrinsics.bag
   # Output:
-  #   - alphasense_color.bag
+  #   - _nuc_alphasense_color.bag
   # color_correction:
   #   <<: *common-config
   #   container_name: color_correction
   #   command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/camera/color_correction.py"]
   #   depends_on:
-  #     calibration:
+  #     imu_intrinsics:
   #       condition: service_completed_successfully
 
   # Input: 
-  #   - hdr_calib.bag
-  #   - alphasense_color.bag
+  #   - _jetson_hdr_calib.bag
+  #   - _nuc_alphasense_color.bag
   # Output:
-  #   - hdr_rect.bag
-  #   - alphasense_rect.bag
+  #   - _jetson_hdr_rect.bag
+  #   - _nuc_alphasense_rect.bag
   # rectify:
   #   <<: *common-config
   #   container_name: rectify

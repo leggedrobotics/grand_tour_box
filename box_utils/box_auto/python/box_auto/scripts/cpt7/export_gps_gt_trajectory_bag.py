@@ -61,7 +61,12 @@ def main():
             for i, (time, position, orientation_hrp, position_std, orientation_hrp_std) in enumerate(
                 zip(times, positions, orientations_hrp, positions_std, orientations_hrp_std)
             ):
-                timestamp = rospy.Time.from_sec(time)
+                secs = int(time)
+                nsecs = str(time).split(".")[1]
+                nsecs = int(nsecs + "0" * (9 - len(nsecs)))
+
+                timestamp = rospy.Time(secs=secs, nsecs=nsecs)
+
                 if i == 0:
                     msg = Vector3(x=position[0], y=position[1], z=position[2])
                     bag.write(

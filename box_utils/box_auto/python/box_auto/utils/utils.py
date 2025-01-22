@@ -45,7 +45,9 @@ def kill_roscore():
                 print(f"Failed to terminate rosmaster process: {e}")
 
 
-def get_bag(pattern, directory=MISSION_DATA, auto_download=True, return_list=False, rglob=True):
+def get_bag(
+    pattern, directory=MISSION_DATA, auto_download=True, return_list=False, rglob=False, return_upon_no_files=False
+):
     """
     Finds the matching .bag files in the mission on Kleinram and downloads it.
 
@@ -65,14 +67,13 @@ def get_bag(pattern, directory=MISSION_DATA, auto_download=True, return_list=Fal
     """
 
     # Kleinkram currently only supports .bag and .mcap files
-    if not (pattern.endswith(".bag") or pattern.endswith(".mcap")):
+    if (auto_download) and (not (pattern.endswith(".bag") or pattern.endswith(".mcap"))):
         raise ValueError(f"Pattern must end with '.bag' or '.mcap'. Got: {pattern}")
 
     # Download pattern matched files from Kleinkram
-    if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
+    if (auto_download) and (os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE"):
         uuid = os.environ["MISSION_UUID"]
-        if auto_download:
-            os.system(f"klein download --mission {uuid} --dest {directory} '{pattern}'")
+        os.system(f"klein download --mission {uuid} --dest {directory} '{pattern}'")
 
     if rglob:
         # Get reference bag path
@@ -82,6 +83,9 @@ def get_bag(pattern, directory=MISSION_DATA, auto_download=True, return_list=Fal
         files = [str(s) for s in Path(directory).glob(pattern)]
 
     if not files:
+        if return_upon_no_files:
+            return None
+
         raise FileNotFoundError(f"No matching bags found: {pattern} in directory {directory}. \n")
 
     if len(files) > 1:
@@ -95,7 +99,40 @@ def get_bag(pattern, directory=MISSION_DATA, auto_download=True, return_list=Fal
     return files[0]
 
 
-def get_file(pattern, directory=MISSION_DATA):
+def find_and_extract_non_matching(directory, pattern):
+    """
+    Find files matching the pattern in the specified directory and extract the part of the filename
+    that does not contain the matching part of the pattern.
+
+    Args:
+        directory (str): The directory to search.
+        pattern (str): The pattern to match (e.g., "*_evo.tum").
+
+    Returns:
+        str: A string containing the non-matching part of the filename.
+    """
+
+    matched_files = list(Path(directory).rglob(pattern))  # Find all files matching the pattern
+
+    if len(matched_files) == 0:
+        raise ValueError(f"No files found matching the pattern '{pattern}' in directory '{directory}'.")
+    elif len(matched_files) > 1:
+        raise ValueError(f"Multiple files found matching the pattern '{pattern}': {[f.name for f in matched_files]}")
+
+    filename = matched_files[0].name
+
+    # Remove wildcard and suffix from the pattern to isolate the part to exclude
+    pattern_to_exclude = pattern.replace("*", "")
+    if pattern_to_exclude in filename:
+        # Extract the part of the filename before the pattern to exclude
+        non_matching = filename.split(pattern_to_exclude)[0]  # Take only the part before the pattern
+    else:
+        raise ValueError(f"Pattern '{pattern_to_exclude}' not found in filename '{filename}'")
+
+    return non_matching
+
+
+def get_file(pattern, directory=MISSION_DATA, rglob=False):
     """
     Find a single file matching the given pattern in the specified directory.
 
@@ -107,7 +144,11 @@ def get_file(pattern, directory=MISSION_DATA):
         tuple: (file path, success flag)
     """
 
-    files = list(Path(directory).rglob(pattern))
+    if rglob:
+        files = list(Path(directory).rglob(pattern))
+    else:
+        files = list(Path(directory).glob(pattern))
+
     if len(files) != 1:
         print(f"Error: Found {len(files)} matching files for pattern {pattern} in directory {directory}")
         return None, False

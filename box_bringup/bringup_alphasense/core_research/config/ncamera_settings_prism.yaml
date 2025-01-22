@@ -115,10 +115,10 @@ ncamera:
   # Number of enabled cameras and individual camera configuration.
   num_cams: 6                     # 1 - 8
   cams:
-    0: *standard_camera_config            # Broken
-    1: *standard_camera_config_rotated            # Front middle
-    2: *standard_camera_config_rotated            # Front right
-    3: *camera_config_follower_rotated            # Front left
-    4: *standard_camera_config_rotated    # Left 
-    5: *standard_camera_config    # Right
+    0: *standard_camera_config          # Broken
+    1: *standard_camera_config_rotated  # Flip           - front_center
+    2: *standard_camera_config_rotated  # Flip           - front_right
+    3: *camera_config_follower_rotated  # Flip           - front_left
+    4: *standard_camera_config_rotated  # Flip           - left
+    5: *standard_camera_config          # No Flip        - right
       

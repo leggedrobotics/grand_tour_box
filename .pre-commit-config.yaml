@@ -29,13 +29,4 @@ repos:
     hooks:
       - id: check-added-large-files
         args: ["--maxkb=2000"]
-  - repo: local
-    hooks:
-      - id: check-submodule-branches
-        name: Check submodule branches
-        entry: python .git-hooks/check_submodule_branches.py
-        language: python
-        files: .gitmodules
-        pass_filenames: false
-        additional_dependencies: [GitPython]
 

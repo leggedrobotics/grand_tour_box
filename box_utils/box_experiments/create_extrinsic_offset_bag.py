@@ -79,8 +79,8 @@ if __name__ == "__main__":
         output_pattern = "_tf_static.bag"
         input_pattern = "_tf_static.bag"  # Optionally allow to rename bag
 
-        deg = round(np.rad2deg(offset_pitch_rad), 0)
-        mm = round(offset_x_m / 0.001, 0)
+        deg = int(round(np.rad2deg(offset_pitch_rad)))
+        mm = int(round(offset_x_m / 0.001))
 
         output_folder = Path(MISSION_DATA) / "extrinsic_offset" / f"extrinsic_x{mm}mm_pitch{deg}deg"
         create_extrinsic_offset_bag(

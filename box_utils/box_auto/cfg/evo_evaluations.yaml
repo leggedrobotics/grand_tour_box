@@ -1,0 +1,199 @@
+# The target sensor frame.
+# AP20 do not have orientation so if we want to compare against that we have to convert to its sensor frame.
+target_frame: prism
+filter_by_covariance: False
+covariance_percentile_threshold: 95 #percentile
+#
+remove_until_motion: True
+distance_threshold: 1 #distance in meters
+#
+ap20_peak_rejection: True
+ap20_peak_rejection_threshold: 0.1 #second
+ap20_peak_rejection_trailing_window: 5 #trailing indices to remove
+#
+project_to_plane: "xyz" #xy or xyz
+
+# If topic entry is left empty "", the bag only going to be used for /tf & /tf_static reading and not for topic reading
+bag_topic_pairs:
+  - bag: _gt_pose.bag
+    test_name: "gmsf_gt"
+    topic: /gt_box/ground_truth/pose_with_covariance
+    frame: box_base
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+    #
+  - bag: _cpt7_ie_tc.bag
+    test_name: "offline_ie"
+    topic: /gt_box/inertial_explorer/tc/gt_poses_novatel
+    frame: box_base
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: "ap20_robot"
+
+    #
+  - bag: _jetson_ap20_robot.bag
+    test_name: "ap20_robot"
+    topic: "/gt_box/ap20/prism_position"
+    frame: "prism"
+    evaluations:
+      parameters:
+        t_max_diff: 0.025
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+    #
+  - bag: _livox_dlio.bag
+    test_name: "dlio_livox"
+    topic: /dlio/lidar_map_odometry
+    frame: livox_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.05
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: "ap20_robot"
+
+    #
+  - bag: _hesai_dlio.bag
+    test_name: "dlio_hesai"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.05
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: "ap20_robot"
+
+    #
+  - bag: _lpc_state_estimator.bag
+    test_name: "TSIF"
+    topic: /state_estimator/pose_in_odom
+    frame: base
+    evaluations:
+      parameters:
+        t_max_diff: 0.00125
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: "ap20_robot"
+
+    #
+  - bag: _jetson_zed2i_prop.bag
+    test_name: "zed2i_odom"
+    topic: /gt_box/zed2i/zed_node/odom
+    frame: zed_base_link
+    evaluations:
+      parameters:
+        t_max_diff: 0.025
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: "ap20_robot"
+
+    #
+  - bag: _jetson_zed2i_prop.bag
+    test_name: "zed2i_map"
+    topic: /gt_box/zed2i/zed_node/map_pose
+    frame: zed_base_link
+    evaluations:
+      parameters:
+        t_max_diff: 0.025
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: "ap20_robot"
+
+    #
+  - bag: _open3d_slam.bag
+    test_name: "o3d_with_tsif_hesai"
+    topic: /open3d_slam/optimized_poses_as_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.05
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: "ap20_robot"
+
+    #
+  - bag: _okvis_imu0_alphasense_2_bw.bag
+    test_name: "okvis_alphasense_2_bw"
+    topic: /gt_box/okviz/pose
+    frame: cpt7_imu
+    evaluations:
+      parameters:
+        t_max_diff: 0.05
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: "ap20_robot"
+    #
+  - bag: _tf_static.bag
+    test_name: ""
+    topic: ""
+    frame: ""

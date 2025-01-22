@@ -6,11 +6,13 @@ Panels:
       Expanded:
         - /Global Options1
         - /TF1
+        - /ZED2i1
         - /Lidar1/HesaiXT32 Lidar1
         - /Lidar1/HesaiXT32 Lidar1/Autocompute Value Bounds1
         - /Lidar1/Livox Lidar1
         - /Lidar1/Livox Lidar1/Autocompute Value Bounds1
         - /Alphasense_raw1
+        - /Zed2i Raw1
         - /Zed2i Raw1/ZED2i Right1
         - /Zed2i Raw1/ZED2i Left1
       Splitter Ratio: 0.4832535982131958
@@ -30,6 +32,7 @@ Panels:
     Name: Views
     Splitter Ratio: 0.5
   - Class: rviz/Time
+    Experimental: false
     Name: Time
     SyncMode: 0
     SyncSource: HDR Left (ROS2)
@@ -79,12 +82,102 @@ Visualization Manager:
       Value: true
     - Class: rviz/TF
       Enabled: true
-      Filter (blacklist): ""
-      Filter (whitelist): ""
       Frame Timeout: 15
       Frames:
         All Enabled: true
+        LF_FOOT:
+          Value: true
+        LF_HAA_drive:
+          Value: true
+        LF_HFE_drive:
+          Value: true
+        LF_HFE_output:
+          Value: true
+        LF_HIP:
+          Value: true
+        LF_KFE_drive:
+          Value: true
+        LF_SHANK:
+          Value: true
+        LF_THIGH:
+          Value: true
+        LF_hip_fixed:
+          Value: true
+        LF_shank_fixed:
+          Value: true
+        LF_thigh_fixed:
+          Value: true
+        LH_FOOT:
+          Value: true
+        LH_HAA_drive:
+          Value: true
+        LH_HFE_drive:
+          Value: true
+        LH_HFE_output:
+          Value: true
+        LH_HIP:
+          Value: true
+        LH_KFE_drive:
+          Value: true
+        LH_SHANK:
+          Value: true
+        LH_THIGH:
+          Value: true
+        LH_hip_fixed:
+          Value: true
+        LH_shank_fixed:
+          Value: true
+        LH_thigh_fixed:
+          Value: true
+        RF_FOOT:
+          Value: true
+        RF_HAA_drive:
+          Value: true
+        RF_HFE_drive:
+          Value: true
+        RF_HFE_output:
+          Value: true
+        RF_HIP:
+          Value: true
+        RF_KFE_drive:
+          Value: true
+        RF_SHANK:
+          Value: true
+        RF_THIGH:
+          Value: true
+        RF_hip_fixed:
+          Value: true
+        RF_shank_fixed:
+          Value: true
+        RF_thigh_fixed:
+          Value: true
+        RH_FOOT:
+          Value: true
+        RH_HAA_drive:
+          Value: true
+        RH_HFE_drive:
+          Value: true
+        RH_HFE_output:
+          Value: true
+        RH_HIP:
+          Value: true
+        RH_KFE_drive:
+          Value: true
+        RH_SHANK:
+          Value: true
+        RH_THIGH:
+          Value: true
+        RH_hip_fixed:
+          Value: true
+        RH_shank_fixed:
+          Value: true
+        RH_thigh_fixed:
+          Value: true
         adis16475_imu:
+          Value: true
+        aft_mapped:
+          Value: true
+        aft_mapped_to_init_CORRECTED:
           Value: true
         alphasense_base:
           Value: true
@@ -102,6 +195,14 @@ Visualization Manager:
           Value: true
         base:
           Value: true
+        base_inertia:
+          Value: true
+        battery:
+          Value: true
+        body_top:
+          Value: true
+        bottom_shell:
+          Value: true
         box_base:
           Value: true
         box_base_model:
@@ -116,11 +217,145 @@ Visualization Manager:
           Value: true
         cam5_sensor_frame:
           Value: true
+        camera:
+          Value: true
+        camera_CORRECTED:
+          Value: true
+        camera_init:
+          Value: true
+        camera_init_CORRECTED:
+          Value: true
+        camera_init_GRAVITY_ALIGNED:
+          Value: true
+        control:
+          Value: true
         cpt7_antenna_back:
+          Value: true
+        cpt7_antenna_back_model:
           Value: true
         cpt7_antenna_front:
           Value: true
         cpt7_imu:
+          Value: true
+        depth_camera_front_lower_camera:
+          Value: true
+        depth_camera_front_lower_camera_parent:
+          Value: true
+        depth_camera_front_lower_depth_frame:
+          Value: true
+        depth_camera_front_lower_depth_optical_frame:
+          Value: true
+        depth_camera_front_lower_infra1_frame:
+          Value: true
+        depth_camera_front_lower_infra1_optical_frame:
+          Value: true
+        depth_camera_front_lower_infra2_frame:
+          Value: true
+        depth_camera_front_lower_infra2_optical_frame:
+          Value: true
+        depth_camera_front_upper_camera:
+          Value: true
+        depth_camera_front_upper_camera_parent:
+          Value: true
+        depth_camera_front_upper_depth_frame:
+          Value: true
+        depth_camera_front_upper_depth_optical_frame:
+          Value: true
+        depth_camera_front_upper_infra1_frame:
+          Value: true
+        depth_camera_front_upper_infra1_optical_frame:
+          Value: true
+        depth_camera_front_upper_infra2_frame:
+          Value: true
+        depth_camera_front_upper_infra2_optical_frame:
+          Value: true
+        depth_camera_left_camera:
+          Value: true
+        depth_camera_left_camera_parent:
+          Value: true
+        depth_camera_left_depth_frame:
+          Value: true
+        depth_camera_left_depth_optical_frame:
+          Value: true
+        depth_camera_left_infra1_frame:
+          Value: true
+        depth_camera_left_infra1_optical_frame:
+          Value: true
+        depth_camera_left_infra2_frame:
+          Value: true
+        depth_camera_left_infra2_optical_frame:
+          Value: true
+        depth_camera_rear_lower_camera:
+          Value: true
+        depth_camera_rear_lower_camera_parent:
+          Value: true
+        depth_camera_rear_lower_depth_frame:
+          Value: true
+        depth_camera_rear_lower_depth_optical_frame:
+          Value: true
+        depth_camera_rear_lower_infra1_frame:
+          Value: true
+        depth_camera_rear_lower_infra1_optical_frame:
+          Value: true
+        depth_camera_rear_lower_infra2_frame:
+          Value: true
+        depth_camera_rear_lower_infra2_optical_frame:
+          Value: true
+        depth_camera_rear_upper_camera:
+          Value: true
+        depth_camera_rear_upper_camera_parent:
+          Value: true
+        depth_camera_rear_upper_depth_frame:
+          Value: true
+        depth_camera_rear_upper_depth_optical_frame:
+          Value: true
+        depth_camera_rear_upper_infra1_frame:
+          Value: true
+        depth_camera_rear_upper_infra1_optical_frame:
+          Value: true
+        depth_camera_rear_upper_infra2_frame:
+          Value: true
+        depth_camera_rear_upper_infra2_optical_frame:
+          Value: true
+        depth_camera_right_camera:
+          Value: true
+        depth_camera_right_camera_parent:
+          Value: true
+        depth_camera_right_depth_frame:
+          Value: true
+        depth_camera_right_depth_optical_frame:
+          Value: true
+        depth_camera_right_infra1_frame:
+          Value: true
+        depth_camera_right_infra1_optical_frame:
+          Value: true
+        depth_camera_right_infra2_frame:
+          Value: true
+        depth_camera_right_infra2_optical_frame:
+          Value: true
+        dlio_map:
+          Value: true
+        dlio_odom:
+          Value: true
+        docking_socket:
+          Value: true
+        enu_origin:
+          Value: true
+        face_front:
+          Value: true
+        face_rear:
+          Value: true
+        face_shell_front:
+          Value: true
+        face_shell_rear:
+          Value: true
+        feetcenter:
+          Value: true
+        footprint:
+          Value: true
+        hatch_shell:
+          Value: true
+        hbc_receiver:
           Value: true
         hdr_base:
           Value: true
@@ -134,7 +369,17 @@ Visualization Manager:
           Value: true
         hesai_model:
           Value: true
+        imu_link:
+          Value: true
         imu_sensor_frame:
+          Value: true
+        laser_odom:
+          Value: true
+        laser_odom_CORRECTED:
+          Value: true
+        lidar:
+          Value: true
+        lidar_parent:
           Value: true
         livox_imu:
           Value: true
@@ -142,11 +387,27 @@ Visualization Manager:
           Value: true
         livox_model:
           Value: true
+        loco_footprint:
+          Value: true
+        map:
+          Value: true
+        odom:
+          Value: true
         prism:
           Value: true
         prism_model:
           Value: true
         stim320_imu:
+          Value: true
+        top_shell:
+          Value: true
+        wide_angle_camera_front_camera:
+          Value: true
+        wide_angle_camera_front_camera_parent:
+          Value: true
+        wide_angle_camera_rear_camera:
+          Value: true
+        wide_angle_camera_rear_camera_parent:
           Value: true
         zed2i_base_link:
           Value: true
@@ -171,77 +432,348 @@ Visualization Manager:
       Show Axes: true
       Show Names: true
       Tree:
-        base:
-          box_base:
-            adis16475_imu:
+        odom:
+          base:
+            LF_HAA_drive:
+              LF_HIP:
+                LF_hip_fixed:
+                  LF_HFE_output:
+                    LF_THIGH:
+                      LF_HFE_drive:
+                        LF_thigh_fixed:
+                          LF_KFE_drive:
+                            LF_SHANK:
+                              LF_shank_fixed:
+                                LF_FOOT:
+                                  {}
+            LH_HAA_drive:
+              LH_HIP:
+                LH_hip_fixed:
+                  LH_HFE_output:
+                    LH_THIGH:
+                      LH_HFE_drive:
+                        LH_thigh_fixed:
+                          LH_KFE_drive:
+                            LH_SHANK:
+                              LH_shank_fixed:
+                                LH_FOOT:
+                                  {}
+            RF_HAA_drive:
+              RF_HIP:
+                RF_hip_fixed:
+                  RF_HFE_output:
+                    RF_THIGH:
+                      RF_HFE_drive:
+                        RF_thigh_fixed:
+                          RF_KFE_drive:
+                            RF_SHANK:
+                              RF_shank_fixed:
+                                RF_FOOT:
+                                  {}
+            RH_HAA_drive:
+              RH_HIP:
+                RH_hip_fixed:
+                  RH_HFE_output:
+                    RH_THIGH:
+                      RH_HFE_drive:
+                        RH_thigh_fixed:
+                          RH_KFE_drive:
+                            RH_SHANK:
+                              RH_shank_fixed:
+                                RH_FOOT:
+                                  {}
+            base_inertia:
               {}
-            alphasense_base:
-              cam1_sensor_frame:
-                alphasense_front_center:
-                  {}
-              cam2_sensor_frame:
-                alphasense_front_right:
-                  {}
-              cam3_sensor_frame:
-                alphasense_front_left:
-                  {}
-              cam4_sensor_frame:
-                alphasense_left:
-                  {}
-              cam5_sensor_frame:
-                alphasense_right:
-                  {}
-            ap20_imu:
+            battery:
               {}
-            cpt7_imu:
-              cpt7_antenna_back:
-                {}
-              cpt7_antenna_front:
-                {}
-            hdr_base:
-              hdr_front:
-                {}
-              hdr_left:
-                {}
-              hdr_right:
-                {}
-            hesai_lidar:
-              hesai_model:
-                {}
-            imu_sensor_frame:
+            body_top:
               {}
-            livox_lidar:
-              livox_imu:
+            bottom_shell:
+              {}
+            box_base:
+              adis16475_imu:
                 {}
-              livox_model:
+              alphasense_base:
+                cam1_sensor_frame:
+                  alphasense_front_center:
+                    {}
+                cam2_sensor_frame:
+                  alphasense_front_right:
+                    {}
+                cam3_sensor_frame:
+                  alphasense_front_left:
+                    {}
+                cam4_sensor_frame:
+                  alphasense_left:
+                    {}
+                cam5_sensor_frame:
+                  alphasense_right:
+                    {}
+              ap20_imu:
                 {}
-            prism:
-              prism_model:
+              cpt7_imu:
+                cpt7_antenna_back:
+                  {}
+                cpt7_antenna_front:
+                  {}
+              enu_origin:
                 {}
-            stim320_imu:
-              box_base_model:
+              hdr_base:
+                hdr_front:
+                  {}
+                hdr_left:
+                  {}
+                hdr_right:
+                  {}
+              hesai_lidar:
+                dlio_map:
+                  {}
+                dlio_odom:
+                  {}
+                hesai_model:
+                  {}
+              imu_sensor_frame:
                 {}
-            zed_base_link:
-              zed2i_base_link:
-                zed2i_camera_center:
-                  zed2i_left_camera_frame:
-                    zed2i_imu_link:
+              livox_lidar:
+                livox_imu:
+                  {}
+                livox_model:
+                  {}
+              prism:
+                prism_model:
+                  {}
+              stim320_imu:
+                box_base_model:
+                  {}
+              zed_base_link:
+                zed2i_base_link:
+                  zed2i_camera_center:
+                    zed2i_left_camera_frame:
+                      zed2i_imu_link:
+                        {}
+                      zed2i_left_camera_optical_frame:
+                        zed2i_right_camera_optical_frame:
+                          zed2i_right_camera_frame:
+                            {}
+            cpt7_antenna_back_model:
+              {}
+            depth_camera_left_camera:
+              depth_camera_left_camera_parent:
+                depth_camera_left_depth_frame:
+                  depth_camera_left_depth_optical_frame:
+                    {}
+                depth_camera_left_infra1_frame:
+                  depth_camera_left_infra1_optical_frame:
+                    {}
+                depth_camera_left_infra2_frame:
+                  depth_camera_left_infra2_optical_frame:
+                    {}
+            depth_camera_right_camera:
+              depth_camera_right_camera_parent:
+                depth_camera_right_depth_frame:
+                  depth_camera_right_depth_optical_frame:
+                    {}
+                depth_camera_right_infra1_frame:
+                  depth_camera_right_infra1_optical_frame:
+                    {}
+                depth_camera_right_infra2_frame:
+                  depth_camera_right_infra2_optical_frame:
+                    {}
+            docking_socket:
+              {}
+            face_front:
+              depth_camera_front_lower_camera:
+                depth_camera_front_lower_camera_parent:
+                  depth_camera_front_lower_depth_frame:
+                    depth_camera_front_lower_depth_optical_frame:
                       {}
-                    zed2i_left_camera_optical_frame:
-                      zed2i_right_camera_optical_frame:
-                        zed2i_right_camera_frame:
-                          {}
+                  depth_camera_front_lower_infra1_frame:
+                    depth_camera_front_lower_infra1_optical_frame:
+                      {}
+                  depth_camera_front_lower_infra2_frame:
+                    depth_camera_front_lower_infra2_optical_frame:
+                      {}
+              depth_camera_front_upper_camera:
+                depth_camera_front_upper_camera_parent:
+                  depth_camera_front_upper_depth_frame:
+                    depth_camera_front_upper_depth_optical_frame:
+                      {}
+                  depth_camera_front_upper_infra1_frame:
+                    depth_camera_front_upper_infra1_optical_frame:
+                      {}
+                  depth_camera_front_upper_infra2_frame:
+                    depth_camera_front_upper_infra2_optical_frame:
+                      {}
+              face_shell_front:
+                {}
+              wide_angle_camera_front_camera:
+                wide_angle_camera_front_camera_parent:
+                  {}
+            face_rear:
+              depth_camera_rear_lower_camera:
+                depth_camera_rear_lower_camera_parent:
+                  depth_camera_rear_lower_depth_frame:
+                    depth_camera_rear_lower_depth_optical_frame:
+                      {}
+                  depth_camera_rear_lower_infra1_frame:
+                    depth_camera_rear_lower_infra1_optical_frame:
+                      {}
+                  depth_camera_rear_lower_infra2_frame:
+                    depth_camera_rear_lower_infra2_optical_frame:
+                      {}
+              depth_camera_rear_upper_camera:
+                depth_camera_rear_upper_camera_parent:
+                  depth_camera_rear_upper_depth_frame:
+                    depth_camera_rear_upper_depth_optical_frame:
+                      {}
+                  depth_camera_rear_upper_infra1_frame:
+                    depth_camera_rear_upper_infra1_optical_frame:
+                      {}
+                  depth_camera_rear_upper_infra2_frame:
+                    depth_camera_rear_upper_infra2_optical_frame:
+                      {}
+              face_shell_rear:
+                {}
+              wide_angle_camera_rear_camera:
+                wide_angle_camera_rear_camera_parent:
+                  {}
+            hatch_shell:
+              {}
+            hbc_receiver:
+              {}
+            imu_link:
+              {}
+            lidar_parent:
+              lidar:
+                {}
+            top_shell:
+              {}
+          control:
+            {}
+          feetcenter:
+            {}
+          footprint:
+            {}
+          loco_footprint:
+            {}
+          map:
+            camera_init_CORRECTED:
+              aft_mapped_to_init_CORRECTED:
+                {}
+              camera_CORRECTED:
+                {}
+              camera_init:
+                aft_mapped:
+                  {}
+                camera:
+                  {}
+                laser_odom:
+                  {}
+              camera_init_GRAVITY_ALIGNED:
+                {}
+              laser_odom_CORRECTED:
+                {}
       Update Interval: 0
       Value: true
     - Class: rviz/TF
       Enabled: true
-      Filter (blacklist): ""
-      Filter (whitelist): ""
       Frame Timeout: 15
       Frames:
         All Enabled: false
+        LF_FOOT:
+          Value: true
+        LF_HAA_drive:
+          Value: true
+        LF_HFE_drive:
+          Value: true
+        LF_HFE_output:
+          Value: true
+        LF_HIP:
+          Value: true
+        LF_KFE_drive:
+          Value: true
+        LF_SHANK:
+          Value: true
+        LF_THIGH:
+          Value: true
+        LF_hip_fixed:
+          Value: true
+        LF_shank_fixed:
+          Value: true
+        LF_thigh_fixed:
+          Value: true
+        LH_FOOT:
+          Value: true
+        LH_HAA_drive:
+          Value: true
+        LH_HFE_drive:
+          Value: true
+        LH_HFE_output:
+          Value: true
+        LH_HIP:
+          Value: true
+        LH_KFE_drive:
+          Value: true
+        LH_SHANK:
+          Value: true
+        LH_THIGH:
+          Value: true
+        LH_hip_fixed:
+          Value: true
+        LH_shank_fixed:
+          Value: true
+        LH_thigh_fixed:
+          Value: true
+        RF_FOOT:
+          Value: true
+        RF_HAA_drive:
+          Value: true
+        RF_HFE_drive:
+          Value: true
+        RF_HFE_output:
+          Value: true
+        RF_HIP:
+          Value: true
+        RF_KFE_drive:
+          Value: true
+        RF_SHANK:
+          Value: true
+        RF_THIGH:
+          Value: true
+        RF_hip_fixed:
+          Value: true
+        RF_shank_fixed:
+          Value: true
+        RF_thigh_fixed:
+          Value: true
+        RH_FOOT:
+          Value: true
+        RH_HAA_drive:
+          Value: true
+        RH_HFE_drive:
+          Value: true
+        RH_HFE_output:
+          Value: true
+        RH_HIP:
+          Value: true
+        RH_KFE_drive:
+          Value: true
+        RH_SHANK:
+          Value: true
+        RH_THIGH:
+          Value: true
+        RH_hip_fixed:
+          Value: true
+        RH_shank_fixed:
+          Value: true
+        RH_thigh_fixed:
+          Value: true
         adis16475_imu:
           Value: false
+        aft_mapped:
+          Value: true
+        aft_mapped_to_init_CORRECTED:
+          Value: true
         alphasense_base:
           Value: false
         alphasense_front_center:
@@ -258,6 +790,14 @@ Visualization Manager:
           Value: false
         base:
           Value: false
+        base_inertia:
+          Value: true
+        battery:
+          Value: true
+        body_top:
+          Value: true
+        bottom_shell:
+          Value: true
         box_base:
           Value: true
         box_base_model:
@@ -272,12 +812,146 @@ Visualization Manager:
           Value: false
         cam5_sensor_frame:
           Value: false
+        camera:
+          Value: true
+        camera_CORRECTED:
+          Value: true
+        camera_init:
+          Value: true
+        camera_init_CORRECTED:
+          Value: true
+        camera_init_GRAVITY_ALIGNED:
+          Value: true
+        control:
+          Value: true
         cpt7_antenna_back:
           Value: false
+        cpt7_antenna_back_model:
+          Value: true
         cpt7_antenna_front:
           Value: false
         cpt7_imu:
           Value: false
+        depth_camera_front_lower_camera:
+          Value: true
+        depth_camera_front_lower_camera_parent:
+          Value: true
+        depth_camera_front_lower_depth_frame:
+          Value: true
+        depth_camera_front_lower_depth_optical_frame:
+          Value: true
+        depth_camera_front_lower_infra1_frame:
+          Value: true
+        depth_camera_front_lower_infra1_optical_frame:
+          Value: true
+        depth_camera_front_lower_infra2_frame:
+          Value: true
+        depth_camera_front_lower_infra2_optical_frame:
+          Value: true
+        depth_camera_front_upper_camera:
+          Value: true
+        depth_camera_front_upper_camera_parent:
+          Value: true
+        depth_camera_front_upper_depth_frame:
+          Value: true
+        depth_camera_front_upper_depth_optical_frame:
+          Value: true
+        depth_camera_front_upper_infra1_frame:
+          Value: true
+        depth_camera_front_upper_infra1_optical_frame:
+          Value: true
+        depth_camera_front_upper_infra2_frame:
+          Value: true
+        depth_camera_front_upper_infra2_optical_frame:
+          Value: true
+        depth_camera_left_camera:
+          Value: true
+        depth_camera_left_camera_parent:
+          Value: true
+        depth_camera_left_depth_frame:
+          Value: true
+        depth_camera_left_depth_optical_frame:
+          Value: true
+        depth_camera_left_infra1_frame:
+          Value: true
+        depth_camera_left_infra1_optical_frame:
+          Value: true
+        depth_camera_left_infra2_frame:
+          Value: true
+        depth_camera_left_infra2_optical_frame:
+          Value: true
+        depth_camera_rear_lower_camera:
+          Value: true
+        depth_camera_rear_lower_camera_parent:
+          Value: true
+        depth_camera_rear_lower_depth_frame:
+          Value: true
+        depth_camera_rear_lower_depth_optical_frame:
+          Value: true
+        depth_camera_rear_lower_infra1_frame:
+          Value: true
+        depth_camera_rear_lower_infra1_optical_frame:
+          Value: true
+        depth_camera_rear_lower_infra2_frame:
+          Value: true
+        depth_camera_rear_lower_infra2_optical_frame:
+          Value: true
+        depth_camera_rear_upper_camera:
+          Value: true
+        depth_camera_rear_upper_camera_parent:
+          Value: true
+        depth_camera_rear_upper_depth_frame:
+          Value: true
+        depth_camera_rear_upper_depth_optical_frame:
+          Value: true
+        depth_camera_rear_upper_infra1_frame:
+          Value: true
+        depth_camera_rear_upper_infra1_optical_frame:
+          Value: true
+        depth_camera_rear_upper_infra2_frame:
+          Value: true
+        depth_camera_rear_upper_infra2_optical_frame:
+          Value: true
+        depth_camera_right_camera:
+          Value: true
+        depth_camera_right_camera_parent:
+          Value: true
+        depth_camera_right_depth_frame:
+          Value: true
+        depth_camera_right_depth_optical_frame:
+          Value: true
+        depth_camera_right_infra1_frame:
+          Value: true
+        depth_camera_right_infra1_optical_frame:
+          Value: true
+        depth_camera_right_infra2_frame:
+          Value: true
+        depth_camera_right_infra2_optical_frame:
+          Value: true
+        dlio_map:
+          Value: true
+        dlio_odom:
+          Value: true
+        docking_socket:
+          Value: true
+        enu_origin:
+          Value: true
+        face_front:
+          Value: true
+        face_rear:
+          Value: true
+        face_shell_front:
+          Value: true
+        face_shell_rear:
+          Value: true
+        feetcenter:
+          Value: true
+        footprint:
+          Value: true
+        hatch_shell:
+          Value: true
+        hbc_receiver:
+          Value: true
         hdr_base:
           Value: false
         hdr_front:
@@ -290,20 +964,46 @@ Visualization Manager:
           Value: false
         hesai_model:
           Value: false
+        imu_link:
+          Value: true
         imu_sensor_frame:
           Value: false
+        laser_odom:
+          Value: true
+        laser_odom_CORRECTED:
+          Value: true
+        lidar:
+          Value: true
+        lidar_parent:
+          Value: true
         livox_imu:
           Value: false
         livox_lidar:
           Value: false
         livox_model:
           Value: false
+        loco_footprint:
+          Value: true
+        map:
+          Value: true
+        odom:
+          Value: true
         prism:
           Value: false
         prism_model:
           Value: false
         stim320_imu:
           Value: false
+        top_shell:
+          Value: true
+        wide_angle_camera_front_camera:
+          Value: true
+        wide_angle_camera_front_camera_parent:
+          Value: true
+        wide_angle_camera_rear_camera:
+          Value: true
+        wide_angle_camera_rear_camera_parent:
+          Value: true
         zed2i_base_link:
           Value: false
         zed2i_camera_center:
@@ -327,66 +1027,247 @@ Visualization Manager:
       Show Axes: true
       Show Names: true
       Tree:
-        base:
-          box_base:
-            adis16475_imu:
+        odom:
+          base:
+            LF_HAA_drive:
+              LF_HIP:
+                LF_hip_fixed:
+                  LF_HFE_output:
+                    LF_THIGH:
+                      LF_HFE_drive:
+                        LF_thigh_fixed:
+                          LF_KFE_drive:
+                            LF_SHANK:
+                              LF_shank_fixed:
+                                LF_FOOT:
+                                  {}
+            LH_HAA_drive:
+              LH_HIP:
+                LH_hip_fixed:
+                  LH_HFE_output:
+                    LH_THIGH:
+                      LH_HFE_drive:
+                        LH_thigh_fixed:
+                          LH_KFE_drive:
+                            LH_SHANK:
+                              LH_shank_fixed:
+                                LH_FOOT:
+                                  {}
+            RF_HAA_drive:
+              RF_HIP:
+                RF_hip_fixed:
+                  RF_HFE_output:
+                    RF_THIGH:
+                      RF_HFE_drive:
+                        RF_thigh_fixed:
+                          RF_KFE_drive:
+                            RF_SHANK:
+                              RF_shank_fixed:
+                                RF_FOOT:
+                                  {}
+            RH_HAA_drive:
+              RH_HIP:
+                RH_hip_fixed:
+                  RH_HFE_output:
+                    RH_THIGH:
+                      RH_HFE_drive:
+                        RH_thigh_fixed:
+                          RH_KFE_drive:
+                            RH_SHANK:
+                              RH_shank_fixed:
+                                RH_FOOT:
+                                  {}
+            base_inertia:
               {}
-            alphasense_base:
-              cam1_sensor_frame:
-                alphasense_front_center:
-                  {}
-              cam2_sensor_frame:
-                alphasense_front_right:
-                  {}
-              cam3_sensor_frame:
-                alphasense_front_left:
-                  {}
-              cam4_sensor_frame:
-                alphasense_left:
-                  {}
-              cam5_sensor_frame:
-                alphasense_right:
-                  {}
-            ap20_imu:
+            battery:
               {}
-            cpt7_imu:
-              cpt7_antenna_back:
-                {}
-              cpt7_antenna_front:
-                {}
-            hdr_base:
-              hdr_front:
-                {}
-              hdr_left:
-                {}
-              hdr_right:
-                {}
-            hesai_lidar:
-              hesai_model:
-                {}
-            imu_sensor_frame:
+            body_top:
               {}
-            livox_lidar:
-              livox_imu:
+            bottom_shell:
+              {}
+            box_base:
+              adis16475_imu:
                 {}
-              livox_model:
+              alphasense_base:
+                cam1_sensor_frame:
+                  alphasense_front_center:
+                    {}
+                cam2_sensor_frame:
+                  alphasense_front_right:
+                    {}
+                cam3_sensor_frame:
+                  alphasense_front_left:
+                    {}
+                cam4_sensor_frame:
+                  alphasense_left:
+                    {}
+                cam5_sensor_frame:
+                  alphasense_right:
+                    {}
+              ap20_imu:
                 {}
-            prism:
-              prism_model:
+              cpt7_imu:
+                cpt7_antenna_back:
+                  {}
+                cpt7_antenna_front:
+                  {}
+              enu_origin:
                 {}
-            stim320_imu:
-              box_base_model:
+              hdr_base:
+                hdr_front:
+                  {}
+                hdr_left:
+                  {}
+                hdr_right:
+                  {}
+              hesai_lidar:
+                dlio_map:
+                  {}
+                dlio_odom:
+                  {}
+                hesai_model:
+                  {}
+              imu_sensor_frame:
                 {}
-            zed_base_link:
-              zed2i_base_link:
-                zed2i_camera_center:
-                  zed2i_left_camera_frame:
-                    zed2i_imu_link:
+              livox_lidar:
+                livox_imu:
+                  {}
+                livox_model:
+                  {}
+              prism:
+                prism_model:
+                  {}
+              stim320_imu:
+                box_base_model:
+                  {}
+              zed_base_link:
+                zed2i_base_link:
+                  zed2i_camera_center:
+                    zed2i_left_camera_frame:
+                      zed2i_imu_link:
+                        {}
+                      zed2i_left_camera_optical_frame:
+                        zed2i_right_camera_optical_frame:
+                          zed2i_right_camera_frame:
+                            {}
+            cpt7_antenna_back_model:
+              {}
+            depth_camera_left_camera:
+              depth_camera_left_camera_parent:
+                depth_camera_left_depth_frame:
+                  depth_camera_left_depth_optical_frame:
+                    {}
+                depth_camera_left_infra1_frame:
+                  depth_camera_left_infra1_optical_frame:
+                    {}
+                depth_camera_left_infra2_frame:
+                  depth_camera_left_infra2_optical_frame:
+                    {}
+            depth_camera_right_camera:
+              depth_camera_right_camera_parent:
+                depth_camera_right_depth_frame:
+                  depth_camera_right_depth_optical_frame:
+                    {}
+                depth_camera_right_infra1_frame:
+                  depth_camera_right_infra1_optical_frame:
+                    {}
+                depth_camera_right_infra2_frame:
+                  depth_camera_right_infra2_optical_frame:
+                    {}
+            docking_socket:
+              {}
+            face_front:
+              depth_camera_front_lower_camera:
+                depth_camera_front_lower_camera_parent:
+                  depth_camera_front_lower_depth_frame:
+                    depth_camera_front_lower_depth_optical_frame:
                       {}
-                    zed2i_left_camera_optical_frame:
-                      zed2i_right_camera_optical_frame:
-                        zed2i_right_camera_frame:
-                          {}
+                  depth_camera_front_lower_infra1_frame:
+                    depth_camera_front_lower_infra1_optical_frame:
+                      {}
+                  depth_camera_front_lower_infra2_frame:
+                    depth_camera_front_lower_infra2_optical_frame:
+                      {}
+              depth_camera_front_upper_camera:
+                depth_camera_front_upper_camera_parent:
+                  depth_camera_front_upper_depth_frame:
+                    depth_camera_front_upper_depth_optical_frame:
+                      {}
+                  depth_camera_front_upper_infra1_frame:
+                    depth_camera_front_upper_infra1_optical_frame:
+                      {}
+                  depth_camera_front_upper_infra2_frame:
+                    depth_camera_front_upper_infra2_optical_frame:
+                      {}
+              face_shell_front:
+                {}
+              wide_angle_camera_front_camera:
+                wide_angle_camera_front_camera_parent:
+                  {}
+            face_rear:
+              depth_camera_rear_lower_camera:
+                depth_camera_rear_lower_camera_parent:
+                  depth_camera_rear_lower_depth_frame:
+                    depth_camera_rear_lower_depth_optical_frame:
+                      {}
+                  depth_camera_rear_lower_infra1_frame:
+                    depth_camera_rear_lower_infra1_optical_frame:
+                      {}
+                  depth_camera_rear_lower_infra2_frame:
+                    depth_camera_rear_lower_infra2_optical_frame:
+                      {}
+              depth_camera_rear_upper_camera:
+                depth_camera_rear_upper_camera_parent:
+                  depth_camera_rear_upper_depth_frame:
+                    depth_camera_rear_upper_depth_optical_frame:
+                      {}
+                  depth_camera_rear_upper_infra1_frame:
+                    depth_camera_rear_upper_infra1_optical_frame:
+                      {}
+                  depth_camera_rear_upper_infra2_frame:
+                    depth_camera_rear_upper_infra2_optical_frame:
+                      {}
+              face_shell_rear:
+                {}
+              wide_angle_camera_rear_camera:
+                wide_angle_camera_rear_camera_parent:
+                  {}
+            hatch_shell:
+              {}
+            hbc_receiver:
+              {}
+            imu_link:
+              {}
+            lidar_parent:
+              lidar:
+                {}
+            top_shell:
+              {}
+          control:
+            {}
+          feetcenter:
+            {}
+          footprint:
+            {}
+          loco_footprint:
+            {}
+          map:
+            camera_init_CORRECTED:
+              aft_mapped_to_init_CORRECTED:
+                {}
+              camera_CORRECTED:
+                {}
+              camera_init:
+                aft_mapped:
+                  {}
+                camera:
+                  {}
+                laser_odom:
+                  {}
+              camera_init_GRAVITY_ALIGNED:
+                {}
+              laser_odom_CORRECTED:
+                {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -468,6 +1349,11 @@ Visualization Manager:
           Alpha: 1
           Show Axes: false
           Show Trail: false
+        cpt7_antenna_back_model:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         cpt7_antenna_front:
           Alpha: 1
           Show Axes: false
@@ -496,11 +1382,6 @@ Visualization Manager:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        hesai_model:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
         imu_sensor_frame:
           Alpha: 1
           Show Axes: false
@@ -513,11 +1394,6 @@ Visualization Manager:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        livox_model:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
         prism:
           Alpha: 1
           Show Axes: false
@@ -631,7 +1507,7 @@ Visualization Manager:
           Transport Hint: compressed
           Unreliable: false
           Value: true
-      Enabled: false
+      Enabled: true
       Name: Alphasense
     - Class: rviz/Group
       Displays:
@@ -967,7 +1843,7 @@ Visualization Manager:
   Global Options:
     Background Color: 0; 0; 0
     Default Light: true
-    Fixed Frame: zed2i_odom
+    Fixed Frame: dlio_map
     Frame Rate: 30
   Name: root
   Tools:
@@ -995,7 +1871,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 20.379709243774414
+      Distance: 30.860694885253906
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -1057,7 +1933,7 @@ Window Geometry:
   Height: 2096
   Hide Left Dock: false
   Hide Right Dock: false
-  QMainWindow State: 000000ff00000000fd0000000400000000000001ea000005bbfc020000001cfb000000100044006900730070006c006100790073010000003d000005bb000000c900fffffffb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb0000001a004b0069006e006500630074002000430061006d0065007200610000000191000001010000000000000000fb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000a0056006900650077007302000004c000000196000001d000000134fb000000100044006900730070006c006100790073000000030100000135000000c900fffffffb0000001a004b0069006e006500630074002000430061006d0065007200610000000000ffffffff0000000000000000fb0000000c00430061006d00650072006100000001d20000007c0000000000000000fb00000016005a006f006f006d002000430061006d0065007200610100000131000000160000000000000000fb0000001c0054006800650072006d0061006c002000430061006d006500720061010000014d000000160000000000000000fb0000001a0042006c00610063006b0066006c0079002000720065006100720000000000ffffffff0000000000000000fb0000001c0042006c00610063006b0066006c0079002000660072006f006e00740000000000ffffffff0000000000000000fb0000000a0049006d00610067006502000008c00000019100000280000001e0fb0000000a0049006d006100670065000000006e000003cd0000000000000000fb0000000a0049006d00610067006502000005b40000033b00000280000001e0fb0000000a0049006d006100670065000000006e000008b60000000000000000fb0000000a0049006d006100670065000000006e000008b60000000000000000fb0000000a0049006d006100670065000000006e000008b60000000000000000fb0000000a0049006d006100670065000000006e000007f20000000000000000fb0000000a0049006d006100670065000000003d000004580000000000000000fb0000000a0049006d006100670065000000003d000004580000000000000000fb0000000a0049006d006100670065000000003d000004580000000000000000fb0000000a0049006d0061006700650000000442000000b30000000000000000fb0000000a0049006d00610067006501000004d600000122000000000000000000000001000001b9000005bbfc020000000dfb0000001e0041006c00700068006100730065006e007300650020004c006500660074010000003d000001ce0000001600fffffffb0000002a0041006c00700068006100730065006e00730065002000460072006f006e00740020004c0065006600740100000211000000f70000001600fffffffb0000002e0041006c00700068006100730065006e00730065002000460072006f006e00740020004d006900640064006c0065010000030e000000b70000001600fffffffb0000002c0041006c00700068006100730065006e00730065002000460072006f006e007400200052006900670068007401000003cb0000011c0000001600fffffffb000000200041006c00700068006100730065006e0073006500200052006900670068007401000004ed0000010b0000001600fffffffb0000001e0054006f006f006c002000500072006f0070006500720074006900650073000000003c000000b80000005c00fffffffc0000003d000002b70000000000fffffffa000000000100000003fb00000012005000610074006800500061006e0065006c0000000000ffffffff0000000000000000fb00000012005000610074006800500061006e0065006c0100000000ffffffff0000000000000000fb0000000a0056006900650077007300000004ba000001720000010000fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b20000000000000000fb000000140046006500650064006200610063006b00200031000000003d000000360000000000000000fb000000140046006500650064006200610063006b002000340000000079000000360000000000000000fb000000140046006500650064006200610063006b0020003300000000b5000000360000000000000000fb000000140046006500650064006200610063006b0020003200000000f1000000360000000000000000fb0000000c0052006500730075006c0074000000012d0000003600000000000000000000000200000f9a00000182fc0100000001fb0000001e0054006f006f006c002000500072006f007000650072007400690065007300000000000000075a00000000000000000000000300000eb800000215fc0100000017fb0000001e0041006c00700068006100730065006e007300650020004c0065006600740000000000000000ba000000ba00fffffffb0000001e0041006c00700068006100730065006e007300650020004c0065006600740100000000000000a80000000000000000fb0000002a0041006c00700068006100730065006e00730065002000460072006f006e00740020004c00650066007400000000c0000000e2000000e200fffffffb0000002e0041006c00700068006100730065006e00730065002000460072006f006e00740020004d006900640064006c006500000001a8000000f5000000f500fffffffb0000002c0041006c00700068006100730065006e00730065002000460072006f006e007400200052006900670068007400000002a3000000eb000000eb00fffffffb000000200041006c00700068006100730065006e007300650020005200690067006800740000000394000000c2000000c200fffffffb00000012004800440052002000460072006f006e007400000003e4000000fb0000000000000000fb000000140048004400520020004d006900640064006c00650100000697000001540000000000000000fb0000001200480044005200200052006900670068007400000004e5000000880000000000000000fb00000014005a00450044003200690020004c0065006600740000000000000001b00000009400fffffffb00000016005a004500440032006900200052006900670068007400000001b6000001c60000009c00fffffffb00000014005a00450044003200690020004c0065006600740100000000000002690000009400fffffffb00000016005a0045004400320069002000520069006700680074010000026f0000028b0000009c00fffffffb0000001e0048004400520020004c006500660074002000280052004f005300320029010000050000000314000000bd00fffffffb000000100048004400520020004c006500660074000000072a0000011d0000000000000000fb000000100048004400520020004c0065006600740000000d43000002880000000000000000fb00000022004800440052002000430065006e007400650072002000280052004f005300320029010000081a0000035f000000cf00fffffffb00000020004800440052002000520049006700680074002000280052004f0053003200290100000b7f00000339000000c600fffffffb0000000a0049006d0061006700650100000ae6000001d10000000000000000fb0000000a0049006d0061006700650100000cc3000002c40000000000000000fb0000000a0049006d0061006700650100000f930000021a0000000000000000fb0000000800540069006d006500000007790000073f0000041800fffffffb0000000800540069006d0065010000000000000450000000000000000000000b09000005bb00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd0000000400000000000001ea000005bbfc020000001cfb000000100044006900730070006c006100790073010000003d000005bb000000c900fffffffb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb0000001a004b0069006e006500630074002000430061006d0065007200610000000191000001010000000000000000fb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000a0056006900650077007302000004c000000196000001d000000134fb000000100044006900730070006c006100790073000000030100000135000000c900fffffffb0000001a004b0069006e006500630074002000430061006d0065007200610000000000ffffffff0000000000000000fb0000000c00430061006d00650072006100000001d20000007c0000000000000000fb00000016005a006f006f006d002000430061006d0065007200610100000131000000160000000000000000fb0000001c0054006800650072006d0061006c002000430061006d006500720061010000014d000000160000000000000000fb0000001a0042006c00610063006b0066006c0079002000720065006100720000000000ffffffff0000000000000000fb0000001c0042006c00610063006b0066006c0079002000660072006f006e00740000000000ffffffff0000000000000000fb0000000a0049006d00610067006502000008c00000019100000280000001e0fb0000000a0049006d006100670065000000006e000003cd0000000000000000fb0000000a0049006d00610067006502000005b40000033b00000280000001e0fb0000000a0049006d006100670065000000006e000008b60000000000000000fb0000000a0049006d006100670065000000006e000008b60000000000000000fb0000000a0049006d006100670065000000006e000008b60000000000000000fb0000000a0049006d006100670065000000006e000007f20000000000000000fb0000000a0049006d006100670065000000003d000004580000000000000000fb0000000a0049006d006100670065000000003d000004580000000000000000fb0000000a0049006d006100670065000000003d000004580000000000000000fb0000000a0049006d0061006700650000000442000000b30000000000000000fb0000000a0049006d00610067006501000004d600000122000000000000000000000001000001b9000005bbfc020000000dfb0000001e0041006c00700068006100730065006e007300650020004c006500660074010000003d000001ce0000001600fffffffb0000002a0041006c00700068006100730065006e00730065002000460072006f006e00740020004c0065006600740100000211000000f80000001600fffffffb0000002e0041006c00700068006100730065006e00730065002000460072006f006e00740020004d006900640064006c0065010000030f000000b60000001600fffffffb0000002c0041006c00700068006100730065006e00730065002000460072006f006e007400200052006900670068007401000003cb0000011c0000001600fffffffb000000200041006c00700068006100730065006e0073006500200052006900670068007401000004ed0000010b0000001600fffffffb0000001e0054006f006f006c002000500072006f0070006500720074006900650073000000003c000000b80000005c00fffffffc0000003d000002b70000000000fffffffa000000000100000003fb00000012005000610074006800500061006e0065006c0000000000ffffffff0000000000000000fb00000012005000610074006800500061006e0065006c0100000000ffffffff0000000000000000fb0000000a0056006900650077007300000004ba000001720000010000fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b20000000000000000fb000000140046006500650064006200610063006b00200031000000003d000000360000000000000000fb000000140046006500650064006200610063006b002000340000000079000000360000000000000000fb000000140046006500650064006200610063006b0020003300000000b5000000360000000000000000fb000000140046006500650064006200610063006b0020003200000000f1000000360000000000000000fb0000000c0052006500730075006c0074000000012d0000003600000000000000000000000200000f9a00000182fc0100000001fb0000001e0054006f006f006c002000500072006f007000650072007400690065007300000000000000075a00000000000000000000000300000a1200000215fc0100000017fb0000001e0041006c00700068006100730065006e007300650020004c0065006600740100000000000000b6000000a200fffffffb0000001e0041006c00700068006100730065006e007300650020004c0065006600740100000000000000a80000000000000000fb0000002a0041006c00700068006100730065006e00730065002000460072006f006e00740020004c00650066007401000000bc000000e3000000ca00fffffffb0000002e0041006c00700068006100730065006e00730065002000460072006f006e00740020004d006900640064006c006501000001a5000000f9000000dd00fffffffb0000002c0041006c00700068006100730065006e00730065002000460072006f006e007400200052006900670068007401000002a4000000ed000000d300fffffffb000000200041006c00700068006100730065006e007300650020005200690067006800740100000397000000bf000000aa00fffffffb00000012004800440052002000460072006f006e007400000003e4000000fb0000000000000000fb000000140048004400520020004d006900640064006c00650100000697000001540000000000000000fb0000001200480044005200200052006900670068007400000004e5000000880000000000000000fb00000014005a00450044003200690020004c006500660074010000045c000001e60000007c00fffffffb00000016005a004500440032006900200052006900670068007401000006480000016d0000008400fffffffb00000014005a00450044003200690020004c00650066007400000006e5000000820000007c00fffffffb00000016005a0045004400320069002000520069006700680074000000076d000000890000008400fffffffb0000001e0048004400520020004c006500660074002000280052004f00530032002901000007bb000000ba000000a500fffffffb000000100048004400520020004c006500660074000000072a0000011d0000000000000000fb000000100048004400520020004c0065006600740000000d43000002880000000000000000fb00000022004800440052002000430065006e007400650072002000280052004f005300320029010000087b000000cd000000b700fffffffb00000020004800440052002000520049006700680074002000280052004f005300320029010000094e000000c4000000ae00fffffffb0000000a0049006d0061006700650100000ae6000001d10000000000000000fb0000000a0049006d0061006700650100000cc3000002c40000000000000000fb0000000a0049006d0061006700650100000f930000021a0000000000000000fb0000000800540069006d006500000007790000073f000004f300fffffffb0000000800540069006d0065010000000000000450000000000000000000000663000005bb00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -1066,7 +1942,7 @@ Window Geometry:
     collapsed: false
   Views:
     collapsed: false
-  Width: 3768
+  Width: 2578
   X: 72
   Y: 27
   ZED2i Left:

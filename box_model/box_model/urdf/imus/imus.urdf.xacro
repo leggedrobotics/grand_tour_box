@@ -67,17 +67,6 @@
     <child link="stim320_imu" />
   </joint>
 
-  <joint name="stim320_imu_to_box_base_model" type="fixed">
-    <origin xyz=" ${calib['stim320_imu_to_box_base_model']['x']}
-                  ${calib['stim320_imu_to_box_base_model']['y']}
-                  ${calib['stim320_imu_to_box_base_model']['z']}"
-            rpy=" ${calib['stim320_imu_to_box_base_model']['roll']}
-                  ${calib['stim320_imu_to_box_base_model']['pitch']}
-                  ${calib['stim320_imu_to_box_base_model']['yaw']}" />
-    <parent link="stim320_imu" />
-    <child link="box_base_model" />
-  </joint>
-
   <!-- IMU ADIS16475 -->
   <link name="adis16475_imu" />
   <joint name="box_base_to_adis16475_imu" type="fixed">

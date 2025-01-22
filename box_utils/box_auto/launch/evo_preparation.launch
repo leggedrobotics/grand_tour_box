@@ -1,0 +1,33 @@
+<launch>
+  <!-- Arguments -->
+
+  <!-- Folder of the bag files -->
+  <arg name="bag_file_directory" default="" />
+
+  <!-- Where the output files will be generated. -->
+  <!-- Be careful that files ending with `.tum` will be cleaned at this folder on every run. -->
+  <arg name="output_folder_path" default="" />
+
+  <!-- Interpolate -->
+  <!-- Whether to attempt /tf based interpolation and tranformation -->
+  <arg name="enable_interpolation" default="false" />
+
+  <!-- Parameters are here -->
+  <arg name="config_path" default="$(find box_auto)/cfg/evo_evaluations.yaml" />
+
+
+  <!-- Mission Prefix -->
+  <arg name="prefix" default="" />
+
+  <!-- Parammmeters are here -->
+  <rosparam file="$(arg config_path)" command="load"/>
+
+  <!-- Cool node -->
+  <node pkg="box_auto" type="evo_conversion_node" name="evo_converter" output="screen" required="true">
+    <param name="bag_file_directory" value="$(arg bag_file_directory)"/>
+    <param name="output_folder_path" value="$(arg output_folder_path)"/>
+    <param name="enable_interpolation" value="$(arg enable_interpolation)"/>
+    <param name="prefix" value="$(arg prefix)"/>
+  </node>
+
+</launch>
