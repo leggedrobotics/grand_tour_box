@@ -68,13 +68,31 @@ bag_topic_pairs:
         reference_file: "ap20_robot"
 
     #
-  - bag: _dlio.bag
+  - bag: _livox_dlio.bag
+    test_name: "dlio_livox"
+    topic: /dlio/lidar_map_odometry
+    frame: livox_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.05
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: "ap20_robot"
+
+    #
+  - bag: _hesai_dlio.bag
     test_name: "dlio_hesai"
     topic: /dlio/lidar_map_odometry
     frame: hesai_lidar
     evaluations:
       parameters:
-        t_max_diff: 0.1
+        t_max_diff: 0.05
         t_offset: 0.0
         n_to_align: -1
         correct_scale: False

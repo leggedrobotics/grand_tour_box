@@ -28,7 +28,12 @@ SETTINGS.plot_show_axis = True
 # magic plot configuration
 import matplotlib.pyplot as plt
 
+mpl.use("Agg")
+mpl.rcParams["agg.path.chunksize"] = 900000000
 plt.rcParams.update({"figure.max_open_warning": 0})
+plt.rcParams.update({"agg.path.chunksize": 9000000})
+
+# mpl.rcParams['patch.antialiased'] = False
 
 
 def run_eval(test_name, reference_file, estimated_file, params, output_path, filter_config, mode):
@@ -108,7 +113,7 @@ def run_eval(test_name, reference_file, estimated_file, params, output_path, fil
         )
     )
     plt.gcf().text(0.5, 0.90, textstr, fontsize=12, ha="center")
-    plt.savefig(output_path + "/time_differences_before_" + test_name + ".png", dpi=400)
+    plt.savefig(output_path + "/time_differences_before_" + test_name + ".png", dpi=300)
     plt.close()
 
     # Filter the trajectories
@@ -182,8 +187,14 @@ def run_eval(test_name, reference_file, estimated_file, params, output_path, fil
     else:
         size_of_elements_before_association = len(traj_estimated.timestamps)
 
-    # Actual association
-    traj_reference, traj_estimated = sync.associate_trajectories(traj_reference, traj_estimated, t_max_diff, t_offset)
+    try:
+        # Actual association
+        traj_reference, traj_estimated = sync.associate_trajectories(
+            traj_reference, traj_estimated, t_max_diff, t_offset
+        )
+    except Exception as e:
+        print(f"\033[91mError in association: {e}\033[0m")
+        return
 
     # Both will have the same size so doesnt matter.
     size_of_elements_after_association = len(traj_reference.timestamps)
@@ -248,7 +259,7 @@ def run_eval(test_name, reference_file, estimated_file, params, output_path, fil
     plt.title("Trajectory Scatter Plot")
     plt.legend()
     plt.grid(True)
-    plt.savefig(output_path + "/scatter_plot_" + test_name + ".png", dpi=400)
+    plt.savefig(output_path + "/scatter_plot_" + test_name + ".png", dpi=300)
     plt.close()
 
     # Plot and save traj_reference.positions_xyz as scatter plot
@@ -282,7 +293,7 @@ def run_eval(test_name, reference_file, estimated_file, params, output_path, fil
     axs[2].grid(True)
 
     plt.tight_layout()
-    plt.savefig(output_path + "/scatter_plot_XYZ_" + test_name + ".png", dpi=400)
+    plt.savefig(output_path + "/scatter_plot_XYZ_" + test_name + ".png", dpi=300)
     plt.close()
 
     fig = plt.figure(figsize=(16, 12))
@@ -321,14 +332,14 @@ def run_eval(test_name, reference_file, estimated_file, params, output_path, fil
     cbar.ax.tick_params(labelsize=25)
     ax.legend(frameon=True)
 
-    fig.savefig(output_path + "/" + save_prefix + "_3d_plot_" + test_name + ".png", dpi=400)
+    fig.savefig(output_path + "/" + save_prefix + "_3d_plot_" + test_name + ".png", dpi=300)
 
     file_interface.save_res_file(
         output_path + "/" + save_prefix + "_results_" + test_name + ".zip", results[0], confirm_overwrite=not True
     )
 
     if mode == "ate":
-        print("ATE Results")
+        print("ATE Results: ")
     if mode == "rte":
         print("RTE Results: ")
     print("Compared_pose_pairs %d pairs" % (len(results[0].np_arrays["error_array"])))
@@ -362,7 +373,7 @@ def run_eval(test_name, reference_file, estimated_file, params, output_path, fil
         xlabel=x_label,
     )
 
-    fig_stats.savefig(output_path + "/" + save_prefix + "_statistics_" + test_name + ".png", dpi=400)
+    fig_stats.savefig(output_path + "/" + save_prefix + "_statistics_" + test_name + ".png", dpi=300)
 
     if filter_config.get("disable_viz", False):
         return
