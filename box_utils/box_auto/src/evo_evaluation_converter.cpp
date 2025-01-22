@@ -344,7 +344,7 @@ void parseRosbagToTum(const std::string& bagPath, const std::string& topicName, 
           if (enable_interpolation) {
             ROS_ERROR_STREAM("Interpolation feature is currently removed. Please disable it.");
             throw std::runtime_error("Unsupported feature");
-            
+
             // geometry_msgs::TransformStamped transform =
             //     tf_buffer.lookupTransform(sourceFrame, targetFrame, poseCov->header.stamp, ros::Duration(0));
             // transform.header.frame_id = sourceFrame;
@@ -407,14 +407,12 @@ void parseRosbagToTum(const std::string& bagPath, const std::string& topicName, 
       if (point) {
         geometry_msgs::PoseStamped transformed_pose;
         try {
-
-          if (sourceFrame != targetFrame)
-          {
-            ROS_ERROR_STREAM_THROTTLE(1.0, "You are trying to transform a position mesaurement. This is not well handled." << sourceFrame << " to " << targetFrame);
+          if (sourceFrame != targetFrame) {
+            ROS_ERROR_STREAM_THROTTLE(1.0, "You are trying to transform a position mesaurement. This is not well handled."
+                                               << sourceFrame << " to " << targetFrame);
           }
-          
 
-          if (!tf_buffer.canTransform(sourceFrame, targetFrame, poseCov->header.stamp, ros::Duration(0))) {
+          if (!tf_buffer.canTransform(sourceFrame, targetFrame, point->header.stamp, ros::Duration(0))) {
             ROS_ERROR_STREAM("Failed to find transform from " << sourceFrame << " to " << targetFrame);
             continue;
           }
@@ -422,18 +420,18 @@ void parseRosbagToTum(const std::string& bagPath, const std::string& topicName, 
           if (enable_interpolation) {
             ROS_ERROR_STREAM("Interpolation feature is currently removed. Please disable it.");
             throw std::runtime_error("Unsupported feature");
-            
+
             // geometry_msgs::TransformStamped transform =
-            //     tf_buffer.lookupTransform(sourceFrame, targetFrame, poseCov->header.stamp, ros::Duration(0));
+            //     tf_buffer.lookupTransform(sourceFrame, targetFrame, point->header.stamp, ros::Duration(0));
             // transform.header.frame_id = sourceFrame;
-            // transform.header.stamp = poseCov->header.stamp;
+            // transform.header.stamp = point->header.stamp;
             // transformed_pose = transformToPose(transform);
 
           } else {
             geometry_msgs::TransformStamped transform =
                 tf_buffer.lookupTransform(sourceFrame, targetFrame, point->header.stamp, ros::Duration(0));
 
-            // Convert poseCov pose to PoseStamped
+            // Convert point pose to PoseStamped
             geometry_msgs::PoseStamped pose;
             pose.header = point->header;
             pose.pose.position = point->point;
