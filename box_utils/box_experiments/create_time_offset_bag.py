@@ -25,11 +25,10 @@ import rosbag
 from pathlib import Path
 import shutil
 
-# Offset from 100ns to 10us
-OFFSETS = [10**2, 10**3, 10**4]
-
-# Offset from 100ns to 1s
-# OFFSETS = [10**2, 10**3, 10**4, 10**5, 10**6, 10**7, 10**8, 10**9]
+# Offset from 1us to 100ms -> given in ns
+# OFFSETS = [10**4, 10**5, 10**6, 10**7, 10**8, -10**4, -10**5, -10**6, -10**7, -10**8]
+# OFFSETS = [10**6, 10**7, -10**6, -10**7]
+OFFSETS = [1]
 
 
 def create_time_offset_bag(offset_time_in_ns, topic_name, output_folder, input_pattern, output_pattern):
@@ -64,7 +63,7 @@ if __name__ == "__main__":
     for offset_time_in_ns in OFFSETS:
         output_pattern = "_cpt7_raw_imu.bag"
         input_pattern = "_cpt7_raw_imu.bag"
-        output_folder = Path(MISSION_DATA) / "time_offset" / f"offset_{offset_time_in_ns}_ns"
+        output_folder = Path(MISSION_DATA) / "time_offset_pm" / f"offset_{offset_time_in_ns}_ns"
         create_time_offset_bag(
             offset_time_in_ns,
             "/gt_box/cpt7/offline_from_novatel_logs/imu",

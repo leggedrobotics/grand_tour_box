@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-import os
 import yaml
 from evo.core.trajectory import PoseTrajectory3D
 from evo.core import sync
@@ -14,7 +13,7 @@ from evo.core.metrics import Unit
 from evo.tools.settings import SETTINGS
 import matplotlib.cm as cm
 import matplotlib as mpl
-
+import os
 
 SETTINGS.plot_figsize = [12, 8]
 SETTINGS.plot_split = True

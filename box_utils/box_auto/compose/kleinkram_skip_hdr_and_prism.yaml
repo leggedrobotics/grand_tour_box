@@ -294,18 +294,18 @@ services:
         condition: service_completed_successfully
       calibration:
         condition: service_completed_successfully
-      ap20_python_online_matcher:
+      ap20_validate:
         condition: service_completed_successfully
 
 
 
-  euroc:
-    <<: *common-config
-    container_name: euroc
-    command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_converter/euroc_dataset_converter.py"]
-    depends_on:
-      calibration:
-        condition: service_completed_successfully
+  # euroc:
+  #   <<: *common-config
+  #   container_name: euroc
+  #   command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_converter/euroc_dataset_converter.py"]
+  #   depends_on:
+  #     calibration:
+  #       condition: service_completed_successfully
 
 
   # This is currently not supported by any docker container.
@@ -378,4 +378,3 @@ services:
   #   depends_on:
   #     calibration:
   #       condition: service_completed_successfully
-  

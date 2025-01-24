@@ -136,10 +136,10 @@ services:
     container_name: imu_intrinsics
     command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/calibration/update_imu_intrinsics.py"]
     depends_on:
-      # calibration:
-      #   condition: service_completed_successfully
-      # ap20_python_online_matcher:
-      #   condition: service_completed_successfully
+      calibration:
+        condition: service_completed_successfully
+      ap20_python_online_matcher:
+        condition: service_completed_successfully
       cpt7_update_live_header_time:
         condition: service_completed_successfully
 
@@ -181,7 +181,7 @@ services:
   ap20_validate:
     <<: *common-config
     container_name: ap20_validate
-    command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/ap20/ap20_validate.py"]
+    command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/ap20/ap20_validate.py --skip_check --remove_start"]
     depends_on:
       ap20_python_online_matcher:
         condition: service_completed_successfully
@@ -248,11 +248,12 @@ services:
         condition: service_completed_successfully
       dlio_hesai:
         condition: service_completed_successfully
+
   # Input:
   #   - dlio.bag
   #   - tf_static.bag
   # Output:
-    # - open3d_slam.bag
+  #   - open3d_slam.bag
   open3d_slam:
     <<: *common-config
     container_name: open3d_slam
@@ -298,13 +299,13 @@ services:
 
 
 
-  euroc:
-    <<: *common-config
-    container_name: euroc
-    command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_converter/euroc_dataset_converter.py"]
-    depends_on:
-      calibration:
-        condition: service_completed_successfully
+  # euroc:
+  #   <<: *common-config
+  #   container_name: euroc
+  #   command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_converter/euroc_dataset_converter.py"]
+  #   depends_on:
+  #     calibration:
+  #       condition: service_completed_successfully
 
 
   # This is currently not supported by any docker container.
@@ -377,4 +378,3 @@ services:
   #   depends_on:
   #     calibration:
   #       condition: service_completed_successfully
-  
