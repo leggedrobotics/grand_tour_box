@@ -62,7 +62,10 @@ def merge_bags_single(input_bag, output_bag, topics="*", upload="No", verbose=Fa
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Fix, reindex, and merge ROS bag files.")
     parser.add_argument(
-        "--overwrite", type=bool, default=True, help="Whether to overwrite existing bag files (default: True)."
+        "--overwrite",
+        type=bool,
+        default=False,
+        help="Whether to overwrite existing bag files (default: True). --overwrite=False --overwrite=True",
     )
     parser.add_argument("--upload", default="No", help="(default: No or Yes).")
     args = parser.parse_args()

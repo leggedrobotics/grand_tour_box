@@ -38,7 +38,7 @@ bag_topic_pairs:
         reference_file: "ap20_robot"
 
     #
-  - bag: _dlio.bag
+  - bag: _hesai_dlio.bag
     test_name: "dlio_hesai"
     topic: /dlio/lidar_map_odometry
     frame: hesai_lidar
@@ -56,76 +56,76 @@ bag_topic_pairs:
         reference_file: "ap20_robot"
 
     #
-  - bag: _lpc_state_estimator.bag
-    test_name: "TSIF"
-    topic: /state_estimator/pose_in_odom
-    frame: base
-    evaluations:
-      parameters:
-        t_max_diff: 0.0075
-        t_offset: 0.0
-        n_to_align: -1
-        correct_scale: False
-        delta: 1
-        unit: "m" #m or frame
-      ape_rpe:
-        reference_file: "gmsf_gt"
-      point_relation:
-        reference_file: "ap20_robot"
+  # - bag: _lpc_state_estimator.bag
+  #   test_name: "TSIF"
+  #   topic: /state_estimator/pose_in_odom
+  #   frame: base
+  #   evaluations:
+  #     parameters:
+  #       t_max_diff: 0.0075
+  #       t_offset: 0.0
+  #       n_to_align: -1
+  #       correct_scale: False
+  #       delta: 1
+  #       unit: "m" #m or frame
+  #     ape_rpe:
+  #       reference_file: "gmsf_gt"
+  #     point_relation:
+  #       reference_file: "ap20_robot"
 
-    #
-  - bag: _jetson_zed2i_prop.bag
-    test_name: "zed2i_odom"
-    topic: /gt_box/zed2i/zed_node/odom
-    frame: zed_base_link
-    evaluations:
-      parameters:
-        t_max_diff: 0.01
-        t_offset: 0.0
-        n_to_align: -1
-        correct_scale: False
-        delta: 1
-        unit: "m" #m or frame
-      ape_rpe:
-        reference_file: "gmsf_gt"
-      point_relation:
-        reference_file: "ap20_robot"
+  #   #
+  # - bag: _jetson_zed2i_prop.bag
+  #   test_name: "zed2i_odom"
+  #   topic: /gt_box/zed2i/zed_node/odom
+  #   frame: zed_base_link
+  #   evaluations:
+  #     parameters:
+  #       t_max_diff: 0.01
+  #       t_offset: 0.0
+  #       n_to_align: -1
+  #       correct_scale: False
+  #       delta: 1
+  #       unit: "m" #m or frame
+  #     ape_rpe:
+  #       reference_file: "gmsf_gt"
+  #     point_relation:
+  #       reference_file: "ap20_robot"
 
-    #
-  - bag: _jetson_zed2i_prop.bag
-    test_name: "zed2i_map"
-    topic: /gt_box/zed2i/zed_node/map_pose
-    frame: zed_base_link
-    evaluations:
-      parameters:
-        t_max_diff: 0.01
-        t_offset: 0.0
-        n_to_align: -1
-        correct_scale: False
-        delta: 1
-        unit: "m" #m or frame
-      ape_rpe:
-        reference_file: "gmsf_gt"
-      point_relation:
-        reference_file: "ap20_robot"
+  #   #
+  # - bag: _jetson_zed2i_prop.bag
+  #   test_name: "zed2i_map"
+  #   topic: /gt_box/zed2i/zed_node/map_pose
+  #   frame: zed_base_link
+  #   evaluations:
+  #     parameters:
+  #       t_max_diff: 0.01
+  #       t_offset: 0.0
+  #       n_to_align: -1
+  #       correct_scale: False
+  #       delta: 1
+  #       unit: "m" #m or frame
+  #     ape_rpe:
+  #       reference_file: "gmsf_gt"
+  #     point_relation:
+  #       reference_file: "ap20_robot"
 
-    #
-  - bag: _open3d_slam.bag
-    test_name: "o3d_with_tsif_hesai"
-    topic: /open3d_slam/optimized_poses_as_odometry
-    frame: hesai_lidar
-    evaluations:
-      parameters:
-        t_max_diff: 0.01
-        t_offset: 0.0
-        n_to_align: -1
-        correct_scale: False
-        delta: 1
-        unit: "m" #m or frame
-      ape_rpe:
-        reference_file: "gmsf_gt"
-      point_relation:
-        reference_file: "ap20_robot"
+  #   #
+  # - bag: _open3d_slam.bag
+  #   test_name: "o3d_with_tsif_hesai"
+  #   topic: /open3d_slam/optimized_poses_as_odometry
+  #   frame: hesai_lidar
+  #   evaluations:
+  #     parameters:
+  #       t_max_diff: 0.01
+  #       t_offset: 0.0
+  #       n_to_align: -1
+  #       correct_scale: False
+  #       delta: 1
+  #       unit: "m" #m or frame
+  #     ape_rpe:
+  #       reference_file: "gmsf_gt"
+  #     point_relation:
+  #       reference_file: "ap20_robot"
 
     #
   - bag: _okvis_imu0_alphasense_2_bw.bag

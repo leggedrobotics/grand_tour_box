@@ -154,7 +154,7 @@ _jetson_zed2i_proprioceptive.bag:
       checking: exists
       freq: 57.95478914497319
       msg_type: sensor_msgs/MagneticField
-    /gt_box/zed2i/zed_node/imu_raw/data:
+    /gt_box/zed2i/zed_node/imu/data:
       checking: freq
       freq: 40.795066819693815
       msg_type: sensor_msgs/Imu
