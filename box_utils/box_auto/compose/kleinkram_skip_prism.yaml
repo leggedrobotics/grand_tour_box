@@ -221,7 +221,7 @@ services:
   #   - hesai_post_processed.bag
   #   - tf_static.bag
   # Output:
-  #   - dlio.bag
+  #   - hesai_dlio.bag
   dlio_hesai:
     <<: *common-config
     container_name: dlio_hesai
@@ -250,7 +250,7 @@ services:
         condition: service_completed_successfully
 
   # Input:
-  #   - dlio.bag
+  #   - hesai_dlio.bag
   #   - tf_static.bag
   # Output:
   #   - open3d_slam.bag
@@ -265,7 +265,7 @@ services:
         condition: service_completed_successfully
 
   # Input:
-  #   - dlio.bag
+  #   - hesai_dlio.bag
   #   - tf_static.bag
   # Output:
   #   - dlio_tf_static.bag

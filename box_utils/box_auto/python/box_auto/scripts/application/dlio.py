@@ -98,7 +98,7 @@ if __name__ == "__main__":
         except Exception:
             patterns = [imu_pattern, "*_tf_static.bag", "*_nuc_hesai_post_processed.bag"]
             lidar_topic = "/gt_box/hesai/points"
-        tag = ""
+        tag = "hesai_"
     elif args.lidar == "livox":
         try:
             get_bag("*_nuc_livox_filtered123.bag")

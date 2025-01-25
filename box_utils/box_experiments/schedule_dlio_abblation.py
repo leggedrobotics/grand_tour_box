@@ -13,7 +13,7 @@ NEW_MISSION_DATA = [
 ]
 for j, m in enumerate(NEW_MISSION_DATA):
     os.system(f"export MISSION_DATA={m}; python {BOX_AUTO_SCRIPTS_DIR}/application/dlio.py")
-    dlio_out_bag = [str(p) for p in Path(m).glob("*[0-9]_dlio.bag")][0]
+    dlio_out_bag = [str(p) for p in Path(m).glob("*_hesai_dlio.bag")][0]
     tag = m.split("/")[-1]
     dlio_renamed_bag = dlio_out_bag.replace("dlio.bag", f"dlio_{tag}.bag")
     os.system(f"cp {dlio_out_bag} {dlio_renamed_bag}")

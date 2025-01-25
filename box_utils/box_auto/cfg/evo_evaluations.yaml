@@ -38,7 +38,7 @@ bag_topic_pairs:
         reference_file: "ap20_robot"
 
     #
-  - bag: _dlio.bag
+  - bag: _hesai_dlio.bag
     test_name: "dlio_hesai"
     topic: /dlio/lidar_map_odometry
     frame: hesai_lidar
