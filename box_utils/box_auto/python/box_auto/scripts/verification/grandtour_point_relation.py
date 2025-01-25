@@ -68,6 +68,10 @@ def run_eval(test_name, reference_file, estimated_file, params, output_path, fil
         alignment_post_fix = str(n_to_align)
 
     correct_scale = params.get("correct_scale", False)
+
+    zip_file_name = f"{mode}_{test_name}_align-{alignment_post_fix}_results.zip"
+    est_name = f"{mode}_{test_name}_align-{alignment_post_fix}"
+
     test_name += "_point_distances_" + alignment_post_fix
 
     # Read the trajectories
@@ -113,7 +117,7 @@ def run_eval(test_name, reference_file, estimated_file, params, output_path, fil
         )
     )
     plt.gcf().text(0.5, 0.90, textstr, fontsize=12, ha="center")
-    plt.savefig(output_path + "/time_differences_before_" + test_name + ".png", dpi=300)
+    # plt.savefig(os.path.join( output_path, time_differences_file_name) , dpi=300)
     plt.close()
 
     # Filter the trajectories
@@ -219,7 +223,7 @@ def run_eval(test_name, reference_file, estimated_file, params, output_path, fil
         result = main_ape.ape(
             traj_reference,
             traj_estimated,
-            est_name=test_name,
+            est_name=est_name,
             ref_name="AP20",
             pose_relation=PoseRelation.point_distance,
             align=True,
@@ -234,7 +238,7 @@ def run_eval(test_name, reference_file, estimated_file, params, output_path, fil
         result = main_rpe.rpe(
             traj_reference,
             traj_estimated,
-            est_name=test_name,
+            est_name=est_name,
             ref_name="AP20",
             pose_relation=PoseRelation.point_distance,
             delta=delta,
@@ -259,7 +263,7 @@ def run_eval(test_name, reference_file, estimated_file, params, output_path, fil
     plt.title("Trajectory Scatter Plot")
     plt.legend()
     plt.grid(True)
-    plt.savefig(output_path + "/scatter_plot_" + test_name + ".png", dpi=300)
+    # plt.savefig(output_path + "/scatter_plot_" + test_name + ".png", dpi=300)
     plt.close()
 
     # Plot and save traj_reference.positions_xyz as scatter plot
@@ -293,7 +297,7 @@ def run_eval(test_name, reference_file, estimated_file, params, output_path, fil
     axs[2].grid(True)
 
     plt.tight_layout()
-    plt.savefig(output_path + "/scatter_plot_XYZ_" + test_name + ".png", dpi=300)
+    # plt.savefig(output_path + "/scatter_plot_XYZ_" + test_name + ".png", dpi=300)
     plt.close()
 
     fig = plt.figure(figsize=(16, 12))
@@ -332,11 +336,9 @@ def run_eval(test_name, reference_file, estimated_file, params, output_path, fil
     cbar.ax.tick_params(labelsize=25)
     ax.legend(frameon=True)
 
-    fig.savefig(output_path + "/" + save_prefix + "_3d_plot_" + test_name + ".png", dpi=300)
+    # fig.savefig(output_path + "/" + save_prefix + "_3d_plot_" + test_name + ".png", dpi=300)
 
-    file_interface.save_res_file(
-        output_path + "/" + save_prefix + "_results_" + test_name + ".zip", results[0], confirm_overwrite=not True
-    )
+    file_interface.save_res_file(os.path.join(output_path, zip_file_name), results[0], confirm_overwrite=not True)
 
     if mode == "ate":
         print("ATE Results: ")
@@ -373,7 +375,7 @@ def run_eval(test_name, reference_file, estimated_file, params, output_path, fil
         xlabel=x_label,
     )
 
-    fig_stats.savefig(output_path + "/" + save_prefix + "_statistics_" + test_name + ".png", dpi=300)
+    # fig_stats.savefig(output_path + "/" + save_prefix + "_statistics_" + test_name + ".png", dpi=300)
 
     if filter_config.get("disable_viz", False):
         return
