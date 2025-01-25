@@ -267,7 +267,7 @@ services:
   #   - hesai_dlio.bag
   #   - tf_static.bag
   # Output:
-  #   - dlio_tf_static.bag
+  #   - hesai_dlio_tf_static.bag
   merge_dlio_tf_static:
     <<: *common-config
     container_name: merge_dlio_tf_static
