@@ -28,8 +28,21 @@ import numpy as np
 from tf.transformations import quaternion_from_euler, euler_from_quaternion
 
 # Offset from 1mm to 10cm
-OFFSETS_X_M = [10**-3, 10**-2, 10**-1]
-OFFSETS_PITCH_RAD = [np.deg2rad(1), np.deg2rad(10), np.deg2rad(30)]
+OFFSETS_X_M = [10**-3, 10**-2, 10**-1, -(10**-3), -(10**-2), -(10**-1), 0, 0, 0, 0, 0, 0]
+OFFSETS_PITCH_RAD = [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    np.deg2rad(1),
+    np.deg2rad(10),
+    np.deg2rad(30),
+    -np.deg2rad(1),
+    -np.deg2rad(10),
+    -np.deg2rad(30),
+]
 
 
 def create_extrinsic_offset_bag(offset_x_m, offset_pitch_rad, output_folder, input_pattern, output_pattern):
@@ -82,7 +95,7 @@ if __name__ == "__main__":
         deg = int(round(np.rad2deg(offset_pitch_rad)))
         mm = int(round(offset_x_m / 0.001))
 
-        output_folder = Path(MISSION_DATA) / "extrinsic_offset" / f"extrinsic_x{mm}mm_pitch{deg}deg"
+        output_folder = Path(MISSION_DATA) / "extrinsic_offset_pm" / f"extrinsic_x{mm}mm_pitch{deg}deg"
         create_extrinsic_offset_bag(
             offset_x_m,
             offset_pitch_rad,

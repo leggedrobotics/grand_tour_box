@@ -2,7 +2,7 @@ import rosbag
 from tqdm import tqdm
 from pathlib import Path
 import numpy as np
-
+import os
 from box_auto.utils import get_bag, upload_bag
 
 """
@@ -237,6 +237,26 @@ class RosbagValidatorAndProcessor:
 if __name__ == "__main__":
     cameras = ["*hdr_front.bag", "*hdr_left.bag", "*hdr_right.bag"]
     output_suffix = "_updated"
+
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Perform verification.")
+    parser.add_argument(
+        "--skip_update",
+        action="store_true",  # This makes it a boolean flag
+        help="If set, skip the validation checks.",
+    )
+    args = parser.parse_args()
+
+    if args.skip_update:
+        for camera in cameras:
+            print(f"ONLY COPY CAMERA DATA : {camera} no timestamps are adjusted")
+            input_bag = get_bag(camera)
+            output_bag = input_bag.replace(".bag", "_updated.bag")
+            os.system(f"cp {input_bag} {output_bag}")
+
+        exit(0)
+
     processor = RosbagValidatorAndProcessor(cameras, output_suffix)
     processor.run()
     exit(0)

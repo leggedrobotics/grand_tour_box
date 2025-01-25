@@ -11,7 +11,7 @@ import yaml
 
 # Initialize CV Bridge
 bridge = CvBridge()
-SKIP_WRITE = True
+SKIP_WRITE = False
 
 
 def process_camera_data(topic, camera_info_topic, bag_pattern, cam_folder):
@@ -215,7 +215,7 @@ if __name__ == "__main__":
         "imu0": ("/gt_box/cpt7/offline_from_novatel_logs/imu", "*_cpt7_raw_imu.bag"),
         "imu1": ("/gt_box/alphasense_driver_node/imu", "*_nuc_alphasense_calib.bag"),
         "imu2": ("/gt_box/ap20/imu", "*_jetson_ap20_synced.bag"),
-        "imu3": ("/gt_box/zed2i/zed_node/imu_raw/data", "*_jetson_zed2i_prop.bag"),
+        "imu3": ("/gt_box/zed2i/zed_node/imu/data", "*_jetson_zed2i_prop.bag"),
         "imu4": ("/gt_box/stim320/imu", "*_jetson_stim.bag"),
         "imu5": ("/gt_box/adis16475_node/imu", "*_jetson_adis.bag"),
         "imu6": ("/gt_box/livox/imu_si_compliant", "*_nuc_livox.bag"),
@@ -262,13 +262,30 @@ if __name__ == "__main__":
         "cam8": (
             "/gt_box/zed2i/zed_node/left/image_rect_color/compressed",
             "/gt_box/zed2i/zed_node/left/camera_info",
-            "*_jetson_zed2i_images_calib.bag",
+            "*_jetson_zed2i_images.bag",
         ),
         "cam9": (
             "/gt_box/zed2i/zed_node/right/image_rect_color/compressed",
             "/gt_box/zed2i/zed_node/right/camera_info",
-            "*_jetson_zed2i_images_calib.bag",
+            "*_jetson_zed2i_images.bag",
         ),
         "tf_static": ("tf_static", "*_tf_static.bag"),
     }
+
+    alphasense_2_bw_cfg = {
+        "imu0": ("/gt_box/cpt7/offline_from_novatel_logs/imu", "*_cpt7_raw_imu.bag"),
+        "cam0": (
+            "/gt_box/alphasense_driver_node/cam2/color/image/compressed",
+            "/gt_box/alphasense_driver_node/cam2/color/camera_info",
+            "*_nuc_alphasense_calib.bag",
+        ),  # Right
+        "cam1": (
+            "/gt_box/alphasense_driver_node/cam3/color/image/compressed",
+            "/gt_box/alphasense_driver_node/cam3/color/camera_info",
+            "*_nuc_alphasense_calib.bag",
+        ),  # Left
+        "tf_static": ("tf_static", "*_tf_static.bag"),
+    }
+
     process(all_cameras_cfg, "all_cameras")
+    # process(alphasense_2_bw_cfg, "imu0_alphasense_2_bw")

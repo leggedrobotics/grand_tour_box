@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-import os
 import yaml
 
 # from evo.core.trajectory import PoseTrajectory3D
@@ -16,7 +15,9 @@ from evo.core.metrics import Unit
 from evo.tools.settings import SETTINGS
 import matplotlib.cm as cm
 import matplotlib as mpl
+
 import pandas as pd
+import os
 
 SETTINGS.plot_figsize = [12, 8]
 SETTINGS.plot_split = True
@@ -432,7 +433,7 @@ def process_directory(base_path, output_dir, config, disable_viz, prefix):
         if not ref_file:
             continue
 
-        reference_file = os.path.join(base_path, ref_file + ".tum")
+        reference_file path.join(base_path, ref_file + ".tum")
         estimated_file = test_name + ".tum"
         if estimated_file.startswith("_"):
             estimated_file = prefix + estimated_file
