@@ -9,7 +9,7 @@ import sys
 import os
 from box_auto.utils import WS, MISSION_DATA, ARTIFACT_FOLDER
 
-YAML_FILE = str(Path(WS) / "box_utils/box_auto/cfg/health_check_reference_data.yaml")
+YAML_FILE = str(Path(WS) / "src/grand_tour_box/box_utils/box_auto/cfg/health_check_reference_data.yaml")
 LOG_FILE = Path(ARTIFACT_FOLDER) / "health_check_mission" / "result.log"
 LOG_FILE.parent.mkdir(parents=True, exist_ok=True)
 LOG_FILE = str(LOG_FILE)
@@ -95,6 +95,9 @@ def validate_bags(
         with open(YAML_FILE, "w") as f:
             yaml.dump(reference_data, f)
     else:
+        if yaml_file == "default":
+            yaml_file = YAML_FILE
+
         with open(yaml_file, "r") as f:
             reference_data = yaml.safe_load(f)
 
@@ -268,19 +271,30 @@ def validate_mission_folder(reference_data: Dict, mission_folder: str, time_tole
         logger.error("❌ Some validation checks failed!")
 
 
+import argparse
+
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Script configuration")
+    # Add argument for reference_folder
+    parser.add_argument(
+        "--reference_folder", type=str, default=None, help="Path to the reference folder. Defaults to None."
+    )
+    parser.add_argument(
+        "--yaml_file",
+        type=str,
+        default=None,
+        help="Path to the YAML file. Defaults to None. if default use the default one",
+    )
+    args = parser.parse_args()
+
     if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
         uuid = os.environ["MISSION_UUID"]
         os.system(f"klein download --mission {uuid} --dest {MISSION_DATA} '*.bag'")
 
-    # validation_passed = validate_bags(
-    #     reference_folder=None, yaml_file=YAML_FILE, mission_folder=MISSION_DATA, time_tolerance=20
-    # )
-
     # Comment in to generate new reference data
     validation_passed = validate_bags(
-        reference_folder="/data/GrandTour/reference_data",
-        yaml_file=None,
+        reference_folder=args.reference_folder,
+        yaml_file=args.yaml_file,
         mission_folder=MISSION_DATA,
         time_tolerance=20,
     )
