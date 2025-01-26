@@ -97,9 +97,18 @@ def load_config(config_path):
     return config
 
 
-if __name__ == "__main__":
+import argparse
 
-    CONFIG_NAME = "evo_evaluations"
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Script configuration")
+    parser.add_argument(
+        "--config_name",
+        type=str,
+        default="evo_evaluations",
+        help="The name of the configuration file. Default is 'evo_evaluations'.",
+    )
+    args = parser.parse_args()
+    print(f"Using configuration: {args.config_name}")
 
     IS_POINT_DISTANCES_SUPPORTED = False
     from evo import __version__
@@ -127,7 +136,7 @@ if __name__ == "__main__":
     elif USE_GMSF:
         GT_PATTERN = "*_gt_pose.bag"
 
-    path = Path(WS) / "src/grand_tour_box/box_utils/box_auto/cfg" / (CONFIG_NAME + ".yaml")
+    path = Path(WS) / "src/grand_tour_box/box_utils/box_auto/cfg" / (args.config_name + ".yaml")
 
     # Evaluation Configuration.
     evaluation_config_path = str(path)
