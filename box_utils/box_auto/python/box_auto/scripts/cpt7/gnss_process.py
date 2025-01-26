@@ -44,7 +44,7 @@ def main():
             cmd += f"-procmode {PROCMODE} "
             cmd += f"-proccfg {PROJ} "
             cmd += '-procprofile "SPAN Pedestrian (CPT7-HG4930)" '
-            cmd += "-downloadbase 1 75 "
+            cmd += "-downloadbase 1 50 "
             cmd += "-snserver ch-xpos.nrtk.eu "  # https://ch.nrtk.eu/sbc/ -> This needs to be inferred
             cmd += "-procdatum WGS84 "
             cmd += "-snusername RSL_02 "
