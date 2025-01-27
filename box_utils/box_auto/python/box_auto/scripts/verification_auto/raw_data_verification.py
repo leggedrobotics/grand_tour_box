@@ -1,11 +1,11 @@
 import pathlib
 import os
-from box_auto.utils import get_bag, create_github_issue
+from box_auto.utils import get_bag, create_github_issue, ARTIFACT_FOLDER
 from matplotlib import pyplot as plt
 from box_auto.scripts.verification.topic_freq import read_rosbag_and_generate_histograms
 
 
-def analyze_bag_and_report(bag_file: str, output_dir: str):
+def analyze_bag_and_report(bag_file: str, output_dir: str = ARTIFACT_FOLDER):
     """
     Analyze a ROS bag file, generate histograms, and create a GitHub issue with results.
 
@@ -20,8 +20,8 @@ def analyze_bag_and_report(bag_file: str, output_dir: str):
     bag_name = pathlib.Path(bag_file).stem
 
     # Run frequency analysis and generate histograms
-    output_image = os.path.join(output_dir, f"{bag_name}.png")
     output_text_file = os.path.join(output_dir, "freq.txt")
+    print(f"Analyzing bag file: {bag_file} with output to {output_dir}")
     read_rosbag_and_generate_histograms(bag_file, output_dir, bag_name)
 
     # Read the results from the frequency text file
@@ -32,10 +32,9 @@ def analyze_bag_and_report(bag_file: str, output_dir: str):
     issue_body = (
         f"## Frequency Analysis Results for `{bag_name}`\n\n"
         f"### Summary:\n```\n{results_summary}\n```\n"
-        f"### Histogram:\n![{bag_name}](attachment:{output_image})"
     )
     create_github_issue(
-        title=f"Frequency Analysis Report: {bag_name}",
+        title=f"Testing Github Auto Verification: {bag_name}",
         body=issue_body,
         label="test_auto_verification",
     )
@@ -48,11 +47,8 @@ if __name__ == "__main__":
         input_bag = get_bag(pattern)
         print(f"Found bag file: {input_bag}")
 
-        # Set output directory
-        output_dir = os.path.join("verification", pathlib.Path(input_bag).stem)
-
         # Run analysis and report results
-        analyze_bag_and_report(input_bag, output_dir)
+        analyze_bag_and_report(input_bag)
 
     except FileNotFoundError as e:
         print(f"Error: {e}")

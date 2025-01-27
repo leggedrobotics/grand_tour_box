@@ -283,9 +283,13 @@ def create_github_issue(
     body += f"\n\n[Link to Kleinkram](https://datasets.leggedrobotics.com/actions?sortBy=createdAt&descending=true&project_uuid={os.environ['PROJECT_UUID']}&mission_uuid={os.environ['MISSION_UUID']})"
     body += f"\nFollow the link, select the action and download the artifacts to see any images/logs not included in this issue."
 
+    print(f"Creating GitHub issue in repository {repo} with label '{label}'")
+    print(f"Title: {title}")
+    print(f"Body: {body}")
+
     # Create the issue
-    try:
-        issue = repository.create_issue(title=title, body=body, labels=[label])
-        print(f"Issue created: {issue.html_url}")
-    except Exception as e:
-        raise Exception(f"Failed to create GitHub issue: {e}")
+    # try:
+    #     issue = repository.create_issue(title=title, body=body, labels=[label])
+    #     print(f"Issue created: {issue.html_url}")
+    # except Exception as e:
+    #     raise Exception(f"Failed to create GitHub issue: {e}")
