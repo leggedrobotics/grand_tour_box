@@ -248,7 +248,6 @@ def create_github_issue(
     body: str,
     repo: str = "leggedrobotics/grand_tour_box",
     label: str = "auto-created",
-    images: Optional[List[str]] = None
 ):
     """
     Create a GitHub issue in the specified repository using PyGithub, optionally including images.
@@ -258,7 +257,6 @@ def create_github_issue(
         body (str): Body of the issue.
         repo (str): Repository in the format "owner/repo".
         label (str): Label to differentiate auto-created issues (default: "auto-created").
-        images (Optional[List[str]]): List of local file paths to images to include in the issue.
     """
     token = os.getenv("GITHUB_TOKEN")
     if not token:
@@ -280,26 +278,10 @@ def create_github_issue(
             repository.create_label(name=label, color="00aaff", description="Auto-created issues")
     except Exception as e:
         raise Exception(f"Failed to ensure label '{label}' exists in repository {repo}: {e}")
-
-    # Upload images and append Markdown links to the body
-    if images:
-        uploaded_image_links = []
-        for image_path in images:
-            try:
-                with open(image_path, "rb") as image_file:
-                    image_content = image_file.read()
-                upload = repository.create_file(
-                    path=f"issue_attachments/{os.path.basename(image_path)}",
-                    message=f"Upload image for issue: {title}",
-                    content=image_content,
-                )
-                uploaded_image_links.append(upload["content"].download_url)
-            except Exception as e:
-                raise Exception(f"Failed to upload image {image_path}: {e}")
-
-        # Add image links to the body
-        body += "\n\n### Attached Images:\n"
-        body += "\n".join(f"![{os.path.basename(link)}]({link})" for link in uploaded_image_links)
+    
+    # Append a link to kleinkram onto the body
+    body += f"\n\n[Link to Kleinkram](https://datasets.leggedrobotics.com/actions?sortBy=createdAt&descending=true&project_uuid={os.environ['PROJECT_UUID']}&mission_uuid={os.environ['MISSION_UUID']})"
+    body += f"\nFollow the link, select the action and download the artifacts to see any images/logs not included in this issue."
 
     # Create the issue
     try:

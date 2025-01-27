@@ -38,7 +38,6 @@ def analyze_bag_and_report(bag_file: str, output_dir: str):
         title=f"Frequency Analysis Report: {bag_name}",
         body=issue_body,
         label="test_auto_verification",
-        images=[output_image]
     )
 
 
