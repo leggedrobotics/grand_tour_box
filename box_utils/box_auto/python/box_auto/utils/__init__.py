@@ -13,6 +13,7 @@ from .utils import (
     upload_bag,
     check_duplicate_timestamps,
     find_and_extract_non_matching,
+    create_github_issue,
     RosbagMessageGenerator,
 )
 from .gps_utils import GPS_utils

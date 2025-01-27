@@ -1,0 +1,19 @@
+
+/tmp_disk/2024-11-03-07-52-45_jetson_hdr_front.bag:    Topic: /gt_box/hdr_front/v4l2_timestamp has 2556 same timestamps
+
+/tmp_disk/2024-11-03-07-52-45_jetson_hdr_front.bag:    Topic: /gt_box/hdr_front/kernel_timestamp has 2556 same timestamps
+path:        /tmp_disk/2024-11-03-07-52-45_jetson_hdr_front.bag
+version:     2.0
+duration:    4:15s (255s)
+start:       Nov 03 2024 06:52:51.71 (1730616771.71)
+end:         Nov 03 2024 06:57:07.30 (1730617027.30)
+size:        1.6 GB
+messages:    10228
+compression: none [1361/1361 chunks]
+types:       sensor_msgs/CameraInfo      [c9a58c1b0b154e0e6da7578cb991d214]
+             sensor_msgs/CompressedImage [8f7a12909da2c9d3332d540a0977563f]
+             sensor_msgs/TimeReference   [fded64a0265108ba86c3d38fb11c0c16]
+topics:      /gt_box/hdr_front/camera_info            2557 msgs @ 10.0 Hz : sensor_msgs/CameraInfo     
+             /gt_box/hdr_front/image_raw/compressed   2557 msgs @ 10.0 Hz : sensor_msgs/CompressedImage
+             /gt_box/hdr_front/kernel_timestamp       2557 msgs @ 10.0 Hz : sensor_msgs/TimeReference  
+             /gt_box/hdr_front/v4l2_timestamp         2557 msgs @ 10.0 Hz : sensor_msgs/TimeReference

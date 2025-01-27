@@ -11,6 +11,9 @@ ENV DEBIAN_frontend=noninteractive
 ENV NVIDIA_VISIBLE_DEVICES=${NVIDIA_VISIBLE_DEVICES:-all}
 ENV NVIDIA_DRIVER_CAPABILITIES=${NVIDIA_DRIVER_CAPABILITIES:+$NVIDIA_DRIVER_CAPABILITIES,}graphics,compute,video,utility
 
+# Token for creating github issues from inside the container.
+ENV GITHUB_TOKEN=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
+
 RUN echo "Europe/Zurich" > /etc/localtime ; echo "CUDA Version 12.2.2" > /usr/local/cuda/version.txt
 
 COPY dependencies/zed.sh /zed.sh

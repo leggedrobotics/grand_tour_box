@@ -1,10 +1,12 @@
 import os
+from github import Github
 from pathlib import Path
 import psutil
 from time import sleep
 from sortedcontainers import SortedDict
 from collections import defaultdict
 import rosbag
+from typing import List, Optional
 
 WS = os.environ.get("WS", "/home/catkin_ws")
 PRE = f"source /opt/ros/noetic/setup.bash; source {WS}/devel/setup.bash; "
@@ -240,3 +242,68 @@ class RosbagMessageGenerator:
     def __del__(self):
         for p in self.bags:
             self.bags[p].close()
+
+def create_github_issue(
+    title: str,
+    body: str,
+    repo: str = "leggedrobotics/grand_tour_box",
+    label: str = "auto-created",
+    images: Optional[List[str]] = None
+):
+    """
+    Create a GitHub issue in the specified repository using PyGithub, optionally including images.
+
+    Args:
+        title (str): Title of the issue.
+        body (str): Body of the issue.
+        repo (str): Repository in the format "owner/repo".
+        label (str): Label to differentiate auto-created issues (default: "auto-created").
+        images (Optional[List[str]]): List of local file paths to images to include in the issue.
+    """
+    token = os.getenv("GITHUB_TOKEN")
+    if not token:
+        raise EnvironmentError("GITHUB_TOKEN environment variable not set.")
+
+    # Authenticate with GitHub using the personal access token
+    g = Github(token)
+
+    # Get the repository
+    try:
+        repository = g.get_repo(repo)
+    except Exception as e:
+        raise Exception(f"Could not access repository {repo}: {e}")
+
+    # Ensure the label exists in the repository
+    try:
+        existing_labels = [l.name for l in repository.get_labels()]
+        if label not in existing_labels:
+            repository.create_label(name=label, color="00aaff", description="Auto-created issues")
+    except Exception as e:
+        raise Exception(f"Failed to ensure label '{label}' exists in repository {repo}: {e}")
+
+    # Upload images and append Markdown links to the body
+    if images:
+        uploaded_image_links = []
+        for image_path in images:
+            try:
+                with open(image_path, "rb") as image_file:
+                    image_content = image_file.read()
+                upload = repository.create_file(
+                    path=f"issue_attachments/{os.path.basename(image_path)}",
+                    message=f"Upload image for issue: {title}",
+                    content=image_content,
+                )
+                uploaded_image_links.append(upload["content"].download_url)
+            except Exception as e:
+                raise Exception(f"Failed to upload image {image_path}: {e}")
+
+        # Add image links to the body
+        body += "\n\n### Attached Images:\n"
+        body += "\n".join(f"![{os.path.basename(link)}]({link})" for link in uploaded_image_links)
+
+    # Create the issue
+    try:
+        issue = repository.create_issue(title=title, body=body, labels=[label])
+        print(f"Issue created: {issue.html_url}")
+    except Exception as e:
+        raise Exception(f"Failed to create GitHub issue: {e}")
