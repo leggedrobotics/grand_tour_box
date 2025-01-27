@@ -58,10 +58,10 @@
 	path = box_applications/tf_bag
 	url = git@github.com:leggedrobotics/tf_bag.git
 	branch = master
-[submodule "box_applications/graph_msf_dev"]
-	path = box_applications/graph_msf_dev
-	url = git@bitbucket.org:leggedrobotics/graph_msf_dev.git
-	branch = jonfrey/gt_generation
+[submodule "box_applications/holistic_fusion"]
+	path = box_applications/holistic_fusion
+	url = git@github.com:leggedrobotics/holistic_fusion.git
+	branch = feature/better_offline_initialization
 [submodule "box_applications/open3d_slam_private"]
 	path = box_applications/open3d_slam_private
 	url = git@github.com:leggedrobotics/open3d_slam_private.git

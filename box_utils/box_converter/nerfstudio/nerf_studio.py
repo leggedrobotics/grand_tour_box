@@ -226,7 +226,7 @@ def main():
         config = yaml.safe_load(f)
 
     input_folder = args.mission_data
-    tf_bag_path, suc = get_bag(args.mission_data, "*_tf_static_dlio_tf.bag")
+    tf_bag_path, suc = get_bag(args.mission_data, "*_tf_static_hesai_dlio_tf.bag")
 
     # Load camera infos
     camera_infos = {}

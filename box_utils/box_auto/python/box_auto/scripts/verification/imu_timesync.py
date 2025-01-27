@@ -225,6 +225,7 @@ class IMUSyncOptimizer:
             f"Time FFT Guess: {time_offset_guess * 10**9}ns,   Final Time Offset: {model.time_offset.item() * 10**9}ns"
         )
 
+        # return time_offset_guess * 10**9
         return model.time_offset.item() * 10**9
 
 
@@ -246,25 +247,30 @@ def process_all(directory, output_folder, axis):
             "max_offset_ms": 1,
         },
         {
-            "topic": "/gt_box/adis16475_node/imu",
-            "bag_pattern": "*_jetson_adis.bag",
+            "topic": "/gt_box/inertial_explorer/tc/gt_poses_novatel",
+            "bag_pattern": "*_ie_tc_to_imu.bag",
             "max_offset_ms": 1,
         },
-        {
-            "topic": "/gt_box/livox/imu",
-            "bag_pattern": "*_nuc_livox.bag",
-            "max_offset_ms": 1,
-        },
-        {
-            "topic": "/gt_box/alphasense_driver_node/imu",
-            "bag_pattern": "*_nuc_alphasense.bag",
-            "max_offset_ms": 1,
-        },
-        {
-            "topic": "/gt_box/cpt7/offline_from_novatel_logs/imu",
-            "bag_pattern": "*_cpt7_raw_imu.bag",
-            "max_offset_ms": 1,
-        },
+        # {
+        #     "topic": "/gt_box/adis16475_node/imu",
+        #     "bag_pattern": "*_jetson_adis.bag",
+        #     "max_offset_ms": 1,
+        # },
+        # {
+        #     "topic": "/gt_box/livox/imu",
+        #     "bag_pattern": "*_nuc_livox.bag",
+        #     "max_offset_ms": 1,
+        # },
+        # {
+        #     "topic": "/gt_box/alphasense_driver_node/imu",
+        #     "bag_pattern": "*_nuc_alphasense.bag",
+        #     "max_offset_ms": 1,
+        # },
+        # {
+        #     "topic": "/gt_box/cpt7/offline_from_novatel_logs/imu",
+        #     "bag_pattern": "*_cpt7_raw_imu.bag",
+        #     "max_offset_ms": 1,
+        # },
     ]
 
     try:

@@ -139,7 +139,7 @@ if __name__ == "__main__":
         config = yaml.safe_load(f)
 
     # Retrieve tf bag
-    tf_bag_path = get_bag("*_tf_static_dlio.bag")
+    tf_bag_path = get_bag("*_tf_static_hesai_dlio.bag")
     prefix = Path(tf_bag_path).stem.split("_")[0]
 
     tf_listener = BagTfTransformer(tf_bag_path)

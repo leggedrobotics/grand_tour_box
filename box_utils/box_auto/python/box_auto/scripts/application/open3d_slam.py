@@ -22,12 +22,12 @@ USE_DLIO = False
 # If the ground truth poses are available, we can use them instead of dlio_poses.
 
 if USE_LEGGED_ESTIMATOR and not USE_DLIO:
-    PATTERNS = ["*[0-9]_dlio.bag", "*_lpc_state_estimator.bag", "*_tf_static.bag"]
+    PATTERNS = ["*_hesai_dlio.bag", "*_lpc_state_estimator.bag", "*_tf_static.bag"]
     prior_frame = "base"
     pose_topic = "/state_estimator/pose_in_odom"
 
 else:
-    PATTERNS = ["*[0-9]_dlio.bag", "*_tf_static.bag"]
+    PATTERNS = ["*_hesai_dlio.bag", "*_tf_static.bag"]
     prior_frame = "hesai_lidar"
     pose_topic = "/dlio/lidar_map_odometry"
 

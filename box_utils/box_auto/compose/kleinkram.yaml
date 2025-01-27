@@ -65,10 +65,10 @@ services:
   #   - _hdr.mcap
   # Output:
   #   - _hdr.bag
-  hdr_convert:
-    <<: *ros2-common-config
-    container_name: hdr_convert
-    command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/general/mcap_to_rosbag.py"]
+  # hdr_convert:
+  #   <<: *ros2-common-config
+  #   container_name: hdr_convert
+  #   command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/general/mcap_to_rosbag.py"]
   
   # Input:
   #   - _hdr.bag
@@ -78,9 +78,9 @@ services:
     <<: *common-config
     container_name: hdr_timestamp_adjuster
     command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/camera/hdr_timestamp_adjuster.py"]
-    depends_on:
-      hdr_convert:
-        condition: service_completed_successfully
+    # depends_on:
+    #   hdr_convert:
+    #     condition: service_completed_successfully
 
   # Input:
   #   - _alphasense.bag
@@ -110,6 +110,11 @@ services:
       alphasense_fix_frame_id:
         condition: service_completed_successfully
 
+  cpt7_update_live_header_time:
+    <<: *common-config
+    container_name: cpt7_update_live_header_time
+    command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/cpt7/cpt7_update_live_header_time.py"]
+
   # Input:
   #   - _jetson_ap20_synced.bag
   #   - _jetson_stim.bag
@@ -131,11 +136,12 @@ services:
     container_name: imu_intrinsics
     command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/calibration/update_imu_intrinsics.py"]
     depends_on:
-      calibration:
+      # calibration:
+      #   condition: service_completed_successfully
+      # ap20_python_online_matcher:
+      #   condition: service_completed_successfully
+      cpt7_update_live_header_time:
         condition: service_completed_successfully
-      ap20_python_online_matcher:
-        condition: service_completed_successfully
-
 
 
   # Input:
@@ -150,13 +156,13 @@ services:
   # - _jetson_hdr_front_anonymized.bag
   # - _jeston_hdr_right_anonymized.bag
   # - _jetson_zed2i_images_anonymized.bag
-  image_anonymizer:
-    <<: *common-config
-    container_name: image_anonymizer
-    command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/general/anonymize_images.py"]
-    depends_on:
-      calibration:
-        condition: service_completed_successfully
+  # image_anonymizer:
+  #   <<: *common-config
+  #   container_name: image_anonymizer
+  #   command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/general/anonymize_images.py"]
+  #   depends_on:
+  #     calibration:
+  #       condition: service_completed_successfully
 
 
   # Input:
@@ -175,7 +181,7 @@ services:
   ap20_validate:
     <<: *common-config
     container_name: ap20_validate
-    command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/ap20/ap20_validate.py --skip_check"]
+    command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/ap20/ap20_validate.py"]
     depends_on:
       ap20_python_online_matcher:
         condition: service_completed_successfully
@@ -215,43 +221,59 @@ services:
   #   - hesai_post_processed.bag
   #   - tf_static.bag
   # Output:
-  #   - dlio.bag
-  dlio:
+  #   - hesai_dlio.bag
+  dlio_hesai:
     <<: *common-config
-    container_name: dlio
-    command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/application/dlio.py"]
+    container_name: dlio_hesai
+    command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/application/dlio.py --lidar=hesai --imu=cpt7"]
     depends_on:
-      hesai:
+      filter_pointclouds:
         condition: service_completed_successfully
       calibration:
         condition: service_completed_successfully
 
   # Input:
-  #   - dlio.bag
+  #   - hesai_post_processed.bag
   #   - tf_static.bag
   # Output:
-  #   - open3d_slam.bag
-  # open3d_slam:
-  #   <<: *common-config
-  #   container_name: open3d_slam
-  #   command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/application/open3d_slam.py"]
-  #   depends_on:
-  #     calibration:
-  #       condition: service_completed_successfully
-  #     dlio:
-  #       condition: service_completed_successfully
+  #   - dlio_livox.bag
+  dlio_livox:
+    <<: *common-config
+    container_name: dlio_livox
+    command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/application/dlio.py --lidar=livox --imu=cpt7"]
+    depends_on:
+      filter_pointclouds:
+        condition: service_completed_successfully
+      calibration:
+        condition: service_completed_successfully
+      dlio_hesai:
+        condition: service_completed_successfully
+  # Input:
+  #   - hesai_dlio.bag
+  #   - tf_static.bag
+  # Output:
+    # - open3d_slam.bag
+  open3d_slam:
+    <<: *common-config
+    container_name: open3d_slam
+    command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/application/open3d_slam.py"]
+    depends_on:
+      calibration:
+        condition: service_completed_successfully
+      dlio_hesai:
+        condition: service_completed_successfully
 
   # Input:
-  #   - dlio.bag
+  #   - hesai_dlio.bag
   #   - tf_static.bag
   # Output:
-  #   - dlio_tf_static.bag
+  #   - hesai_dlio_tf_static.bag
   merge_dlio_tf_static:
     <<: *common-config
     container_name: merge_dlio_tf_static
     command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/general/merge_dlio_tf_static.py"]
     depends_on:
-      dlio:
+      dlio_hesai:
         condition: service_completed_successfully
       calibration:
         condition: service_completed_successfully
@@ -271,8 +293,19 @@ services:
         condition: service_completed_successfully
       calibration:
         condition: service_completed_successfully
-      ap20_python_online_matcher:
+      ap20_validate:
         condition: service_completed_successfully
+
+
+
+  euroc:
+    <<: *common-config
+    container_name: euroc
+    command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_converter/euroc_dataset_converter.py"]
+    depends_on:
+      calibration:
+        condition: service_completed_successfully
+
 
   # This is currently not supported by any docker container.
   # Input:

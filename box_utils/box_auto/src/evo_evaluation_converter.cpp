@@ -199,6 +199,21 @@ void parseRosbagToTum(const std::string& bagPath, const std::string& topicName, 
   tumFile.precision(std::numeric_limits<double>::max_digits10);
   tumFile << poseLogFileHeader_ << std::endl;
 
+  //# (x, y, z, rotation about X axis, rotation about Y axis, rotation about Z axis)
+  const std::string covarianceFileHeader = "# timestamp x y z roll pitch yaw";
+  std::ofstream possibleCovarianceFile;
+
+  std::string covOutputPath = outputPath.substr(0, outputPath.size() - 4) + "_covariance.tum";
+
+  possibleCovarianceFile.open(covOutputPath, std::ios_base::app);
+  possibleCovarianceFile.precision(std::numeric_limits<double>::max_digits10);
+  possibleCovarianceFile << covarianceFileHeader << std::endl;
+
+  if (!possibleCovarianceFile.is_open()) {
+    ROS_ERROR_STREAM("Failed to open possibleCovarianceFile: " << covOutputPath);
+    return;
+  }
+
   if (!tumFile.is_open()) {
     ROS_ERROR_STREAM("Failed to open output file: " << outputPath);
     return;
@@ -216,17 +231,19 @@ void parseRosbagToTum(const std::string& bagPath, const std::string& topicName, 
         }
         geometry_msgs::PoseStamped transformed_pose;
         try {
-          if (!tf_buffer.canTransform(targetFrame, sourceFrame, odometry->header.stamp, ros::Duration(0))) {
+          if (!tf_buffer.canTransform(sourceFrame, targetFrame, odometry->header.stamp, ros::Duration(0))) {
             ROS_ERROR_STREAM("Failed to find transform from " << sourceFrame << " to " << targetFrame);
             continue;
           }
 
           if (enable_interpolation) {
-            geometry_msgs::TransformStamped transform =
-                tf_buffer.lookupTransform(odometry->header.frame_id, targetFrame, odometry->header.stamp, ros::Duration(0));
-            transform.header.frame_id = odometry->header.frame_id;
-            transform.header.stamp = odometry->header.stamp;
-            transformed_pose = transformToPose(transform);
+            ROS_ERROR_STREAM("Interpolation feature is currently removed.");
+            throw std::runtime_error("Unsupported feature");
+            // geometry_msgs::TransformStamped transform =
+            //     tf_buffer.lookupTransform(sourceFrame, targetFrame, odometry->header.stamp, ros::Duration(0));
+            // transform.header.frame_id = odometry->header.frame_id;
+            // transform.header.stamp = odometry->header.stamp;
+            // transformed_pose = transformToPose(transform);
 
           } else {
             geometry_msgs::TransformStamped transform =
@@ -258,23 +275,40 @@ void parseRosbagToTum(const std::string& bagPath, const std::string& topicName, 
 
         } catch (const tf2::TransformException& ex) {
           ROS_ERROR_STREAM("Failed to transform pose: " << ex.what());
-          continue;
-          // bag.close();
-          // tumFile.close();
-          // return;
+          bag.close();
+          tumFile.close();
+          possibleCovarianceFile.close();
+          return;
         }
       }
     } else if (msg.getDataType() == "geometry_msgs/PoseStamped") {
       geometry_msgs::PoseStamped::ConstPtr pose = msg.instantiate<geometry_msgs::PoseStamped>();
       if (pose) {
+        geometry_msgs::PoseStamped transformed_pose;
         try {
-          geometry_msgs::TransformStamped transform =
-              tf_buffer.lookupTransform(targetFrame, sourceFrame, pose->header.stamp, ros::Duration(0.2));
+          if (!tf_buffer.canTransform(sourceFrame, targetFrame, pose->header.stamp, ros::Duration(0))) {
+            ROS_ERROR_STREAM("Failed to find transform from " << sourceFrame << " to " << targetFrame);
+            continue;
+          }
 
-          Eigen::Matrix4d poseAsMat = poseToMatrix(*pose);
-          Eigen::Matrix4d transformAsMat = transformToMatrix(transform);
-          Eigen::Matrix4d transformedPoseAsMat = poseAsMat * transformAsMat;
-          geometry_msgs::PoseStamped transformed_pose = matrixToPose(transformedPoseAsMat, targetFrame, pose->header.stamp);
+          if (enable_interpolation) {
+            ROS_ERROR_STREAM("Interpolation feature is currently removed.");
+            throw std::runtime_error("Unsupported feature");
+            // geometry_msgs::TransformStamped transform =
+            //     tf_buffer.lookupTransform(sourceFrame, targetFrame, pose->header.stamp, ros::Duration(0));
+            // transform.header.frame_id = pose->header.frame_id;
+            // transform.header.stamp = pose->header.stamp;
+            // transformed_pose = transformToPose(transform);
+
+          } else {
+            geometry_msgs::TransformStamped transform =
+                tf_buffer.lookupTransform(sourceFrame, targetFrame, pose->header.stamp, ros::Duration(0));
+
+            Eigen::Matrix4d poseAsMat = poseToMatrix(*pose);
+            Eigen::Matrix4d transformAsMat = transformToMatrix(transform);
+            Eigen::Matrix4d transformedPoseAsMat = poseAsMat * transformAsMat;
+            transformed_pose = matrixToPose(transformedPoseAsMat, targetFrame, pose->header.stamp);
+          }
 
           nav_msgs::Odometry asOdom;
           asOdom.header = pose->header;
@@ -289,30 +323,48 @@ void parseRosbagToTum(const std::string& bagPath, const std::string& topicName, 
 
           tumFile << timestamp << " " << position.x << " " << position.y << " " << position.z << " " << orientation.x << " "
                   << orientation.y << " " << orientation.z << " " << orientation.w << std::endl;
-
         } catch (const tf2::TransformException& ex) {
           ROS_ERROR_STREAM("Failed to transform pose: " << ex.what());
           bag.close();
           tumFile.close();
+          possibleCovarianceFile.close();
           return;
         }
       }
     } else if (msg.getDataType() == "geometry_msgs/PoseWithCovarianceStamped") {
       geometry_msgs::PoseWithCovarianceStamped::ConstPtr poseCov = msg.instantiate<geometry_msgs::PoseWithCovarianceStamped>();
       if (poseCov) {
+        geometry_msgs::PoseStamped transformed_pose;
         try {
-          geometry_msgs::TransformStamped transform =
-              tf_buffer.lookupTransform(targetFrame, sourceFrame, poseCov->header.stamp, ros::Duration(0.2));
+          if (!tf_buffer.canTransform(sourceFrame, targetFrame, poseCov->header.stamp, ros::Duration(0))) {
+            ROS_ERROR_STREAM("Failed to find transform from " << sourceFrame << " to " << targetFrame);
+            continue;
+          }
 
-          // Convert poseCov pose to PoseStamped
-          geometry_msgs::PoseStamped pose;
-          pose.header = poseCov->header;
-          pose.pose = poseCov->pose.pose;
+          if (enable_interpolation) {
+            ROS_ERROR_STREAM("Interpolation feature is currently removed. Please disable it.");
+            throw std::runtime_error("Unsupported feature");
 
-          Eigen::Matrix4d poseAsMat = poseToMatrix(pose);
-          Eigen::Matrix4d transformAsMat = transformToMatrix(transform);
-          Eigen::Matrix4d transformedPoseAsMat = poseAsMat * transformAsMat;
-          geometry_msgs::PoseStamped transformed_pose = matrixToPose(transformedPoseAsMat, targetFrame, poseCov->header.stamp);
+            // geometry_msgs::TransformStamped transform =
+            //     tf_buffer.lookupTransform(sourceFrame, targetFrame, poseCov->header.stamp, ros::Duration(0));
+            // transform.header.frame_id = sourceFrame;
+            // transform.header.stamp = poseCov->header.stamp;
+            // transformed_pose = transformToPose(transform);
+
+          } else {
+            geometry_msgs::TransformStamped transform =
+                tf_buffer.lookupTransform(sourceFrame, targetFrame, poseCov->header.stamp, ros::Duration(0));
+
+            // Convert poseCov pose to PoseStamped
+            geometry_msgs::PoseStamped pose;
+            pose.header = poseCov->header;
+            pose.pose = poseCov->pose.pose;
+
+            Eigen::Matrix4d poseAsMat = poseToMatrix(pose);
+            Eigen::Matrix4d transformAsMat = transformToMatrix(transform);
+            Eigen::Matrix4d transformedPoseAsMat = poseAsMat * transformAsMat;
+            transformed_pose = matrixToPose(transformedPoseAsMat, targetFrame, poseCov->header.stamp);
+          }
 
           nav_msgs::Odometry asOdom;
           asOdom.header = poseCov->header;
@@ -328,10 +380,23 @@ void parseRosbagToTum(const std::string& bagPath, const std::string& topicName, 
           tumFile << timestamp << " " << position.x << " " << position.y << " " << position.z << " " << orientation.x << " "
                   << orientation.y << " " << orientation.z << " " << orientation.w << std::endl;
 
+          auto estGnssOfflinePoseMeasUnaryNoiseList = poseCov->pose.covariance;
+          Eigen::Matrix<double, 6, 1> estGnssOfflinePoseMeasUnaryNoise;
+          estGnssOfflinePoseMeasUnaryNoise << sqrt(estGnssOfflinePoseMeasUnaryNoiseList[0]), sqrt(estGnssOfflinePoseMeasUnaryNoiseList[7]),
+              sqrt(estGnssOfflinePoseMeasUnaryNoiseList[14]), sqrt(estGnssOfflinePoseMeasUnaryNoiseList[21]),
+              sqrt(estGnssOfflinePoseMeasUnaryNoiseList[28]), sqrt(estGnssOfflinePoseMeasUnaryNoiseList[35]);
+
+          possibleCovarianceFile << timestamp;
+          for (int i = 0; i < estGnssOfflinePoseMeasUnaryNoise.size(); ++i) {
+            possibleCovarianceFile << " " << estGnssOfflinePoseMeasUnaryNoise[i];
+          }
+          possibleCovarianceFile << std::endl;
+
         } catch (const tf2::TransformException& ex) {
           ROS_ERROR_STREAM("Failed to transform pose: " << ex.what());
           bag.close();
           tumFile.close();
+          possibleCovarianceFile.close();
           return;
         }
       }
@@ -340,25 +405,48 @@ void parseRosbagToTum(const std::string& bagPath, const std::string& topicName, 
       geometry_msgs::PointStamped::ConstPtr point = msg.instantiate<geometry_msgs::PointStamped>();
 
       if (point) {
+        geometry_msgs::PoseStamped transformed_pose;
         try {
-          geometry_msgs::TransformStamped transform =
-              tf_buffer.lookupTransform(targetFrame, sourceFrame, point->header.stamp, ros::Duration(0.2));
+          if (sourceFrame != targetFrame) {
+            ROS_ERROR_STREAM_THROTTLE(1.0, "You are trying to transform a position mesaurement. This is not well handled."
+                                               << sourceFrame << " to " << targetFrame);
+          }
 
-          // Convert poseCov pose to PoseStamped
-          geometry_msgs::PoseStamped pose;
-          pose.header = point->header;
-          pose.pose.position = point->point;
+          if (!tf_buffer.canTransform(sourceFrame, targetFrame, point->header.stamp, ros::Duration(0))) {
+            ROS_ERROR_STREAM("Failed to find transform from " << sourceFrame << " to " << targetFrame);
+            continue;
+          }
 
-          // Set the orientation to identity (no rotation)
-          pose.pose.orientation.x = 0.0;
-          pose.pose.orientation.y = 0.0;
-          pose.pose.orientation.z = 0.0;
-          pose.pose.orientation.w = 1.0;
+          if (enable_interpolation) {
+            ROS_ERROR_STREAM("Interpolation feature is currently removed. Please disable it.");
+            throw std::runtime_error("Unsupported feature");
 
-          Eigen::Matrix4d poseAsMat = poseToMatrix(pose);
-          Eigen::Matrix4d transformAsMat = transformToMatrix(transform);
-          Eigen::Matrix4d transformedPoseAsMat = poseAsMat * transformAsMat;
-          geometry_msgs::PoseStamped transformed_pose = matrixToPose(transformedPoseAsMat, targetFrame, point->header.stamp);
+            // geometry_msgs::TransformStamped transform =
+            //     tf_buffer.lookupTransform(sourceFrame, targetFrame, point->header.stamp, ros::Duration(0));
+            // transform.header.frame_id = sourceFrame;
+            // transform.header.stamp = point->header.stamp;
+            // transformed_pose = transformToPose(transform);
+
+          } else {
+            geometry_msgs::TransformStamped transform =
+                tf_buffer.lookupTransform(sourceFrame, targetFrame, point->header.stamp, ros::Duration(0));
+
+            // Convert point pose to PoseStamped
+            geometry_msgs::PoseStamped pose;
+            pose.header = point->header;
+            pose.pose.position = point->point;
+
+            // Set the orientation to identity (no rotation)
+            pose.pose.orientation.x = 0.0;
+            pose.pose.orientation.y = 0.0;
+            pose.pose.orientation.z = 0.0;
+            pose.pose.orientation.w = 1.0;
+
+            Eigen::Matrix4d poseAsMat = poseToMatrix(pose);
+            Eigen::Matrix4d transformAsMat = transformToMatrix(transform);
+            Eigen::Matrix4d transformedPoseAsMat = poseAsMat * transformAsMat;
+            transformed_pose = matrixToPose(transformedPoseAsMat, targetFrame, point->header.stamp);
+          }
 
           double timestamp = point->header.stamp.toSec();
           const auto& position = transformed_pose.pose.position;
@@ -371,6 +459,7 @@ void parseRosbagToTum(const std::string& bagPath, const std::string& topicName, 
           ROS_ERROR_STREAM("Failed to transform pose: " << ex.what());
           bag.close();
           tumFile.close();
+          possibleCovarianceFile.close();
           return;
         }
       }
@@ -379,12 +468,14 @@ void parseRosbagToTum(const std::string& bagPath, const std::string& topicName, 
       ROS_ERROR_STREAM("NOT SUPPORTED TYPE");
       bag.close();
       tumFile.close();
+      possibleCovarianceFile.close();
       return;
     }
   }
 
   bag.close();
   tumFile.close();
+  possibleCovarianceFile.close();
 }
 
 void processTF(const std::vector<std::string>& tfContainingBags, tf2_ros::Buffer& tf_buffer) {
