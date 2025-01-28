@@ -35,6 +35,7 @@ __all__ = [
     "get_file",
     "upload_bag",
     "GPS_utils",
+    "create_github_issue",
     "RosbagMessageGenerator",
     "okviz_trajectory_to_bag",
 ]

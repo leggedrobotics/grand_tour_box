@@ -248,6 +248,7 @@ def create_github_issue(
     body: str,
     repo: str = "leggedrobotics/grand_tour_box",
     label: str = "auto-created",
+    dry_run: bool = False,
 ):
     """
     Create a GitHub issue in the specified repository using PyGithub, optionally including images.
@@ -279,17 +280,23 @@ def create_github_issue(
     except Exception as e:
         raise Exception(f"Failed to ensure label '{label}' exists in repository {repo}: {e}")
     
-    # Append a link to kleinkram onto the body
-    body += f"\n\n[Link to Kleinkram](https://datasets.leggedrobotics.com/actions?sortBy=createdAt&descending=true&project_uuid={os.environ['PROJECT_UUID']}&mission_uuid={os.environ['MISSION_UUID']})"
-    body += f"\nFollow the link, select the action and download the artifacts to see any images/logs not included in this issue."
+    # Append links to kleinkram onto the body
+    if "ACTION_UUID" in os.environ and "MISSION_UUID" in os.environ and "PROJECT_UUID" in os.environ:
+        action_uuid = os.environ.get("ACTION_UUID")
+        body += f"\n\n[Link to Kleinkram Actions and Artifacts](https://datasets.leggedrobotics.com/action/{action_uuid})"
+        project_uuid = os.environ.get("PROJECT_UUID")
+        mission_uuid = os.environ.get("MISSION_UUID")
+        body += f"\n\n[Link to Kleinkram Mission Files](https://datasets.leggedrobotics.com/project/{project_uuid}/mission/{mission_uuid}/files?sortBy=filename)"
 
-    print(f"Creating GitHub issue in repository {repo} with label '{label}'")
-    print(f"Title: {title}")
-    print(f"Body: {body}")
+    if dry_run:
+        print(f"Would Create GitHub issue in repository {repo} with label '{label}'")
+        print(f"Title: {title}")
+        print(f"Body: {body}")
 
-    # Create the issue
-    # try:
-    #     issue = repository.create_issue(title=title, body=body, labels=[label])
-    #     print(f"Issue created: {issue.html_url}")
-    # except Exception as e:
-    #     raise Exception(f"Failed to create GitHub issue: {e}")
+    else:
+        # Create the issue
+        try:
+            issue = repository.create_issue(title=title, body=body, labels=[label])
+            print(f"Issue created: {issue.html_url}")
+        except Exception as e:
+            raise Exception(f"Failed to create GitHub issue: {e}")

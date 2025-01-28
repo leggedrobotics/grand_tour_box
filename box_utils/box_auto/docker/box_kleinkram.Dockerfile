@@ -11,6 +11,9 @@ ENV DEBIAN_frontend=noninteractive
 ENV NVIDIA_VISIBLE_DEVICES=${NVIDIA_VISIBLE_DEVICES:-all}
 ENV NVIDIA_DRIVER_CAPABILITIES=${NVIDIA_DRIVER_CAPABILITIES:+$NVIDIA_DRIVER_CAPABILITIES,}graphics,compute,video,utility
 
+# Used for creating github issues during auto verification
+ENV GITHUB_TOKEN=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
+
 RUN echo "Europe/Zurich" > /etc/localtime ; echo "CUDA Version 12.2.2" > /usr/local/cuda/version.txt
 
 COPY dependencies/zed.sh /zed.sh
@@ -32,10 +35,6 @@ RUN /bin/bash -c '/opencv_gtsam.sh'
 COPY dependencies/grand_tour.sh /grand_tour.sh
 RUN sh -c "chmod +x /grand_tour.sh"
 RUN --mount=type=ssh /bin/bash -c '/grand_tour.sh'
-
-COPY dependencies/verification.sh /verification.sh
-RUN sh -c "chmod +x /verification.sh"
-RUN --mount=type=ssh /bin/bash -c '/verification.sh'
 
 COPY entrypoint_kleinkram.sh /entrypoint_kleinkram.sh
 RUN chmod +x /entrypoint_kleinkram.sh

@@ -1,54 +1,63 @@
 import pathlib
 import os
-from box_auto.utils import get_bag, create_github_issue, ARTIFACT_FOLDER
-from matplotlib import pyplot as plt
-from box_auto.scripts.verification.topic_freq import read_rosbag_and_generate_histograms
+import sys
+from box_auto.utils import create_github_issue, MISSION_DATA, GRAND_TOUR_UUID
+from box_auto.scripts.verification.health_check_mission import validate_bags, LOG_FILE
 
 
-def analyze_bag_and_report(bag_file: str, output_dir: str = ARTIFACT_FOLDER):
+def analyze_mission_and_report():
     """
-    Analyze a ROS bag file, generate histograms, and create a GitHub issue with results.
+    Analyze the raw data from a mission in the MISSION_DATA directory and report the results.
 
-    Args:
-        bag_file (str): Path to the ROS bag file.
-        output_dir (str): Directory to save output files.
+    Returns:
+        bool: True if the validation passed, False otherwise.
     """
-    # Ensure the output directory exists
-    os.makedirs(output_dir, exist_ok=True)
 
-    # Extract the bag's name for labeling
-    bag_name = pathlib.Path(bag_file).stem
-
-    # Run frequency analysis and generate histograms
-    output_text_file = os.path.join(output_dir, "freq.txt")
-    print(f"Analyzing bag file: {bag_file} with output to {output_dir}")
-    read_rosbag_and_generate_histograms(bag_file, output_dir, bag_name)
-
-    # Read the results from the frequency text file
-    with open(output_text_file, "r") as f:
-        results_summary = f.read()
-
-    # Create a GitHub issue with the results and the histogram image
-    issue_body = (
-        f"## Frequency Analysis Results for `{bag_name}`\n\n"
-        f"### Summary:\n```\n{results_summary}\n```\n"
+    # Comment in to generate new reference data
+    validation_passed = validate_bags(
+        reference_folder=None,
+        yaml_file="default",
+        mission_folder=MISSION_DATA,
+        time_tolerance=20,
     )
-    create_github_issue(
-        title=f"Testing Github Auto Verification: {bag_name}",
-        body=issue_body,
-        label="test_auto_verification",
-    )
+
+    if not validation_passed:
+        print("Validation failed. Reading error logs.")
+
+        # Read error logs
+        with open(LOG_FILE, "r") as f:
+            logs = f.read()
+
+        # Create a GitHub issue with the results
+        # TODO(kappi): Get this in a neater way, using kleinkram API
+        name = list(pathlib.Path(MISSION_DATA).rglob("*.bag"))[0].name
+        mission_name = name.split("_")[0]
+        issue_body = (
+            f"## Raw Data Verification Results for `{mission_name}`\n\n"
+            f"### Validation Failed\n\n"
+            f"### Logs:\n```{logs}```"
+        )
+        create_github_issue(
+            title=f"Raw Data Verification Failed for {mission_name}",
+            body=issue_body,
+        )
+        return False
+    else:
+        return True
 
 
 if __name__ == "__main__":
-    # Get the bag file matching the pattern
-    pattern = "*_jetson_hdr_front.bag"
-    try:
-        input_bag = get_bag(pattern)
-        print(f"Found bag file: {input_bag}")
+    
+    if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
+        project_uuid = os.environ.get("PROJECT_UUID", GRAND_TOUR_UUID)
+        mission_uuid = os.environ["MISSION_UUID"]
+        print(f"Dowloading Mission from KleinKram UUID: {mission_uuid}")
+        os.system(f"klein download --project {project_uuid} --mission {mission_uuid} --dest {MISSION_DATA} '*.bag'")
 
-        # Run analysis and report results
-        analyze_bag_and_report(input_bag)
+    validation_passed = analyze_mission_and_report()
+    return_code = 1
+    if not validation_passed:
+        return_code = -1
 
-    except FileNotFoundError as e:
-        print(f"Error: {e}")
+    sys.exit(return_code)
+
