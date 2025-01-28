@@ -11,7 +11,6 @@ Exit Codes:
 EXIT CODE 0: Successful Conversion
 EXIT CODE 1: Empty HDR Bag
 EXIT CODE 2: Timestamps could not be matched correctly
-testing saving
 """
 
 
