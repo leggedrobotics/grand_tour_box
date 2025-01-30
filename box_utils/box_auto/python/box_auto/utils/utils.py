@@ -283,7 +283,7 @@ def create_github_issue(
     # Append links to kleinkram onto the body
     if "ACTION_UUID" in os.environ and "MISSION_UUID" in os.environ and "PROJECT_UUID" in os.environ:
         action_uuid = os.environ.get("ACTION_UUID")
-        body += f"\n\n[Link to Kleinkram Actions and Artifacts](https://datasets.leggedrobotics.com/action/{action_uuid})"
+        body += f"\n\n[Link to Kleinkram Action (Logs and Artifacts)](https://datasets.leggedrobotics.com/action/{action_uuid})"
         project_uuid = os.environ.get("PROJECT_UUID")
         mission_uuid = os.environ.get("MISSION_UUID")
         body += f"\n\n[Link to Kleinkram Mission Files](https://datasets.leggedrobotics.com/project/{project_uuid}/mission/{mission_uuid}/files?sortBy=filename)"

@@ -1,7 +1,7 @@
 import pathlib
 import os
 import sys
-from box_auto.utils import create_github_issue, MISSION_DATA, ARTIFACT_FOLDER
+from box_auto.utils import create_github_issue, MISSION_DATA, ARTIFACT_FOLDER, WS
 from box_auto.scripts.verification.health_check_mission import validate_bags, LOG_FILE
 from box_auto.scripts.verification.topic_freq import read_rosbag_and_generate_histograms
 
@@ -15,9 +15,10 @@ def analyze_mission_and_report():
     """
 
     # TODO(kappi): generate new default reference data
+    yaml_path = str(pathlib.Path(WS) / "src/grand_tour_box/box_utils/box_auto/cfg/health_check_reference_raw_data.yaml")
     validation_passed = validate_bags(
         reference_folder=None,
-        yaml_file="default",
+        yaml_file=yaml_path,
         mission_folder=MISSION_DATA,
         time_tolerance=20,
     )
@@ -42,11 +43,13 @@ def analyze_mission_and_report():
         issue_body = (
             f"## Raw Data Verification Results for `{mission_name}`\n\n"
             f"### Validation Failed\n\n"
+            f"For topic frequency histograms, check the artifacts folder using the link below.\n\n"
             f"### Logs:\n```{logs}```"
         )
         create_github_issue(
             title=f"Raw Data Verification Failed for {mission_name}",
             body=issue_body,
+            dry_run=True, # TODO: Change to False
         )
         return False
     else:
