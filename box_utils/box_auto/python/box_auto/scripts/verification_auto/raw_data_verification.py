@@ -49,7 +49,6 @@ def analyze_mission_and_report():
         create_github_issue(
             title=f"Raw Data Verification Failed for {mission_name}",
             body=issue_body,
-            dry_run=True, # TODO: Change to False
         )
         return False
     else:
