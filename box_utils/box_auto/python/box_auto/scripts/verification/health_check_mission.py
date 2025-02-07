@@ -3,6 +3,7 @@ import yaml
 from pathlib import Path
 from typing import Optional, Dict, Union
 import logging
+from std_msgs.msg import Header
 from colorama import init, Fore, Style
 import statistics
 import sys
@@ -219,6 +220,21 @@ def validate_mission_folder(reference_data: Dict, mission_folder: str, time_tole
         logger.error("❌ Some checks failed. See logs for details.")
     return validation_passed
 
+def get_header_timestamps(bag: rosbag.Bag, topic: str) -> list:
+    timestamps = []
+    for _, msg, arrival_time in bag.read_messages(topics=[topic]):
+        if isinstance(msg, Header):  # If it's a std_msgs/Header message
+            timestamp = msg.stamp.to_sec()
+        else:  # Otherwise, try accessing msg.header.stamp
+            timestamp = msg.header.stamp.to_sec()
+
+        # Fallback to arrival_time if timestamp is missing or zero
+        if timestamp == 0:
+            timestamp = arrival_time.to_sec()
+
+        timestamps.append(timestamp)
+
+
 def check_topic_frequency(
     bag,
     info,
@@ -242,9 +258,7 @@ def check_topic_frequency(
     # If the frequency is an unreasonable value, check the actual timestamps
     if actual_freq is None or actual_freq > 1000 or actual_freq <= 0:
         logger.warning(f"⚠️  Frequency invalid for {topic} in {bag_name}. Freq is {actual_freq}. Calculating from timestamps instead.")
-        timestamps = []
-        for _, msg, _ in bag.read_messages(topics=[topic]):
-            timestamps.append(msg.header.stamp.to_sec())
+        timestamps = get_header_timestamps(bag, topic)
         mean_period = statistics.mean([timestamps[i] - timestamps[i - 1] for i in range(1, len(timestamps))])
         actual_freq = 1.0 / mean_period
 
@@ -287,9 +301,7 @@ def check_dropped_frames(
     nominal_period = 1.0 / ref_freq
 
     # Gather header timestamps
-    timestamps = []
-    for _, msg, _ in bag.read_messages(topics=[topic]):
-        timestamps.append(msg.header.stamp.to_sec())
+    timestamps = get_header_timestamps(bag, topic)
 
     if len(timestamps) < 2:
         # Not enough data to do gap analysis
