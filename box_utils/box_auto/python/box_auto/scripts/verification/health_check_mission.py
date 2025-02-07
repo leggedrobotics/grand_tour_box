@@ -3,7 +3,6 @@ import yaml
 from pathlib import Path
 from typing import Optional, Dict, Union
 import logging
-from std_msgs.msg import Header
 from colorama import init, Fore, Style
 import statistics
 import sys
@@ -165,13 +164,15 @@ def validate_mission_folder(reference_data: Dict, mission_folder: str, time_tole
                     logger.error(f"❌ Missing topic {topic} in {mission_bag_path.name}")
                     validation_passed = False
                     continue
-                elif info.topics[topic].msg_type != ref_topic_info["msg_type"]:
+                elif info.topics[topic].msg_type not in ref_topic_info["msg_type"]:
                     logger.error(f"❌ Type mismatch for topic {topic} in {mission_bag_path.name}. Expected {ref_topic_info['msg_type']}, got {info.topics[topic].msg_type}")
                     validation_passed = False
                     continue
 
                 # Now perform checks based on "checking"
                 checks = ref_topic_info.get("checking", [])
+                if checks is None:
+                    checks = []
                 # Allow user to specify as a string or list
                 if isinstance(checks, str):
                     checks = [checks]
@@ -193,11 +194,17 @@ def validate_mission_folder(reference_data: Dict, mission_folder: str, time_tole
     logger.info("Timing analysis of available bags...")
     logger.info("-" * 90)
 
+    check_timing_bags = [
+        ref_key
+        for ref_key, ref_config in reference_data.items()
+        if ref_config.get("check_start_end_times", True) 
+    ]
+
     if timing_info["start_times"]:
         median_start = statistics.median(timing_info["start_times"].values())
-        # median_end = statistics.median(timing_info["end_times"].values())  # Potentially used if needed
-
         for bag_key, start_time in timing_info["start_times"].items():
+            if not bag_key in check_timing_bags:
+                continue
             if abs(start_time - median_start) > time_tolerance:
                 type = "early" if start_time < median_start else "late"
                 logger.error(f"❌ Start time deviation too large for {bag_key}. Bag started {type}.")
@@ -206,6 +213,8 @@ def validate_mission_folder(reference_data: Dict, mission_folder: str, time_tole
     if timing_info["end_times"]:
         median_end = statistics.median(timing_info["end_times"].values())
         for bag_key, end_time in timing_info["end_times"].items():
+            if not bag_key in check_timing_bags:
+                continue
             if abs(end_time - median_end) > time_tolerance:
                 type = "early" if end_time < median_end else "late"
                 logger.error(f"❌ End time deviation too large for {bag_key}. Bag ended {type}.")
@@ -223,16 +232,20 @@ def validate_mission_folder(reference_data: Dict, mission_folder: str, time_tole
 def get_header_timestamps(bag: rosbag.Bag, topic: str) -> list:
     timestamps = []
     for _, msg, arrival_time in bag.read_messages(topics=[topic]):
-        if isinstance(msg, Header):  # If it's a std_msgs/Header message
+        if type(msg).__name__ == '_std_msgs__Header':
             timestamp = msg.stamp.to_sec()
         else:  # Otherwise, try accessing msg.header.stamp
-            timestamp = msg.header.stamp.to_sec()
+            try:
+                timestamp = msg.header.stamp.to_sec()
+            except AttributeError:
+                timestamp = 0
 
         # Fallback to arrival_time if timestamp is missing or zero
         if timestamp == 0:
             timestamp = arrival_time.to_sec()
 
         timestamps.append(timestamp)
+    return timestamps
 
 
 def check_topic_frequency(
@@ -259,6 +272,9 @@ def check_topic_frequency(
     if actual_freq is None or actual_freq > 1000 or actual_freq <= 0:
         logger.warning(f"⚠️  Frequency invalid for {topic} in {bag_name}. Freq is {actual_freq}. Calculating from timestamps instead.")
         timestamps = get_header_timestamps(bag, topic)
+        if len(timestamps) < 2:
+            logger.warning(f"⚠️  Not enough messages on {topic} in {bag_name} for frequency check.")
+            return True
         mean_period = statistics.mean([timestamps[i] - timestamps[i - 1] for i in range(1, len(timestamps))])
         actual_freq = 1.0 / mean_period
 

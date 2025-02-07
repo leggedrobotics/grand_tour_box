@@ -38,6 +38,7 @@ def analyze_mission_and_report():
 
         # Get a string with only ERROR logs
         errors = [line for line in logs.split("\n") if "ERROR" in line]
+        error_string = "\n".join(errors)
 
         # Create a GitHub issue with the results
         name = list(pathlib.Path(MISSION_DATA).rglob("*.bag"))[0].name
@@ -45,12 +46,8 @@ def analyze_mission_and_report():
         issue_body = (
             f"## Raw Data Verification Results for `{mission_name}`\n\n"
             f"### Validation Failed\n\n"
-            f"For topic frequency histograms, check the artifacts folder using the link below.\n\n"
-            f"### Error Logs\n```{errors}```\n\n"
-            f"<details>\n"
-            f"<summary>Click to see all logs</summary>\n\n"
-            f"### All Logs:\n```{logs}```"
-            f"</details>\n\n"
+            f"For topic frequency histograms and full logs, check the artifacts folder using the link below.\n\n"
+            f"### Error Logs\n```{error_string}```\n\n"
         )
         create_github_issue(
             title=f"Raw Data Verification Failed for {mission_name}",

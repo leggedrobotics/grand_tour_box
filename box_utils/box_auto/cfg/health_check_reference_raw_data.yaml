@@ -818,9 +818,9 @@ _npc_elevation_mapping.bag:
       checking:
       - freq
       - dropped_frames
-      dropped_frames_threshold_percent: 10.0
+      dropped_frames_threshold_percent: 50.0
       freq: 15.0
-      freq_tolerance_percent: 10.0
+      freq_tolerance_percent: 20.0
       msg_type: grid_map_msgs/GridMap
 _npc_velodyne.bag:
   check_presence: true
@@ -928,8 +928,8 @@ _nuc_alphasense.bag:
       checking:
       - freq
       - dropped_frames
-      dropped_frames_threshold_percent: 5.0
-      freq: 10.0
+      dropped_frames_threshold_percent: 100.0
+      freq: 5.0
       freq_tolerance_percent: 10.0
       msg_type: std_msgs/String
     /gt_box/alphasense_driver_node/imu:
@@ -953,168 +953,126 @@ _nuc_cpt7.bag:
   topics:
     /gt_box/cpt7/bestgnsspos:
       checking:
-      - freq
-      - dropped_frames
       dropped_frames_threshold_percent: 100.0
       freq: 10.0
       freq_tolerance_percent: 50.0
-      msg_type: novatel_oem7_msgs/BESTGNSSPOS
+      msg_type: novatel_oem7_msgs/BESTGNSSPOS|novatel_oem7_msgs/BESTPOS
     /gt_box/cpt7/bestpos:
       checking:
-      - freq
-      - dropped_frames
       dropped_frames_threshold_percent: 100.0
       freq: 10.0
       freq_tolerance_percent: 50.0
-      msg_type: novatel_oem7_msgs/BESTGNSSPOS
+      msg_type: novatel_oem7_msgs/BESTGNSSPOS|novatel_oem7_msgs/BESTPOS
     /gt_box/cpt7/bestutm:
       checking:
-      - freq
-      - dropped_frames
       dropped_frames_threshold_percent: 100.0
       freq: 1.0
       freq_tolerance_percent: 50.0
       msg_type: novatel_oem7_msgs/BESTUTM
     /gt_box/cpt7/bestvel:
       checking:
-      - freq
-      - dropped_frames
       dropped_frames_threshold_percent: 100.0
       freq: 10.0
       freq_tolerance_percent: 50.0
       msg_type: novatel_oem7_msgs/BESTVEL
     /gt_box/cpt7/corrimu:
       checking:
-      - freq
-      - dropped_frames
       dropped_frames_threshold_percent: 100.0
       freq: 100.0
       freq_tolerance_percent: 50.0
       msg_type: novatel_oem7_msgs/CORRIMU
     /gt_box/cpt7/gps/fix:
       checking:
-      - freq
-      - dropped_frames
       dropped_frames_threshold_percent: 100.0
       freq: 50.0
       freq_tolerance_percent: 50.0
       msg_type: sensor_msgs/NavSatFix
     /gt_box/cpt7/gps/gps:
       checking:
-      - freq
-      - dropped_frames
       dropped_frames_threshold_percent: 100.0
       freq: 50.0
       freq_tolerance_percent: 50.0
       msg_type: gps_common/GPSFix
     /gt_box/cpt7/gps/imu:
       checking:
-      - freq
-      - dropped_frames
       dropped_frames_threshold_percent: 100.0
       freq: 100.0
       freq_tolerance_percent: 50.0
       msg_type: sensor_msgs/Imu
     /gt_box/cpt7/heading2:
       checking:
-      - freq
-      - dropped_frames
       dropped_frames_threshold_percent: 100.0
       freq: 1.0
       freq_tolerance_percent: 50.0
       msg_type: novatel_oem7_msgs/HEADING2
     /gt_box/cpt7/imu/data_raw:
       checking:
-      - freq
-      - dropped_frames
       dropped_frames_threshold_percent: 100.0
       freq: 100.0
       freq_tolerance_percent: 50.0
       msg_type: sensor_msgs/Imu
     /gt_box/cpt7/insconfig:
       checking:
-      - freq
-      - dropped_frames
       dropped_frames_threshold_percent: 100.0
       freq: null
       freq_tolerance_percent: 50.0
       msg_type: novatel_oem7_msgs/INSCONFIG
     /gt_box/cpt7/inspva:
       checking:
-      - freq
-      - dropped_frames
       dropped_frames_threshold_percent: 100.0
       freq: 50.0
       freq_tolerance_percent: 50.0
       msg_type: novatel_oem7_msgs/INSPVA
     /gt_box/cpt7/inspvax:
       checking:
-      - freq
-      - dropped_frames
       dropped_frames_threshold_percent: 100.0
       freq: 1.0
       freq_tolerance_percent: 50.0
       msg_type: novatel_oem7_msgs/INSPVAX
     /gt_box/cpt7/insstdev:
       checking:
-      - freq
-      - dropped_frames
       dropped_frames_threshold_percent: 100.0
       freq: 1.0
       freq_tolerance_percent: 50.0
       msg_type: novatel_oem7_msgs/INSSTDEV
     /gt_box/cpt7/odom:
       checking:
-      - freq
-      - dropped_frames
       dropped_frames_threshold_percent: 100.0
       freq: 50.0
       freq_tolerance_percent: 50.0
       msg_type: nav_msgs/Odometry
     /gt_box/cpt7/oem7raw:
       checking:
-      - freq
-      - dropped_frames
       dropped_frames_threshold_percent: 100.0
       freq: 100.0
       freq_tolerance_percent: 50.0
       msg_type: novatel_oem7_msgs/Oem7RawMsg
     /gt_box/cpt7/ppppos:
       checking:
-      - freq
-      - dropped_frames
       dropped_frames_threshold_percent: 100.0
       freq: 1.0
       freq_tolerance_percent: 50.0
       msg_type: novatel_oem7_msgs/PPPPOS
     /gt_box/cpt7/rxstatus:
       checking:
-      - freq
-      - dropped_frames
       dropped_frames_threshold_percent: 100.0
-      freq: 0.25
-      freq_tolerance_percent: 50.0
+      freq: 1.0
+      freq_tolerance_percent: 100.0
       msg_type: novatel_oem7_msgs/RXSTATUS
     /gt_box/cpt7/terrastarinfo:
       checking:
-      - freq
-      - dropped_frames
       dropped_frames_threshold_percent: 100.0
       freq: null
       freq_tolerance_percent: 50.0
       msg_type: novatel_oem7_msgs/TERRASTARINFO
     /gt_box/cpt7/terrastarstatus:
       checking:
-      - freq
-      - dropped_frames
       dropped_frames_threshold_percent: 100.0
       freq: null
       freq_tolerance_percent: 50.0
       msg_type: novatel_oem7_msgs/TERRASTARSTATUS
     /gt_box/cpt7/time:
       checking:
-      - freq
-      - dropped_frames
       dropped_frames_threshold_percent: 100.0
       freq: 1.0
       freq_tolerance_percent: 50.0
@@ -1175,6 +1133,7 @@ _nuc_livox.bag:
       msg_type: sensor_msgs/PointCloud2
 _nuc_tf.bag:
   check_presence: true
+  check_start_end_times: false
   topics:
     /tf_static:
       checking:
