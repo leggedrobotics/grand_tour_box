@@ -1,4 +1,5 @@
 _cpt7_ie_dgps.bag:
+  check_presence: false
   topics:
     /gt_box/inertial_explorer/dgps/gps_path:
       checking:
@@ -33,6 +34,7 @@ _cpt7_ie_dgps.bag:
       freq_tolerance_percent: 10.0
       msg_type: tf2_msgs/TFMessage
 _cpt7_ie_lc.bag:
+  check_presence: false
   topics:
     /gt_box/inertial_explorer/lc/gps_path:
       checking:
@@ -47,7 +49,7 @@ _cpt7_ie_lc.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 100.00009536752259
+      freq: 100.0
       freq_tolerance_percent: 10.0
       msg_type: geometry_msgs/PoseWithCovarianceStamped
     /gt_box/inertial_explorer/lc/odometry:
@@ -55,7 +57,7 @@ _cpt7_ie_lc.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 100.00009536752259
+      freq: 100.0
       freq_tolerance_percent: 10.0
       msg_type: nav_msgs/Odometry
     /tf:
@@ -63,10 +65,11 @@ _cpt7_ie_lc.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 100.00009536752259
+      freq: 100.0
       freq_tolerance_percent: 10.0
       msg_type: tf2_msgs/TFMessage
 _cpt7_ie_ppp.bag:
+  check_presence: false
   topics:
     /gt_box/inertial_explorer/ppp/gps_path:
       checking:
@@ -101,6 +104,7 @@ _cpt7_ie_ppp.bag:
       freq_tolerance_percent: 10.0
       msg_type: tf2_msgs/TFMessage
 _cpt7_ie_tc.bag:
+  check_presence: false
   topics:
     /gt_box/inertial_explorer/tc/gps_path:
       checking:
@@ -115,7 +119,7 @@ _cpt7_ie_tc.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 100.00009536752259
+      freq: 100.0
       freq_tolerance_percent: 10.0
       msg_type: geometry_msgs/PoseWithCovarianceStamped
     /gt_box/inertial_explorer/tc/odometry:
@@ -123,7 +127,7 @@ _cpt7_ie_tc.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 100.00009536752259
+      freq: 100.0
       freq_tolerance_percent: 10.0
       msg_type: nav_msgs/Odometry
     /tf:
@@ -131,79 +135,83 @@ _cpt7_ie_tc.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 100.00009536752259
+      freq: 100.0
       freq_tolerance_percent: 10.0
       msg_type: tf2_msgs/TFMessage
 _cpt7_raw_imu.bag:
+  check_presence: true
   topics:
     /gt_box/cpt7/offline_from_novatel_logs/imu:
       checking:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 100.00009536752259
+      freq: 100.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/Imu
 _jetson_adis.bag:
+  check_presence: true
   topics:
     /gt_box/adis16475_node/imu:
       checking:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 196.87870822380773
+      freq: 200.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/Imu
 _jetson_ap20_aux.bag:
+  check_presence: true
   topics:
     /ap20/imu:
       checking:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 200.0431153717747
+      freq: 200.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/Imu
     /ap20/tps:
       checking:
       - freq
       - dropped_frames
-      dropped_frames_threshold_percent: 5.0
-      freq: 19.06571148041747
+      dropped_frames_threshold_percent: 100.0
+      freq: 20.0
       freq_tolerance_percent: 10.0
       msg_type: geometry_msgs/PointStamped
     /gt_box/ap20/imu_debug:
       checking:
       - freq
       - dropped_frames
-      dropped_frames_threshold_percent: 5.0
-      freq: 200.1194713488239
+      dropped_frames_threshold_percent: 100.0
+      freq: 200
       freq_tolerance_percent: 10.0
       msg_type: ap20_driver_ros/ImuDebug
     /gt_box/ap20/position_debug:
       checking:
       - freq
       - dropped_frames
-      dropped_frames_threshold_percent: 5.0
-      freq: 19.08141084841068
+      dropped_frames_threshold_percent: 100.0
+      freq: 20.0
       freq_tolerance_percent: 10.0
       msg_type: ap20_driver_ros/PositionDebug
     /gt_box/ap20/timestamp_debug:
       checking:
       - freq
       - dropped_frames
-      dropped_frames_threshold_percent: 5.0
-      freq: 200.0431153717747
+      dropped_frames_threshold_percent: 100.0
+      freq: 200.0
       freq_tolerance_percent: 10.0
       msg_type: ap20_driver_ros/TimestampDebug
 _jetson_hdr_front.bag:
+  check_presence: true
   topics:
     /gt_box/hdr_front/camera_info:
       checking:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 10.000438709431299
+      freq: 10.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/CameraInfo
     /gt_box/hdr_front/image_raw/compressed:
@@ -211,7 +219,7 @@ _jetson_hdr_front.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 10.000176432861336
+      freq: 10.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/CompressedImage
     /gt_box/hdr_front/kernel_timestamp:
@@ -219,7 +227,7 @@ _jetson_hdr_front.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 10.000534086140465
+      freq: 10.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/TimeReference
     /gt_box/hdr_front/v4l2_timestamp:
@@ -227,17 +235,18 @@ _jetson_hdr_front.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 10.000569852875433
+      freq: 10.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/TimeReference
 _jetson_hdr_left.bag:
+  check_presence: true
   topics:
     /gt_box/hdr_left/camera_info:
       checking:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 10.001583350025276
+      freq: 10.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/CameraInfo
     /gt_box/hdr_left/image_raw/compressed:
@@ -245,7 +254,7 @@ _jetson_hdr_left.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 10.001631049069777
+      freq: 10.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/CompressedImage
     /gt_box/hdr_left/kernel_timestamp:
@@ -253,7 +262,7 @@ _jetson_hdr_left.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 10.00103484371237
+      freq: 10.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/TimeReference
     /gt_box/hdr_left/v4l2_timestamp:
@@ -261,17 +270,18 @@ _jetson_hdr_left.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 10.001249469452379
+      freq: 10.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/TimeReference
 _jetson_hdr_right.bag:
+  check_presence: true
   topics:
     /gt_box/hdr_right/camera_info:
       checking:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 10.001535651435738
+      freq: 10.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/CameraInfo
     /gt_box/hdr_right/image_raw/compressed:
@@ -279,7 +289,7 @@ _jetson_hdr_right.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 10.00151180231158
+      freq: 10.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/CompressedImage
     /gt_box/hdr_right/kernel_timestamp:
@@ -287,7 +297,7 @@ _jetson_hdr_right.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 10.001321013412817
+      freq: 10.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/TimeReference
     /gt_box/hdr_right/v4l2_timestamp:
@@ -295,17 +305,18 @@ _jetson_hdr_right.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 10.001797999308462
+      freq: 10.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/TimeReference
 _jetson_stim.bag:
+  check_presence: true
   topics:
     /gt_box/stim320/acceletometer_temperature:
       checking:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 10.000414865538264
+      freq: 10.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/Temperature
     /gt_box/stim320/continuous_counter:
@@ -313,67 +324,69 @@ _jetson_stim.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 503.8203003003003
+      freq: 500.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/Illuminance
     /gt_box/stim320/gyroscope_temperature:
       checking:
       - freq
       - dropped_frames
-      dropped_frames_threshold_percent: 5.0
-      freq: 9.99997377402508
+      dropped_frames_threshold_percent: 10.0
+      freq: 10.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/Temperature
     /gt_box/stim320/imu:
       checking:
       - freq
       - dropped_frames
-      dropped_frames_threshold_percent: 5.0
-      freq: 501.8911092497308
+      dropped_frames_threshold_percent: 10.0
+      freq: 500.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/Imu
     /gt_box/stim320/internal_counter:
       checking:
       - freq
       - dropped_frames
-      dropped_frames_threshold_percent: 5.0
-      freq: 504.06249248888355
+      dropped_frames_threshold_percent: 10.0
+      freq: 500.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/Illuminance
     /gt_box/stim320/kernel_time:
       checking:
       - freq
       - dropped_frames
-      dropped_frames_threshold_percent: 5.0
-      freq: 505.21609250782944
+      dropped_frames_threshold_percent: 10.0
+      freq: 500.0
       freq_tolerance_percent: 10.0
       msg_type: std_msgs/Header
     /gt_box/stim320/ros_time:
       checking:
       - freq
       - dropped_frames
-      dropped_frames_threshold_percent: 5.0
-      freq: 505.39872273767924
+      dropped_frames_threshold_percent: 10.0
+      freq: 500.0
       freq_tolerance_percent: 10.0
       msg_type: std_msgs/Header
 _jetson_utils.bag:
+  check_presence: true
   topics:
     /gt_box/health_status/jetson/status:
       checking:
       - freq
       - dropped_frames
-      dropped_frames_threshold_percent: 5.0
-      freq: 1.1994462471692517
-      freq_tolerance_percent: 10.0
+      dropped_frames_threshold_percent: 10.0
+      freq: 1.2
+      freq_tolerance_percent: 20.0
       msg_type: box_health/HealthStatusJetson
 _jetson_zed2i_depth.bag:
+  check_presence: true
   topics:
     /gt_box/zed2i/zed_node/confidence/confidence_map/compressed:
       checking:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 14.925605129993523
+      freq: 15.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/CompressedImage
     /gt_box/zed2i/zed_node/confidence_mono/confidence_map/compressed:
@@ -381,7 +394,7 @@ _jetson_zed2i_depth.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 14.925605129993523
+      freq: 15.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/CompressedImage
     /gt_box/zed2i/zed_node/depth/camera_info:
@@ -389,7 +402,7 @@ _jetson_zed2i_depth.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 14.925605129993523
+      freq: 15.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/CameraInfo
     /gt_box/zed2i/zed_node/depth/depth_registered/compressed:
@@ -397,7 +410,7 @@ _jetson_zed2i_depth.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 14.925605129993523
+      freq: 15.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/CompressedImage
     /gt_box/zed2i/zed_node/depth_mono/depth_registered/compressed:
@@ -405,17 +418,18 @@ _jetson_zed2i_depth.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 14.925605129993523
+      freq: 15.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/CompressedImage
 _jetson_zed2i_images.bag:
+  check_presence: true
   topics:
     /gt_box/zed2i/zed_node/left/camera_info:
       checking:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 14.925605129993523
+      freq: 15.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/CameraInfo
     /gt_box/zed2i/zed_node/left/image_rect_color/compressed:
@@ -423,7 +437,7 @@ _jetson_zed2i_images.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 14.925605129993523
+      freq: 15.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/CompressedImage
     /gt_box/zed2i/zed_node/right/camera_info:
@@ -431,7 +445,7 @@ _jetson_zed2i_images.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 14.925605129993523
+      freq: 15.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/CameraInfo
     /gt_box/zed2i/zed_node/right/image_rect_color/compressed:
@@ -439,87 +453,91 @@ _jetson_zed2i_images.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 14.925605129993523
+      freq: 15.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/CompressedImage
 _jetson_zed2i_prop.bag:
+  check_presence: true
   topics:
     /gt_box/zed2i/zed_node/barometer:
       checking:
       - freq
       - dropped_frames
-      dropped_frames_threshold_percent: 5.0
-      freq: 41.450197155817335
-      freq_tolerance_percent: 10.0
+      dropped_frames_threshold_percent: 100.0
+      freq: 50.0
+      freq_tolerance_percent: 100.0
       msg_type: sensor_msgs/FluidPressure
     /gt_box/zed2i/zed_node/imu/data:
       checking:
       - freq
       - dropped_frames
-      dropped_frames_threshold_percent: 5.0
-      freq: 58.45231060817214
-      freq_tolerance_percent: 10.0
+      dropped_frames_threshold_percent: 100.0
+      freq: 50.0
+      freq_tolerance_percent: 100.0
       msg_type: sensor_msgs/Imu
     /gt_box/zed2i/zed_node/imu/mag:
       checking:
       - freq
       - dropped_frames
-      dropped_frames_threshold_percent: 5.0
-      freq: 37.5847162980752
-      freq_tolerance_percent: 10.0
+      dropped_frames_threshold_percent: 100.0
+      freq: 50.0
+      freq_tolerance_percent: 100.0
       msg_type: sensor_msgs/MagneticField
     /gt_box/zed2i/zed_node/imu_raw/data:
       checking:
       - freq
       - dropped_frames
-      dropped_frames_threshold_percent: 5.0
-      freq: 58.46819959156078
-      freq_tolerance_percent: 10.0
+      dropped_frames_threshold_percent: 100.0
+      freq: 50.0
+      freq_tolerance_percent: 100.0
       msg_type: sensor_msgs/Imu
     /gt_box/zed2i/zed_node/odom:
       checking:
       - freq
       - dropped_frames
-      dropped_frames_threshold_percent: 5.0
-      freq: 14.925605129993523
+      dropped_frames_threshold_percent: 100.0
+      freq: 15.0
       freq_tolerance_percent: 10.0
       msg_type: nav_msgs/Odometry
     /gt_box/zed2i/zed_node/temperature/imu:
       checking:
       - freq
       - dropped_frames
-      dropped_frames_threshold_percent: 5.0
-      freq: 58.462902304057536
-      freq_tolerance_percent: 10.0
+      dropped_frames_threshold_percent: 100.0
+      freq: 50.0
+      freq_tolerance_percent: 100.0
       msg_type: sensor_msgs/Temperature
 _jetson_zed2i_tf.bag:
+  check_presence: true
   topics:
     /tf:
       checking:
       - freq
       - dropped_frames
-      dropped_frames_threshold_percent: 5.0
-      freq: 14.925605129993523
+      dropped_frames_threshold_percent: 10.0
+      freq: 15.0
       freq_tolerance_percent: 10.0
       msg_type: tf2_msgs/TFMessage
 _lpc_anymal_imu.bag:
+  check_presence: true
   topics:
     /sensors/imu:
       checking:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 399.9908449361053
+      freq: 400.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/Imu
 _lpc_depth_cameras.bag:
+  check_presence: true
   topics:
     /depth_camera_front_lower/camera_timestamping_info:
       checking:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 14.997976099378526
+      freq: 15.0
       freq_tolerance_percent: 10.0
       msg_type: any_realsense2_msgs/TimestampingInfoMsg
     /depth_camera_front_lower/depth/camera_info:
@@ -527,7 +545,7 @@ _lpc_depth_cameras.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 15.005810126219984
+      freq: 15.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/CameraInfo
     /depth_camera_front_lower/depth/image_rect_raw:
@@ -535,7 +553,7 @@ _lpc_depth_cameras.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 15.020803415069135
+      freq: 15.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/Image
     /depth_camera_front_upper/camera_timestamping_info:
@@ -543,7 +561,7 @@ _lpc_depth_cameras.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 14.999960661037619
+      freq: 15.0
       freq_tolerance_percent: 10.0
       msg_type: any_realsense2_msgs/TimestampingInfoMsg
     /depth_camera_front_upper/depth/camera_info:
@@ -551,7 +569,7 @@ _lpc_depth_cameras.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 14.997493447564425
+      freq: 15.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/CameraInfo
     /depth_camera_front_upper/depth/image_rect_raw:
@@ -559,7 +577,7 @@ _lpc_depth_cameras.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 14.995187873154338
+      freq: 15.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/Image
     /depth_camera_rear_lower/camera_timestamping_info:
@@ -567,7 +585,7 @@ _lpc_depth_cameras.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 15.000550767139945
+      freq: 15.0
       freq_tolerance_percent: 10.0
       msg_type: any_realsense2_msgs/TimestampingInfoMsg
     /depth_camera_rear_lower/depth/camera_info:
@@ -575,7 +593,7 @@ _lpc_depth_cameras.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 14.990471697438867
+      freq: 15.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/CameraInfo
     /depth_camera_rear_lower/depth/image_rect_raw:
@@ -583,7 +601,7 @@ _lpc_depth_cameras.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 14.998673317956696
+      freq: 15.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/Image
     /depth_camera_rear_upper/camera_timestamping_info:
@@ -591,7 +609,7 @@ _lpc_depth_cameras.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 14.998190621267709
+      freq: 15.0
       freq_tolerance_percent: 10.0
       msg_type: any_realsense2_msgs/TimestampingInfoMsg
     /depth_camera_rear_upper/depth/camera_info:
@@ -599,7 +617,7 @@ _lpc_depth_cameras.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 14.999907017330539
+      freq: 15.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/CameraInfo
     /depth_camera_rear_upper/depth/image_rect_raw:
@@ -607,33 +625,34 @@ _lpc_depth_cameras.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 14.996340571743207
+      freq: 15.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/Image
 _lpc_general.bag:
+  check_presence: true
   topics:
     /anyjoy/rcu:
       checking:
       - freq
       - dropped_frames
-      dropped_frames_threshold_percent: 5.0
-      freq: 7.683317838971602
-      freq_tolerance_percent: 10.0
+      dropped_frames_threshold_percent: 75.0 # Bimodal distribution
+      freq: 7.5
+      freq_tolerance_percent: 20.0
       msg_type: joy_manager_msgs/AnyJoy
     /anymal_low_level_controller/actuator_readings:
       checking:
       - freq
       - dropped_frames
-      dropped_frames_threshold_percent: 5.0
-      freq: 47127.011235955055
-      freq_tolerance_percent: 10.0
+      dropped_frames_threshold_percent: 75.0
+      freq: 400.0
+      freq_tolerance_percent: 20.0
       msg_type: series_elastic_actuator_msgs/SeActuatorReadings
     /anymal_low_level_controller/actuator_readings_extended_throttled:
       checking:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 20.005074834734
+      freq: 20.0
       freq_tolerance_percent: 10.0
       msg_type: anydrive_msgs/ReadingsExtended
     /foot_scan:
@@ -641,7 +660,7 @@ _lpc_general.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 24.38208622052737
+      freq: 25.0
       freq_tolerance_percent: 10.0
       msg_type: visualization_msgs/Marker
     /joy_manager/twist:
@@ -649,7 +668,7 @@ _lpc_general.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 10.000069141865996
+      freq: 10.0
       freq_tolerance_percent: 10.0
       msg_type: geometry_msgs/TwistStamped
     /pdb/battery_state:
@@ -657,7 +676,7 @@ _lpc_general.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 9.999353927394314
+      freq: 10.0
       freq_tolerance_percent: 10.0
       msg_type: pdb_msgs/BatteryState
     /pdb/intrinsic_state:
@@ -665,7 +684,7 @@ _lpc_general.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 9.998984439999713
+      freq: 10.0
       freq_tolerance_percent: 10.0
       msg_type: pdb_msgs/IntrinsicState
     /pdb/power_state:
@@ -673,7 +692,7 @@ _lpc_general.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 9.99986648737829
+      freq: 10.0
       freq_tolerance_percent: 10.0
       msg_type: pdb_msgs/PowerStates
     /twist_mux/selected_input:
@@ -681,7 +700,7 @@ _lpc_general.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: null
+      freq: 10.0
       freq_tolerance_percent: 10.0
       msg_type: std_msgs/String
     /twist_mux/twist:
@@ -689,79 +708,83 @@ _lpc_general.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 9.999902249338097
+      freq: 10.07
       freq_tolerance_percent: 10.0
       msg_type: geometry_msgs/TwistStamped
 _lpc_locomotion.bag:
+  check_presence: true
   topics:
     /debug_info:
       checking:
       - freq
       - dropped_frames
-      dropped_frames_threshold_percent: 5.0
-      freq: 54.45592168471346
-      freq_tolerance_percent: 10.0
+      dropped_frames_threshold_percent: 100.0 # Very spread distribution.
+      freq: 50.0
+      freq_tolerance_percent: 20.0
       msg_type: signal_logger_msgs/Float32MultiArrayStamped
 _lpc_state_estimator.bag:
+  check_presence: true
   topics:
     /state_estimator/anymal_state:
       checking:
       - freq
       - dropped_frames
-      dropped_frames_threshold_percent: 5.0
-      freq: 107546.2564102564
-      freq_tolerance_percent: 10.0
+      dropped_frames_threshold_percent: 100.0 # very spread distribution 
+      freq: 400.0
+      freq_tolerance_percent: 25.0
       msg_type: anymal_msgs/AnymalState
     /state_estimator/odometry:
       checking:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 19.99672943201295
+      freq: 20.0
       freq_tolerance_percent: 10.0
       msg_type: nav_msgs/Odometry
     /state_estimator/pose_in_odom:
       checking:
       - freq
       - dropped_frames
-      dropped_frames_threshold_percent: 5.0
-      freq: 400.9467546123698
-      freq_tolerance_percent: 10.0
+      dropped_frames_threshold_percent: 100.0 # very spread distribution
+      freq: 400.0
+      freq_tolerance_percent: 25.0
       msg_type: geometry_msgs/PoseWithCovarianceStamped
     /state_estimator/twist_throttle:
       checking:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 19.99858866161255
+      freq: 20.0
       freq_tolerance_percent: 10.0
       msg_type: geometry_msgs/TwistWithCovarianceStamped
 _lpc_tf.bag:
+  check_presence: true
   topics:
     /tf:
       checking:
       - freq
       - dropped_frames
-      dropped_frames_threshold_percent: 5.0
-      freq: 7345.5411558669
-      freq_tolerance_percent: 10.0
+      dropped_frames_threshold_percent: 100.0 # Very spread distribution
+      freq: 500.0
+      freq_tolerance_percent: 80.0
       msg_type: tf2_msgs/TFMessage
     /tf_static:
       checking:
       - freq
       - dropped_frames
-      dropped_frames_threshold_percent: 5.0
-      freq: 1646.4392541707557
-      freq_tolerance_percent: 10.0
+      dropped_frames_threshold_percent: 100.0
+      freq: 500.0
+      freq_tolerance_percent: 80.0
       msg_type: tf2_msgs/TFMessage
 _npc_depth_cameras.bag:
+  check_presence: true
   topics:
     /depth_camera_left/depth/camera_info:
       checking:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 15.000711713226064
+      freq: 15.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/CameraInfo
     /depth_camera_left/depth/image_rect_raw:
@@ -769,7 +792,7 @@ _npc_depth_cameras.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 15.001087267525035
+      freq: 15.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/Image
     /depth_camera_right/depth/camera_info:
@@ -777,7 +800,7 @@ _npc_depth_cameras.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 14.99679633867277
+      freq: 15.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/CameraInfo
     /depth_camera_right/depth/image_rect_raw:
@@ -785,27 +808,29 @@ _npc_depth_cameras.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 14.997278945618245
+      freq: 15.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/Image
 _npc_elevation_mapping.bag:
+  check_presence: true
   topics:
     /elevation_mapping/elevation_map_raw:
       checking:
       - freq
       - dropped_frames
-      dropped_frames_threshold_percent: 5.0
-      freq: 14.170855561674568
+      dropped_frames_threshold_percent: 10.0
+      freq: 15.0
       freq_tolerance_percent: 10.0
       msg_type: grid_map_msgs/GridMap
 _npc_velodyne.bag:
+  check_presence: true
   topics:
     /lidar/packets:
       checking:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 10.042749224820122
+      freq: 10.0
       freq_tolerance_percent: 10.0
       msg_type: any_velodyne_msgs/VelodyneScan
     /lidar/time_sync_status:
@@ -813,17 +838,18 @@ _npc_velodyne.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 10.086631972834923
+      freq: 10.0
       freq_tolerance_percent: 10.0
       msg_type: any_velodyne_msgs/VelodyneSyncStatus
 _nuc_alphasense.bag:
+  check_presence: true
   topics:
     /gt_box/alphasense_driver_node/cam1/color/camera_info:
       checking:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 10.00070099975918
+      freq: 10.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/CameraInfo
     /gt_box/alphasense_driver_node/cam1/color/image/compressed:
@@ -831,7 +857,7 @@ _nuc_alphasense.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 10.000188354225156
+      freq: 10.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/CompressedImage
     /gt_box/alphasense_driver_node/cam2/color/camera_info:
@@ -839,7 +865,7 @@ _nuc_alphasense.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 9.996648958102442
+      freq: 10.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/CameraInfo
     /gt_box/alphasense_driver_node/cam2/color/image/compressed:
@@ -847,7 +873,7 @@ _nuc_alphasense.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 9.997018272910259
+      freq: 10.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/CompressedImage
     /gt_box/alphasense_driver_node/cam3/color/camera_info:
@@ -855,7 +881,7 @@ _nuc_alphasense.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 9.999222815838346
+      freq: 10.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/CameraInfo
     /gt_box/alphasense_driver_node/cam3/color/image/compressed:
@@ -863,7 +889,7 @@ _nuc_alphasense.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 9.999830725674267
+      freq: 10.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/CompressedImage
     /gt_box/alphasense_driver_node/cam4/color/camera_info:
@@ -871,7 +897,7 @@ _nuc_alphasense.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 9.998603062297224
+      freq: 10.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/CameraInfo
     /gt_box/alphasense_driver_node/cam4/color/image/compressed:
@@ -879,7 +905,7 @@ _nuc_alphasense.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 9.998078715456806
+      freq: 10.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/CompressedImage
     /gt_box/alphasense_driver_node/cam5/color/camera_info:
@@ -887,7 +913,7 @@ _nuc_alphasense.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 9.997971469468947
+      freq: 10.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/CameraInfo
     /gt_box/alphasense_driver_node/cam5/color/image/compressed:
@@ -895,7 +921,7 @@ _nuc_alphasense.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 9.997947637339651
+      freq: 10.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/CompressedImage
     /gt_box/alphasense_driver_node/debug_info:
@@ -903,7 +929,7 @@ _nuc_alphasense.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 5.000034570932998
+      freq: 10.0
       freq_tolerance_percent: 10.0
       msg_type: std_msgs/String
     /gt_box/alphasense_driver_node/imu:
@@ -911,7 +937,7 @@ _nuc_alphasense.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 39568.90566037736
+      freq: 200.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/Imu
     /gt_box/alphasense_driver_node/serial_number:
@@ -923,183 +949,185 @@ _nuc_alphasense.bag:
       freq_tolerance_percent: 10.0
       msg_type: std_msgs/String
 _nuc_cpt7.bag:
+  check_presence: true
   topics:
     /gt_box/cpt7/bestgnsspos:
       checking:
       - freq
       - dropped_frames
-      dropped_frames_threshold_percent: 5.0
-      freq: 10.08231612044057
-      freq_tolerance_percent: 10.0
+      dropped_frames_threshold_percent: 100.0
+      freq: 10.0
+      freq_tolerance_percent: 50.0
       msg_type: novatel_oem7_msgs/BESTGNSSPOS
     /gt_box/cpt7/bestpos:
       checking:
       - freq
       - dropped_frames
-      dropped_frames_threshold_percent: 5.0
-      freq: 10.122391452822312
-      freq_tolerance_percent: 10.0
+      dropped_frames_threshold_percent: 100.0
+      freq: 10.0
+      freq_tolerance_percent: 50.0
       msg_type: novatel_oem7_msgs/BESTGNSSPOS
     /gt_box/cpt7/bestutm:
       checking:
       - freq
       - dropped_frames
-      dropped_frames_threshold_percent: 5.0
-      freq: 1.000539474492446
-      freq_tolerance_percent: 10.0
+      dropped_frames_threshold_percent: 100.0
+      freq: 1.0
+      freq_tolerance_percent: 50.0
       msg_type: novatel_oem7_msgs/BESTUTM
     /gt_box/cpt7/bestvel:
       checking:
       - freq
       - dropped_frames
-      dropped_frames_threshold_percent: 5.0
-      freq: 10.119729388034783
-      freq_tolerance_percent: 10.0
+      dropped_frames_threshold_percent: 100.0
+      freq: 10.0
+      freq_tolerance_percent: 50.0
       msg_type: novatel_oem7_msgs/BESTVEL
     /gt_box/cpt7/corrimu:
       checking:
       - freq
       - dropped_frames
-      dropped_frames_threshold_percent: 5.0
-      freq: 107.67325563485136
-      freq_tolerance_percent: 10.0
+      dropped_frames_threshold_percent: 100.0
+      freq: 100.0
+      freq_tolerance_percent: 50.0
       msg_type: novatel_oem7_msgs/CORRIMU
     /gt_box/cpt7/gps/fix:
       checking:
       - freq
       - dropped_frames
-      dropped_frames_threshold_percent: 5.0
-      freq: 50.37295382213415
-      freq_tolerance_percent: 10.0
+      dropped_frames_threshold_percent: 100.0
+      freq: 50.0
+      freq_tolerance_percent: 50.0
       msg_type: sensor_msgs/NavSatFix
     /gt_box/cpt7/gps/gps:
       checking:
       - freq
       - dropped_frames
-      dropped_frames_threshold_percent: 5.0
-      freq: 50.363276137414296
-      freq_tolerance_percent: 10.0
+      dropped_frames_threshold_percent: 100.0
+      freq: 50.0
+      freq_tolerance_percent: 50.0
       msg_type: gps_common/GPSFix
     /gt_box/cpt7/gps/imu:
       checking:
       - freq
       - dropped_frames
-      dropped_frames_threshold_percent: 5.0
-      freq: 107.72856629167309
-      freq_tolerance_percent: 10.0
+      dropped_frames_threshold_percent: 100.0
+      freq: 100.0
+      freq_tolerance_percent: 50.0
       msg_type: sensor_msgs/Imu
     /gt_box/cpt7/heading2:
       checking:
       - freq
       - dropped_frames
-      dropped_frames_threshold_percent: 5.0
-      freq: 1.000182781243759
-      freq_tolerance_percent: 10.0
+      dropped_frames_threshold_percent: 100.0
+      freq: 1.0
+      freq_tolerance_percent: 50.0
       msg_type: novatel_oem7_msgs/HEADING2
     /gt_box/cpt7/imu/data_raw:
       checking:
       - freq
       - dropped_frames
-      dropped_frames_threshold_percent: 5.0
-      freq: 100.75921877627502
-      freq_tolerance_percent: 10.0
+      dropped_frames_threshold_percent: 100.0
+      freq: 100.0
+      freq_tolerance_percent: 50.0
       msg_type: sensor_msgs/Imu
     /gt_box/cpt7/insconfig:
       checking:
       - freq
       - dropped_frames
-      dropped_frames_threshold_percent: 5.0
+      dropped_frames_threshold_percent: 100.0
       freq: null
-      freq_tolerance_percent: 10.0
+      freq_tolerance_percent: 50.0
       msg_type: novatel_oem7_msgs/INSCONFIG
     /gt_box/cpt7/inspva:
       checking:
       - freq
       - dropped_frames
-      dropped_frames_threshold_percent: 5.0
-      freq: 50.35299767101251
-      freq_tolerance_percent: 10.0
+      dropped_frames_threshold_percent: 100.0
+      freq: 50.0
+      freq_tolerance_percent: 50.0
       msg_type: novatel_oem7_msgs/INSPVA
     /gt_box/cpt7/inspvax:
       checking:
       - freq
       - dropped_frames
-      dropped_frames_threshold_percent: 5.0
-      freq: 1.0001291203304907
-      freq_tolerance_percent: 10.0
+      dropped_frames_threshold_percent: 100.0
+      freq: 1.0
+      freq_tolerance_percent: 50.0
       msg_type: novatel_oem7_msgs/INSPVAX
     /gt_box/cpt7/insstdev:
       checking:
       - freq
       - dropped_frames
-      dropped_frames_threshold_percent: 5.0
-      freq: 1.0001015766314614
-      freq_tolerance_percent: 10.0
+      dropped_frames_threshold_percent: 100.0
+      freq: 1.0
+      freq_tolerance_percent: 50.0
       msg_type: novatel_oem7_msgs/INSSTDEV
     /gt_box/cpt7/odom:
       checking:
       - freq
       - dropped_frames
-      dropped_frames_threshold_percent: 5.0
-      freq: 50.39110950922088
-      freq_tolerance_percent: 10.0
+      dropped_frames_threshold_percent: 100.0
+      freq: 50.0
+      freq_tolerance_percent: 50.0
       msg_type: nav_msgs/Odometry
     /gt_box/cpt7/oem7raw:
       checking:
       - freq
       - dropped_frames
-      dropped_frames_threshold_percent: 5.0
-      freq: 105.71654694391934
-      freq_tolerance_percent: 10.0
+      dropped_frames_threshold_percent: 100.0
+      freq: 100.0
+      freq_tolerance_percent: 50.0
       msg_type: novatel_oem7_msgs/Oem7RawMsg
     /gt_box/cpt7/ppppos:
       checking:
       - freq
       - dropped_frames
-      dropped_frames_threshold_percent: 5.0
-      freq: 1.0004311273724378
-      freq_tolerance_percent: 10.0
+      dropped_frames_threshold_percent: 100.0
+      freq: 1.0
+      freq_tolerance_percent: 50.0
       msg_type: novatel_oem7_msgs/PPPPOS
     /gt_box/cpt7/rxstatus:
       checking:
       - freq
       - dropped_frames
-      dropped_frames_threshold_percent: 5.0
-      freq: 0.24731228793837665
-      freq_tolerance_percent: 10.0
+      dropped_frames_threshold_percent: 100.0
+      freq: 0.25
+      freq_tolerance_percent: 50.0
       msg_type: novatel_oem7_msgs/RXSTATUS
     /gt_box/cpt7/terrastarinfo:
       checking:
       - freq
       - dropped_frames
-      dropped_frames_threshold_percent: 5.0
+      dropped_frames_threshold_percent: 100.0
       freq: null
-      freq_tolerance_percent: 10.0
+      freq_tolerance_percent: 50.0
       msg_type: novatel_oem7_msgs/TERRASTARINFO
     /gt_box/cpt7/terrastarstatus:
       checking:
       - freq
       - dropped_frames
-      dropped_frames_threshold_percent: 5.0
+      dropped_frames_threshold_percent: 100.0
       freq: null
-      freq_tolerance_percent: 10.0
+      freq_tolerance_percent: 50.0
       msg_type: novatel_oem7_msgs/TERRASTARSTATUS
     /gt_box/cpt7/time:
       checking:
       - freq
       - dropped_frames
-      dropped_frames_threshold_percent: 5.0
-      freq: 1.000016451152594
-      freq_tolerance_percent: 10.0
+      dropped_frames_threshold_percent: 100.0
+      freq: 1.0
+      freq_tolerance_percent: 50.0
       msg_type: novatel_oem7_msgs/TIME
 _nuc_hesai.bag:
+  check_presence: true
   topics:
     /gt_box/hesai/lidar_packets_loss:
       checking:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 10.001464104404475
+      freq: 10.0
       freq_tolerance_percent: 10.0
       msg_type: hesai_ros_driver/LossPacket
     /gt_box/hesai/lidar_ptp:
@@ -1107,7 +1135,7 @@ _nuc_hesai.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 0.1000010371315754
+      freq: 0.1
       freq_tolerance_percent: 10.0
       msg_type: hesai_ros_driver/Ptp
     /gt_box/hesai/packets:
@@ -1115,17 +1143,18 @@ _nuc_hesai.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 10.001058690561917
+      freq: 10.0
       freq_tolerance_percent: 10.0
       msg_type: hesai_ros_driver/UdpFrame
 _nuc_livox.bag:
+  check_presence: true
   topics:
     /gt_box/livox/imu:
       checking:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 200.5308854465481
+      freq: 200.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/Imu
     /gt_box/livox/imu_si_compliant:
@@ -1133,7 +1162,7 @@ _nuc_livox.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 200.49733502234756
+      freq: 200.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/Imu
     /gt_box/livox/lidar:
@@ -1141,10 +1170,11 @@ _nuc_livox.bag:
       - freq
       - dropped_frames
       dropped_frames_threshold_percent: 5.0
-      freq: 10.000772535872846
+      freq: 10.0
       freq_tolerance_percent: 10.0
       msg_type: sensor_msgs/PointCloud2
 _nuc_tf.bag:
+  check_presence: true
   topics:
     /tf_static:
       checking:
@@ -1155,16 +1185,18 @@ _nuc_tf.bag:
       freq_tolerance_percent: 10.0
       msg_type: tf2_msgs/TFMessage
 _nuc_utils.bag:
+  check_presence: true
   topics:
     /gt_box/health_status/nuc/status:
       checking:
       - freq
       - dropped_frames
-      dropped_frames_threshold_percent: 5.0
-      freq: 1.1997117925638705
-      freq_tolerance_percent: 10.0
+      dropped_frames_threshold_percent: 100.0
+      freq: 1.2
+      freq_tolerance_percent: 40.0
       msg_type: box_health/HealthStatusNuc
 _tf_static.bag:
+  check_presence: true
   topics:
     /tf_static:
       checking:

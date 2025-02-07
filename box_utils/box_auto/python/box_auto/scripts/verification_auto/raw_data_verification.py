@@ -36,15 +36,21 @@ def analyze_mission_and_report():
         with open(LOG_FILE, "r") as f:
             logs = f.read()
 
+        # Get a string with only ERROR logs
+        errors = [line for line in logs.split("\n") if "ERROR" in line]
+
         # Create a GitHub issue with the results
-        # TODO(kappi): Get this in a neater way, using kleinkram API
         name = list(pathlib.Path(MISSION_DATA).rglob("*.bag"))[0].name
         mission_name = name.split("_")[0]
         issue_body = (
             f"## Raw Data Verification Results for `{mission_name}`\n\n"
             f"### Validation Failed\n\n"
             f"For topic frequency histograms, check the artifacts folder using the link below.\n\n"
-            f"### Logs:\n```{logs}```"
+            f"### Error Logs\n```{errors}```\n\n"
+            f"<details>\n"
+            f"<summary>Click to see all logs</summary>\n\n"
+            f"### All Logs:\n```{logs}```"
+            f"</details>\n\n"
         )
         create_github_issue(
             title=f"Raw Data Verification Failed for {mission_name}",

@@ -129,7 +129,11 @@ def validate_mission_folder(reference_data: Dict, mission_folder: str, time_tole
         for bag_file in Path(mission_folder).glob("*.bag")
     }
 
-    missing_bags = [ref_key for ref_key in reference_data if ref_key not in mission_bags]
+    missing_bags = [
+        ref_key
+        for ref_key, ref_config in reference_data.items()
+        if ref_key not in mission_bags and ref_config.get("check_presence", True)  # Default to True if not specified
+    ]
     if missing_bags:
         for missing in missing_bags:
             logger.error(f"❌ Missing bag file for key '{missing}' in mission folder")
@@ -161,7 +165,7 @@ def validate_mission_folder(reference_data: Dict, mission_folder: str, time_tole
                     validation_passed = False
                     continue
                 elif info.topics[topic].msg_type != ref_topic_info["msg_type"]:
-                    logger.error(f"❌ Type mismatch for topic {topic} in {mission_bag_path.name}")
+                    logger.error(f"❌ Type mismatch for topic {topic} in {mission_bag_path.name}. Expected {ref_topic_info['msg_type']}, got {info.topics[topic].msg_type}")
                     validation_passed = False
                     continue
 
@@ -173,7 +177,7 @@ def validate_mission_folder(reference_data: Dict, mission_folder: str, time_tole
 
                 # If "freq" is requested => check bag's own topic_info.frequency
                 if "freq" in checks:
-                    freq_ok = check_topic_frequency(info, topic, ref_topic_info, mission_bag_path.name)
+                    freq_ok = check_topic_frequency(bag, info, topic, ref_topic_info, mission_bag_path.name)
                     if not freq_ok:
                         validation_passed = False
 
@@ -216,6 +220,7 @@ def validate_mission_folder(reference_data: Dict, mission_folder: str, time_tole
     return validation_passed
 
 def check_topic_frequency(
+    bag,
     info,
     topic: str,
     ref_topic_info: Dict[str, Union[float, str, list]],
@@ -233,11 +238,15 @@ def check_topic_frequency(
     # If we have no reference freq, skip
     if not ref_freq or ref_freq <= 0:
         return True
-
-    # If the bag does not have a frequency for this topic (rare, but can happen)
-    if actual_freq is None or actual_freq <= 0:
-        logger.warning(f"⚠️  No valid frequency metadata for {topic} in {bag_name}. Skipping freq check.")
-        return True
+    
+    # If the frequency is an unreasonable value, check the actual timestamps
+    if actual_freq is None or actual_freq > 1000 or actual_freq <= 0:
+        logger.warning(f"⚠️  Frequency invalid for {topic} in {bag_name}. Freq is {actual_freq}. Calculating from timestamps instead.")
+        timestamps = []
+        for _, msg, _ in bag.read_messages(topics=[topic]):
+            timestamps.append(msg.header.stamp.to_sec())
+        mean_period = statistics.mean([timestamps[i] - timestamps[i - 1] for i in range(1, len(timestamps))])
+        actual_freq = 1.0 / mean_period
 
     # Calculate how far off we are from the reference, in percent
     difference_percent = abs(actual_freq - ref_freq) / ref_freq * 100.0
@@ -277,10 +286,10 @@ def check_dropped_frames(
     threshold_percent = ref_topic_info.get("dropped_frames_threshold_percent", 5.0)
     nominal_period = 1.0 / ref_freq
 
-    # Gather timestamps
+    # Gather header timestamps
     timestamps = []
-    for _, _, t in bag.read_messages(topics=[topic]):
-        timestamps.append(t.to_sec())
+    for _, msg, _ in bag.read_messages(topics=[topic]):
+        timestamps.append(msg.header.stamp.to_sec())
 
     if len(timestamps) < 2:
         # Not enough data to do gap analysis
