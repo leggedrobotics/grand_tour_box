@@ -5,7 +5,7 @@ filter_by_covariance: False
 covariance_percentile_threshold: 95 #percentile
 #
 remove_until_motion: True
-distance_threshold: 1 #distance in meters
+distance_threshold: 10 #distance in meters
 #
 ap20_peak_rejection: True
 ap20_peak_rejection_threshold: 0.1 #second
