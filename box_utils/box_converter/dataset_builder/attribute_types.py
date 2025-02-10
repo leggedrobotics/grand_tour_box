@@ -19,40 +19,25 @@ class ArrayType:
 
 AttributeTypes = Mapping[str, ArrayType]
 
+# TODO: the topics and some args are currently hardcoded, they should eventually be read from a yaml file or similar
 
-IMAGE_TOPIC_RESOLUTIONS = [
-    ("/gt_box/zed2i/zed_node/depth_mono/depth_registered/compressed", (1080, 1920)),
-    ("/gt_box/zed2i/zed_node/confidence_mono/confidence_map/compressed", (1080, 1920)),
-    # ("/gt_box/zed2i/zed_node/confidence/confidence_map/compressed", (1080, 1920)), TODO: currently not working
-    # ("/gt_box/zed2i/zed_node/depth/depth_registered/compressed", (1080, 1920)), TODO: currently not working
-    (
-        "/gt_box/alphasense_driver_node/cam1/color_corrected/image/compressed",
-        (1080, 1440, 3),
-    ),
-    (
-        "/gt_box/alphasense_driver_node/cam2/color_corrected/image/compressed",
-        (1080, 1440),
-    ),
-    (
-        "/gt_box/alphasense_driver_node/cam3/color_corrected/image/compressed",
-        (1080, 1440),
-    ),
-    (
-        "/gt_box/alphasense_driver_node/cam4/color_corrected/image/compressed",
-        (1080, 1440, 3),
-    ),
-    (
-        "/gt_box/alphasense_driver_node/cam5/color_corrected/image/compressed",
-        (1080, 1440, 3),
-    ),
-    ("/gt_box/hdr_left/image_raw/compressed", (1280, 1920, 3)),
-    ("/gt_box/hdr_front/image_raw/compressed", (1280, 1920, 3)),
-    ("/gt_box/hdr_right/image_raw/compressed", (1280, 1920, 3)),
-    ("/gt_box/zed2i/zed_node/left/image_rect_color/compressed", (1080, 1920, 3)),
-    ("/gt_box/zed2i/zed_node/right/image_rect_color/compressed", (1080, 1920, 3)),
+IMAGE_TOPICS = [
+    "/gt_box/zed2i/zed_node/depth_mono/depth_registered/compressed",
+    "/gt_box/zed2i/zed_node/confidence_mono/confidence_map/compressed",
+    # "/gt_box/zed2i/zed_node/confidence/confidence_map/compressed", TODO: currently not working
+    # "/gt_box/zed2i/zed_node/depth/depth_registered/compressed", TODO: currently not working
+    "/gt_box/alphasense_driver_node/cam1/color_corrected/image/compressed",
+    "/gt_box/alphasense_driver_node/cam2/color_corrected/image/compressed",
+    "/gt_box/alphasense_driver_node/cam3/color_corrected/image/compressed",
+    "/gt_box/alphasense_driver_node/cam4/color_corrected/image/compressed",
+    "/gt_box/alphasense_driver_node/cam5/color_corrected/image/compressed",
+    "/gt_box/hdr_left/image_raw/compressed",
+    "/gt_box/hdr_front/image_raw/compressed",
+    "/gt_box/hdr_right/image_raw/compressed",
+    "/gt_box/zed2i/zed_node/left/image_rect_color/compressed",
+    "/gt_box/zed2i/zed_node/right/image_rect_color/compressed",
 ]
 
-IMAGE_TOPICS = [topic for topic, _ in IMAGE_TOPIC_RESOLUTIONS]
 
 LIDAR_TOPIC_ATTRIBUTES = [
     ("/gt_box/hesai/points", ["intensity", "ring", "timestamp"]),
@@ -116,12 +101,6 @@ MAGNET_FIELD_TOPICS = [
 POINT_TOPICS = [
     "/gt_box/ap20/prism_position",
 ]
-
-
-def get_image_attr_types(shape: Tuple[int, ...]) -> AttributeTypes:
-    # return {"image": ArrayType(shape, np.uint8)}
-    return {}
-
 
 # PointCloud2
 LIDAR_MAX_POINTS = 64_000
@@ -201,9 +180,7 @@ POINT_ATTR_TP = {"point": ArrayType((3,), np.float64)}
 
 def build_attribute_registry() -> Dict[str, AttributeTypes]:
     ret = {}
-    ret.update(
-        {topic: get_image_attr_types(shape) for topic, shape in IMAGE_TOPIC_RESOLUTIONS}
-    )
+    ret.update({topic: {} for topic in IMAGE_TOPICS})
     ret.update(
         {
             topic: get_point_cloud_attr_types(attrs)
