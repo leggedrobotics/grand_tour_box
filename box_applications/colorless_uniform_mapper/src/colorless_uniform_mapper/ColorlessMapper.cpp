@@ -330,7 +330,8 @@ void ColorlessMapper::pointCloudCallback(const sensor_msgs::PointCloud2ConstPtr&
     return;
   }
 
-  filterDynamicPoints(pclPointCloud);
+  // currently not functional
+  // filterDynamicPoints(pclPointCloud);
 
   {
     // Add point cloud to buffer.
