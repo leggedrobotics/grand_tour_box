@@ -175,6 +175,7 @@ bag_topic_pairs:
       point_relation:
         reference_file: "ap20_robot"
 
+
     #
   - bag: _okvis_imu0_alphasense_2_bw.bag
     test_name: "okvis_alphasense_2_bw"

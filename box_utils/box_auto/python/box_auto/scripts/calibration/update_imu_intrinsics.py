@@ -48,8 +48,12 @@ CONFIG = {
         "out_pattern": "_nuc_alphasense_intrinsics.bag",
         "frequency": 200,
     },
-    # TODO ANYMAL
-    # TODO ZED2i
+    "zed2i": {
+        "pattern": "_jetson_zed2i_prop.bag",
+        "topics": ["/gt_box/zed2i/zed_node/imu/data"],
+        "out_pattern": "_jetson_zed2i_prop_intrinsics.bag",
+        "frequency": 400,
+    },
 }
 
 
@@ -66,7 +70,7 @@ def process_bags(calibrations) -> None:
 
         if not type(v["pattern"]) is list:
             v["pattern"] = [v["pattern"]]
-            v["out_pattern"] = v["out_pattern"]
+            v["out_pattern"] = [v["out_pattern"]]
 
         for pattern, out_pattern in zip(v["pattern"], v["out_pattern"]):
             input_bag_path = get_bag("*" + pattern)

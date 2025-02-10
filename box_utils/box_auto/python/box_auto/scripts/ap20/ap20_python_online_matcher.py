@@ -93,7 +93,7 @@ def read_bag_file(bag_path):
 
     all_matches = []
     counter_ts = 0
-    output_bag_path = bag_path.replace("jetson_ap20_aux", "jetson_ap20_synced_new")
+    output_bag_path = bag_path.replace("jetson_ap20_aux", "jetson_ap20_synced")
 
     if os.path.exists(output_bag_path):
         os.remove(output_bag_path)
