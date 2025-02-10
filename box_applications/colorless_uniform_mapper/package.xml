@@ -2,7 +2,7 @@
 
 <package format="2">
   <name>colorless_uniform_mapper</name>
-  <version>0.0.5</version>
+  <version>0.1.0</version>
   <description>Colorless uniform mapper. Uses an octree to create a point cloud map and dynamically save the data.</description>
 
   <license>TODO</license>

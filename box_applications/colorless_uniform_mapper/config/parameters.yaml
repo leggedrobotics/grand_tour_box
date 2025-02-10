@@ -4,7 +4,7 @@ mapping_frame: "dlio_map"
 tf_lookup_time: 0.01
 radius: 10
 voxel_size: 0.03 #meters
-map_rendering_period: 0.05
+map_rendering_period: 1
 map_saving_period: 10
 map_saving_size_difference: 100000
 position_based_request_topic: "/clicked_point"
@@ -12,6 +12,6 @@ position_based_alternative_request_topic: ""
 map_saving_path: "" # no trailing slashes, /maps folder will bi appended. ex. use: "/home/Maps"
 local_map_publishing_period: 0.5
 transportation_voxel_size: 0.1
-outlier_filter_min_neighbours: 10
+outlier_filter_min_neighbours: 5
 noise_filtering_radius: 10.5
 ring_buffer_size: 5

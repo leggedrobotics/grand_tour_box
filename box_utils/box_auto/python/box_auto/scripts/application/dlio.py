@@ -16,7 +16,10 @@ from box_auto.utils import (
 )
 
 
-def launch_nodes(patterns, output_bag_name, lidar_topic, imu_topic, tag):
+def launch_nodes(
+    patterns, output_bag_name, lidar_topic, imu_topic, tag, post_fix, rotational_offset, translation_offset
+):
+
     os.environ["ROS_MASTER_URI"] = "http://localhost:11311"
     inputs = []
     for pattern in patterns:
@@ -46,7 +49,7 @@ def launch_nodes(patterns, output_bag_name, lidar_topic, imu_topic, tag):
     start_roscore()
     sleep(1)
     run_ros_command(
-        f"roslaunch direct_lidar_inertial_odometry dlio_replay.launch input_rosbag_path:={merged_rosbag_path}  output_rosbag_folder_path:={MISSION_DATA} output_rosbag_name:={output_bag_name} imu_topic:={imu_topic} pointcloud_topic:={lidar_topic}",
+        f"roslaunch direct_lidar_inertial_odometry dlio_replay.launch abliation_rotation_offset:={rotational_offset} abliation_translation_offset:={translation_offset} input_rosbag_path:={merged_rosbag_path}  output_rosbag_folder_path:={MISSION_DATA} output_rosbag_name:={output_bag_name} imu_topic:={imu_topic} pointcloud_topic:={lidar_topic}",
         background=True,
     )
     sleep(5)
@@ -56,7 +59,7 @@ def launch_nodes(patterns, output_bag_name, lidar_topic, imu_topic, tag):
     print("Moving and uploading bag!")
     kill_roscore()
 
-    output_bag_path = os.path.join(MISSION_DATA, f"{timestamp}_{tag}dlio.bag")
+    output_bag_path = os.path.join(MISSION_DATA, f"{timestamp}_{tag}dlio{post_fix}.bag")
     shutil.move(f"{MISSION_DATA}/{output_bag_name}.bag", output_bag_path)
 
     check_duplicate_timestamps(output_bag_path, "/dlio/deskewed_point_cloud")
@@ -78,13 +81,28 @@ def parse_arguments():
 if __name__ == "__main__":
     args = parse_arguments()
 
-    # Resolve IMU information
+    # Resolve IMU information based on command line argument
     if args.imu == "stim320":
         imu_pattern = "*_jetson_stim.bag"
         imu_topic = "/gt_box/stim320/imu"
     elif args.imu == "cpt7":
         imu_pattern = "*_cpt7_raw_imu.bag"
         imu_topic = "/gt_box/cpt7/offline_from_novatel_logs/imu"
+    elif args.imu == "ap20":
+        imu_pattern = "*_jetson_ap20_synced.bag"
+        imu_topic = "/gt_box/ap20/imu"
+    elif args.imu == "adis":
+        imu_pattern = "*_jetson_adis.bag"
+        imu_topic = "/gt_box/adis16475_node/imu"
+    elif args.imu == "zed2i":
+        imu_pattern = "*_jetson_zed2i_prop.bag"
+        imu_topic = "/gt_box/zed2i/zed_node/imu/data"
+    elif args.imu == "alphasense":
+        imu_pattern = "*_alphasense_updated.bag"
+        imu_topic = "/gt_box/alphasense_driver_node/imu"
+    elif args.imu == "livox":
+        imu_pattern = "*_livox.bag"
+        imu_topic = "/gt_box/livox/imu_si_compliant"
     else:
         print(f"IMU not found: {args.imu}")
         exit(1)
@@ -112,6 +130,26 @@ if __name__ == "__main__":
         print(f"LiDAR not supported: {args.lidar}")
         exit(2)
 
+    # Ablation study
+    post_fix = ""
+    rotational_offset = 0.0  # degree
+    if not rotational_offset == 0.0:
+        if rotational_offset < 0:
+            rotational_offset_str = str(abs(rotational_offset)).replace(".", "_point_")
+            post_fix = "_rot_minus_" + rotational_offset_str + "deg"
+        else:
+            rotational_offset_str = str(rotational_offset).replace(".", "_point_")
+            post_fix = "_rot_" + rotational_offset_str + "deg"
+
+    translation_offset = 0.0  # millimeter
+    if not translation_offset == 0.0:
+        if translation_offset < 0:
+            post_fix = "_trans_minus_" + str(abs(translation_offset)) + "mm"
+        else:
+            post_fix = "_trans_" + str(translation_offset) + "mm"
+
     output_bag_name = f"dlio_replayed_{args.lidar}_{args.imu}"
-    launch_nodes(patterns, output_bag_name, lidar_topic, imu_topic, tag)
+    launch_nodes(
+        patterns, output_bag_name, lidar_topic, imu_topic, tag, post_fix, rotational_offset, translation_offset
+    )
     exit(0)

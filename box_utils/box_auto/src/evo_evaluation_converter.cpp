@@ -200,7 +200,7 @@ void parseRosbagToTum(const std::string& bagPath, const std::string& topicName, 
   tumFile << poseLogFileHeader_ << std::endl;
 
   //# (x, y, z, rotation about X axis, rotation about Y axis, rotation about Z axis)
-  const std::string covarianceFileHeader = "# timestamp x y z roll pitch yaw";
+  const std::string covarianceFileHeader = "timestamp x y z roll pitch yaw";
   std::ofstream possibleCovarianceFile;
 
   std::string covOutputPath = outputPath.substr(0, outputPath.size() - 4) + "_covariance.tum";
