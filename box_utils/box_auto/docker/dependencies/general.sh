@@ -23,6 +23,9 @@ pip3 install --upgrade pip
 
 pip3 install kleinkram
 
+# For interacting with Github
+pip3 install PyGithub
+
 mkdir -p /root/.ssh
 ssh-keyscan github.com >> /root/.ssh/known_hosts
 ssh-keyscan bitbucket.org >> /root/.ssh/known_hosts

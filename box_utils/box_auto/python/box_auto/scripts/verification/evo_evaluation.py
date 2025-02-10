@@ -97,19 +97,27 @@ def load_config(config_path):
     return config
 
 
+import argparse
+
 if __name__ == "__main__":
+  # For Time offset evaluation on DLIO and CPT7 -> evo_evaluations_time_offset
+  # For Time offset evaluation on DLIO and STIM320 -> evo_evaluations_time_offset_STIM
+  # For General Evaluation -> evo_evaluations
+  # For Ground Truth comparison -> evo_evaluations_gt_truth_comparison
+  # For IMU comparisons on DLIO -> evo_evaluations_imu_comparison
+  # For IMU comparisons on GMSF -> evo_evaluations_GMSF_IMU_comparison
+  # For translation offset -> evo_evaluations_translation_offset
+  # For rotational offset -> evo_evaluations_rotation_offset
 
-    # For Time offset evaluation on DLIO and CPT7 -> evo_evaluations_time_offset
-    # For Time offset evaluation on DLIO and STIM320 -> evo_evaluations_time_offset_STIM
-    # For General Evaluation -> evo_evaluations
-    # For Ground Truth comparison -> evo_evaluations_gt_truth_comparison
-    # For IMU comparisons on DLIO -> evo_evaluations_imu_comparison
-    # For IMU comparisons on GMSF -> evo_evaluations_GMSF_IMU_comparison
-
-    # For translation offset -> evo_evaluations_translation_offset
-    # For rotational offset -> evo_evaluations_rotation_offset
-
-    CONFIG_NAME = "evo_evaluations"
+  parser = argparse.ArgumentParser(description="Script configuration")
+    parser.add_argument(
+        "--config_name",
+        type=str,
+        default="evo_evaluations",
+        help="The name of the configuration file. Default is 'evo_evaluations'.",
+    )
+    args = parser.parse_args()
+    print(f"Using configuration: {args.config_name}")
 
     IS_POINT_DISTANCES_SUPPORTED = False
     from evo import __version__
@@ -137,7 +145,7 @@ if __name__ == "__main__":
     elif USE_GMSF:
         GT_PATTERN = "*_gt_pose.bag"
 
-    path = Path(WS) / "src/grand_tour_box/box_utils/box_auto/cfg" / (CONFIG_NAME + ".yaml")
+    path = Path(WS) / "src/grand_tour_box/box_utils/box_auto/cfg" / (args.config_name + ".yaml")
 
     # Evaluation Configuration.
     evaluation_config_path = str(path)

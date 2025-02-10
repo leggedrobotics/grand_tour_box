@@ -287,5 +287,5 @@ if __name__ == "__main__":
         "tf_static": ("tf_static", "*_tf_static.bag"),
     }
 
-    process(all_cameras_cfg, "all_cameras")
-    # process(alphasense_2_bw_cfg, "imu0_alphasense_2_bw")
+    # process(all_cameras_cfg, "all_cameras")
+    process(alphasense_2_bw_cfg, "imu0_alphasense_2_bw")

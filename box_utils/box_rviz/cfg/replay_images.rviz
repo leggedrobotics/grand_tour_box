@@ -1,0 +1,946 @@
+Panels:
+  - Class: rviz/Displays
+    Help Height: 138
+    Name: Displays
+    Property Tree Widget:
+      Expanded:
+        - /Global Options1
+        - /TF1
+        - /ZED2i1
+        - /Lidar1/HesaiXT32 Lidar1
+        - /Lidar1/HesaiXT32 Lidar1/Autocompute Value Bounds1
+        - /Lidar1/Livox Lidar1
+        - /Lidar1/Livox Lidar1/Autocompute Value Bounds1
+        - /HDR Raw1
+        - /Alphasense_raw1
+        - /Zed2i Raw1
+      Splitter Ratio: 0.4832535982131958
+    Tree Height: 425
+  - Class: rviz/Selection
+    Name: Selection
+  - Class: rviz/Tool Properties
+    Expanded:
+      - /Interact1
+      - /2D Nav Goal1
+    Name: Tool Properties
+    Splitter Ratio: 0.5886790156364441
+  - Class: rviz/Views
+    Expanded:
+      - /Current View1
+      - /Current View1/Focal Point1
+    Name: Views
+    Splitter Ratio: 0.5
+  - Class: rviz/Time
+    Experimental: false
+    Name: Time
+    SyncMode: 0
+    SyncSource: HDR Left (ROS2)
+  - Class: rviz/Views
+    Expanded:
+      - /Current View1
+    Name: Views
+    Splitter Ratio: 0.5
+  - Class: rviz/Displays
+    Help Height: 138
+    Name: Displays
+    Property Tree Widget:
+      Expanded:
+        - /Global Options1
+        - /TF1
+        - /Alphasense1/Alphasense Right1
+        - /Lidar1
+        - /Lidar1/HesaiXT32 Lidar1/Autocompute Value Bounds1
+        - /Lidar1/Livox Lidar1/Autocompute Value Bounds1
+        - /HDR Raw1
+      Splitter Ratio: 0.7379999756813049
+    Tree Height: 303
+Preferences:
+  PromptSaveOnExit: true
+Toolbars:
+  toolButtonStyle: 2
+Visualization Manager:
+  Class: ""
+  Displays:
+    - Alpha: 0.10000000149011612
+      Cell Size: 0.25
+      Class: rviz/Grid
+      Color: 0; 0; 0
+      Enabled: true
+      Line Style:
+        Line Width: 0.029999999329447746
+        Value: Lines
+      Name: Grid
+      Normal Cell Count: 0
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Plane: XY
+      Plane Cell Count: 100
+      Reference Frame: box_base
+      Value: true
+    - Class: rviz/TF
+      Enabled: true
+      Frame Timeout: 15
+      Frames:
+        All Enabled: true
+        adis16475_imu:
+          Value: true
+        alphasense_base:
+          Value: true
+        alphasense_front_center:
+          Value: true
+        alphasense_front_left:
+          Value: true
+        alphasense_front_right:
+          Value: true
+        alphasense_left:
+          Value: true
+        alphasense_right:
+          Value: true
+        ap20_imu:
+          Value: true
+        base:
+          Value: true
+        box_base:
+          Value: true
+        box_base_model:
+          Value: true
+        cam1_sensor_frame:
+          Value: true
+        cam2_sensor_frame:
+          Value: true
+        cam3_sensor_frame:
+          Value: true
+        cam4_sensor_frame:
+          Value: true
+        cam5_sensor_frame:
+          Value: true
+        cpt7_antenna_back:
+          Value: true
+        cpt7_antenna_back_model:
+          Value: true
+        cpt7_antenna_front:
+          Value: true
+        cpt7_imu:
+          Value: true
+        hdr_base:
+          Value: true
+        hdr_front:
+          Value: true
+        hdr_left:
+          Value: true
+        hdr_right:
+          Value: true
+        hesai_lidar:
+          Value: true
+        imu_sensor_frame:
+          Value: true
+        livox_imu:
+          Value: true
+        livox_lidar:
+          Value: true
+        prism:
+          Value: true
+        prism_model:
+          Value: true
+        stim320_imu:
+          Value: true
+        zed2i_base_link:
+          Value: true
+        zed2i_camera_center:
+          Value: true
+        zed2i_imu_link:
+          Value: true
+        zed2i_left_camera_frame:
+          Value: true
+        zed2i_left_camera_optical_frame:
+          Value: true
+        zed2i_right_camera_frame:
+          Value: true
+        zed2i_right_camera_optical_frame:
+          Value: true
+        zed_base_link:
+          Value: true
+      Marker Alpha: 1
+      Marker Scale: 0.25
+      Name: TF
+      Show Arrows: true
+      Show Axes: true
+      Show Names: true
+      Tree:
+        {}
+      Update Interval: 0
+      Value: true
+    - Class: rviz/TF
+      Enabled: true
+      Frame Timeout: 15
+      Frames:
+        All Enabled: false
+        adis16475_imu:
+          Value: false
+        alphasense_base:
+          Value: false
+        alphasense_front_center:
+          Value: false
+        alphasense_front_left:
+          Value: false
+        alphasense_front_right:
+          Value: false
+        alphasense_left:
+          Value: false
+        alphasense_right:
+          Value: false
+        ap20_imu:
+          Value: false
+        base:
+          Value: false
+        box_base:
+          Value: true
+        box_base_model:
+          Value: false
+        cam1_sensor_frame:
+          Value: false
+        cam2_sensor_frame:
+          Value: false
+        cam3_sensor_frame:
+          Value: false
+        cam4_sensor_frame:
+          Value: false
+        cam5_sensor_frame:
+          Value: false
+        cpt7_antenna_back:
+          Value: false
+        cpt7_antenna_back_model:
+          Value: true
+        cpt7_antenna_front:
+          Value: false
+        cpt7_imu:
+          Value: false
+        hdr_base:
+          Value: false
+        hdr_front:
+          Value: false
+        hdr_left:
+          Value: false
+        hdr_right:
+          Value: false
+        hesai_lidar:
+          Value: false
+        imu_sensor_frame:
+          Value: false
+        livox_imu:
+          Value: false
+        livox_lidar:
+          Value: false
+        prism:
+          Value: false
+        prism_model:
+          Value: false
+        stim320_imu:
+          Value: false
+        zed2i_base_link:
+          Value: false
+        zed2i_camera_center:
+          Value: false
+        zed2i_imu_link:
+          Value: false
+        zed2i_left_camera_frame:
+          Value: false
+        zed2i_left_camera_optical_frame:
+          Value: false
+        zed2i_right_camera_frame:
+          Value: false
+        zed2i_right_camera_optical_frame:
+          Value: false
+        zed_base_link:
+          Value: false
+      Marker Alpha: 1
+      Marker Scale: 2
+      Name: TF large
+      Show Arrows: true
+      Show Axes: true
+      Show Names: true
+      Tree:
+        {}
+      Update Interval: 0
+      Value: true
+    - Alpha: 1
+      Class: rviz/RobotModel
+      Collision Enabled: false
+      Enabled: true
+      Links:
+        All Links Enabled: true
+        Expand Joint Details: false
+        Expand Link Details: false
+        Expand Tree: false
+        Link Tree Style: Links in Alphabetic Order
+        adis16475_imu:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        alphasense_base:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        alphasense_front_center:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        alphasense_front_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        alphasense_front_right:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        alphasense_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        alphasense_right:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        ap20_imu:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        base:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        box_base:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        box_base_model:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cam1_sensor_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        cam2_sensor_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        cam3_sensor_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        cam4_sensor_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        cam5_sensor_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        cpt7_antenna_back:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        cpt7_antenna_back_model:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cpt7_antenna_front:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        cpt7_imu:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        hdr_base:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        hdr_front:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        hdr_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        hdr_right:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        hesai_lidar:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        imu_sensor_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        livox_imu:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        livox_lidar:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        prism:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        prism_model:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        stim320_imu:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        zed2i_base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        zed2i_camera_center:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        zed2i_imu_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        zed2i_left_camera_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        zed2i_left_camera_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        zed2i_right_camera_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        zed2i_right_camera_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        zed_base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+      Name: RobotModel
+      Robot Description: robot_description
+      TF Prefix: ""
+      Update Interval: 0
+      Value: true
+      Visual Enabled: true
+    - Class: rviz/Group
+      Displays:
+        - Class: rviz/Image
+          Enabled: true
+          Image Topic: /gt_box/alphasense_driver_node/cam5/color_corrected/image
+          Max Value: 1
+          Median window: 5
+          Min Value: 0
+          Name: Alphasense Right
+          Normalize Range: true
+          Queue Size: 2
+          Transport Hint: compressed
+          Unreliable: false
+          Value: true
+        - Class: rviz/Image
+          Enabled: true
+          Image Topic: /gt_box/alphasense_driver_node/cam2/color_corrected/image
+          Max Value: 1
+          Median window: 5
+          Min Value: 0
+          Name: Alphasense Front Right
+          Normalize Range: true
+          Queue Size: 2
+          Transport Hint: compressed
+          Unreliable: false
+          Value: true
+        - Class: rviz/Image
+          Enabled: true
+          Image Topic: /gt_box/alphasense_driver_node/cam1/color_corrected/image
+          Max Value: 1
+          Median window: 5
+          Min Value: 0
+          Name: Alphasense Front Middle
+          Normalize Range: true
+          Queue Size: 2
+          Transport Hint: compressed
+          Unreliable: false
+          Value: true
+        - Class: rviz/Image
+          Enabled: true
+          Image Topic: /gt_box/alphasense_driver_node/cam3/color_corrected/image
+          Max Value: 1
+          Median window: 5
+          Min Value: 0
+          Name: Alphasense Front Left
+          Normalize Range: true
+          Queue Size: 2
+          Transport Hint: compressed
+          Unreliable: false
+          Value: true
+        - Class: rviz/Image
+          Enabled: true
+          Image Topic: /gt_box/alphasense_driver_node/cam4/color_corrected/image
+          Max Value: 1
+          Median window: 5
+          Min Value: 0
+          Name: Alphasense Left
+          Normalize Range: true
+          Queue Size: 2
+          Transport Hint: compressed
+          Unreliable: false
+          Value: true
+      Enabled: true
+      Name: Alphasense
+    - Class: rviz/Group
+      Displays:
+        - Class: rviz/Image
+          Enabled: true
+          Image Topic: /gt_box/zed2i/zed_node/right/image_rect_color
+          Max Value: 1
+          Median window: 5
+          Min Value: 0
+          Name: ZED2i Right
+          Normalize Range: true
+          Queue Size: 2
+          Transport Hint: raw
+          Unreliable: false
+          Value: true
+        - Class: rviz/Image
+          Enabled: true
+          Image Topic: /gt_box/zed2i/zed_node/left/image_rect_color
+          Max Value: 1
+          Median window: 5
+          Min Value: 0
+          Name: ZED2i Left
+          Normalize Range: true
+          Queue Size: 2
+          Transport Hint: ""
+          Unreliable: false
+          Value: true
+        - Alpha: 1
+          Autocompute Intensity Bounds: true
+          Autocompute Value Bounds:
+            Max Value: 10
+            Min Value: -10
+            Value: true
+          Axis: Z
+          Channel Name: intensity
+          Class: rviz/PointCloud2
+          Color: 255; 255; 255
+          Color Transformer: RGB8
+          Decay Time: 0
+          Enabled: true
+          Invert Rainbow: false
+          Max Color: 255; 255; 255
+          Min Color: 0; 0; 0
+          Name: ZED2i PointCloud
+          Position Transformer: XYZ
+          Queue Size: 10
+          Selectable: true
+          Size (Pixels): 3
+          Size (m): 0.009999999776482582
+          Style: Flat Squares
+          Topic: /gt_box/zed2i_driver_node/point_cloud/cloud_registered
+          Unreliable: false
+          Use Fixed Frame: true
+          Use rainbow: true
+          Value: true
+      Enabled: false
+      Name: ZED2i
+    - Class: rviz/Group
+      Displays:
+        - Alpha: 1
+          Class: rviz_plugin_tutorials/Imu
+          Color: 204; 51; 204
+          Enabled: false
+          History Length: 1
+          Name: CPT7 - offline raw
+          Queue Size: 10
+          Topic: /gt_box/cpt7/offline_from_novatel_logs/imu
+          Unreliable: false
+          Value: false
+        - Alpha: 1
+          Class: rviz_plugin_tutorials/Imu
+          Color: 204; 51; 204
+          Enabled: false
+          History Length: 1
+          Name: Adis IMU
+          Queue Size: 10
+          Topic: /gt_box/adis16475_node/imu
+          Unreliable: false
+          Value: false
+        - Alpha: 1
+          Class: rviz_plugin_tutorials/Imu
+          Color: 204; 51; 204
+          Enabled: false
+          History Length: 1
+          Name: Livox IMU
+          Queue Size: 10
+          Topic: /gt_box/livox/imu
+          Unreliable: false
+          Value: false
+        - Alpha: 1
+          Class: rviz_plugin_tutorials/Imu
+          Color: 204; 51; 204
+          Enabled: false
+          History Length: 1
+          Name: Alphasense IMU
+          Queue Size: 10
+          Topic: /gt_box/alphasense_driver_node/imu
+          Unreliable: false
+          Value: false
+        - Alpha: 1
+          Class: rviz_plugin_tutorials/Imu
+          Color: 204; 51; 204
+          Enabled: false
+          History Length: 1
+          Name: Stim320 IMU
+          Queue Size: 10
+          Topic: /gt_box/stim320
+          Unreliable: false
+          Value: false
+      Enabled: true
+      Name: IMU
+    - Class: rviz/Group
+      Displays:
+        - Alpha: 1
+          Autocompute Intensity Bounds: true
+          Autocompute Value Bounds:
+            Max Value: 3
+            Min Value: -6.2633819580078125
+            Value: false
+          Axis: Z
+          Channel Name: intensity
+          Class: rviz/PointCloud2
+          Color: 114; 159; 207
+          Color Transformer: AxisColor
+          Decay Time: 5
+          Enabled: true
+          Invert Rainbow: false
+          Max Color: 255; 255; 255
+          Min Color: 0; 0; 0
+          Name: HesaiXT32 Lidar
+          Position Transformer: XYZ
+          Queue Size: 10
+          Selectable: true
+          Size (Pixels): 3
+          Size (m): 0.009999999776482582
+          Style: Flat Squares
+          Topic: /gt_box/livox/lidar
+          Unreliable: false
+          Use Fixed Frame: true
+          Use rainbow: true
+          Value: true
+        - Alpha: 1
+          Autocompute Intensity Bounds: true
+          Autocompute Value Bounds:
+            Max Value: 6
+            Min Value: -6
+            Value: false
+          Axis: Z
+          Channel Name: intensity
+          Class: rviz/PointCloud2
+          Color: 252; 175; 62
+          Color Transformer: FlatColor
+          Decay Time: 5
+          Enabled: true
+          Invert Rainbow: false
+          Max Color: 255; 255; 255
+          Min Color: 0; 0; 0
+          Name: Livox Lidar
+          Position Transformer: XYZ
+          Queue Size: 10
+          Selectable: true
+          Size (Pixels): 3
+          Size (m): 0.009999999776482582
+          Style: Flat Squares
+          Topic: /gt_box/livox/lidar
+          Unreliable: false
+          Use Fixed Frame: true
+          Use rainbow: true
+          Value: true
+      Enabled: true
+      Name: Lidar
+    - Class: rviz/Group
+      Displays:
+        - Class: rviz/Image
+          Enabled: true
+          Image Topic: /gt_box/hdr_front/image_raw
+          Max Value: 1
+          Median window: 5
+          Min Value: 0
+          Name: HDR Center (ROS2)
+          Normalize Range: true
+          Queue Size: 2
+          Transport Hint: compressed
+          Unreliable: false
+          Value: true
+        - Class: rviz/Image
+          Enabled: true
+          Image Topic: /gt_box/hdr_right/image_raw
+          Max Value: 1
+          Median window: 5
+          Min Value: 0
+          Name: HDR RIght (ROS2)
+          Normalize Range: true
+          Queue Size: 2
+          Transport Hint: compressed
+          Unreliable: false
+          Value: true
+        - Class: rviz/Image
+          Enabled: true
+          Image Topic: /gt_box/hdr_left/image_raw
+          Max Value: 1
+          Median window: 5
+          Min Value: 0
+          Name: HDR Left (ROS2)
+          Normalize Range: true
+          Queue Size: 2
+          Transport Hint: compressed
+          Unreliable: false
+          Value: true
+      Enabled: true
+      Name: HDR Raw
+    - Class: rviz/Group
+      Displays:
+        - Class: rviz/Image
+          Enabled: true
+          Image Topic: /gt_box/alphasense_driver_node/cam5/color/image
+          Max Value: 1
+          Median window: 5
+          Min Value: 0
+          Name: Alphasense Right
+          Normalize Range: true
+          Queue Size: 2
+          Transport Hint: compressed
+          Unreliable: false
+          Value: true
+        - Class: rviz/Image
+          Enabled: true
+          Image Topic: /gt_box/alphasense_driver_node/cam2/color/image
+          Max Value: 1
+          Median window: 5
+          Min Value: 0
+          Name: Alphasense Front Right
+          Normalize Range: true
+          Queue Size: 2
+          Transport Hint: compressed
+          Unreliable: false
+          Value: true
+        - Class: rviz/Image
+          Enabled: true
+          Image Topic: /gt_box/alphasense_driver_node/cam1/color/image
+          Max Value: 1
+          Median window: 5
+          Min Value: 0
+          Name: Alphasense Front Middle
+          Normalize Range: true
+          Queue Size: 2
+          Transport Hint: compressed
+          Unreliable: false
+          Value: true
+        - Class: rviz/Image
+          Enabled: true
+          Image Topic: /gt_box/alphasense_driver_node/cam3/color/image
+          Max Value: 1
+          Median window: 5
+          Min Value: 0
+          Name: Alphasense Front Left
+          Normalize Range: true
+          Queue Size: 2
+          Transport Hint: compressed
+          Unreliable: false
+          Value: true
+        - Class: rviz/Image
+          Enabled: true
+          Image Topic: /gt_box/alphasense_driver_node/cam4/color/image
+          Max Value: 1
+          Median window: 5
+          Min Value: 0
+          Name: Alphasense Left
+          Normalize Range: true
+          Queue Size: 2
+          Transport Hint: compressed
+          Unreliable: false
+          Value: true
+      Enabled: false
+      Name: Alphasense_raw
+    - Class: rviz/Group
+      Displays:
+        - Class: rviz/Image
+          Enabled: true
+          Image Topic: /gt_box/zed2i/zed_node/right/image_rect_color
+          Max Value: 1
+          Median window: 5
+          Min Value: 0
+          Name: ZED2i Right
+          Normalize Range: true
+          Queue Size: 2
+          Transport Hint: compressed
+          Unreliable: false
+          Value: true
+        - Class: rviz/Image
+          Enabled: true
+          Image Topic: /gt_box/zed2i/zed_node/left/image_rect_color
+          Max Value: 1
+          Median window: 5
+          Min Value: 0
+          Name: ZED2i Left
+          Normalize Range: true
+          Queue Size: 2
+          Transport Hint: compressed
+          Unreliable: false
+          Value: true
+        - Alpha: 1
+          Autocompute Intensity Bounds: true
+          Autocompute Value Bounds:
+            Max Value: 10
+            Min Value: -10
+            Value: true
+          Axis: Z
+          Channel Name: intensity
+          Class: rviz/PointCloud2
+          Color: 255; 255; 255
+          Color Transformer: RGB8
+          Decay Time: 0
+          Enabled: true
+          Invert Rainbow: false
+          Max Color: 255; 255; 255
+          Min Color: 0; 0; 0
+          Name: ZED2i PointCloud
+          Position Transformer: XYZ
+          Queue Size: 10
+          Selectable: true
+          Size (Pixels): 3
+          Size (m): 0.009999999776482582
+          Style: Flat Squares
+          Topic: /gt_box/zed2i_driver_node/point_cloud/cloud_registered
+          Unreliable: false
+          Use Fixed Frame: true
+          Use rainbow: true
+          Value: true
+      Enabled: true
+      Name: Zed2i Raw
+  Enabled: true
+  Global Options:
+    Background Color: 0; 0; 0
+    Default Light: true
+    Fixed Frame: dlio_map
+    Frame Rate: 30
+  Name: root
+  Tools:
+    - Class: rviz/Interact
+      Hide Inactive Objects: true
+    - Class: rviz/MoveCamera
+    - Class: rviz/Select
+    - Class: rviz/FocusCamera
+    - Class: rviz/Measure
+    - Class: rviz/SetInitialPose
+      Theta std deviation: 0.2617993950843811
+      Topic: /initialpose
+      X std deviation: 0.5
+      Y std deviation: 0.5
+    - Class: rviz/SetGoal
+      Topic: /goal
+    - Class: rviz/PublishPoint
+      Single click: true
+      Topic: /clicked_point
+    - Class: center_frame_tool/CenterFrameTool
+      Frame: base
+    - Class: gazebo_play_tool/GazeboPlayTool
+    - Class: rviz_gazebo_interaction/RobotRespawner
+  Value: true
+  Views:
+    Current:
+      Class: rviz/Orbit
+      Distance: 30.860694885253906
+      Enable Stereo Rendering:
+        Stereo Eye Separation: 0.05999999865889549
+        Stereo Focal Distance: 1
+        Swap Stereo Eyes: false
+        Value: false
+      Field of View: 0.7853981852531433
+      Focal Point:
+        X: 0.6672714352607727
+        Y: 2.7855024337768555
+        Z: 0.7476311922073364
+      Focal Shape Fixed Size: false
+      Focal Shape Size: 0.05000000074505806
+      Invert Z Axis: true
+      Name: Current View
+      Near Clip Distance: 0.009999999776482582
+      Pitch: 0.5302035212516785
+      Target Frame: box_base
+      Yaw: 2.263988733291626
+    Saved:
+      - Class: rviz/Orbit
+        Distance: 1.1776375770568848
+        Enable Stereo Rendering:
+          Stereo Eye Separation: 0.05999999865889549
+          Stereo Focal Distance: 1
+          Swap Stereo Eyes: false
+          Value: false
+        Field of View: 0.7853981852531433
+        Focal Point:
+          X: 0
+          Y: 0
+          Z: 0
+        Focal Shape Fixed Size: false
+        Focal Shape Size: 0.05000000074505806
+        Invert Z Axis: true
+        Name: Orbit
+        Near Clip Distance: 0.009999999776482582
+        Pitch: 0.0903986245393753
+        Target Frame: box_base
+        Yaw: 0.5203984379768372
+Window Geometry:
+  Alphasense Front Left:
+    collapsed: false
+  Alphasense Front Middle:
+    collapsed: false
+  Alphasense Front Right:
+    collapsed: false
+  Alphasense Left:
+    collapsed: false
+  Alphasense Right:
+    collapsed: false
+  Displays:
+    collapsed: false
+  HDR Center (ROS2):
+    collapsed: false
+  HDR Left (ROS2):
+    collapsed: false
+  HDR RIght (ROS2):
+    collapsed: false
+  Height: 2096
+  Hide Left Dock: false
+  Hide Right Dock: false
+  QMainWindow State: 000000ff00000000fd0000000400000000000004d70000028dfc020000001cfc000002740000028d0000001600fffffffa000000000100000002fb00000014005a00450044003200690020004c0065006600740100000000ffffffff0000007c00fffffffb000000100044006900730070006c0061007900730000000000000001ea0000015600fffffffb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb0000001a004b0069006e006500630074002000430061006d0065007200610000000191000001010000000000000000fb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000a0056006900650077007302000004c000000196000001d000000134fb000000100044006900730070006c006100790073000000030100000135000000c900fffffffb0000001a004b0069006e006500630074002000430061006d0065007200610000000000ffffffff0000000000000000fb0000000c00430061006d00650072006100000001d20000007c0000000000000000fb00000016005a006f006f006d002000430061006d0065007200610100000131000000160000000000000000fb0000001c0054006800650072006d0061006c002000430061006d006500720061010000014d000000160000000000000000fb0000001a0042006c00610063006b0066006c0079002000720065006100720000000000ffffffff0000000000000000fb0000001c0042006c00610063006b0066006c0079002000660072006f006e00740000000000ffffffff0000000000000000fb0000000a0049006d00610067006502000008c00000019100000280000001e0fb0000000a0049006d006100670065000000006e000003cd0000000000000000fb0000000a0049006d00610067006502000005b40000033b00000280000001e0fb0000000a0049006d006100670065000000006e000008b60000000000000000fb0000000a0049006d006100670065000000006e000008b60000000000000000fb0000000a0049006d006100670065000000006e000008b60000000000000000fb0000000a0049006d006100670065000000006e000007f20000000000000000fb0000000a0049006d006100670065000000003d000004580000000000000000fb0000000a0049006d006100670065000000003d000004580000000000000000fb0000000a0049006d006100670065000000003d000004580000000000000000fb0000000a0049006d0061006700650000000442000000b30000000000000000fb0000000a0049006d00610067006501000004d600000122000000000000000000000001000005940000028dfc0200000009fb00000016005a004500440032006900200052006900670068007401000002740000028d0000001600fffffffb0000001e0054006f006f006c002000500072006f0070006500720074006900650073000000003c000000b80000005c00fffffffc0000003d000002b70000000000fffffffa000000000100000003fb00000012005000610074006800500061006e0065006c0000000000ffffffff0000000000000000fb00000012005000610074006800500061006e0065006c0100000000ffffffff0000000000000000fb0000000a0056006900650077007300000004ba000001720000010000fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b20000000000000000fb000000140046006500650064006200610063006b00200031000000003d000000360000000000000000fb000000140046006500650064006200610063006b002000340000000079000000360000000000000000fb000000140046006500650064006200610063006b0020003300000000b5000000360000000000000000fb000000140046006500650064006200610063006b0020003200000000f1000000360000000000000000fb0000000c0052006500730075006c0074000000012d0000003600000000000000000000000200000eb800000231fc0100000006fb0000001e0041006c00700068006100730065006e007300650020004c0065006600740100000000000002f8000000a200fffffffb0000002a0041006c00700068006100730065006e00730065002000460072006f006e00740020004c00650066007401000002fe000002f5000000ca00fffffffb0000002e0041006c00700068006100730065006e00730065002000460072006f006e00740020004d006900640064006c006501000005f9000002e5000000dd00fffffffb0000002c0041006c00700068006100730065006e00730065002000460072006f006e007400200052006900670068007401000008e4000002e8000000d300fffffffb000000200041006c00700068006100730065006e007300650020005200690067006800740100000bd2000002e6000000aa00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007300000000000000075a00000000000000000000000300000eb80000030cfc0100000015fb0000001e0041006c00700068006100730065006e007300650020004c0065006600740000000000000000b6000000a200fffffffb0000001e0041006c00700068006100730065006e007300650020004c0065006600740100000000000000a80000000000000000fb0000002a0041006c00700068006100730065006e00730065002000460072006f006e00740020004c00650066007400000000bc000000e3000000ca00fffffffb0000002e0041006c00700068006100730065006e00730065002000460072006f006e00740020004d006900640064006c006500000001a5000000f9000000dd00fffffffb0000002c0041006c00700068006100730065006e00730065002000460072006f006e007400200052006900670068007400000002a4000000ed000000d300fffffffb000000200041006c00700068006100730065006e007300650020005200690067006800740000000397000000bf000000aa00fffffffb00000012004800440052002000460072006f006e007400000003e4000000fb0000000000000000fb000000140048004400520020004d006900640064006c00650100000697000001540000000000000000fb0000001200480044005200200052006900670068007400000004e5000000880000000000000000fb00000014005a00450044003200690020004c0065006600740000000000000003030000007c00fffffffb00000016005a00450044003200690020005200690067006800740000000309000002420000008400fffffffb0000001e0048004400520020004c006500660074002000280052004f0053003200290100000000000004d2000000a500fffffffb000000100048004400520020004c006500660074000000072a0000011d0000000000000000fb000000100048004400520020004c0065006600740000000d43000002880000000000000000fb00000022004800440052002000430065006e007400650072002000280052004f00530032002901000004d8000004f4000000b700fffffffb00000020004800440052002000520049006700680074002000280052004f00530032002901000009d2000004e6000000ae00fffffffb0000000a0049006d0061006700650100000ae6000001d10000000000000000fb0000000a0049006d0061006700650100000cc3000002c40000000000000000fb0000000a0049006d0061006700650100000f930000021a0000000000000000fb0000000800540069006d006500000007790000073f000004f300fffffffb0000000800540069006d00650100000000000004500000000000000000000004410000028d00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  Selection:
+    collapsed: false
+  Time:
+    collapsed: false
+  Tool Properties:
+    collapsed: false
+  Views:
+    collapsed: false
+  Width: 3768
+  X: 72
+  Y: 27
+  ZED2i Left:
+    collapsed: false
+  ZED2i Right:
+    collapsed: false

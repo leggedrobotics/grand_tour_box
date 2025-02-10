@@ -13,6 +13,7 @@ from .utils import (
     upload_bag,
     check_duplicate_timestamps,
     find_and_extract_non_matching,
+    create_github_issue,
     RosbagMessageGenerator,
 )
 from .gps_utils import GPS_utils
@@ -34,6 +35,7 @@ __all__ = [
     "get_file",
     "upload_bag",
     "GPS_utils",
+    "create_github_issue",
     "RosbagMessageGenerator",
     "okviz_trajectory_to_bag",
 ]

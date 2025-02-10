@@ -338,7 +338,6 @@ def run_eval(test_name, reference_file, estimated_file, params, output_path, fil
     ax.legend(frameon=True)
 
     # fig.savefig(output_path + "/" + save_prefix + "_3d_plot_" + test_name + ".png", dpi=300)
-
     file_interface.save_res_file(os.path.join(output_path, zip_file_name), results[0], confirm_overwrite=not True)
 
     if mode == "ate":
@@ -433,7 +432,7 @@ def process_directory(base_path, output_dir, config, disable_viz, prefix):
         if not ref_file:
             continue
 
-        reference_file path.join(base_path, ref_file + ".tum")
+        reference_file = os.path.join(base_path, ref_file + ".tum")
         estimated_file = test_name + ".tum"
         if estimated_file.startswith("_"):
             estimated_file = prefix + estimated_file
