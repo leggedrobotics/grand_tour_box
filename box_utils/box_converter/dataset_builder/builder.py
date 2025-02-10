@@ -35,6 +35,9 @@ INPUT_PATH = DATA_PATH / "files"
 MCAP_PATHS = [INPUT_PATH / p for p in FILES]
 
 DATASET_PATH = DATA_PATH / "dataset"
+ZARR_PREFIX = "data"
+JPEG_PREFIX = "images"
+
 
 BasicType = Union[np.ndarray, int, float, str, bool]
 
@@ -48,9 +51,6 @@ def get_file_topics(path: Path) -> List[str]:
 
 def load_file_topic_dict(paths: Sequence[Path]) -> Dict[Path, List[str]]:
     return {path: get_file_topics(path) for path in paths}
-
-
-TOPIC_DCT = load_file_topic_dict(MCAP_PATHS)
 
 
 def arrayify_buffer(
@@ -200,10 +200,6 @@ def save_image_to_topic_folder(
     cv2.imwrite(str(image_path), image)
 
 
-ZARR_PREFIX = "data"
-JPEG_PREFIX = "images"
-
-
 def generate_dataset_from_topic(
     dataset_root: Path, path: Path, topic: str, image_topic: bool
 ) -> None:
@@ -244,8 +240,10 @@ def generate_dataset_from_topic(
 
 
 def generate_dataset() -> None:
+    file_topic_map = load_file_topic_dict(MCAP_PATHS)
+
     for file in tqdm(MCAP_PATHS):
-        for topic in tqdm(TOPIC_DCT[file], leave=False):
+        for topic in tqdm(file_topic_map[file], leave=False):
             generate_dataset_from_topic(
                 DATASET_PATH, file, topic, topic in IMAGE_TOPICS
             )
