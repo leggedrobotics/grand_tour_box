@@ -3,7 +3,7 @@
 # Default values
 DOCKERFILE_PREFIX="box"
 TAG_PREFIX="rslethz/grand_tour_box"
-SSH_KEY="$HOME/.ssh/jonfrey_ws"
+SSH_KEY="$HOME/.ssh/id_ed25519"
 REPO_PATH="$HOME/git/grand_tour_box"
 DOCKER_PATH="$REPO_PATH/box_utils/box_auto/docker"
 
