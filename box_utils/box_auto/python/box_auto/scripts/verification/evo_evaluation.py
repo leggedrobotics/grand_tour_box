@@ -109,7 +109,7 @@ if __name__ == "__main__":
     # For translation offset -> evo_evaluations_translation_offset
     # For rotational offset -> evo_evaluations_rotation_offset
 
-    CONFIG_NAME = "evo_evaluations_gt_truth_comparison"
+    CONFIG_NAME = "evo_evaluations"
 
     IS_POINT_DISTANCES_SUPPORTED = False
     from evo import __version__

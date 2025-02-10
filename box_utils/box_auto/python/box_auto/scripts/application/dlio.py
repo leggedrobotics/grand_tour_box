@@ -53,13 +53,13 @@ def launch_nodes(
         background=True,
     )
     sleep(5)
-    run_ros_command(f"rosbag play -r 1 --clock {merged_rosbag_path}")
+    run_ros_command(f"rosbag play -r 0.5 --clock {merged_rosbag_path}")
     print("Waiting for 10s before uploading!")
     sleep(10)
     print("Moving and uploading bag!")
     kill_roscore()
 
-    output_bag_path = os.path.join(MISSION_DATA, f"{timestamp}_dlio_{post_fix}.bag")
+    output_bag_path = os.path.join(MISSION_DATA, f"{timestamp}_{tag}dlio_{post_fix}.bag")
     shutil.move(f"{MISSION_DATA}/{output_bag_name}.bag", output_bag_path)
 
     check_duplicate_timestamps(output_bag_path, "/dlio/deskewed_point_cloud")
@@ -104,7 +104,7 @@ if __name__ == "__main__":
         imu_pattern = "*_livox.bag"
         imu_topic = "/gt_box/livox/imu_si_compliant"
     else:
-        print(f"IMU not supported: {args.imu}")
+        print(f"IMU not found: {args.imu}")
         exit(1)
 
     # Resolve LiDAR information prefer filtered pointclouds
