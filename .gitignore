@@ -17,3 +17,4 @@ box_utils/box_recording/data
 box_utils/box_mission_report/reports*
 box_bringup/bringup_open3d_slam/data/maps/*
 box_utils/box_auto/compose/*_local.yaml
+box_utils/box_auto/cfg/*_local.yaml

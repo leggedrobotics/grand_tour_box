@@ -163,7 +163,7 @@ if __name__ == "__main__":
     time_as_string = find_and_extract_non_matching(MISSION_DATA, GT_PATTERN)
 
     # Create the output folder for the evo evaluations.
-    p = Path(MISSION_DATA) / f"{time_as_string}_evo_evaluations"
+    p = Path(MISSION_DATA) / f"{time_as_string}_{args.config_name}"
     if p.exists():
         shutil.rmtree(p)
     p.mkdir(parents=True)
