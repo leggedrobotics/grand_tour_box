@@ -1,0 +1,538 @@
+# The target sensor frame.
+# AP20 do not have orientation so if we want to compare against that we have to convert to its sensor frame.
+target_frame: box_base
+filter_by_covariance: False
+covariance_percentile_threshold: 95 #percentile
+#
+remove_until_motion: True
+distance_threshold: 1 #distance in meters
+#
+ap20_peak_rejection: True
+ap20_peak_rejection_threshold: 0.1 #second
+ap20_peak_rejection_trailing_window: 5 #trailing indices to remove
+#
+project_to_plane: "xyz" #xy or xyz
+
+# If topic entry is left empty "", the bag only going to be used for /tf & /tf_static reading and not for topic reading
+bag_topic_pairs:
+  - bag: _gt_pose.bag
+    test_name: "gmsf_gt"
+    topic: /gt_box/ground_truth/pose_with_covariance
+    frame: box_base
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: ""
+
+  - bag: _dlio_trans_minus_55mm.bag
+    test_name: "dlio_trans_minus_55mm"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+
+  - bag: _dlio_trans_minus_50mm.bag
+    test_name: "dlio_trans_minus_50mm"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+
+  - bag: _dlio_trans_minus_45mm.bag
+    test_name: "dlio_trans_minus_45mm"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+
+  - bag: _dlio_trans_minus_40mm.bag
+    test_name: "dlio_trans_minus_40mm"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+
+  - bag: _dlio_trans_minus_35mm.bag
+    test_name: "dlio_trans_minus_35mm"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+
+  #   #
+  - bag: _dlio_trans_minus_30mm.bag
+    test_name: "dlio_trans_minus_30mm"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+
+  - bag: _dlio_trans_minus_25mm.bag
+    test_name: "dlio_trans_minus_25mm"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+
+  - bag: _dlio_trans_minus_20mm.bag
+    test_name: "dlio_trans_minus_20mm"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+
+  - bag: _dlio_trans_minus_16mm.bag
+    test_name: "dlio_trans_minus_16mm"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+
+  - bag: _dlio_trans_minus_15mm.bag
+    test_name: "dlio_trans_minus_15mm"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+
+  - bag: _dlio_trans_minus_10mm.bag
+    test_name: "dlio_trans_minus_10mm"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+
+  #   #
+  - bag: _dlio_trans_minus_5mm.bag
+    test_name: "dlio_trans_minus_5mm"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+
+  - bag: _dlio_trans_minus_2mm.bag
+    test_name: "dlio_trans_minus_2mm"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+
+  # - bag: _dlio_trans_minus_1mm.bag
+  #   test_name: "dlio_trans_minus_1mm"
+  #   topic: /dlio/lidar_map_odometry
+  #   frame: hesai_lidar
+  #   evaluations:
+  #     parameters:
+  #       t_max_diff: 0.005
+  #       t_offset: 0.0
+  #       n_to_align: -1
+  #       correct_scale: False
+  #       delta: 1
+  #       unit: "m" #m or frame
+  #     ape_rpe:
+  #       reference_file: "gmsf_gt"
+  #     point_relation:
+  #       reference_file: ""
+
+    #
+  - bag: _dlio_trans_0mm.bag
+    test_name: "dlio_trans_0mm"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+
+  #   #
+  # - bag: _dlio_trans_1mm.bag
+  #   test_name: "dlio_trans_1mm"
+  #   topic: /dlio/lidar_map_odometry
+  #   frame: hesai_lidar
+  #   evaluations:
+  #     parameters:
+  #       t_max_diff: 0.005
+  #       t_offset: 0.0
+  #       n_to_align: -1
+  #       correct_scale: False
+  #       delta: 1
+  #       unit: "m" #m or frame
+  #     ape_rpe:
+  #       reference_file: "gmsf_gt"
+  #     point_relation:
+  #       reference_file: ""
+
+  - bag: _dlio_trans_2mm.bag
+    test_name: "dlio_trans_2mm"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+
+  #   #
+  - bag: _dlio_trans_5mm.bag
+    test_name: "dlio_trans_5mm"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+
+
+  - bag: _dlio_trans_10mm.bag
+    test_name: "dlio_trans_10mm"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+        
+  - bag: _dlio_trans_15mm.bag
+    test_name: "dlio_trans_15mm"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+
+  - bag: _dlio_trans_16mm.bag
+    test_name: "dlio_trans_16mm"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+
+
+  - bag: _dlio_trans_20mm.bag
+    test_name: "dlio_trans_20mm"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+
+  - bag: _dlio_trans_25mm.bag
+    test_name: "dlio_trans_25mm"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+
+  - bag: _dlio_trans_30mm.bag
+    test_name: "dlio_trans_30mm"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+
+  - bag: _dlio_trans_35mm.bag
+    test_name: "dlio_trans_35mm"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+
+  - bag: _dlio_trans_40mm.bag
+    test_name: "dlio_trans_40mm"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+
+  - bag: _dlio_trans_45mm.bag
+    test_name: "dlio_trans_45mm"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+
+  - bag: _dlio_trans_50mm.bag
+    test_name: "dlio_trans_50mm"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+
+  - bag: _dlio_trans_55mm.bag
+    test_name: "dlio_trans_55mm"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+    #
+  - bag: _tf_static.bag
+    test_name: ""
+    topic: ""
+    frame: ""

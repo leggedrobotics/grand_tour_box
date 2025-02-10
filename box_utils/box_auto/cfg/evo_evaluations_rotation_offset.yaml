@@ -1,0 +1,468 @@
+# The target sensor frame.
+# AP20 do not have orientation so if we want to compare against that we have to convert to its sensor frame.
+target_frame: box_base
+filter_by_covariance: False
+covariance_percentile_threshold: 95 #percentile
+#
+remove_until_motion: True
+distance_threshold: 1 #distance in meters
+#
+ap20_peak_rejection: True
+ap20_peak_rejection_threshold: 0.1 #second
+ap20_peak_rejection_trailing_window: 5 #trailing indices to remove
+#
+project_to_plane: "xyz" #xy or xyz
+
+# If topic entry is left empty "", the bag only going to be used for /tf & /tf_static reading and not for topic reading
+bag_topic_pairs:
+  - bag: _gt_pose.bag
+    test_name: "gmsf_gt"
+    topic: /gt_box/ground_truth/pose_with_covariance
+    frame: box_base
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: ""
+
+
+  - bag: _dlio_rot_minus_10deg.bag
+    test_name: "dlio_rot_minus_10deg"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+
+  - bag: _dlio_rot_minus_9deg.bag
+    test_name: "dlio_rot_minus_9deg"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+
+  - bag: _dlio_rot_minus_8deg.bag
+    test_name: "dlio_rot_minus_8deg"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+
+  - bag: _dlio_rot_minus_7deg.bag
+    test_name: "dlio_rot_minus_7deg"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+
+  - bag: _dlio_rot_minus_6deg.bag
+    test_name: "dlio_rot_minus_6deg"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+
+  - bag: _dlio_rot_minus_5deg.bag
+    test_name: "dlio_rot_minus_5deg"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+
+  - bag: _dlio_rot_minus_4deg.bag
+    test_name: "dlio_rot_minus_4deg"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+
+  - bag: _dlio_rot_minus_3deg.bag
+    test_name: "dlio_rot_minus_3deg"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+
+  - bag: _dlio_rot_minus_2deg.bag
+    test_name: "dlio_rot_minus_2deg"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+
+  - bag: _dlio_rot_minus_1deg.bag
+    test_name: "dlio_rot_minus_1deg"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+
+  - bag: _dlio_rot_minus_0_point_5deg.bag
+    test_name: "dlio_rot_minus_0_point_5deg"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+
+  - bag: _dlio_rot_minus_0_point_1deg.bag
+    test_name: "dlio_rot_minus_0_point_1deg"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+
+    #
+  - bag: _dlio_rot_0deg.bag
+    test_name: "dlio_rot_0deg"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+
+  - bag: _dlio_rot_0_point_1deg.bag
+    test_name: "dlio_rot_0_point_1deg"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+
+  - bag: _dlio_rot_0_point_5deg.bag
+    test_name: "dlio_rot_0_point_5deg"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+
+  - bag: _dlio_rot_1deg.bag
+    test_name: "dlio_rot_1deg"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+
+  - bag: _dlio_rot_2deg.bag
+    test_name: "dlio_rot_2deg"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+
+  - bag: _dlio_rot_3deg.bag
+    test_name: "dlio_rot_3deg"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+
+  - bag: _dlio_rot_4deg.bag
+    test_name: "dlio_rot_4deg"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+
+  - bag: _dlio_rot_5deg.bag
+    test_name: "dlio_rot_5deg"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+
+  - bag: _dlio_rot_6deg.bag
+    test_name: "dlio_rot_6deg"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+
+  - bag: _dlio_rot_7deg.bag
+    test_name: "dlio_rot_7deg"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+
+  - bag: _dlio_rot_8deg.bag
+    test_name: "dlio_rot_8deg"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+
+  - bag: _dlio_rot_9deg.bag
+    test_name: "dlio_rot_9deg"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+
+  #   #
+  - bag: _dlio_rot_10deg.bag
+    test_name: "dlio_rot_10deg"
+    topic: /dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 1
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: "gmsf_gt"
+      point_relation:
+        reference_file: ""
+
+
+    #
+  - bag: _tf_static.bag
+    test_name: ""
+    topic: ""
+    frame: ""
