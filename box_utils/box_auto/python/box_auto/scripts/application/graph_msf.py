@@ -28,7 +28,30 @@ from box_auto.utils import (
     ARTIFACT_FOLDER,
 )
 
-PATTERNS = ["*_jetson_ap20_robot.bag", "*_cpt7_raw_imu.bag", "*_cpt7_ie_tc.bag", "*_tf_static.bag"]
+# PATTERNS = ["*_jetson_ap20_robot.bag", "*_cpt7_raw_imu.bag", "*_tf_static.bag", ] #"*_cpt7_ie_tc.bag",
+# PATTERNS = ["*_jetson_ap20_robot.bag", "*_jetson_stim.bag", "*_tf_static.bag", ]
+# PATTERNS = ["*_jetson_ap20_robot.bag", "*_jetson_adis.bag", "*_tf_static.bag", ]
+# PATTERNS = ["*_jetson_ap20_robot.bag", "*_jetson_ap20_only_imu.bag", "*_tf_static.bag", ]
+PATTERNS = [
+    "*_jetson_ap20_robot.bag",
+    "*_nuc_livox.bag",
+    "*_tf_static.bag",
+]
+# PATTERNS = ["*_jetson_ap20_robot.bag", "*_alphasense_updated.bag", "*_tf_static.bag", ]
+# PATTERNS = ["*_jetson_ap20_robot.bag", "*anymal_imu.bag", "*_tf_static.bag", "*_lpc_tf.bag"]
+
+
+# PATTERNS = [
+#     "*_jetson_ap20_robot.bag",
+#     "*_cpt7_raw_imu.bag",
+#     "*_tf_static.bag",
+#     "*_jetson_stim.bag",
+#     "*_jetson_ap20_synced.bag",
+#     "*_jetson_adis.bag",
+#     "*_jetson_zed2i_prop.bag",
+#     "*_alphasense_updated.bag",
+#     "*_nuc_livox.bag",
+# ]
 
 """
 Exit Codes:
@@ -414,12 +437,12 @@ def launch_nodes():
 
         print("Waiting 3s for graph_msf to startup")
         sleep(3)
-        run_ros_command(f"rosbag play -r 1 --clock {merged_rosbag_path}")
+        run_ros_command(f"rosbag play -r 1 -u 150 --clock {merged_rosbag_path}")
 
         print("Waiting 3s for all messages to be consumed by graph_msf before starting optimization!")  #
         sleep(3)
         run_ros_command(
-            'rosservice call /graph_msf/trigger_offline_optimization "max_optimization_iterations: 1000\nsave_covariance: true"'
+            'rosservice call /graph_msf/trigger_offline_optimization "max_optimization_iterations: 0\nsave_covariance: true"'
         )
         kill_roscore()
 
@@ -438,6 +461,12 @@ def launch_nodes():
         ],
         key=os.path.getmtime,
     )
+
+    tf_gt_path = tf_static_path.replace("_tf_static.bag", "_gt_tf.bag")
+    pose_gt_path = tf_static_path.replace("_tf_static.bag", "_gt_pose.bag")
+    csv_cov_file, _ = get_file("X_state_6D_pose_covariance.csv", GRAPH_MSF_ARTIFACT_FOLDER_SUBFOLDER)
+    csv_pose_file, _ = get_file("X_state_6D_pose.csv", GRAPH_MSF_ARTIFACT_FOLDER_SUBFOLDER)
+    convert_csv_to_bag(csv_cov_file, csv_pose_file, tf_gt_path, pose_gt_path, "world", "box_base")
 
     print(GRAPH_MSF_ARTIFACT_FOLDER_SUBFOLDER)
     csv_R_6D_transform_world_to_leica_total_station, suc1 = get_file(

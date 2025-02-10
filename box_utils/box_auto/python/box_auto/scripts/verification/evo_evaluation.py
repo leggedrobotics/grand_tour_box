@@ -99,7 +99,17 @@ def load_config(config_path):
 
 if __name__ == "__main__":
 
-    CONFIG_NAME = "evo_evaluations"
+    # For Time offset evaluation on DLIO and CPT7 -> evo_evaluations_time_offset
+    # For Time offset evaluation on DLIO and STIM320 -> evo_evaluations_time_offset_STIM
+    # For General Evaluation -> evo_evaluations
+    # For Ground Truth comparison -> evo_evaluations_gt_truth_comparison
+    # For IMU comparisons on DLIO -> evo_evaluations_imu_comparison
+    # For IMU comparisons on GMSF -> evo_evaluations_GMSF_IMU_comparison
+
+    # For translation offset -> evo_evaluations_translation_offset
+    # For rotational offset -> evo_evaluations_rotation_offset
+
+    CONFIG_NAME = "evo_evaluations_gt_truth_comparison"
 
     IS_POINT_DISTANCES_SUPPORTED = False
     from evo import __version__
