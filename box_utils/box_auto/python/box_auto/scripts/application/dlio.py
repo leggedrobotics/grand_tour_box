@@ -59,7 +59,7 @@ def launch_nodes(
     print("Moving and uploading bag!")
     kill_roscore()
 
-    output_bag_path = os.path.join(MISSION_DATA, f"{timestamp}_{tag}dlio_{post_fix}.bag")
+    output_bag_path = os.path.join(MISSION_DATA, f"{timestamp}_{tag}dlio{post_fix}.bag")
     shutil.move(f"{MISSION_DATA}/{output_bag_name}.bag", output_bag_path)
 
     check_duplicate_timestamps(output_bag_path, "/dlio/deskewed_point_cloud")
@@ -136,17 +136,17 @@ if __name__ == "__main__":
     if not rotational_offset == 0.0:
         if rotational_offset < 0:
             rotational_offset_str = str(abs(rotational_offset)).replace(".", "_point_")
-            post_fix = "rot_minus_" + rotational_offset_str + "deg"
+            post_fix = "_rot_minus_" + rotational_offset_str + "deg"
         else:
             rotational_offset_str = str(rotational_offset).replace(".", "_point_")
-            post_fix = "rot_" + rotational_offset_str + "deg"
+            post_fix = "_rot_" + rotational_offset_str + "deg"
 
     translation_offset = 0.0  # millimeter
     if not translation_offset == 0.0:
         if translation_offset < 0:
-            post_fix = "trans_minus_" + str(abs(translation_offset)) + "mm"
+            post_fix = "_trans_minus_" + str(abs(translation_offset)) + "mm"
         else:
-            post_fix = "trans_" + str(translation_offset) + "mm"
+            post_fix = "_trans_" + str(translation_offset) + "mm"
 
     output_bag_name = f"dlio_replayed_{args.lidar}_{args.imu}"
     launch_nodes(
