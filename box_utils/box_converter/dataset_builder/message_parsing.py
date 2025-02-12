@@ -26,6 +26,7 @@ from sensor_msgs.msg import Imu
 from sensor_msgs.msg import MagneticField
 from sensor_msgs.msg import NavSatFix
 from sensor_msgs.msg import PointCloud2
+from tf2_msgs.msg import TFMessage
 from std_msgs.msg import Header
 
 BasicType = Union[np.ndarray, int, float, str, bool]
@@ -135,7 +136,7 @@ def parse_magnetic_field(msg: MagneticField) -> Dict[str, BasicType]:
 
 
 def parse_imu(msg: Imu) -> Dict[str, BasicType]:
-    data = {
+    return {
         "orien": _parse_quaternion(msg.orientation),
         "orien_cov": _parse_covariance(msg.orientation_covariance, 3),
         "ang_vel": _parse_vector3(msg.angular_velocity),
@@ -143,19 +144,17 @@ def parse_imu(msg: Imu) -> Dict[str, BasicType]:
         "lin_acc": _parse_vector3(msg.linear_acceleration),
         "lin_acc_cov": _parse_covariance(msg.linear_acceleration_covariance, 3),
     }
-    return data  # type: ignore
 
 
 def parse_illuminance(msg: Illuminance) -> Dict[str, BasicType]:
-    data = {
+    return {
         "illum": msg.illuminance,
         "illum_var": msg.variance,
     }
-    return data
 
 
 def parse_odometry(msg: Odometry) -> Dict[str, BasicType]:
-    data = {
+    return {
         "pose_pos": _parse_vector3(msg.pose.pose.position),
         "pose_orien": _parse_quaternion(msg.pose.pose.orientation),
         "pose_cov": _parse_covariance(msg.pose.covariance, 6),
@@ -163,37 +162,51 @@ def parse_odometry(msg: Odometry) -> Dict[str, BasicType]:
         "twist_ang": _parse_vector3(msg.twist.twist.angular),
         "twist_cov": _parse_covariance(msg.twist.covariance, 6),
     }
-    return data  # type: ignore
 
 
 def parse_pose(
     msg: PoseStamped,
 ) -> Dict[str, BasicType]:
-    data = {
+    return {
         "pose_pos": _parse_vector3(msg.pose.position),
         "pose_orien": _parse_quaternion(msg.pose.orientation),
     }
-    return data  # type: ignore
 
 
 def parse_pose_with_covar(
     msg: PoseWithCovarianceStamped,
 ) -> Dict[str, BasicType]:
-    data = {
+    return {
         "pose_pos": _parse_vector3(msg.pose.pose.position),
         "pose_orien": _parse_quaternion(msg.pose.pose.orientation),
         "pose_cov": _parse_covariance(msg.pose.covariance, 6),
     }
-    return data  # type: ignore
 
 
 def parse_point(
     msg: PointStamped,
 ) -> Dict[str, BasicType]:
-    data = {
+    return {
         "point": _parse_vector3(msg.point),
     }
-    return data  # type: ignore
+
+
+def parse_tf2_singleton_message(msg: TFMessage) -> Dict[str, BasicType]:
+    assert len(msg.transforms) == 1
+    transform = msg.transforms[0]  # type: ignore
+    return {
+        "translation": _parse_vector3(transform.transform.translation),
+        "rotation": _parse_quaternion(transform.transform.rotation),
+    }
+
+
+def parse_tf2_header_message(msg: TFMessage) -> Dict[str, BasicType]:
+    assert len(msg.transforms) == 1
+    transform = msg.transforms[0]  # type: ignore
+    return {
+        "timestamp": transform.header.stamp.to_nsec(),
+        "sequence_id": transform.header.seq,
+    }
 
 
 MESSAGE_PARSERS: Dict[str, Callable[[Any], Dict[str, BasicType]]] = {
@@ -207,6 +220,12 @@ MESSAGE_PARSERS: Dict[str, Callable[[Any], Dict[str, BasicType]]] = {
     "geometry_msgs/PoseWithCovarianceStamped": parse_pose_with_covar,
     "geometry_msgs/PoseStamped": parse_pose,
     "geometry_msgs/PointStamped": parse_point,
+    "tf2_msgs/TFMessage": parse_tf2_singleton_message,
+}
+
+
+SPECIAL_HEADER_MESSAGES = {
+    "tf2_msgs/TFMessage": parse_tf2_header_message,
 }
 
 SKIP_MESSAGES = [
@@ -214,29 +233,18 @@ SKIP_MESSAGES = [
     "std_msgs/Header",  # metadata
     "std_msgs/String",  # metadata
     "tf/tfMessage",  # not used
-    "tf2_msgs/TFMessage",  # TODO
     "nav_msgs/Path",  # this is just an aggregate of past poses
     "sensor_msgs/FluidPressure",  # not useful
     "sensor_msgs/Temperature",  # not useful
 ]
 
 
-def extract_header_info(msg: Any) -> Tuple[int, int, str]:
+def extract_default_header_info(msg: Any) -> Dict[str, BasicType]:
     header: Header = msg.header
-    return header.stamp.to_nsec(), header.seq, header.frame_id  # type: ignore
-
-
-def parse_message_data(msg: Any, message_type: str) -> Dict[str, BasicType]:
-    return MESSAGE_PARSERS[message_type](msg)
-
-
-def parse_deserialized_message(msg: Any) -> Dict[str, BasicType]:
-    timestamp, sequence_id, _ = extract_header_info(msg)
-    message_data = parse_message_data(msg, msg._type)
-
-    message_data["timestamp"] = timestamp
-    message_data["sequence_id"] = sequence_id
-    return message_data
+    return {
+        "timestamp": header.stamp.to_nsec(),  # type: ignore
+        "sequence_id": header.seq,  # type: ignore
+    }
 
 
 def deserialize_message(
@@ -247,9 +255,22 @@ def deserialize_message(
     message_cls = get_message_class(schema.name)
     if message_cls is None:
         return None
-
     message = message_cls().deserialize(data)
-
     if message._type in SKIP_MESSAGES:
         return None
     return message
+
+
+def parse_message_data(msg: Any, message_type: str) -> Dict[str, BasicType]:
+    return MESSAGE_PARSERS[message_type](msg)
+
+
+def parse_deserialized_message(msg: Any) -> Dict[str, BasicType]:
+    message_data = parse_message_data(msg, msg._type)
+    if msg._type in SPECIAL_HEADER_MESSAGES:
+        extract_func = SPECIAL_HEADER_MESSAGES[msg._type]
+        header_data = extract_func(msg)
+    else:
+        header_data = extract_default_header_info(msg)
+    message_data.update(header_data)
+    return message_data

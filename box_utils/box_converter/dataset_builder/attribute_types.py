@@ -93,13 +93,17 @@ ODOMETRY_TOPICS = [
 NAV_SAT_FIX_TOPICS = [
     "/gt_box/cpt7/gps/fix/pos_cov_type",
 ]
+
 MAGNET_FIELD_TOPICS = [
     "/gt_box/zed2i/zed_node/imu/mag/",
 ]
 
-
 POINT_TOPICS = [
     "/gt_box/ap20/prism_position",
+]
+
+SINGLETON_TRANSFORM_TOPICS = [
+    "/tf",
 ]
 
 # PointCloud2
@@ -178,6 +182,12 @@ ODOMETRY_ATTR_TP = {
 POINT_ATTR_TP = {"point": ArrayType((3,), np.float64)}
 
 
+SINGLETON_TRANSFORM_TP = {
+    "translation": ArrayType((3,), np.float64),
+    "rotation": ArrayType((4,), np.float64),
+}
+
+
 def build_attribute_registry() -> Dict[str, AttributeTypes]:
     ret = {}
     ret.update({topic: {} for topic in IMAGE_TOPICS})
@@ -196,6 +206,7 @@ def build_attribute_registry() -> Dict[str, AttributeTypes]:
     ret.update({topic: ILLUMINANCE_ATTR_TP for topic in ILLUMINANCE_TOPICS})
     ret.update({topic: ODOMETRY_ATTR_TP for topic in ODOMETRY_TOPICS})
     ret.update({topic: POINT_ATTR_TP for topic in POINT_TOPICS})
+    ret.update({topic: SINGLETON_TRANSFORM_TP for topic in SINGLETON_TRANSFORM_TOPICS})
     return ret
 
 
