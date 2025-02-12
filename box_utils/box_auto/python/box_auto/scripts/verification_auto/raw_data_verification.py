@@ -23,12 +23,12 @@ def fetch_mission_metadata_and_append():
             auth_token = data["credentials"]["https://api.datasets.leggedrobotics.com"]["auth_token"]
     except (FileNotFoundError, json.JSONDecodeError):
         print("Error: KleinKram credentials not found.")
-        return
+        return ""
 
     mission_uuid = os.environ.get("MISSION_UUID")
     if not mission_uuid:
         print("Error: MISSION_UUID environment variable is not set.")
-        return
+        return ""
 
     mission_url = f"https://api.datasets.leggedrobotics.com/mission/{mission_uuid}"
     headers = {
@@ -39,7 +39,7 @@ def fetch_mission_metadata_and_append():
     response = requests.get(mission_url, headers=headers)
     if response.status_code != 200:
         print(f"Error {response.status_code}: {response.text}")
-        return
+        return ""
 
     mission_data = response.json()
     tags = mission_data.get("tags", [])
