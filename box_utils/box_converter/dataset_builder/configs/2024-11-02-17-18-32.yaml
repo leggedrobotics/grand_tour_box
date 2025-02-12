@@ -1,0 +1,148 @@
+image_topics:
+  - alias: zed2i_depth
+    topic: "/gt_box/zed2i/zed_node/depth_mono/depth_registered/compressed"
+  - alias: zed2i_confidence
+    topic: "/gt_box/zed2i/zed_node/confidence_mono/confidence_map/compressed"
+  - alias: zed2i_left
+    topic: "/gt_box/zed2i/zed_node/left/image_rect_color/compressed"
+  - alias: zed2i_right
+    topic: "/gt_box/zed2i/zed_node/right/image_rect_color/compressed"
+  - alias: alphasense_cam1
+    topic: "/gt_box/alphasense_driver_node/cam1/color_corrected/image/compressed"
+  - alias: alphasense_cam2
+    topic: "/gt_box/alphasense_driver_node/cam2/color_corrected/image/compressed"
+  - alias: alphasense_cam3
+    topic: "/gt_box/alphasense_driver_node/cam3/color_corrected/image/compressed"
+  - alias: alphasense_cam4
+    topic: "/gt_box/alphasense_driver_node/cam4/color_corrected/image/compressed"
+  - alias: alphasense_cam5
+    topic: "/gt_box/alphasense_driver_node/cam5/color_corrected/image/compressed"
+  - alias: hdr_left
+    topic: "/gt_box/hdr_left/image_raw/compressed"
+  - alias: hdr_front
+    topic: "/gt_box/hdr_front/image_raw/compressed"
+  - alias: hdr_right
+    topic: "/gt_box/hdr_right/image_raw/compressed"
+
+lidar_topics:
+  - alias: hesai
+    topic: "/gt_box/hesai/points"
+    attributes:
+      - intensity
+      - ring
+      - timestamp
+  - alias: hesai_last # what is this one?
+    topic: "/gt_box/hesai/points_last"
+    attributes:
+      - intensity
+      - ring
+      - timestamp
+  - alias: livox
+    topic: "/gt_box/livox/lidar"
+    attributes:
+      - intensity
+      - tag
+      - line
+      - timestamp
+  - alias: dlio
+    topic: "/dlio/deskewed_point_cloud"
+    attributes:
+      - intensity
+      - timestamp
+
+pose_topics:
+  # do we want both? is the 2nd a superset of the 1st?
+  - alias: ground_truth
+    topic: "/gt_box/ground_truth/pose_stamped"
+    covariance: false
+  - alias: ground_truth_with_cov
+    topic: "/gt_box/ground_truth/pose_with_covariance"
+    covariance: true
+
+  - alias: dlio_pose
+    topic: "/dlio/lidar_odometry_as_posestamped"
+    covariance: false
+
+  # novatel, do we want all 4?
+  - alias: novatel
+    topic: "/gt_box/inertial_explorer/gt_poses_novatel"
+    covariance: true
+  - alias: novatel_tc
+    topic: "/gt_box/inertial_explorer/tc/gt_poses_novatel"
+    covariance: true
+  - alias: novatel_lc
+    topic: "/gt_box/inertial_explorer/lc/gt_poses_novatel"
+    covariance: true
+  - alias: novatel_ggg
+    topic: "/gt_box/inertial_explorer/ppp/gt_poses_novatel"
+    covariance: true
+
+imu_topic:
+  - alias: adis_imu
+    topic: "/gt_box/adis16475_node/imu"
+  - alias: ap20_imu
+    topic: "/gt_box/ap20/imu"
+  - alias: stim_imu
+    topic: "/gt_box/stim320/imu"
+
+  # do we want both?
+  - alias: livox_imu
+    topic: "/gt_box/livox/imu"
+  - alias: livox_imu_si_compliant
+    topic: "/gt_box/livox/imu_si_compliant"
+
+  - alias: zed2i_imu
+    topic: "/gt_box/zed2i/zed_node/imu/data"
+
+  # do we want both?
+  - alias: cpt7_imu
+    topic: "/gt_box/cpt7/gps/imu"
+  - alias: cpt7_imu_offline_from_novatel
+    topic: "/gt_box/cpt7/offline_from_novatel_logs/imu"
+
+# we should use better aliases that are conistent with the corresponding point clouds / poses
+odometry_topics:
+  # do we want all of these?
+  - alias: novatel_odometry
+    topic: "/gt_box/inertial_explorer/odometry"
+  - alias: novatel_tc_odometry
+    topic: "/gt_box/inertial_explorer/tc/odometry"
+  - alias: novatel_ppp_odometry
+    topic: "/gt_box/inertial_explorer/ppp/odometry"
+  - alias: novatel_lc_odometry
+    topic: "/gt_box/inertial_explorer/lc/odometry"
+  - alias: novatel_dgps_odometry
+    topic: "/gt_box/inertial_explorer/dgps/odometry"
+
+  # do we want both?
+  - alias: dlio_odometry
+    topic: "/dlio/lidar_odometry"
+  - alias: dlio_map_odometry
+    topic: "/dlio/lidar_map_odometry"
+
+  - alias: cpt7_odometry
+    topic: "/gt_box/cpt7/odom"
+  - alias: zed2i_odometry
+    topic: "/gt_box/zed2i/zed_node/odom"
+
+nav_sat_fix_topics:
+  - alias: cpt7_gps
+    topic: "/gt_box/cpt7/gps/fix/pos_cov_type"
+
+magnetic_field_topics:
+  - alias: zed2i_magnetic_field
+    topic: "/gt_box/zed2i/zed_node/imu/mag/"
+
+# is this a duplicate of the "ground_truth" stuff?
+point_topics:
+  - alias: prism
+    topic: "/gt_box/ap20/prism_position"
+
+singleton_transform_topics:
+  # im pretty sure this is a tuplicate of cpt7_gps
+  - alias: cpt7_tf
+    topic: "/tf"
+# GENERAL NOTES:
+# are odometry messages in general supersets of position messages?, do we really need all of these
+# in general i think that there is a massive hierarchy of dupliate information store, we should propably dedupe this
+# i have no way of knowing for sure which are duplicates of which...
