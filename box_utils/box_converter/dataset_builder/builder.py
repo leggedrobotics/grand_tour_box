@@ -20,7 +20,7 @@ from mcap.reader import make_reader
 from sensor_msgs.msg import CompressedImage
 from tqdm import tqdm
 
-from dataset_builder.attribute_types import IMAGE_TOPICS
+from dataset_builder.attribute_types import IMAGE_TOPICS, JPEG_IMAGE_TOPICS
 from dataset_builder.attribute_types import ArrayType
 from dataset_builder.attribute_types import AttributeTypes
 from dataset_builder.attribute_types import get_attribute_types_for_topic
@@ -194,14 +194,18 @@ def create_jpeg_topic_folder(jpeg_root: Path, topic: str) -> Path:
 
 
 def save_image_to_topic_folder(
-    topic_folder: Path, image: np.ndarray, sequence_id: int
+    topic_folder: Path, image: np.ndarray, sequence_id: int, file_ext: str = "jpeg"
 ) -> None:
-    image_path = topic_folder / f"{sequence_id:06d}.jpeg"
+    image_path = topic_folder / f"{sequence_id:06d}.{file_ext}"
     cv2.imwrite(str(image_path), image)
 
 
 def generate_dataset_from_topic(
-    dataset_root: Path, path: Path, topic: str, image_topic: bool
+    dataset_root: Path,
+    path: Path,
+    topic: str,
+    image_topic: bool,
+    image_file_ext: str = "jpeg",
 ) -> None:
     """\
     generate dataset for specified topic inside specified file, we generally assume
@@ -224,7 +228,9 @@ def generate_dataset_from_topic(
     # create image saving callback to save images to disk while parsing the remaining data
     if image_topic:
         topic_folder = create_jpeg_topic_folder(jpeg_root_path, topic)
-        save_image_cb = partial(save_image_to_topic_folder, topic_folder)
+        save_image_cb = partial(
+            save_image_to_topic_folder, topic_folder, file_ext=image_file_ext
+        )
     else:
         save_image_cb = None
 
@@ -244,6 +250,9 @@ def generate_dataset() -> None:
 
     for file in tqdm(MCAP_PATHS):
         for topic in tqdm(file_topic_map[file], leave=False):
+            is_image_topic = topic in IMAGE_TOPICS
+            file_ext = "jpeg" if topic in JPEG_IMAGE_TOPICS else "png"
+
             generate_dataset_from_topic(
-                DATASET_PATH, file, topic, topic in IMAGE_TOPICS
+                DATASET_PATH, file, topic, is_image_topic, file_ext
             )

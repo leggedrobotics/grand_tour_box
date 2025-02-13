@@ -21,9 +21,7 @@ AttributeTypes = Mapping[str, ArrayType]
 
 # TODO: the topics and some args are currently hardcoded, they should eventually be read from a yaml file or similar
 
-IMAGE_TOPICS = [
-    "/gt_box/zed2i/zed_node/depth_mono/depth_registered/compressed",
-    "/gt_box/zed2i/zed_node/confidence_mono/confidence_map/compressed",
+JPEG_IMAGE_TOPICS = [
     # "/gt_box/zed2i/zed_node/confidence/confidence_map/compressed", TODO: currently not working
     # "/gt_box/zed2i/zed_node/depth/depth_registered/compressed", TODO: currently not working
     "/gt_box/alphasense_driver_node/cam1/color_corrected/image/compressed",
@@ -37,6 +35,13 @@ IMAGE_TOPICS = [
     "/gt_box/zed2i/zed_node/left/image_rect_color/compressed",
     "/gt_box/zed2i/zed_node/right/image_rect_color/compressed",
 ]
+
+PNG_IMAGE_TOPICS = [
+    "/gt_box/zed2i/zed_node/depth_mono/depth_registered/compressed",
+    "/gt_box/zed2i/zed_node/confidence_mono/confidence_map/compressed",
+]
+
+IMAGE_TOPICS = JPEG_IMAGE_TOPICS + PNG_IMAGE_TOPICS
 
 
 LIDAR_TOPIC_ATTRIBUTES = [
