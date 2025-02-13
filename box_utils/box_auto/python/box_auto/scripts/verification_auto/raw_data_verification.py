@@ -76,13 +76,12 @@ def analyze_mission_and_report():
     """
 
     yaml_path = str(pathlib.Path(WS) / "src/grand_tour_box/box_utils/box_auto/cfg/health_check_reference_raw_data.yaml")
-    # validation_passed = validate_bags(
-    #     reference_folder=None,
-    #     yaml_file=yaml_path,
-    #     mission_folder=MISSION_DATA,
-    #     time_tolerance=20,
-    # )
-    validation_passed = False
+    validation_passed = validate_bags(
+        reference_folder=None,
+        yaml_file=yaml_path,
+        mission_folder=MISSION_DATA,
+        time_tolerance=20,
+    )
 
     # Fetch metadata for the current mission and append to the health check results
     metadata = fetch_mission_metadata_and_append()
