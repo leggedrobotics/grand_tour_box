@@ -30,7 +30,7 @@ def fetch_mission_metadata_and_append():
         print("Error: MISSION_UUID environment variable is not set.")
         return ""
 
-    mission_url = f"https://api.datasets.leggedrobotics.com/mission/{mission_uuid}"
+    mission_url = f"https://api.datasets.leggedrobotics.com/mission/one?uuid={mission_uuid}"
     headers = {
         "accept": "application/json",
         "cookie": f"refreshtoken={refresh_token}; authtoken={auth_token}",
