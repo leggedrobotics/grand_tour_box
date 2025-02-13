@@ -246,7 +246,7 @@ class RosbagMessageGenerator:
 def create_github_issue(
     title: str,
     body: str,
-    repo: str = "leggedrobotics/grand_tour_box",
+    repo: str = "leggedrobotics/grand_tour_actions",
     label: str = "auto-created",
     dry_run: bool = False,
 ):
