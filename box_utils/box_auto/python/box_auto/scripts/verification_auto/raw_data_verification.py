@@ -16,14 +16,18 @@ def fetch_mission_metadata_and_append():
     """
     file_path = os.path.expanduser("~/.kleinkram.json")
 
-    try:
-        with open(file_path, "r") as file:
-            data = json.load(file)
-            refresh_token = data["credentials"]["https://api.datasets.leggedrobotics.com"]["refresh_token"]
-            auth_token = data["credentials"]["https://api.datasets.leggedrobotics.com"]["auth_token"]
-    except (FileNotFoundError, json.JSONDecodeError):
-        print("Error: KleinKram credentials not found.")
-        return ""
+    if os.environ.get("APIKEY", False):
+        cookie = f"clikey={os.environ['APIKEY']}"
+    else:
+        try:
+            with open(file_path, "r") as file:
+                data = json.load(file)
+                refresh_token = data["credentials"]["https://api.datasets.leggedrobotics.com"]["refresh_token"]
+                auth_token = data["credentials"]["https://api.datasets.leggedrobotics.com"]["auth_token"]
+                cookie = f"refreshtoken={refresh_token}; authtoken={auth_token}"
+        except (FileNotFoundError, json.JSONDecodeError):
+            print("Error: KleinKram credentials not found.")
+            return ""
 
     mission_uuid = os.environ.get("MISSION_UUID")
     if not mission_uuid:
@@ -33,7 +37,7 @@ def fetch_mission_metadata_and_append():
     mission_url = f"https://api.datasets.leggedrobotics.com/mission/one?uuid={mission_uuid}"
     headers = {
         "accept": "application/json",
-        "cookie": f"refreshtoken={refresh_token}; authtoken={auth_token}",
+        "cookie": cookie,
     }
 
     response = requests.get(mission_url, headers=headers)
@@ -72,12 +76,13 @@ def analyze_mission_and_report():
     """
 
     yaml_path = str(pathlib.Path(WS) / "src/grand_tour_box/box_utils/box_auto/cfg/health_check_reference_raw_data.yaml")
-    validation_passed = validate_bags(
-        reference_folder=None,
-        yaml_file=yaml_path,
-        mission_folder=MISSION_DATA,
-        time_tolerance=20,
-    )
+    # validation_passed = validate_bags(
+    #     reference_folder=None,
+    #     yaml_file=yaml_path,
+    #     mission_folder=MISSION_DATA,
+    #     time_tolerance=20,
+    # )
+    validation_passed = False
 
     # Fetch metadata for the current mission and append to the health check results
     metadata = fetch_mission_metadata_and_append()
