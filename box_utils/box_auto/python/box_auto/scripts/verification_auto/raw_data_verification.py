@@ -6,7 +6,7 @@ from box_auto.scripts.verification.health_check_mission import validate_bags, LO
 from box_auto.scripts.verification.topic_freq import read_rosbag_and_generate_histograms
 
 
-def analyze_mission_and_report():
+def analyze_mission_and_report(generate_histograms=False):
     """
     Analyze the raw data from a mission in the MISSION_DATA directory and report the results.
 
@@ -24,10 +24,11 @@ def analyze_mission_and_report():
     )
 
     # Generate histograms of the topics
-    output_dir = pathlib.Path(ARTIFACT_FOLDER) / "topic_frequency_histograms"
-    for bag_file in pathlib.Path(MISSION_DATA).rglob("*.bag"):
-        name = bag_file.stem
-        read_rosbag_and_generate_histograms(bag_file, output_dir, name)
+    if generate_histograms:
+        output_dir = pathlib.Path(ARTIFACT_FOLDER) / "topic_frequency_histograms"
+        for bag_file in pathlib.Path(MISSION_DATA).rglob("*.bag"):
+            name = bag_file.stem
+            read_rosbag_and_generate_histograms(bag_file, output_dir, name)
 
     if not validation_passed:
         print("Validation failed. Reading error logs.")
@@ -59,7 +60,6 @@ def analyze_mission_and_report():
 
 
 if __name__ == "__main__":
-    
     if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
         project_uuid = os.environ.get("PROJECT_UUID")
         mission_uuid = os.environ["MISSION_UUID"]
@@ -72,4 +72,3 @@ if __name__ == "__main__":
         return_code = -1
 
     sys.exit(return_code)
-
