@@ -9,10 +9,12 @@ x-okvis-common-config: &ros2-okvis-common-config
   # network_mode: host
   privileged: true
   environment:
+    RUN_FOLDER: "$RUN_FOLDER"  
     QT_X11_NO_MITSHM: "1"
     XAUTHORITY: "/root/.docker.xauth"
-    DISPLAY: "$DISPLAY"
+    # DISPLAY: "$DISPLAY"
     KLEINKRAM_ACTIVE: "False"  # Added this line
+    
   deploy:
     resources:
       reservations:
@@ -59,23 +61,36 @@ x-common-config: &common-config
     - "${GRAND_TOUR_BOX_PATH:-$HOME/git/grand_tour_box}:/home/catkin_ws/src/grand_tour_box"
 
 services:
-  euroc_export:
-    <<: *common-config
-    container_name: euroc_export
-    command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_converter/euroc_dataset_converter.py"]
+  # euroc_export:
+  #   <<: *common-config
+  #   container_name: euroc_export
+  #   command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_converter/euroc_dataset_converter.py"]
 
-  okvis:
+  # okvis:
+  #   <<: *ros2-okvis-common-config
+  #   container_name: okvis
+  #   command: ["xvfb-run /home/rsl/ros2_ws/build/okvis/okvis_app_synchronous /tmp_disk/euroc_grand_tour/imu0_alphasense_2_bw/okvis_config_imu0.yaml /tmp_disk/euroc_grand_tour/imu0_alphasense_2_bw"]
+  #   depends_on:
+  #     euroc_export:
+  #       condition: service_completed_successfully
+
+  # okvis_export:
+  #   <<: *common-config
+  #   container_name: okvis_export
+  #   command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/application/export_okvis.py"]
+  #   depends_on:
+  #     okvis:
+  #       condition: service_completed_successfully
+
+  okvis_imu:
     <<: *ros2-okvis-common-config
-    container_name: okvis
-    command: ["xvfb-run /home/rsl/ros2_ws/build/okvis/okvis_app_synchronous /tmp_disk/euroc_grand_tour/imu0_alphasense_2_bw/okvis_config_imu0.yaml /tmp_disk/euroc_grand_tour/imu0_alphasense_2_bw"]
-    depends_on:
-      euroc_export:
-        condition: service_completed_successfully
+    container_name: okvis_imu
+    command: ["xvfb-run -a /home/rsl/ros2_ws/build/okvis/okvis_app_synchronous /tmp_disk/euroc_grand_tour/${RUN_FOLDER}/okvis_config_imu0.yaml /tmp_disk/euroc_grand_tour/${RUN_FOLDER}"]
 
-  okvis_export:
+  okvis_imu_export:
     <<: *common-config
-    container_name: okvis_export
+    container_name: okvis_export_imu
     command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/application/export_okvis.py"]
     depends_on:
-      okvis:
+      okvis_imu:
         condition: service_completed_successfully
