@@ -9,7 +9,6 @@ from box_auto.utils import (
     run_ros_command,
     find_and_extract_non_matching,
 )
-import os
 from pathlib import Path
 import yaml
 import shutil
@@ -98,9 +97,27 @@ def load_config(config_path):
     return config
 
 
-if __name__ == "__main__":
+import argparse
 
-    CONFIG_NAME = "evo_evaluations"
+if __name__ == "__main__":
+  # For Time offset evaluation on DLIO and CPT7 -> evo_evaluations_time_offset
+  # For Time offset evaluation on DLIO and STIM320 -> evo_evaluations_time_offset_STIM
+  # For General Evaluation -> evo_evaluations
+  # For Ground Truth comparison -> evo_evaluations_gt_truth_comparison
+  # For IMU comparisons on DLIO -> evo_evaluations_imu_comparison
+  # For IMU comparisons on GMSF -> evo_evaluations_GMSF_IMU_comparison
+  # For translation offset -> evo_evaluations_translation_offset
+  # For rotational offset -> evo_evaluations_rotation_offset
+
+  parser = argparse.ArgumentParser(description="Script configuration")
+    parser.add_argument(
+        "--config_name",
+        type=str,
+        default="evo_evaluations",
+        help="The name of the configuration file. Default is 'evo_evaluations'.",
+    )
+    args = parser.parse_args()
+    print(f"Using configuration: {args.config_name}")
 
     IS_POINT_DISTANCES_SUPPORTED = False
     from evo import __version__
@@ -128,10 +145,10 @@ if __name__ == "__main__":
     elif USE_GMSF:
         GT_PATTERN = "*_gt_pose.bag"
 
+    path = Path(WS) / "src/grand_tour_box/box_utils/box_auto/cfg" / (args.config_name + ".yaml")
+
     # Evaluation Configuration.
-    evaluation_config_path = os.path.join(
-        f"{WS}" + "/src/grand_tour_box/box_utils/box_auto/cfg/" + CONFIG_NAME + ".yaml"
-    )
+    evaluation_config_path = str(path)
     evaluation_config = load_config(evaluation_config_path)
 
     # Retrieve the to-be-prepared bags from config.
@@ -146,7 +163,7 @@ if __name__ == "__main__":
     time_as_string = find_and_extract_non_matching(MISSION_DATA, GT_PATTERN)
 
     # Create the output folder for the evo evaluations.
-    p = Path(MISSION_DATA) / f"{time_as_string}_evo_evaluations"
+    p = Path(MISSION_DATA) / f"{time_as_string}_{args.config_name}"
     if p.exists():
         shutil.rmtree(p)
     p.mkdir(parents=True)
@@ -233,7 +250,7 @@ if __name__ == "__main__":
     results_summary = sorted(results_summary, key=lambda x: x["Result Name"])
 
     # Save results as PDF
-    output_pdf = "/evo_results_summary.pdf"
-    save_results_as_pdf(results_summary, MISSION_DATA + output_pdf)
+    output_pdf = "evo_results_summary.pdf"
+    save_results_as_pdf(results_summary, str(Path(MISSION_DATA) / output_pdf))
 
     # Deploy .zip file reader e.g.

@@ -100,6 +100,7 @@ pip3 install rosbags
 pip3 install matplotlib # graph_msf
 pip3 uninstall kleinkram -y
 pip3 install kleinkram
+pip3 install --upgrade pyOpenSSL # Kleinkram fails to run without this
 
 # Dependencies for box_auto imu_timesync
 pip3 install torch
@@ -119,7 +120,7 @@ ln -s /home/catkin_ws/src/grand_tour_box/box_bringup/bringup_hesai/config/Pandar
 ln -s /home/catkin_ws/src/grand_tour_box/box_bringup/bringup_hesai/config/PandarXT-32.csv  /home/rsl/git/grand_tour_box/box_bringup/bringup_hesai/config/PandarXT-32.csv
 
 # Dependencies: box_auto - evo_evaluation
-pip3 install fpdf -y
+pip3 install fpdf
 
 # Dependencies: direct_lidar_inertial_odometry
 apt install -y libomp-dev libpcl-dev libeigen3-dev

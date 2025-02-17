@@ -7,20 +7,17 @@ windows:
   layout: tiled
   shell_command_before:
     - export HOSTNAME
-    - export DISPLAY=:0.0
     - export ROS_MASTER_URI=http://localhost:11311
     - export ROS_IP=127.0.0.1
   options:
     pane-border-status: top
   panes:
     - shell_command:
-      - source /opt/ros/noetic/setup.bash
-      - source ~/catkin_ws/devel/setup.bash
+      - box_ws
       - roslaunch launch_replay replay_postprocessed.launch
 
     - shell_command:
-      - source /opt/ros/noetic/setup.bash
-      - source ~/catkin_ws/devel/setup.bash
+      - box_ws
       - source ~/catkin_ws/src/grand_tour_box/box_configuration/opc/alias.sh 
       - history -s "rosrun launch_replay rosbag_play.sh --folder ./"
       - clear

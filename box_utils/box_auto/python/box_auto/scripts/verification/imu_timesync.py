@@ -9,31 +9,35 @@ from pathlib import Path
 import os
 import rerun as rr
 import yaml
+import rospy
+from box_auto.utils import get_bag
+from scipy.spatial.transform import Rotation as R
 
-from box_auto.utils import get_bag, MISSION_DATA
 
-
-def extract_imu_data(bag_file, topic, tf_transformer=None, reference_frame=None):
+def extract_imu_data(
+    bag_file, topic, skip_seconds, duration, tf_transformer=None, reference_frame=None, readout_offset=None
+):
     imu_data = []
 
     # Update return reference frame
     data_reference_frame = None
     if reference_frame is not None:
         data_reference_frame = reference_frame
-
     transform = None
 
     if not os.path.exists(bag_file):
         raise ValueError(f"Bag file {bag_file} does not exist")
 
-    count = 0
     p = None
+
     with Bag(bag_file, "r") as bag:
-        for _topic_name, msg, t in bag.read_messages(topics=[topic]):
-            count += 1
-            if count == 50000:
-                print("Got 50000 samples...")
-                break
+        start = bag.get_start_time() + skip_seconds
+        end = bag.get_start_time() + skip_seconds + duration
+
+        for _topic_name, msg, t in bag.read_messages(
+            topics=[topic], start_time=rospy.Time(start), end_time=rospy.Time(end)
+        ):
+
             if reference_frame is not None:
 
                 # Get static tf
@@ -44,6 +48,13 @@ def extract_imu_data(bag_file, topic, tf_transformer=None, reference_frame=None)
                         trans = np.array(p)
                         # Convert quaternion to rotation matrix
                         rot = Rotation.from_quat(q).as_matrix()
+
+                        degs = 0
+
+                        # Additional rotation (1 degree roll, pitch, yaw)
+                        additional_rotation = R.from_euler("xyz", [degs, 0, 0], degrees=True).as_matrix()
+                        # Combine the rotations
+                        rot = additional_rotation @ rot  # Apply additional rotation
 
                     # 1. Rotate angular velocity
                     ang = msg.angular_velocity
@@ -77,15 +88,19 @@ def extract_imu_data(bag_file, topic, tf_transformer=None, reference_frame=None)
                 # Transform imu data to same orign here.
                 msg = msg
 
-            ts = t.to_sec()
+            if readout_offset is None:
+                # Merci to other bag by 30 seconds to ensure not negative for the other
+                readout_offset = msg.header.stamp.secs - 30
+
+            msg.header.stamp.secs -= readout_offset
             if data_reference_frame is None:
                 data_reference_frame = msg.header.frame_id
 
             acc = [msg.linear_acceleration.x, msg.linear_acceleration.y, msg.linear_acceleration.z]
             rot_vel = [msg.angular_velocity.x, msg.angular_velocity.y, msg.angular_velocity.z]
-            imu_data.append([ts] + acc + rot_vel)
+            imu_data.append([msg.header.stamp.to_sec()] + acc + rot_vel)
 
-    return np.array(imu_data, dtype=np.float64), data_reference_frame
+    return np.array(imu_data, dtype=np.float64), data_reference_frame, readout_offset
 
 
 def interpolate(t_common, t1_adjusted, y1_adjusted):
@@ -122,15 +137,26 @@ class TimeOffsetOptimizer(nn.Module):
 
 
 class IMUSyncOptimizer:
-    def __init__(self, imu1_bag, imu1_topic, tf_bag, axis):
+    def __init__(self, imu1_bag, imu1_topic, tf_bag, axis, skip_seconds):
         self.axis = axis
-        self.imu1_data, self.reference_frame = extract_imu_data(imu1_bag, imu1_topic)
+        self.skip_seconds = skip_seconds
+        self.duration = 60
+
+        self.imu1_data, self.reference_frame, self.readout_offset = extract_imu_data(
+            imu1_bag, imu1_topic, self.skip_seconds, self.duration
+        )
         self.tf_transformer = BagTfTransformer(tf_bag)
 
     def time_sync_imu(self, imu2_bag, imu2_topic):
         try:
-            imu2_data, reference_frame = extract_imu_data(
-                imu2_bag, imu2_topic, tf_transformer=self.tf_transformer, reference_frame=self.reference_frame
+            imu2_data, reference_frame, _ = extract_imu_data(
+                imu2_bag,
+                imu2_topic,
+                self.skip_seconds,
+                self.duration,
+                tf_transformer=self.tf_transformer,
+                reference_frame=self.reference_frame,
+                readout_offset=self.readout_offset,
             )
         except Exception as e:
             print(e)
@@ -152,17 +178,26 @@ class IMUSyncOptimizer:
         t1 = torch.from_numpy(self.imu1_data[:, 0]).clone()
         y1 = torch.from_numpy(self.imu1_data[:, nr]).clone()
 
-        val = max(t1.min(), t2.min())
+        # start_time = 120
+        val = max(t1.min(), t2.min())  # + start_time
         t1 = t1 - val
         t2 = t2 - val
-        optimal_offset = self.optimize_time_offset(t1.cuda(), y1.cuda(), t2.cuda(), y2.cuda())
+        m1 = t1 >= 0
+        m2 = t2 >= 0
+
+        optimal_offset = self.optimize_time_offset(t1[m1].cuda(), y1[m1].cuda(), t2[m2].cuda(), y2[m2].cuda())
         return optimal_offset, True
 
-    def optimize_time_offset(self, t1, y1, t2, y2, num_iterations=5000, learning_rate=0.001, max_duration_in_s=120):
+    def optimize_time_offset(
+        self, t1, y1, t2, y2, num_iterations=5000, learning_rate=0.001, max_duration_fft_window_in_s=30
+    ):
         # Interpolate both signals to a common time grid
         t_min = max(t1.min(), t2.min())
-        t_max = min(min(t1.max(), t2.max()), t_min + max_duration_in_s)
-        t_common = torch.linspace(t_min, t_max, 50000)
+        t_max = min(min(t1.max(), t2.max()), t_min + max_duration_fft_window_in_s)
+
+        hz_off_fft_timeofset = 100
+
+        t_common = torch.linspace(t_min, t_max, int((t_max - t_min) * hz_off_fft_timeofset))
         t_common = t_common.to(t1.device)
         y1_interp = interpolate(t_common, t1, y1)
         y2_interp = interpolate(t_common, t2, y2)
@@ -174,8 +209,9 @@ class IMUSyncOptimizer:
         num_frames = len(t_common) - 1
         frame_ids = np.arange(num_frames)
         conv_axis = np.hstack((-frame_ids[::-1][:-1], frame_ids))
-        time_offset_id = conv_axis[np.argmax(convoluted_signal)]
-        time_offset_guess = -t_common[abs(time_offset_id)] if time_offset_id < 0 else t_common[abs(time_offset_id)]
+        time_offset_id = conv_axis[np.argmax(convoluted_signal) - 1]
+        t_offsets = torch.linspace(0, t_max - t_min, int((t_max - t_min) * hz_off_fft_timeofset))
+        time_offset_guess = -t_offsets[abs(time_offset_id)] if time_offset_id < 0 else t_offsets[abs(time_offset_id)]
 
         # Initialize model and optimizer for fine adjustment
         model = TimeOffsetOptimizer(time_offset_guess)
@@ -197,7 +233,7 @@ class IMUSyncOptimizer:
             # Interpolate both signals to a common time grid
             t_min = max(t1_adjusted.min(), t2_adjusted.min())
             t_max = min(t1_adjusted.max(), t2_adjusted.max())
-            t_common = torch.linspace(t_min, t_max, 100000)
+            t_common = torch.linspace(t_min, t_max, int((t_max - t_min) * 500))
             t_common = t_common.to(t1.device)
 
             y1_interp = interpolate(t_common, t1_adjusted, y1_adjusted)
@@ -225,13 +261,13 @@ class IMUSyncOptimizer:
             f"Time FFT Guess: {time_offset_guess * 10**9}ns,   Final Time Offset: {model.time_offset.item() * 10**9}ns"
         )
 
+        # return time_offset_guess * 10**9
         return model.time_offset.item() * 10**9
 
 
-def process_all(directory, output_folder, axis):
-
+def process_all(directory, output_folder, axis, plot, skip_seconds):
+    print(directory)
     summary = {}
-    plot = True
 
     reference_imu = {
         "topic": "/gt_box/cpt7/offline_from_novatel_logs/imu",
@@ -239,10 +275,26 @@ def process_all(directory, output_folder, axis):
         "tf_bag_pattern": "*_tf_static.bag",
     }
 
+    # reference_imu=  {
+    #         "topic": "/gt_box/livox/imu",
+    #         "bag_pattern": "*_nuc_livox.bag",
+    #         "tf_bag_pattern": "*_tf_static.bag",
+    # }
+    # reference_imu=  {
+
+    #         "topic": "/gt_box/adis16475_node/imu",
+    #         "bag_pattern": "*_jetson_adis.bag",
+    #         "tf_bag_pattern": "*_tf_static.bag",
+    # }
     validation_imus = [
         {
             "topic": "/gt_box/ap20/imu",
             "bag_pattern": "*_jetson_ap20_synced.bag",
+            "max_offset_ms": 1,
+        },
+        {
+            "topic": "/gt_box/stim320/imu",
+            "bag_pattern": "*_jetson_stim.bag",
             "max_offset_ms": 1,
         },
         {
@@ -267,8 +319,31 @@ def process_all(directory, output_folder, axis):
         },
     ]
 
+    # validation_imus = [
+    #     {
+    #         "topic": "/gt_box/stim320/imu",
+    #         "bag_pattern": "*_nuc_imus.bag",
+    #         "max_offset_ms": 1,
+    #     },
+    #     {
+    #         "topic": "/gt_box/adis16475_node/imu",
+    #         "bag_pattern": "*_nuc_imus.bag",
+    #         "max_offset_ms": 1,
+    #     },
+    #     {
+    #         "topic": "/gt_box/livox/imu",
+    #         "bag_pattern": "*_nuc_imus.bag",
+    #         "max_offset_ms": 1,
+    #     },
+    #     {
+    #         "topic": "/gt_box/alphasense_driver_node/imu",
+    #         "bag_pattern": "*_nuc_imus.bag",
+    #         "max_offset_ms": 1,
+    #     },
+    # ]
+
     try:
-        reference_imu_file = get_bag(reference_imu["bag_pattern"])
+        reference_imu_file = get_bag(reference_imu["bag_pattern"], directory)
     except Exception as e:
         pattern = reference_imu["bag_pattern"]
         log = f"{pattern} [FAILED] - Getting Reference IMU - " + reference_imu["bag_pattern"]
@@ -278,7 +353,7 @@ def process_all(directory, output_folder, axis):
 
     try:
 
-        tf_bag_file = get_bag(reference_imu["tf_bag_pattern"])
+        tf_bag_file = get_bag(reference_imu["tf_bag_pattern"], directory)
     except Exception:
         pattern = reference_imu["tf_bag_pattern"]
         log = f"{pattern} [FAILED] - Getting TF bag pattern - " + reference_imu["tf_bag_pattern"]
@@ -286,13 +361,15 @@ def process_all(directory, output_folder, axis):
         print(log)
         return
 
-    sync_optimizer = IMUSyncOptimizer(reference_imu_file, reference_imu["topic"], tf_bag_file, axis)
+    sync_optimizer = IMUSyncOptimizer(reference_imu_file, reference_imu["topic"], tf_bag_file, axis, skip_seconds)
 
     rr.init("imu_timesync", spawn=False)
 
+    offset_results = {}
+
     for validation_imu in validation_imus:
         try:
-            bag_file = get_bag(validation_imu["bag_pattern"])
+            bag_file = get_bag(validation_imu["bag_pattern"], directory)
         except Exception:
             pattern = validation_imu["bag_pattern"]
             log = f"{pattern} [FAILED] - validation_imu loading bag pattern - " + reference_imu["bag_pattern"]
@@ -301,21 +378,23 @@ def process_all(directory, output_folder, axis):
             continue
 
         pattern = validation_imu["bag_pattern"]
-
+        topic = validation_imu["topic"]
         optimal_offset_ns, suc = sync_optimizer.time_sync_imu(bag_file, validation_imu["topic"])
         if not suc:
-            log = f"{pattern} [FAILED] - Error processing data"
+            log = f"{pattern} [FAILED] - Error processing data - {topic}"
             summary[pattern[2:]] = log
             print(log)
             continue
 
         if optimal_offset_ns > validation_imu["max_offset_ms"] * 10**6:
-            log = f"{pattern} [FAILED] - Offset to high: {optimal_offset_ns}ns"
+            log = f"{pattern} [FAILED] - Offset to high: {optimal_offset_ns}ns - {topic}"
         else:
-            log = f"{pattern} [SUC] - Offset: {optimal_offset_ns}ns"
+            log = f"{pattern} [SUC] - Offset: {optimal_offset_ns}ns - {topic}"
 
         summary[pattern[2:]] = log
         print(log)
+
+        offset_results[topic] = optimal_offset_ns
 
         if plot:
 
@@ -336,19 +415,47 @@ def process_all(directory, output_folder, axis):
 
         rr.save(str(output_folder / f"imu_timesync-{axis}.rrd"))
 
-    return summary
+    return summary, offset_results
 
 
 if __name__ == "__main__":
     master_summary = {}
-    for axis in ["x"]:
-        print("Running for axis: ", axis)
+    mission_summary = {}
 
-        summary_path = Path(MISSION_DATA) / "verification" / "imu_timesync_summary.yaml"
-        summary_path.parent.mkdir(exist_ok=True)
+    missions = [
+        "2024-10-01-11-29-55_polybahn",
+        "2024-10-01-11-47-44_main_building_hall",
+        "2024-11-02-17-18-32_sphinx_walking_stairs_2",
+        "2024-11-03-13-51-43_eigergletscher_hike_down",
+        "2024-11-14-13-45-37_heap_testsite",
+        "2024-11-25-16-36-19_leica_warehouse_groundfloor",
+        "2024-11-11-12-42-47_pilatus_kulm_hike",
+        "2024-11-18-13-22-14_arche_demolished",
+    ]
 
-        master_summary[axis] = process_all(MISSION_DATA, output_folder=summary_path.parent, axis=axis)
+    for t in [30, 60, 90, 120, 150]:
+        for mission in missions:
+            os.environ["MISSION_DATA"] = f"/media/jonfrey/Untitled/box_paper_dataset_v2/{mission}"
 
-        # Dump the dictionary to a YAML file
-        with open(str(summary_path), "w") as file:
-            yaml.dump(master_summary, file, default_flow_style=False, width=1000)
+            # from box_auto.utils import MISSION_DATA
+            MISSION_DATA = f"/media/jonfrey/Untitled/box_paper_dataset_v2/{mission}"
+            for axis in ["x", "y", "z"]:
+                print("Running for axis: ", axis)
+
+                summary_path = Path(MISSION_DATA) / "verification" / "imu_timesync_summary.yaml"
+                summary_path.parent.mkdir(exist_ok=True)
+
+                master_summary[axis], offset_results = process_all(
+                    MISSION_DATA, output_folder=summary_path.parent, axis=axis, plot=False, skip_seconds=t
+                )
+
+                mission_summary[mission + axis + "_" + str(t)] = offset_results
+                # Dump the dictionary to a YAML file
+                with open(str(summary_path), "w") as file:
+                    yaml.dump(master_summary, file, default_flow_style=False, width=1000)
+
+    print(mission_summary)
+
+    summary_path = Path(MISSION_DATA) / "verification" / "all_missions_summary_skip_30.yaml"
+    with open(str(summary_path), "w") as file:
+        yaml.dump(mission_summary, file, default_flow_style=False, width=1000)

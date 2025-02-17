@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+
+<package format="2">
+  <name>colorless_uniform_mapper</name>
+  <version>0.1.0</version>
+  <description>Colorless uniform mapper. Uses an octree to create a point cloud map and dynamically save the data.</description>
+
+  <license>TODO</license>
+  <author email="tutuna@leggedrobotics.com">Turcan Tuna</author>
+  <maintainer email="tutuna@leggedrobotics.com">Turcan Tuna</maintainer>
+  
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>cmake_clang_tools</build_depend>
+
+  <depend>roscpp</depend>
+  <depend>pcl_ros</depend>
+  <depend>pcl_conversions</depend>
+  <depend>sensor_msgs</depend>
+  <depend>tf2_ros</depend>
+  <depend>std_srvs</depend>
+  <depend>tf2_msgs</depend>
+  <depend>visualization_msgs</depend>
+  
+  
+  <test_depend>cmake_code_coverage</test_depend>
+  <test_depend>gtest</test_depend>
+
+</package>

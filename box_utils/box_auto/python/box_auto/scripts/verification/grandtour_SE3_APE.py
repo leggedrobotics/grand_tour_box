@@ -45,7 +45,7 @@ def run_ape(test_name, reference_file, estimated_file, params, output_path, disa
         print("\033[91translation_part.\033[0m")
     elif relation == "rotation_angle_deg":
         relation = PoseRelation.rotation_angle_deg
-        relation_post_fix = "angle_deg"
+        relation_post_fix = "angle-deg"
         print("\033[91Angle deg.\033[0m")
     else:
         print("\033[91mInvalid relation.\033[0m")
@@ -53,18 +53,20 @@ def run_ape(test_name, reference_file, estimated_file, params, output_path, disa
 
     correct_scale = params.get("correct_scale", False)
 
-    test_name += "_" + relation_post_fix + "_" + alignment_post_fix
+    statistics_file_name = f"ape-{relation_post_fix}_{test_name}_align-{alignment_post_fix}_statistics.png"
+    plot_file_name = f"ape-{relation_post_fix}_{test_name}_align-{alignment_post_fix}_3d_plot.png"
+    zip_file_name = f"ape-{relation_post_fix}_{test_name}_align-{alignment_post_fix}_results.zip"
+    est_name = f"ape-{relation_post_fix}_{test_name}_align-{alignment_post_fix}"
 
     # Reference, estimated trajectory, t_max_diff, t_offset. t_max_diff is by default 10ms (0.01)
-
     traj_reference, traj_estimated = sync.associate_trajectories(traj_reference, traj_estimated, t_max_diff, t_offset)
 
     results = []
     result = main_ape.ape(
         traj_reference,
         traj_estimated,
-        est_name=test_name,
-        ref_name="IE",
+        est_name=est_name,
+        ref_name="GMSF_offline",
         pose_relation=relation,
         align=True,
         align_origin=False,
@@ -114,19 +116,26 @@ def run_ape(test_name, reference_file, estimated_file, params, output_path, disa
     cbar.ax.tick_params(labelsize=25)
     ax.legend(frameon=True)
 
-    fig.savefig(output_path + "/ape_3d_plot_" + test_name + ".png", dpi=600)
+    fig.savefig(os.path.join(output_path, plot_file_name), dpi=600)
 
-    file_interface.save_res_file(
-        output_path + "/ape_results_" + test_name + ".zip", results[0], confirm_overwrite=not True
-    )
+    file_interface.save_res_file(os.path.join(output_path, zip_file_name), results[0], confirm_overwrite=not True)
 
-    print("APE compared_pose_pairs %d pairs" % (len(results[0].np_arrays["error_array"])))
-    print("rmse %f m" % results[0].stats["rmse"])
-    print("mean %f m" % results[0].stats["mean"])
-    print("median %f m" % results[0].stats["median"])
-    print("std %f m" % results[0].stats["std"])
-    print("min %f m" % results[0].stats["min"])
-    print("max %f m" % results[0].stats["max"])
+    if relation == PoseRelation.translation_part:
+        print("APE compared_pose_pairs %d pairs" % (len(results[0].np_arrays["error_array"])))
+        print("rmse %f m" % results[0].stats["rmse"])
+        print("mean %f m" % results[0].stats["mean"])
+        print("median %f m" % results[0].stats["median"])
+        print("std %f m" % results[0].stats["std"])
+        print("min %f m" % results[0].stats["min"])
+        print("max %f m" % results[0].stats["max"])
+    elif relation == PoseRelation.rotation_angle_deg:
+        print("APE compared_pose_pairs %d pairs" % (len(results[0].np_arrays["error_array"])))
+        print("rmse %f deg" % results[0].stats["rmse"])
+        print("mean %f deg" % results[0].stats["mean"])
+        print("median %f deg" % results[0].stats["median"])
+        print("std %f deg" % results[0].stats["std"])
+        print("min %f deg" % results[0].stats["min"])
+        print("max %f deg" % results[0].stats["max"])
 
     plot_x_dimension = "seconds"
     # Plot the raw metric values.
@@ -151,7 +160,7 @@ def run_ape(test_name, reference_file, estimated_file, params, output_path, disa
         xlabel=x_label,
     )
 
-    fig_stats.savefig(output_path + "/ape_statistics_" + test_name + ".png", dpi=600)
+    fig_stats.savefig(os.path.join(output_path, statistics_file_name), dpi=600)
 
     if disable_viz:
         return

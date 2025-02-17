@@ -31,7 +31,7 @@
   <link name="prism"/>
   <!-- Box base -->
   <link name="box_base"/>
-  <!-- <joint name="box_base_to_prism" type="fixed">
+  <joint name="box_base_to_prism" type="fixed">
     <origin xyz=" ${calib['box_base_to_prism']['x']}
                   ${calib['box_base_to_prism']['y']}
                   ${calib['box_base_to_prism']['z']}"
@@ -40,13 +40,13 @@
                   ${calib['box_base_to_prism']['yaw']}" />
     <parent link="box_base" />
     <child link="prism" />
-  </joint> -->
+  </joint>
 
-  <joint name="box_base_to_prism" type="fixed">
+  <!-- <joint name="box_base_to_prism" type="fixed">
         <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
         <parent link="box_base"/>
         <child link="prism"/>
-  </joint>
+  </joint> -->
 
   <!-- Wrong export origins in CAD - the coorect ones are xyz="0 0 0" -->
   <joint name="box_base_to_box_base_model" type="fixed">

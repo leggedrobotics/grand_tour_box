@@ -1,10 +1,12 @@
 import os
+from github import Github
 from pathlib import Path
 import psutil
 from time import sleep
 from sortedcontainers import SortedDict
 from collections import defaultdict
 import rosbag
+from typing import List, Optional
 
 WS = os.environ.get("WS", "/home/catkin_ws")
 PRE = f"source /opt/ros/noetic/setup.bash; source {WS}/devel/setup.bash; "
@@ -240,3 +242,61 @@ class RosbagMessageGenerator:
     def __del__(self):
         for p in self.bags:
             self.bags[p].close()
+
+def create_github_issue(
+    title: str,
+    body: str,
+    repo: str = "leggedrobotics/grand_tour_actions",
+    label: str = "auto-created",
+    dry_run: bool = False,
+):
+    """
+    Create a GitHub issue in the specified repository using PyGithub, optionally including images.
+
+    Args:
+        title (str): Title of the issue.
+        body (str): Body of the issue.
+        repo (str): Repository in the format "owner/repo".
+        label (str): Label to differentiate auto-created issues (default: "auto-created").
+    """
+    token = os.getenv("GITHUB_TOKEN")
+    if not token:
+        raise EnvironmentError("GITHUB_TOKEN environment variable not set.")
+
+    # Authenticate with GitHub using the personal access token
+    g = Github(token)
+
+    # Get the repository
+    try:
+        repository = g.get_repo(repo)
+    except Exception as e:
+        raise Exception(f"Could not access repository {repo}: {e}")
+
+    # Ensure the label exists in the repository
+    try:
+        existing_labels = [l.name for l in repository.get_labels()]
+        if label not in existing_labels:
+            repository.create_label(name=label, color="00aaff", description="Auto-created issues")
+    except Exception as e:
+        raise Exception(f"Failed to ensure label '{label}' exists in repository {repo}: {e}")
+    
+    # Append links to kleinkram onto the body
+    if "ACTION_UUID" in os.environ and "MISSION_UUID" in os.environ and "PROJECT_UUID" in os.environ:
+        action_uuid = os.environ.get("ACTION_UUID")
+        body += f"\n\n[Link to Kleinkram Action (Logs and Artifacts)](https://datasets.leggedrobotics.com/action/{action_uuid})"
+        project_uuid = os.environ.get("PROJECT_UUID")
+        mission_uuid = os.environ.get("MISSION_UUID")
+        body += f"\n\n[Link to Kleinkram Mission Files](https://datasets.leggedrobotics.com/project/{project_uuid}/mission/{mission_uuid}/files?sortBy=filename)"
+
+    if dry_run:
+        print(f"Would Create GitHub issue in repository {repo} with label '{label}'")
+        print(f"Title: {title}")
+        print(f"Body: {body}")
+
+    else:
+        # Create the issue
+        try:
+            issue = repository.create_issue(title=title, body=body, labels=[label])
+            print(f"Issue created: {issue.html_url}")
+        except Exception as e:
+            raise Exception(f"Failed to create GitHub issue: {e}")

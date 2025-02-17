@@ -10,7 +10,7 @@ EXIT CODE 1: Totalstation position or prism moved
 """
 
 
-def process_prism_position_bag(input_bag_path, output_bag_path, skip_check):
+def process_prism_position_bag(input_bag_path, output_bag_path, skip_check, remove_start):
     # Read the input bag file
     input_bag = rosbag.Bag(input_bag_path)
     output_bag = rosbag.Bag(output_bag_path, "w")
@@ -26,22 +26,6 @@ def process_prism_position_bag(input_bag_path, output_bag_path, skip_check):
         exit(1)
 
     first_position = prism_positions[0][0]
-
-    # Write filtered messages to new bag
-    valid_positions = []
-    for msg, t in prism_positions:
-        # Calculate distance from the first position
-        distance = np.sqrt(
-            (msg.point.x - first_position.point.x) ** 2
-            + (msg.point.y - first_position.point.y) ** 2
-            + (msg.point.z - first_position.point.z) ** 2
-        )
-
-        # Only write messages beyond 20 cm (0.2 m) from the first position
-        if distance > 0.2 or not skip_check:
-            output_bag.write("/gt_box/ap20/prism_position", msg, t)
-
-        valid_positions.append(msg)
 
     # Verify median of first and last 20 messages
     if len(prism_positions) < 40:
@@ -73,32 +57,35 @@ def process_prism_position_bag(input_bag_path, output_bag_path, skip_check):
             input_bag.close()
             output_bag.close()
             upload_bag(output_bag_path)
-            exit(3)
+            exit(0)
         else:
-            print("Warning: Median differences exceed 3 mm! - Nothing will be written to robot.bag")
-            # Close bags
-            input_bag.close()
-            output_bag.close()
-            exit(4)
-    else:
-        print("Writing normally to robot bag")
-        for msg, t in prism_positions:
-            # Calculate distance from the first position
-            distance = np.sqrt(
-                (msg.point.x - first_position.point.x) ** 2
-                + (msg.point.y - first_position.point.y) ** 2
-                + (msg.point.z - first_position.point.z) ** 2
-            )
+            if not remove_start:
+                print("Warning: Median differences exceed 3 mm! - Nothing will be written to robot.bag")
+                # Close bags
+                input_bag.close()
+                output_bag.close()
+                exit(4)
+            else:
+                print("PRISM is defined to be only locked in at the start (EDGE CASE)")
 
-            # Only write messages beyond 20 cm (0.2 m) from the first position
-            if distance > 0.2:
-                output_bag.write("/gt_box/ap20/prism_position", msg, t)
+    print("Writing normally to robot bag")
+    for msg, t in prism_positions:
+        # Calculate distance from the first position
+        distance = np.sqrt(
+            (msg.point.x - first_position.point.x) ** 2
+            + (msg.point.y - first_position.point.y) ** 2
+            + (msg.point.z - first_position.point.z) ** 2
+        )
 
-        # Close bags
-        input_bag.close()
-        output_bag.close()
-        upload_bag(output_bag_path)
-        exit(0)
+        # Only write messages beyond 20 cm (0.2 m) from the first position
+        if distance > 0.2:
+            output_bag.write("/gt_box/ap20/prism_position", msg, t)
+
+    # Close bags
+    input_bag.close()
+    output_bag.close()
+    upload_bag(output_bag_path)
+    exit(0)
 
 
 if __name__ == "__main__":
@@ -110,9 +97,14 @@ if __name__ == "__main__":
         action="store_true",  # This makes it a boolean flag
         help="If set, skip the validation checks.",
     )
+    parser.add_argument(
+        "--remove_start",
+        action="store_true",  # This makes it a boolean flag
+        help="If set, skip the validation checks.",
+    )
     args = parser.parse_args()
 
     input_bag_path = get_bag("*_jetson_ap20_synced.bag")
     output_bag_path = input_bag_path.replace("_synced.bag", "_robot.bag")
     # Process the bag
-    process_prism_position_bag(input_bag_path, output_bag_path, args.skip_check)
+    process_prism_position_bag(input_bag_path, output_bag_path, args.skip_check, args.remove_start)
