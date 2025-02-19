@@ -73,8 +73,9 @@ def organize_data_folders(data_folder, cpt7_folder):
             print(f"Move {best_gps_rosbag_path} to {mission} - Best dt {best_dt}")
 
             mission_folder = Path(data_folder) / mission
-            shutil.copy(str(gps_log_file), str(mission_folder))
-            shutil.copy(str(gps_rawimusx_ascii_file), str(mission_folder))
+            if False:
+                shutil.copy(str(gps_log_file), str(mission_folder))
+                shutil.copy(str(gps_rawimusx_ascii_file), str(mission_folder))
 
         else:
             print(f"No good match found: Best dt {best_dt} - GPS {best_gps_start} - MISSION {start}")
