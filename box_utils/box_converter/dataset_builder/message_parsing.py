@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 from typing import Any
-from typing import Callable
 from typing import Dict
 from typing import Optional
 from typing import Tuple
 from typing import Union
+from typing import cast
 
 import mcap.records
 import numpy as np
@@ -19,15 +19,26 @@ from geometry_msgs.msg import Vector3
 from nav_msgs.msg import Odometry
 from ros_numpy import numpify
 from roslib.message import get_message_class  # type: ignore
-from sensor_msgs.msg import CameraInfo
 from sensor_msgs.msg import CompressedImage
-from sensor_msgs.msg import Illuminance
 from sensor_msgs.msg import Imu
 from sensor_msgs.msg import MagneticField
 from sensor_msgs.msg import NavSatFix
 from sensor_msgs.msg import PointCloud2
-from tf2_msgs.msg import TFMessage
 from std_msgs.msg import Header
+from tf2_msgs.msg import TFMessage
+from pathlib import Path
+
+from dataset_builder.dataset_config import ImuTopic
+from dataset_builder.dataset_config import LidarTopic
+from dataset_builder.dataset_config import MagneticFieldTopic
+from dataset_builder.dataset_config import NavSatFixTopic
+from dataset_builder.dataset_config import OdometryTopic
+from dataset_builder.dataset_config import PointTopic
+from dataset_builder.dataset_config import PoseTopic
+from dataset_builder.dataset_config import SingletonTransformTopic
+from dataset_builder.dataset_config import Topic, ImageTopic
+
+import cv2
 
 BasicType = Union[np.ndarray, int, float, str, bool]
 
@@ -35,31 +46,23 @@ BasicType = Union[np.ndarray, int, float, str, bool]
 CV_BRIDGE = CvBridge()
 
 
-def parse_compressed_image(
-    msg: CompressedImage,
-) -> Dict[str, BasicType]:
+def extract_and_save_image_from_message(
+    msg: CompressedImage, image_index: int, *, topic_desc: ImageTopic, image_dir: Path
+) -> None:
     image = CV_BRIDGE.compressed_imgmsg_to_cv2(msg)
-    if image is None:
-        return {}
-    return {"image": image}
+    file_path = image_dir / f"{image_index:06d}.{topic_desc.format}"
+    cv2.imwrite(str(file_path), image)
 
 
-def load_image_from_message(msg: CompressedImage) -> Optional[np.ndarray]:
-    return CV_BRIDGE.compressed_imgmsg_to_cv2(msg)
-
-
-MAX_POINTS = 64000
-
-
-def pad_point_cloud(points: np.ndarray) -> np.ndarray:
+def _pad_point_cloud(points: np.ndarray, max_points: int) -> np.ndarray:
     shape = points.shape
-    new_shape = (MAX_POINTS,) + shape[1:]
+    new_shape = (max_points,) + shape[1:]
     ret = np.full(new_shape, 0, dtype=points.dtype)
     ret[: shape[0], ...] = points
     return ret
 
 
-def fix_dlio_point_cloud2_msg(msg: PointCloud2) -> PointCloud2:
+def _fix_dlio_point_cloud2_msg(msg: PointCloud2) -> PointCloud2:
     # dlio topics have duplicate timestamp fields that are not supported by
     # ros_numpy so we need to remove then
     field_names = [f.name for f in msg.fields]
@@ -69,47 +72,37 @@ def fix_dlio_point_cloud2_msg(msg: PointCloud2) -> PointCloud2:
     return msg
 
 
-def parse_point_cloud2(msg: PointCloud2) -> Dict[str, BasicType]:
-    msg = fix_dlio_point_cloud2_msg(msg)
+def _parse_point_cloud2(
+    msg: PointCloud2, topic_desc: LidarTopic
+) -> Dict[str, BasicType]:
+    msg = _fix_dlio_point_cloud2_msg(msg)
     structured_array = numpify(msg)
     assert structured_array is not None
 
     coordinates = ["x", "y", "z"]
     points = np.array([structured_array[c] for c in coordinates])
-    ret = {"point_cloud_points": pad_point_cloud(points.transpose(1, 0))}
+    ret = {
+        "point_cloud_points": _pad_point_cloud(
+            points.transpose(1, 0), topic_desc.max_points
+        )
+    }
 
     for name in structured_array.dtype.names:
         if name in coordinates:
             continue
-        ret[f"point_cloud_{name}"] = pad_point_cloud(np.array(structured_array[name]))
+        ret[f"point_cloud_{name}"] = _pad_point_cloud(
+            np.array(structured_array[name]), topic_desc.max_points
+        )
     return ret  # type: ignore
 
 
-def parse_nav_sat_fix(
-    msg: NavSatFix,
-) -> Dict[str, BasicType]:
+def _parse_nav_sat_fix(msg: NavSatFix) -> Dict[str, BasicType]:
     data = {
         "lat": msg.latitude,
         "long": msg.longitude,
         "alt": msg.altitude,
         "cov": np.array(msg.position_covariance).reshape(3, 3),
         "cov_type": msg.position_covariance_type,
-    }
-    return data
-
-
-def parse_camera_info(
-    msg: CameraInfo,
-) -> Dict[str, BasicType]:
-    # currently roi is always trivial and therefore not parsed
-    data = {
-        "height": msg.height,
-        "width": msg.width,
-        "distortion_model": msg.distortion_model,
-        "D": np.array(msg.D),  # type: ignore
-        "K": np.array(msg.K).reshape(3, 3),  # type: ignore
-        "R": np.array(msg.R).reshape(3, 3),  # type: ignore
-        "P": np.array(msg.P).reshape(3, 4),  # type: ignore
     }
     return data
 
@@ -127,7 +120,7 @@ def _parse_covariance(arr: Union[np.ndarray, Tuple[float, ...]], n: int) -> np.n
     return np.array(arr).reshape(n, n)
 
 
-def parse_magnetic_field(msg: MagneticField) -> Dict[str, BasicType]:
+def _parse_magnetic_field(msg: MagneticField) -> Dict[str, BasicType]:
     data = {
         "b_field": _parse_vector3(msg.magnetic_field),
         "b_field_cov": _parse_covariance(msg.magnetic_field_covariance, 3),
@@ -135,7 +128,7 @@ def parse_magnetic_field(msg: MagneticField) -> Dict[str, BasicType]:
     return data  # type: ignore
 
 
-def parse_imu(msg: Imu) -> Dict[str, BasicType]:
+def _parse_imu(msg: Imu) -> Dict[str, BasicType]:
     return {
         "orien": _parse_quaternion(msg.orientation),
         "orien_cov": _parse_covariance(msg.orientation_covariance, 3),
@@ -146,14 +139,7 @@ def parse_imu(msg: Imu) -> Dict[str, BasicType]:
     }
 
 
-def parse_illuminance(msg: Illuminance) -> Dict[str, BasicType]:
-    return {
-        "illum": msg.illuminance,
-        "illum_var": msg.variance,
-    }
-
-
-def parse_odometry(msg: Odometry) -> Dict[str, BasicType]:
+def _parse_odometry(msg: Odometry) -> Dict[str, BasicType]:
     return {
         "pose_pos": _parse_vector3(msg.pose.pose.position),
         "pose_orien": _parse_quaternion(msg.pose.pose.orientation),
@@ -164,26 +150,26 @@ def parse_odometry(msg: Odometry) -> Dict[str, BasicType]:
     }
 
 
-def parse_pose(
-    msg: PoseStamped,
+def _parse_pose(
+    msg: Union[PoseStamped, PoseWithCovarianceStamped], topic_desc: PoseTopic
 ) -> Dict[str, BasicType]:
+    ret = {}
+    if topic_desc.covariance:
+        msg = cast(PoseWithCovarianceStamped, msg)
+        raw_pose = msg.pose.pose
+        ret["pose_cov"] = _parse_covariance(msg.pose.covariance, 6)
+    else:
+        msg = cast(PoseStamped, msg)
+        raw_pose = msg.pose
+
     return {
-        "pose_pos": _parse_vector3(msg.pose.position),
-        "pose_orien": _parse_quaternion(msg.pose.orientation),
+        "pose_pos": _parse_vector3(raw_pose.position),
+        "pose_orien": _parse_quaternion(raw_pose.orientation),
+        **ret,
     }
 
 
-def parse_pose_with_covar(
-    msg: PoseWithCovarianceStamped,
-) -> Dict[str, BasicType]:
-    return {
-        "pose_pos": _parse_vector3(msg.pose.pose.position),
-        "pose_orien": _parse_quaternion(msg.pose.pose.orientation),
-        "pose_cov": _parse_covariance(msg.pose.covariance, 6),
-    }
-
-
-def parse_point(
+def _parse_point(
     msg: PointStamped,
 ) -> Dict[str, BasicType]:
     return {
@@ -191,7 +177,7 @@ def parse_point(
     }
 
 
-def parse_tf2_singleton_message(msg: TFMessage) -> Dict[str, BasicType]:
+def _parse_tf2_singleton_message(msg: TFMessage) -> Dict[str, BasicType]:
     assert len(msg.transforms) == 1
     transform = msg.transforms[0]  # type: ignore
     return {
@@ -200,7 +186,15 @@ def parse_tf2_singleton_message(msg: TFMessage) -> Dict[str, BasicType]:
     }
 
 
-def parse_tf2_header_message(msg: TFMessage) -> Dict[str, BasicType]:
+def _extract_default_header(msg: Any) -> Dict[str, BasicType]:
+    header: Header = msg.header
+    return {
+        "timestamp": header.stamp.to_nsec(),  # type: ignore
+        "sequence_id": header.seq,  # type: ignore
+    }
+
+
+def _extract_tf2_message_header(msg: TFMessage) -> Dict[str, BasicType]:
     assert len(msg.transforms) == 1
     transform = msg.transforms[0]  # type: ignore
     return {
@@ -209,68 +203,48 @@ def parse_tf2_header_message(msg: TFMessage) -> Dict[str, BasicType]:
     }
 
 
-MESSAGE_PARSERS: Dict[str, Callable[[Any], Dict[str, BasicType]]] = {
-    "sensor_msgs/CompressedImage": lambda _: {},
-    "sensor_msgs/NavSatFix": parse_nav_sat_fix,
-    "sensor_msgs/PointCloud2": parse_point_cloud2,
-    "sensor_msgs/MagneticField": parse_magnetic_field,
-    "sensor_msgs/Imu": parse_imu,
-    "sensor_msgs/Illuminance": parse_illuminance,
-    "nav_msgs/Odometry": parse_odometry,
-    "geometry_msgs/PoseWithCovarianceStamped": parse_pose_with_covar,
-    "geometry_msgs/PoseStamped": parse_pose,
-    "geometry_msgs/PointStamped": parse_point,
-    "tf2_msgs/TFMessage": parse_tf2_singleton_message,
+SPECIAL_HEADER_MESSAGES_EXTRACT_FUNCTIONS = {
+    "tf2_msgs/TFMessage": _extract_tf2_message_header,
 }
 
 
-SPECIAL_HEADER_MESSAGES = {
-    "tf2_msgs/TFMessage": parse_tf2_header_message,
-}
-
-SKIP_MESSAGES = [
-    "sensor_msgs/CameraInfo",  # metadata
-    "std_msgs/Header",  # metadata
-    "std_msgs/String",  # metadata
-    "tf/tfMessage",  # not used
-    "nav_msgs/Path",  # this is just an aggregate of past poses
-    "sensor_msgs/FluidPressure",  # not useful
-    "sensor_msgs/Temperature",  # not useful
-]
+def _extract_header_from_serialized_message(msg: Any) -> Dict[str, BasicType]:
+    extract_func = SPECIAL_HEADER_MESSAGES_EXTRACT_FUNCTIONS.get(msg._type)
+    if extract_func is not None:
+        return extract_func(msg)
+    return _extract_default_header(msg)
 
 
-def extract_default_header_info(msg: Any) -> Dict[str, BasicType]:
-    header: Header = msg.header
-    return {
-        "timestamp": header.stamp.to_nsec(),  # type: ignore
-        "sequence_id": header.seq,  # type: ignore
-    }
-
-
-def deserialize_message(
-    schema: Optional[mcap.records.Schema], data: bytes
-) -> Optional[Any]:
-    if schema is None:
-        return
-    message_cls = get_message_class(schema.name)
-    if message_cls is None:
-        return None
-    message = message_cls().deserialize(data)
-    if message._type in SKIP_MESSAGES:
-        return None
-    return message
-
-
-def parse_message_data(msg: Any, message_type: str) -> Dict[str, BasicType]:
-    return MESSAGE_PARSERS[message_type](msg)
-
-
-def parse_deserialized_message(msg: Any) -> Dict[str, BasicType]:
-    message_data = parse_message_data(msg, msg._type)
-    if msg._type in SPECIAL_HEADER_MESSAGES:
-        extract_func = SPECIAL_HEADER_MESSAGES[msg._type]
-        header_data = extract_func(msg)
+def _parse_message_data_from_serialized_message(
+    msg: Any, topic_desc: Topic
+) -> Dict[str, BasicType]:
+    if isinstance(topic_desc, LidarTopic):
+        return _parse_point_cloud2(msg, topic_desc)
+    elif isinstance(topic_desc, NavSatFixTopic):
+        return _parse_nav_sat_fix(msg)
+    elif isinstance(topic_desc, MagneticFieldTopic):
+        return _parse_magnetic_field(msg)
+    elif isinstance(topic_desc, ImuTopic):
+        return _parse_imu(msg)
+    elif isinstance(topic_desc, PoseTopic):
+        return _parse_pose(msg, topic_desc)
+    elif isinstance(topic_desc, PointTopic):
+        return _parse_point(msg)
+    elif isinstance(topic_desc, SingletonTransformTopic):
+        return _parse_tf2_singleton_message(msg)
+    elif isinstance(topic_desc, OdometryTopic):
+        return _parse_odometry(msg)
     else:
-        header_data = extract_default_header_info(msg)
-    message_data.update(header_data)
-    return message_data
+        return {}
+
+
+def parse_deserialized_message(msg: Any, topic_desc: Topic) -> Dict[str, BasicType]:
+    header_data = _extract_header_from_serialized_message(msg)
+    message_data = _parse_message_data_from_serialized_message(msg, topic_desc)
+    return {**header_data, **message_data}
+
+
+def deserialize_message(schema: mcap.records.Schema, data: bytes) -> Any:
+    message_cls = get_message_class(schema.name)
+    assert message_cls is not None, f"unknown message type: {schema.name}"
+    return message_cls().deserialize(data)
