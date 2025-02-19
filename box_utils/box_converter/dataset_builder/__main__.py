@@ -1,13 +1,33 @@
 from __future__ import annotations
 
-from dataset_builder.builder import generate_dataset
+from dataset_builder.build_data import build_data
+from dataset_builder.build_metadata import build_metadata
+from dataset_builder.dataset_config import load_config
+
 from pathlib import Path
 
 DEFAULT_CONFIG_PATH = Path(__file__).parent / "configs" / "default.yaml"
 
+DATA_PATH = Path(__file__).parent.parent / "data"
+INPUT_PATH = DATA_PATH / "files"
+
+
+DATASET_PATH = DATA_PATH / "dataset"
+
 
 def main() -> int:
-    generate_dataset(config_path=DEFAULT_CONFIG_PATH)
+
+    DATASET_PATH.mkdir(parents=True, exist_ok=True)
+    topic_registry, metadata_config = load_config(DEFAULT_CONFIG_PATH)
+
+    build_metadata(
+        base_dataset_path=DATASET_PATH,
+        mcaps_path=INPUT_PATH,
+        metadata_config=metadata_config,
+        topic_registry=topic_registry,
+    )
+    build_data(topic_registry=topic_registry)
+
     return 0
 
 

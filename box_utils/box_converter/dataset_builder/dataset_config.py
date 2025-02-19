@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Dict
 from typing import List
 from typing import Mapping
-from typing import Optional
+from typing import Optional, Any
 from typing import Sequence
 from typing import Tuple
 
@@ -22,6 +22,12 @@ NAV_SAT_FIX_TOPICS_KEY = "nav_sat_fix_topics"
 MAGNETIC_FIELD_TOPICS_KEY = "magnetic_field_topics"
 POINT_TOPICS_KEY = "point_topics"
 SINGLETON_TRANSFORM_TOPICS_KEY = "singleton_transform_topics"
+
+METADATA_KEY = "metadata"
+DATA_KEY = "data"
+
+CAMERA_INTRISICS_KEY = "camera_intrinsics"
+FRAME_TRANSFORMS_KEY = "frame_transforms"
 
 
 ALLOWED_KEYS = [
@@ -88,6 +94,23 @@ class PointTopic(Topic): ...
 
 @dataclass
 class SingletonTransformTopic(Topic): ...
+
+
+@dataclass
+class CameraInfoTopic(Topic): ...
+
+
+@dataclass
+class FrameTransformConfig:
+    base_frame: str
+    topic: str
+    file: str
+
+
+@dataclass
+class MetadataConfig:
+    camera_intrinsics: List[CameraInfoTopic]
+    frame_transforms: FrameTransformConfig
 
 
 AttributeTypes = Dict[str, ArrayType]
@@ -249,88 +272,128 @@ def add_universal_attributes(
 
 
 def load_topic_registry_from_config(
-    config: Path,
+    data_config_object: Mapping[str, List[Mapping[str, Any]]],
 ) -> TopicRegistry:
     registry = {}
+    assert isinstance(
+        data_config_object, Mapping
+    ), "data part of config file must be a mapping"
 
-    with open(config, "r") as f:
-        config_object = yaml.safe_load(f)
-
-    assert isinstance(config_object, Mapping), "config file must be a mapping"
-    for key in config_object.keys():
+    for key in data_config_object.keys():
         assert key in ALLOWED_KEYS, f"unknown key in config: {key}"
 
     try:
         # image topics
         image_topics = [
             ImageTopic(**topic_obj)
-            for topic_obj in config_object.get(IMAGE_TOPICS_KEY, [])
+            for topic_obj in data_config_object.get(IMAGE_TOPICS_KEY, [])
         ]
         registry.update(extract_image_topic_attributes(image_topics))
 
         # lidar topics
         lidar_topics = [
             LidarTopic(**topic_obj)
-            for topic_obj in config_object.get(LIDAR_TOPICS_KEY, [])
+            for topic_obj in data_config_object.get(LIDAR_TOPICS_KEY, [])
         ]
         registry.update(extract_lidar_topic_attributes(lidar_topics))
 
         # pose topics
         pose_topics = [
             PoseTopic(**topic_obj)
-            for topic_obj in config_object.get(POSE_TOPICS_KEY, [])
+            for topic_obj in data_config_object.get(POSE_TOPICS_KEY, [])
         ]
         registry.update(extract_pose_topic_attributes(pose_topics))
 
         # imu topics
         imu_topics = [
-            ImuTopic(**topic_obj) for topic_obj in config_object.get(IMU_TOPICS_KEY, [])
+            ImuTopic(**topic_obj)
+            for topic_obj in data_config_object.get(IMU_TOPICS_KEY, [])
         ]
         registry.update(extract_imu_topic_attributes(imu_topics))
 
         # odometry topics
         odometry_topics = [
             OdometryTopic(**topic_obj)
-            for topic_obj in config_object.get(ODOMETRY_TOPICS_KEY, [])
+            for topic_obj in data_config_object.get(ODOMETRY_TOPICS_KEY, [])
         ]
         registry.update(extract_odometry_topic_attributes(odometry_topics))
 
         # nav_sat_fix topics
         nav_sat_fix_topics = [
             NavSatFixTopic(**topic_obj)
-            for topic_obj in config_object.get(NAV_SAT_FIX_TOPICS_KEY, [])
+            for topic_obj in data_config_object.get(NAV_SAT_FIX_TOPICS_KEY, [])
         ]
         registry.update(extract_nav_sat_fix_topic_attributes(nav_sat_fix_topics))
 
         # magnetic_field topics
         magnetic_field_topics = [
             MagneticFieldTopic(**topic_obj)
-            for topic_obj in config_object.get(MAGNETIC_FIELD_TOPICS_KEY, [])
+            for topic_obj in data_config_object.get(MAGNETIC_FIELD_TOPICS_KEY, [])
         ]
         registry.update(extract_magnetic_field_topic_attributes(magnetic_field_topics))
 
         # point topics
         point_topics = [
             PointTopic(**topic_obj)
-            for topic_obj in config_object.get(POINT_TOPICS_KEY, [])
+            for topic_obj in data_config_object.get(POINT_TOPICS_KEY, [])
         ]
         registry.update(extract_point_topic_attributes(point_topics))
 
         # singleton_transform topics
         singleton_transform_topics = [
             SingletonTransformTopic(**topic_obj)
-            for topic_obj in config_object.get(SINGLETON_TRANSFORM_TOPICS_KEY, [])
+            for topic_obj in data_config_object.get(SINGLETON_TRANSFORM_TOPICS_KEY, [])
         ]
         registry.update(
             extract_singleton_transform_topic_attributes(singleton_transform_topics)
         )
     except Exception as e:
-        raise ValueError(f"error parsing config file: {e}") from e
+        raise ValueError(f"error parsing data part of config file: {e}") from e
     return add_universal_attributes(registry)
 
 
-if __name__ == "__main__":
-    print("hello")
+def load_metadata_config(metadata_config_object: Mapping[str, Any]) -> MetadataConfig:
+    camera_intrinsics_object = metadata_config_object.get(CAMERA_INTRISICS_KEY, [])
 
-    config = Path(__file__).parent / "configs" / "config.yaml"
-    reg = load_attributes_registry_from_config(config)
+    try:
+        camera_intrinsics = [
+            CameraInfoTopic(**topic_obj) for topic_obj in camera_intrinsics_object
+        ]
+    except Exception as e:
+        raise ValueError(
+            f"error parsing {CAMERA_INTRISICS_KEY!r} part of config file: {e}"
+        ) from e
+
+    try:
+        frame_transforms_object = metadata_config_object.get(FRAME_TRANSFORMS_KEY, {})
+        frame_transforms = FrameTransformConfig(**frame_transforms_object)
+    except Exception as e:
+        raise ValueError(
+            f"error parsing {FRAME_TRANSFORMS_KEY!r} part of config file: {e}"
+        ) from e
+
+    return MetadataConfig(camera_intrinsics, frame_transforms)
+
+
+def load_config(config_path: Path) -> Tuple[TopicRegistry, MetadataConfig]:
+
+    with open(config_path, "r") as f:
+        config_object = yaml.safe_load(f)
+
+    try:
+        data_config_object = config_object[DATA_KEY]
+        metadata_config_object = config_object[METADATA_KEY]
+    except KeyError as e:
+        raise ValueError(
+            f"config {config_path!r} does not contain keys {DATA_KEY!r} or {METADATA_KEY!r}"
+        ) from e
+
+    return (
+        load_topic_registry_from_config(data_config_object),
+        load_metadata_config(metadata_config_object),
+    )
+
+
+if __name__ == "__main__":
+    config = Path(__file__).parent / "configs" / "default.yaml"
+    topic_registry, metadata_config = load_config(config)

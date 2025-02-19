@@ -19,7 +19,7 @@ from geometry_msgs.msg import Vector3
 from nav_msgs.msg import Odometry
 from ros_numpy import numpify
 from roslib.message import get_message_class  # type: ignore
-from sensor_msgs.msg import CompressedImage
+from sensor_msgs.msg import CompressedImage, CameraInfo, RegionOfInterest
 from sensor_msgs.msg import Imu
 from sensor_msgs.msg import MagneticField
 from sensor_msgs.msg import NavSatFix
@@ -40,7 +40,40 @@ from dataset_builder.dataset_config import Topic, ImageTopic
 
 import cv2
 
+
 BasicType = Union[np.ndarray, int, float, str, bool]
+
+
+def extract_header_metadata_from_serialized_message(msg: Any) -> Dict[str, Any]:
+    header = _extract_header(msg)
+    return {
+        "frame_id": header.frame_id,
+    }
+
+
+def _extract_region_of_interest_metadata(msg: RegionOfInterest) -> Dict[str, Any]:
+    return {
+        "x_offset": msg.x_offset,
+        "y_offset": msg.y_offset,
+        "height": msg.height,
+        "width": msg.width,
+        "do_rectify": msg.do_rectify,
+    }
+
+
+def extract_camera_info_metadata_from_serialized_message(msg: CameraInfo) -> Dict[str, Any]:
+    ret = extract_header_metadata_from_serialized_message(msg)
+    ret["distortion_model"] = msg.distortion_model
+    ret["width"] = msg.width
+    ret["height"] = msg.height
+    ret["D"] = list(msg.D)  # type: ignore
+    ret["K"] = list(msg.K)  # type: ignore
+    ret["R"] = list(msg.R)  # type: ignore
+    ret["P"] = list(msg.P)  # type: ignore
+    ret["binning_x"] = msg.binning_x
+    ret["binning_y"] = msg.binning_y
+    ret["roi"] = _extract_region_of_interest_metadata(msg.roi)
+    return ret
 
 
 CV_BRIDGE = CvBridge()
@@ -186,21 +219,14 @@ def _parse_tf2_singleton_message(msg: TFMessage) -> Dict[str, BasicType]:
     }
 
 
-def _extract_default_header(msg: Any) -> Dict[str, BasicType]:
-    header: Header = msg.header
-    return {
-        "timestamp": header.stamp.to_nsec(),  # type: ignore
-        "sequence_id": header.seq,  # type: ignore
-    }
+def _extract_default_header(msg: Any) -> Header:
+    return msg.header  # type: ignore
 
 
-def _extract_tf2_message_header(msg: TFMessage) -> Dict[str, BasicType]:
+def _extract_tf2_message_header(msg: TFMessage) -> Header:
     assert len(msg.transforms) == 1
     transform = msg.transforms[0]  # type: ignore
-    return {
-        "timestamp": transform.header.stamp.to_nsec(),
-        "sequence_id": transform.header.seq,
-    }
+    return transform.header  # type: ignore
 
 
 SPECIAL_HEADER_MESSAGES_EXTRACT_FUNCTIONS = {
@@ -208,11 +234,21 @@ SPECIAL_HEADER_MESSAGES_EXTRACT_FUNCTIONS = {
 }
 
 
-def _extract_header_from_serialized_message(msg: Any) -> Dict[str, BasicType]:
+def _extract_header(msg: Any) -> Header:
     extract_func = SPECIAL_HEADER_MESSAGES_EXTRACT_FUNCTIONS.get(msg._type)
     if extract_func is not None:
-        return extract_func(msg)
-    return _extract_default_header(msg)
+        header = extract_func(msg)
+    else:
+        header = _extract_default_header(msg)
+    return header
+
+
+def _extract_header_data_from_serialized_message(msg: Any) -> Dict[str, BasicType]:
+    header = _extract_header(msg)
+    return {
+        "timestamp": header.stamp.to_sec(),  # type: ignore
+        "sequence_id": header.seq,  # type: ignore
+    }
 
 
 def _parse_message_data_from_serialized_message(
@@ -239,7 +275,7 @@ def _parse_message_data_from_serialized_message(
 
 
 def parse_deserialized_message(msg: Any, topic_desc: Topic) -> Dict[str, BasicType]:
-    header_data = _extract_header_from_serialized_message(msg)
+    header_data = _extract_header_data_from_serialized_message(msg)
     message_data = _parse_message_data_from_serialized_message(msg, topic_desc)
     return {**header_data, **message_data}
 

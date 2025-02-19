@@ -26,7 +26,6 @@ from dataset_builder.dataset_config import (
     ImageTopic,
     AttributeTypes,
     ArrayType,
-    load_topic_registry_from_config,
 )
 from dataset_builder.files import FILES
 from dataset_builder.message_parsing import deserialize_message
@@ -236,9 +235,7 @@ def generate_dataset_from_topic_description(
             topic_zarr_group[key].append(data, axis=0)  # type: ignore
 
 
-def generate_dataset(config_path: Path) -> None:
-    topic_registry = load_topic_registry_from_config(config_path)
-
+def build_data(topic_registry: TopicRegistry) -> None:
     for attribute_types, topic_desc in tqdm(topic_registry.values()):
         mcap_file = INPUT_PATH / topic_desc.file
         generate_dataset_from_topic_description(
