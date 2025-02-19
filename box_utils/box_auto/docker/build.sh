@@ -3,9 +3,10 @@
 # Default values
 DOCKERFILE_PREFIX="box"
 TAG_PREFIX="rslethz/grand_tour_box"
-SSH_KEY="$HOME/.ssh/id_ed25519"
+SSH_KEY="$HOME/.ssh/jonfrey_ws"
 REPO_PATH="$HOME/git/grand_tour_box"
 DOCKER_PATH="$REPO_PATH/box_utils/box_auto/docker"
+GITHUB_TOKEN="$GITHUB_TOKEN"
 
 # Help function
 print_usage() {
@@ -93,6 +94,7 @@ echo ""
 docker build \
     --progress=plain \
     --ssh default="$SSH_KEY" \
+    --build-arg GITHUB_TOKEN=$GITHUB_TOKEN \
     $NO_CACHE_FLAG\
     -t "$FULL_TAG" \
     -f "$DOCKER_PATH/$DOCKERFILE" \
