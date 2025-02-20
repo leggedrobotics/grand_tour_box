@@ -12,13 +12,15 @@ from typing import Sequence
 from typing import Tuple
 from typing import Union, cast
 
-import cv2
+import os
+import tarfile
 import numpy as np
 import zarr
 import zarr.storage
 from mcap.reader import make_reader
 from sensor_msgs.msg import CompressedImage
 from tqdm import tqdm
+import shutil
 
 from dataset_builder.dataset_config import (
     TopicRegistry,
@@ -235,7 +237,29 @@ def generate_dataset_from_topic_description(
             topic_zarr_group[key].append(data, axis=0)  # type: ignore
 
 
+def _tar_ball_dataset(base_dataset_path: Path) -> None:
+    data_files = base_dataset_path / ZARR_PREFIX
+    for folder in os.listdir(data_files):
+        if not os.path.isdir(data_files / folder):
+            continue
+        with tarfile.open(data_files / f"{folder}.tar", "w") as tar:
+            tar.add(data_files / folder, arcname=os.path.basename(folder))
+        shutil.rmtree(data_files / folder)
+
+    image_files = base_dataset_path / JPEG_PREFIX
+    for folder in os.listdir(image_files):
+        if not os.path.isdir(image_files / folder):
+            continue
+        with tarfile.open(image_files / f"{folder}.tar", "w") as tar:
+            tar.add(image_files / folder, arcname=os.path.basename(folder))
+        shutil.rmtree(image_files / folder)
+
+
 def build_data(topic_registry: TopicRegistry) -> None:
+
+    _tar_ball_dataset(DATASET_PATH)
+
+    return
     for attribute_types, topic_desc in tqdm(topic_registry.values()):
         mcap_file = INPUT_PATH / topic_desc.file
         generate_dataset_from_topic_description(

@@ -2,10 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Any
-from typing import Dict, List
-from typing import Tuple
-from typing import TypedDict
-from typing import NamedTuple
+from typing import Dict
 import logging
 
 from sensor_msgs.msg import CameraInfo
@@ -19,7 +16,6 @@ from dataset_builder.dataset_config import (
     MetadataConfig,
     TopicRegistry,
     FrameTransformConfig,
-    load_config,
     CameraInfoTopic,
     Topic,
 )
@@ -155,8 +151,7 @@ def build_metadata(
         if transform is not None:
             alias_metadata.update({"transform": transform})
         else:
-            print(frame_id)
-            # logger.warning(f"no transform found for frame_id {frame_id!r}")
+            logger.warning(f"no transform found for frame_id {frame_id!r}")
 
     metadata_dir = base_dataset_path / "metadata"
     metadata_dir.mkdir(parents=False, exist_ok=True)

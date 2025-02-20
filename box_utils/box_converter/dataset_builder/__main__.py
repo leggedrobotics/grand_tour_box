@@ -26,7 +26,7 @@ def main() -> int:
         metadata_config=metadata_config,
         topic_registry=topic_registry,
     )
-    # build_data(topic_registry=topic_registry)
+    build_data(topic_registry=topic_registry)
 
     return 0
 
