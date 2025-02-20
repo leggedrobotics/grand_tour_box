@@ -124,7 +124,6 @@ def analyze_mission_and_report():
 
 
 if __name__ == "__main__":
-
     if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
         project_uuid = os.environ.get("PROJECT_UUID")
         mission_uuid = os.environ["MISSION_UUID"]
