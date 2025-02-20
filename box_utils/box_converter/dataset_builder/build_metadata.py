@@ -6,6 +6,7 @@ from typing import Dict, List
 from typing import Tuple
 from typing import TypedDict
 from typing import NamedTuple
+import logging
 
 from sensor_msgs.msg import CameraInfo
 from mcap.reader import make_reader
@@ -26,6 +27,8 @@ from dataset_builder.transforms import get_metadata_from_tf_msg
 from tf2_msgs.msg import TFMessage
 
 import yaml
+
+logger = logging.getLogger(__name__)
 
 CAMERA_INTRISICS_FILENAME = "camera_intrinsics.yaml"
 FRAME_TRANSFORMS_FILENAME = "frame_transforms.yaml"
@@ -65,7 +68,7 @@ def load_camera_info_metadata_from_mcap_file_and_topic(
 def load_tf_metadata_from_mcap_file_and_topic(
     mcap_path: Path,
     frame_transform_config: FrameTransformConfig,
-) -> List[Dict[str, Any]]:
+) -> Dict[str, Any]:
     with open(mcap_path, "rb") as f:
         reader = make_reader(f)
         for schema, _, ser_message in reader.iter_messages(
@@ -84,7 +87,6 @@ def load_tf_metadata_from_mcap_file_and_topic(
 def get_frame_id_from_topic(mcaps_path: Path, topic_desc: Topic) -> Dict[str, str]:
     mcap_path = mcaps_path / topic_desc.file
     ret = load_metadata_from_mcap_file_and_topic(mcap_path, topic_desc)
-    ret["alias"] = topic_desc.alias
     return ret
 
 
@@ -93,31 +95,37 @@ def get_camera_info_from_topic(
 ) -> Dict[str, Any]:
     mcap_path = mcaps_path / topic_desc.file
     ret = load_camera_info_metadata_from_mcap_file_and_topic(mcap_path, topic_desc)
-    ret["alias"] = topic_desc.alias
     return ret
 
 
-def get_frame_ids(mcaps_path: Path, topic_reg: TopicRegistry) -> List[Dict[str, str]]:
-    ret = []
+def get_frame_ids(mcaps_path: Path, topic_reg: TopicRegistry) -> Dict[str, Any]:
+    ret = {}
     for _, topic_desc in topic_reg.values():
-        ret.append(get_frame_id_from_topic(mcaps_path, topic_desc))
+        ret[topic_desc.alias] = get_frame_id_from_topic(mcaps_path, topic_desc)
     return ret
 
 
 def get_camera_infos(
     mcaps_path: Path, metadata_config: MetadataConfig
-) -> List[Dict[str, Any]]:
-    ret = []
+) -> Dict[str, Any]:
+    ret = {}
     for cam_info_topic_desc in metadata_config.camera_intrinsics:
-        ret.append(get_camera_info_from_topic(mcaps_path, cam_info_topic_desc))
+        cam_info = get_camera_info_from_topic(mcaps_path, cam_info_topic_desc)
+        ret[cam_info_topic_desc.alias] = cam_info
     return ret
 
 
 def get_frame_transform_metadata(
     mcaps_path: Path, frame_transform_config: FrameTransformConfig
-) -> List[Dict[str, Any]]:
+) -> Dict[str, Any]:
     mcap_path = mcaps_path / frame_transform_config.file
     return load_tf_metadata_from_mcap_file_and_topic(mcap_path, frame_transform_config)
+
+
+def write_metadata_files(metadata_dct: Dict[str, Any], metadata_dir: Path) -> None:
+    for alias, metadata in metadata_dct.items():
+        with open(metadata_dir / f"{alias}.yaml", "w") as f:
+            yaml.dump(metadata, f)
 
 
 def build_metadata(
@@ -128,15 +136,29 @@ def build_metadata(
     topic_registry: TopicRegistry,
 ) -> None:
     frame_id_metadata = get_frame_ids(mcaps_path, topic_registry)
-    with open(base_dataset_path / FRAME_IDS_FILENAME, "w") as f:
-        yaml.dump(frame_id_metadata, f)
-
     cam_info_metadata = get_camera_infos(mcaps_path, metadata_config)
-    with open(base_dataset_path / CAMERA_INTRISICS_FILENAME, "w") as f:
-        yaml.dump(cam_info_metadata, f)
-
     transform_metadata = get_frame_transform_metadata(
         mcaps_path, metadata_config.frame_transforms
     )
-    with open(base_dataset_path / FRAME_TRANSFORMS_FILENAME, "w") as f:
-        yaml.dump(transform_metadata, f)
+
+    # merge metadata and split by topic
+    metadata = {}
+    for alias, frame_id in frame_id_metadata.items():
+        metadata[alias] = {**frame_id, "topic": alias}
+    for alias, cam_info in cam_info_metadata.items():
+        metadata[alias].update({"camera_info": cam_info})
+
+    for alias, alias_metadata in metadata.items():
+        frame_id = alias_metadata["frame_id"]
+        transform = transform_metadata.get(frame_id)
+
+        if transform is not None:
+            alias_metadata.update({"transform": transform})
+        else:
+            print(frame_id)
+            # logger.warning(f"no transform found for frame_id {frame_id!r}")
+
+    metadata_dir = base_dataset_path / "metadata"
+    metadata_dir.mkdir(parents=False, exist_ok=True)
+
+    write_metadata_files(metadata, metadata_dir)

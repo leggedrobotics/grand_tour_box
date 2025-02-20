@@ -100,25 +100,29 @@ def _get_absolute_transform(
 def _get_metadata_from_transforms(
     base_frame: str,
     transforms: Dict[Tuple[str, str], Tuple[Translation, Rotation]],
-) -> List[Dict[str, Any]]:
+) -> Dict[str, Any]:
     reverse_edge_dict = {child: parent for parent, child in transforms.keys()}
     traget_frames = set(child for _, child in transforms.keys())
 
     assert base_frame not in traget_frames
 
-    absolute_transforms = [
-        _get_absolute_transform(base_frame, target_frame, reverse_edge_dict, transforms)
-        for target_frame in traget_frames
-    ]
-
-    return [
-        _absolute_transform_to_metadata(target_frame, translation, rotation, base_frame)
-        for target_frame, (translation, rotation) in zip(
-            traget_frames, absolute_transforms
+    # build transforms base_frame -> target_frame
+    absolute_transforms = {
+        target_frame: _get_absolute_transform(
+            base_frame, target_frame, reverse_edge_dict, transforms
         )
-    ]
+        for target_frame in traget_frames
+    }
+
+    # convert the transforms to yaml-serializable metadata
+    return {
+        target_frame: _absolute_transform_to_metadata(
+            target_frame, translation, rotation, base_frame
+        )
+        for target_frame, (translation, rotation) in absolute_transforms.items()
+    }
 
 
-def get_metadata_from_tf_msg(msg: TFMessage, base_frame: str) -> List[Dict[str, Any]]:
+def get_metadata_from_tf_msg(msg: TFMessage, base_frame: str) -> Dict[str, Any]:
     transforms = _get_source_dest_transforms_from_tf_msg(msg)
     return _get_metadata_from_transforms(base_frame, transforms)
