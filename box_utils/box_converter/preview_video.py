@@ -42,7 +42,7 @@ ROS_BAG_PATHS = [
     get_bag("*_jetson_hdr_right.bag"),
     get_bag("*_jetson_hdr_left.bag"),
     get_bag("*_nuc_livox.bag"),
-    get_bag("*_nuc_hesai.bag"),
+    get_bag("*_hesai_post_processed.bag"),
     get_bag("*_lpc_state_estimator.bag"),
 ]  # List of bag files
 ODOM_BAG_PATH = get_bag("*_lpc_state_estimator.bag")
