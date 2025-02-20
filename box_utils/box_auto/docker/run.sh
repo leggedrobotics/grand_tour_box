@@ -40,7 +40,7 @@ for i in "$@"; do
         --type=*)
             TYPE=${i#*=}
             case $TYPE in
-                kleinkram|kleinkram_minimal|ros2|bridge)
+                kleinkram|kleinkram_minimal|ros2|bridge|kleinkram_preview)
                     IMAGE_TYPE=$TYPE
                     ;;
                 *)
