@@ -111,7 +111,8 @@ def analyze_mission_and_report():
             f"### Mission Metadata\n{metadata}\n"
             f"### Validation Failed\n\n"
             f"For topic frequency histograms and full logs, check the artifacts folder using the link below.\n\n"
-            f"### Error Logs\n```{error_string}```\n\n"
+            f"### Error Logs\n``` \n"
+            f"{error_string}```\n\n"
         )
         create_github_issue(
             title=f"Raw Data Verification Failed for {mission_name}",
