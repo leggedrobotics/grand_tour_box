@@ -42,4 +42,9 @@ RUN chmod +x /entrypoint_kleinkram.sh
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
+# Install Roboto for preview videos
+RUN apt-get update && apt-get install -y fonts-roboto && rm -rf /var/lib/apt/lists/*
+RUN fc-cache -f -v
+
+
 ENTRYPOINT ["/entrypoint_kleinkram.sh"]
