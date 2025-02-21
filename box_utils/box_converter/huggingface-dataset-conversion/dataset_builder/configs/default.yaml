@@ -1,39 +1,39 @@
 metadata:
   camera_intrinsics:
-    - alias: zed2i_depth
+    - alias: zed2i_depth_caminfo
       file: 2024-10-01-11-29-55_jetson_zed2i_depth.mcap
       topic: /gt_box/zed2i/zed_node/depth/camera_info
 
-    - alias: zed2i_left
+    - alias: zed2i_left_caminfo
       file: 2024-10-01-11-29-55_jetson_zed2i_images.mcap
       topic: "/gt_box/zed2i/zed_node/left/camera_info"
-    - alias: zed2i_right
+    - alias: zed2i_right_caminfo
       file: 2024-10-01-11-29-55_jetson_zed2i_images.mcap
       topic: "/gt_box/zed2i/zed_node/right/camera_info"
 
     - alias: alphasense_cam1_caminfo
       file: 2024-10-01-11-29-55_nuc_alphasense_cor.mcap
       topic: "/gt_box/alphasense_driver_node/cam1/color/camera_info"
-    - alias: alphasense_cam2
+    - alias: alphasense_cam2_caminfo
       file: 2024-10-01-11-29-55_nuc_alphasense_cor.mcap
       topic: "/gt_box/alphasense_driver_node/cam2/color/camera_info"
-    - alias: alphasense_cam3
+    - alias: alphasense_cam3_caminfo
       file: 2024-10-01-11-29-55_nuc_alphasense_cor.mcap
       topic: "/gt_box/alphasense_driver_node/cam3/color/camera_info"
-    - alias: alphasense_cam4
+    - alias: alphasense_cam4_caminfo
       file: 2024-10-01-11-29-55_nuc_alphasense_cor.mcap
       topic: "/gt_box/alphasense_driver_node/cam4/color/camera_info"
-    - alias: alphasense_cam5
+    - alias: alphasense_cam5_caminfo
       file: 2024-10-01-11-29-55_nuc_alphasense_cor.mcap
       topic: "/gt_box/alphasense_driver_node/cam5/color/camera_info"
 
     - alias: hdr_left_caminfo
       file: 2024-10-01-11-29-55_jetson_hdr_left_updated.mcap
       topic: "/gt_box/hdr_left/camera_info"
-    - alias: hdr_front
+    - alias: hdr_front_caminfo
       file: 2024-10-01-11-29-55_jetson_hdr_front_updated.mcap
       topic: "/gt_box/hdr_front/camera_info"
-    - alias: hdr_right
+    - alias: hdr_right_caminfo
       file: 2024-10-01-11-29-55_jetson_hdr_right_updated.mcap
       topic: "/gt_box/hdr_right/camera_info"
   frame_transforms:

@@ -256,10 +256,6 @@ def _tar_ball_dataset(base_dataset_path: Path) -> None:
 
 
 def build_data(topic_registry: TopicRegistry) -> None:
-
-    _tar_ball_dataset(DATASET_PATH)
-
-    return
     for attribute_types, topic_desc in tqdm(topic_registry.values()):
         mcap_file = INPUT_PATH / topic_desc.file
         generate_dataset_from_topic_description(
@@ -268,3 +264,4 @@ def build_data(topic_registry: TopicRegistry) -> None:
             topic_desc=topic_desc,
             attribute_types=attribute_types,
         )
+    _tar_ball_dataset(DATASET_PATH)

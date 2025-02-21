@@ -1,7 +1,8 @@
 numpy
-datasets
 opencv-python
-torch
 mcap
 rosnumpy
 zarr
+tqdm
+cv_bridge
+scipy

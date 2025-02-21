@@ -142,16 +142,22 @@ def build_metadata(
     for alias, frame_id in frame_id_metadata.items():
         metadata[alias] = {**frame_id, "topic": alias}
     for alias, cam_info in cam_info_metadata.items():
-        metadata[alias].update({"camera_info": cam_info})
+        assert (
+            alias not in metadata
+        ), f"alias {alias} for camera_info topic is not unique"
+        metadata[alias] = {"camera_info": cam_info}
 
+    # try to get transform for each frame_id
     for alias, alias_metadata in metadata.items():
-        frame_id = alias_metadata["frame_id"]
-        transform = transform_metadata.get(frame_id)
+        frame_id = alias_metadata.get("frame_id")
+        if frame_id is None:
+            continue
 
-        if transform is not None:
-            alias_metadata.update({"transform": transform})
-        else:
+        transform = transform_metadata.get(frame_id)
+        if transform is None:
             logger.warning(f"no transform found for frame_id {frame_id!r}")
+        else:
+            alias_metadata.update({"transform": transform})
 
     metadata_dir = base_dataset_path / "metadata"
     metadata_dir.mkdir(parents=False, exist_ok=True)
