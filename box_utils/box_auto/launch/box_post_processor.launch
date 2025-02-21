@@ -9,6 +9,16 @@
   <arg name="input_filepath" default=""/> 
   <arg name="output_folder" default=""/>
 
+  <!-- In millisecond -->
+  <arg name="max_time_difference_millisecond" default="2.2"/> 
+
+  <!-- Parameters are here -->
+  <arg name="config_path" default="$(find box_auto)/cfg/boxi_processor_topics.yaml" />
+
+  <!-- Parameters are here -->
+  <!-- ROS Param -->
+  <rosparam file="$(arg config_path)" command="load"/>
+
   <!-- ROS Param -->
   <param name="/use_sim_time" value="$(arg use_sim_time)"/>
 
@@ -17,6 +27,7 @@
         type="post_processor_node" output="screen" required="True">
     <param name="rosbag_filename" value="$(arg input_filepath)"/>
     <param name="output_folder" value="$(arg output_folder)"/>
+    <param name="max_time_difference_millisecond" value="$(arg max_time_difference_millisecond)"/>
   </node>
 
 </launch>

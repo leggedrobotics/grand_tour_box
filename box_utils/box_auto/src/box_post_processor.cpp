@@ -1,4 +1,5 @@
 #include "box_post_processor/box_post_processor.hpp"
+#include <XmlRpcValue.h>
 #include <ros/ros.h>
 #include <rosbag/view.h>
 #include <sensor_msgs/Illuminance.h>
@@ -15,20 +16,57 @@ BoxPostProcessor::BoxPostProcessor(ros::NodeHandlePtr nh) : nh_(nh) {}
 
 void BoxPostProcessor::initialize() {
   rosbagFilename_ = nh_->param<std::string>("rosbag_filename", "");
+  if (rosbagFilename_.empty()) {
+    throw std::runtime_error("Parameter 'rosbag_filename' is not set or empty.");
+  }
+
   outputBagFolder_ = nh_->param<std::string>("output_folder", "");
+  if (outputBagFolder_.empty()) {
+    throw std::runtime_error("Parameter 'output_folder' is not set or empty.");
+  }
+
+  maxTimeDifference_ = nh_->param<double>("max_time_difference_millisecond", -1.0);
+  if (maxTimeDifference_ < 0.0) {
+    throw std::runtime_error("Parameter 'max_time_difference_millisecond' is not set or negative.");
+  }
+
+  time_offset_to_be_applied_ = nh_->param<double>("/time_offset_to_apply", -1000.0);
+  if (time_offset_to_be_applied_ < -100.0) {
+    throw std::runtime_error("Parameter 'time_offset_to_apply' is not set");
+  }
+
+  // Load parentFramesToRemove
+  XmlRpc::XmlRpcValue rpcTopic;
+  if (nh_->getParam("/topics", rpcTopic)) {
+    if (rpcTopic.getType() == XmlRpc::XmlRpcValue::TypeArray) {
+      for (int i = 0; i < rpcTopic.size(); ++i) {
+        std::string topic = static_cast<std::string>(rpcTopic[i]);
+        topics_.push_back(topic);
+      }
+    } else {
+      throw std::runtime_error("Parameter 'topics' is not an array.");
+    }
+  } else {
+    throw std::runtime_error("Failed to load parameter 'topics'.");
+  }
+
+  ROS_INFO_STREAM("Time offset to be applied: " << time_offset_to_be_applied_ << " ms");
+  ROS_INFO_STREAM("Maximum time offset: " << maxTimeDifference_ << " ms");
   ROS_INFO_STREAM("Reading from rosbag: " << rosbagFilename_);
 
   rosbagFullname_ = rosbagFilename_;
-
   rosbagFullname_.erase(rosbagFullname_.end() - 4, rosbagFullname_.end());
-
   rosbagFullname_ += "_post_processed.bag";
   ROS_INFO_STREAM("Writing to rosbag: " << rosbagFullname_);
 
-  // createOutputDirectory();
-  // rosbagFullname_ = outputBagFolder_ + "/testtest.bag";
+  createOutputDirectory();
   if (std::filesystem::exists(rosbagFullname_)) {
     std::remove(rosbagFullname_.c_str());
+  }
+
+  std::string fail_file_name = outputBagFolder_ + "/stim320_failed";
+  if (std::filesystem::exists(fail_file_name)) {
+    std::remove(fail_file_name.c_str());
   }
 
   const ros::WallTime first{ros::WallTime::now() + ros::WallDuration(2.0)};
@@ -59,16 +97,6 @@ bool BoxPostProcessor::createOutputDirectory() {
 }
 
 bool BoxPostProcessor::processRosbag() {
-  std::vector<std::string> topics;
-
-  topics.push_back("/gt_box/stim320/ros_time");
-  topics.push_back("/gt_box/stim320/kernel_time");
-  topics.push_back("/gt_box/stim320/internal_counter");
-  topics.push_back("/gt_box/stim320/imu");
-  topics.push_back("/gt_box/stim320/gyroscope_temperature");
-  topics.push_back("/gt_box/stim320/continuous_counter");
-  topics.push_back("/gt_box/stim320/acceletometer_temperature");
-
   // Create me a high resolution clock timer from std chrono
   // Start the timer.
   startTime_ = std::chrono::steady_clock::now();
@@ -83,11 +111,28 @@ bool BoxPostProcessor::processRosbag() {
   }
 
   outBag.open(rosbagFullname_, rosbag::bagmode::Write);
-  // ROS_INFO_STREAM("ROS bag '" << rosbagFilename_ << "' open.");
-  // if (!validateTopicsInRosbag(bag, topics)) {
-  //   bag.close();
-  //   return false;
-  // }
+  outBag.setCompression(rosbag::compression::LZ4);
+
+  {
+    std::set<std::string> availableTopics;
+    rosbag::View allTopicsView(bag);
+    for (const auto& m : allTopicsView) {
+      availableTopics.insert(m.getTopic());
+    }
+
+    bool topicsFound = true;
+    for (const auto& topic : topics_) {
+      if (availableTopics.find(topic) == availableTopics.end()) {
+        ROS_ERROR_STREAM("Topic '" << topic << "' is not available in the bag.");
+        topicsFound = false;
+      }
+    }
+
+    if (!topicsFound) {
+      bag.close();
+      return false;
+    }
+  }
 
   ROS_INFO_STREAM("\033[92m"
                   << " Post processing the Rosbag "
@@ -95,53 +140,18 @@ bool BoxPostProcessor::processRosbag() {
   const ros::WallTime first{ros::WallTime::now() + ros::WallDuration(1.0)};
   ros::WallTime::sleepUntil(first);
 
-  // // The bag view we iterate over.
-  rosbag::View view1(bag, rosbag::TopicQuery(topics));
+  // The bag view we iterate over.
+  rosbag::View bagView(bag, rosbag::TopicQuery(topics_));
 
-  // ros::Time stampLastIteration{view.getBeginTime()};
-  // ros::WallTime wallStampLastIteration{ros::WallTime::now()};
-  // const ros::WallTime wallStampStartSequentialRun{ros::WallTime::now()};
-
-  // std::vector<ros::Time> timeStamps;
-  for (const auto& messageInstance : view1) {
+  uint32_t errorCount = 0;
+  uint32_t skipCount = 0;
+  for (const auto& messageInstance : bagView) {
     // If the node is shutdown, stop processing and do early return.
     if (!ros::ok()) {
       return false;
     }
 
-    if (messageInstance.getTopic() == "/gt_box/stim320/ros_time") {
-      std_msgs::Header::ConstPtr message = messageInstance.instantiate<std_msgs::Header>();
-      if (message != nullptr) {
-        std_msgs::Header newMessage = *message;
-        outBag.write("/gt_box/stim320/ros_time", message->stamp, newMessage);
-      }
-    }
-
-    if (messageInstance.getTopic() == "/gt_box/stim320/kernel_time") {
-      std_msgs::Header::ConstPtr message = messageInstance.instantiate<std_msgs::Header>();
-      if (message != nullptr) {
-        std_msgs::Header newMessage = *message;
-        outBag.write("/gt_box/stim320/kernel_time", message->stamp, newMessage);
-      }
-    }
-
-    if (messageInstance.getTopic() == "/gt_box/stim320/internal_counter") {
-      sensor_msgs::Illuminance::ConstPtr message = messageInstance.instantiate<sensor_msgs::Illuminance>();
-      if (message != nullptr) {
-        sensor_msgs::Illuminance newMessage = *message;
-        outBag.write("/gt_box/stim320/internal_counter", message->header.stamp, newMessage);
-      }
-    }
-
-    if (messageInstance.getTopic() == "/gt_box/stim320/continuous_counter") {
-      sensor_msgs::Illuminance::ConstPtr message = messageInstance.instantiate<sensor_msgs::Illuminance>();
-      if (message != nullptr) {
-        sensor_msgs::Illuminance newMessage = *message;
-        outBag.write("/gt_box/stim320/continuous_counter", message->header.stamp, newMessage);
-      }
-    }
-
-    if (messageInstance.getTopic() == "/gt_box/stim320/imu") {
+    if (messageInstance.getTopic().find("stim320/imu") != std::string::npos) {
       sensor_msgs::Imu::ConstPtr message = messageInstance.instantiate<sensor_msgs::Imu>();
       if (message != nullptr) {
         sensor_msgs::Imu newMessage = *message;
@@ -150,328 +160,65 @@ bool BoxPostProcessor::processRosbag() {
 
         uint64_t diff = currentTime.toNSec() - oldTime_.toNSec();
 
-        if ((diff > 2500000) && (oldTime_.toNSec() != 0u)) {
-          ROS_ERROR_STREAM("currentTime: " << currentTime);
+        if ((diff > maxTimeDifference_ * 1e6) && (oldTime_.toNSec() != 0u)) {
+          ROS_ERROR_STREAM("Current Time: " << currentTime);
           ROS_ERROR_STREAM("oldTime_: " << oldTime_);
-          ROS_ERROR_STREAM("Diff is to big: " << diff);
+          ROS_ERROR_STREAM("Diff is to big: " << diff << " ns");
+          errorCount++;
         }
+
+        seq_ = message->header.seq;
+
+        if ((seq_ != (oldSeq_ + 4)) && !((oldSeq_ == 252) && (seq_ == 0)) && (oldSeq_ != 300)) {
+          ROS_ERROR_STREAM("Sequence Jump Seq: " << seq_ << " Old Seq: " << oldSeq_);
+          skipCount++;
+        }
+
+        oldSeq_ = seq_;
         oldTime_ = currentTime;
 
-        outBag.write("/gt_box/stim320/imu", message->header.stamp, newMessage);
+        newMessage.header.stamp = currentTime + ros::Duration(time_offset_to_be_applied_ / 1000.0);
+
+        outBag.write("/boxi/stim320/imu", newMessage.header.stamp, newMessage);
       }
     }
 
-    if (messageInstance.getTopic() == "/gt_box/stim320/acceletometer_temperature") {
+    if (messageInstance.getTopic().find("stim320/acceletometer_temperature") != std::string::npos) {
       sensor_msgs::Temperature::ConstPtr message = messageInstance.instantiate<sensor_msgs::Temperature>();
       if (message != nullptr) {
         sensor_msgs::Temperature newMessage = *message;
-        outBag.write("/gt_box/stim320/acceletometer_temperature", message->header.stamp, newMessage);
+        newMessage.header.stamp = message->header.stamp + ros::Duration(time_offset_to_be_applied_ / 1000.0);
+        outBag.write("/boxi/stim320/gyroscope_temperature", newMessage.header.stamp, newMessage);
       }
     }
 
-    if (messageInstance.getTopic() == "/gt_box/stim320/gyroscope_temperature") {
+    if (messageInstance.getTopic().find("stim320/gyroscope_temperature") != std::string::npos) {
       sensor_msgs::Temperature::ConstPtr message = messageInstance.instantiate<sensor_msgs::Temperature>();
       if (message != nullptr) {
         sensor_msgs::Temperature newMessage = *message;
-        outBag.write("/gt_box/stim320/gyroscope_temperature", message->header.stamp, newMessage);
+        newMessage.header.stamp = message->header.stamp + ros::Duration(time_offset_to_be_applied_ / 1000.0);
+        outBag.write("/boxi/stim320/acceletometer_temperature", newMessage.header.stamp, newMessage);
       }
     }
   }
 
-  // std::vector<std::string> topics2;
-  // topics2.push_back("/tf_static");
-  // rosbag::View view2(bag, rosbag::TopicQuery(topics2));
-
-  // tf2_msgs::TFMessage collectiontfMessage_;
-
-  // for (const auto& messageInstance : view2) {
-  //   // If the node is shutdown, stop processing and do early return.
-  //   if (!ros::ok()) {
-  //     return false;
-  //   }
-
-  //   bool isInvalidMessageInBag = false;
-
-  //   // Update time registers.
-  //   // if ((ros::Time::now() - stampLastIteration) >= ros::Duration(1.0)) {
-  //   //   stampLastIteration = ros::Time::now();
-  //   //   wallStampLastIteration = ros::WallTime::now();
-  //   // }
-  //   // ROS_INFO_STREAM("Starting bag");
-
-  //   if (messageInstance.getTopic() == "/tf_static") {
-  //     // ROS_INFO_STREAM("TF STATIC FOUND");
-  //     tf2_msgs::TFMessage::ConstPtr message = messageInstance.instantiate<tf2_msgs::TFMessage>();
-  //     if (message != nullptr) {
-  //       // ROS_INFO_STREAM("Stamp: " << message->transforms[0].header.stamp);
-  //       // std::vector<geometry_msgs::TransformStamped> newTransforms;
-
-  //       // Iterate over the transforms and if the frame_id is not the same as the child_frame_id, then we have a static transform.
-  //       for (auto& transform : message->transforms) {
-  //         if (!(transform.header.frame_id == "prism" || transform.child_frame_id == "prism")) {
-  //           if (!(transform.header.frame_id == "leica_world" || transform.child_frame_id == "leica_world")) {
-  //             if (!(transform.header.frame_id == "leica_base" || transform.child_frame_id == "leica_base")) {
-  //               if (!(transform.header.frame_id == "leica_pos" || transform.child_frame_id == "leica_pos")) {
-  //                 if (!(transform.header.frame_id == "leica_base_model" || transform.child_frame_id == "leica_base_model")) {
-  //                   geometry_msgs::TransformStamped newTransformStamped = transform;
-  //                   if (transform.child_frame_id == "zed_base") {
-  //                     newTransformStamped.child_frame_id = "zed_base_link";
-  //                   }
-
-  //                   // newTransformStamped.header.stamp = baseTime_;
-
-  //                   // // NODELET_DEBUG_STREAM(get_logger(), "Odom TS: " << transformStamped.header.stamp);
-
-  //                   // transformStamped.header.frame_id = mOdomFrameId;
-  //                   // transformStamped.child_frame_id = mBaseFrameId;
-  //                   // // conversion from Tranform to message
-  //                   // mOdomMutex.lock();  //
-  //                   // tf2::Vector3 translation = mOdom2BaseTransf.getOrigin();
-  //                   // tf2::Quaternion quat = mOdom2BaseTransf.getRotation();
-  //                   // mOdomMutex.unlock();  //
-  //                   // transformStamped.transform.translation.x = translation.x();
-  //                   // transformStamped.transform.translation.y = translation.y();
-  //                   // transformStamped.transform.translation.z = translation.z();
-  //                   // transformStamped.transform.rotation.x = quat.x();
-  //                   // transformStamped.transform.rotation.y = quat.y();
-  //                   // transformStamped.transform.rotation.z = quat.z();
-  //                   // transformStamped.transform.rotation.w = quat.w();
-
-  //                   // transform.header.stamp = baseTime_;
-  //                   collectiontfMessage_.transforms.push_back(newTransformStamped);
-  //                 }
-  //               }
-  //             }
-  //           }
-
-  //           // staticTransformBroadcaster_.sendTransform(transform);
-  //         }
-  //       }
-  //       geometry_msgs::TransformStamped boxToBoxBase;
-  //       boxToBoxBase.header.frame_id = "base";
-  //       boxToBoxBase.header.stamp = collectiontfMessage_.transforms[0].header.stamp;
-  //       boxToBoxBase.child_frame_id = "box_base";
-  //       // conversion from Tranform to message
-
-  //       tf2::Vector3 translation = tf2::Vector3(-0.0361, 0.2178, 0.07640);
-
-  //       // X Y Z W
-  //       tf2::Quaternion quat = tf2::Quaternion(0.5, -0.5, 0.5, -0.5);
-
-  //       boxToBoxBase.transform.translation.x = translation.x();
-  //       boxToBoxBase.transform.translation.y = translation.y();
-  //       boxToBoxBase.transform.translation.z = translation.z();
-  //       boxToBoxBase.transform.rotation.x = quat.x();
-  //       boxToBoxBase.transform.rotation.y = quat.y();
-  //       boxToBoxBase.transform.rotation.z = quat.z();
-  //       boxToBoxBase.transform.rotation.w = quat.w();
-  //       collectiontfMessage_.transforms.push_back(boxToBoxBase);
-
-  //       // ROS_WARN_STREAM("Header stamp: " << baseTime_);
-  //       // outBag.write("/tf_static", baseTime_, collectiontfMessage_);
-
-  //       createZedBasedTransform(collectiontfMessage_);
-
-  //     } else {
-  //       isInvalidMessageInBag = true;
-  //       ROS_WARN("Invalid message found in ROS bag.");
-  //     }
-  //   }
-
-  // }  // end of for loop
-
-  // if (foundTfmsgs_) {
-  //   for (auto& time : timeStamps) {
-  //     if ((counter_ % 100 == 0) || (counter_ == 0)) {
-  //       for (auto& transform : collectiontfMessage_.transforms) {
-  //         transform.header.stamp = time;
-  //       }
-
-  //       outBag.write("/tf_static", time, collectiontfMessage_);
-  //     }
-
-  //     counter_++;
-  //   }
-  // } else {
-  //   ros::Time time = collectiontfMessage_.transforms[0].header.stamp;
-  //   ros::Duration duration = ros::Duration(0.1);
-  //   // collectiontfMessage_.transforms[1].header.stamp = time + duration;
-  //   outBag.write("/tf_static", collectiontfMessage_.transforms[0].header.stamp, collectiontfMessage_);
-  //   outBag.write("/tf_static", time + duration, collectiontfMessage_);
-  // }
-
-  ROS_INFO("Finished running through the TF msgs.");
-  // const ros::Time bag_begin_time = view.getBeginTime();
-  // const ros::Time bag_end_time = view.getEndTime();
+  ROS_INFO("Finished running through the msgs.");
   endTime_ = std::chrono::steady_clock::now();
-
-  // std::cout << "Rosbag processing finished. Rosbag duration: " << (bag_end_time - bag_begin_time).toSec() << " sec."
-  //           << " Time elapsed for processing: " << elapsedSeconds() << " sec. \n \n";
+  std::cout << "Elapsed Time (msec): " << elapsedMilliseconds() << " msec. \n \n";
 
   bag.close();
   outBag.close();
+
+  if (skipCount > 0) {
+    std::ofstream outFile(outputBagFolder_ + "/stim320_failed");
+    if (outFile) {
+      outFile << "Skip Count: " << skipCount << std::endl;
+    } else {
+      ROS_ERROR("Failed to create file stim320_failed");
+    }
+  }
+
   return true;
-}
-
-void BoxPostProcessor::createZedBasedTransform(tf2_msgs::TFMessage& collectiontfMessage) {
-  {
-    geometry_msgs::TransformStamped zedToZed2iBase;
-    zedToZed2iBase.header.frame_id = "zed_base_link";
-    zedToZed2iBase.header.stamp = collectiontfMessage.transforms[0].header.stamp;
-    zedToZed2iBase.child_frame_id = "zed2i_base_link";
-    // conversion from Tranform to message
-
-    tf2::Vector3 translation = tf2::Vector3(0.0, 0.0, 0.0);
-
-    // X Y Z W
-    tf2::Quaternion quat = tf2::Quaternion(0.0, 0.0, 0.0, 1.0);
-
-    zedToZed2iBase.transform.translation.x = translation.x();
-    zedToZed2iBase.transform.translation.y = translation.y();
-    zedToZed2iBase.transform.translation.z = translation.z();
-    zedToZed2iBase.transform.rotation.x = quat.x();
-    zedToZed2iBase.transform.rotation.y = quat.y();
-    zedToZed2iBase.transform.rotation.z = quat.z();
-    zedToZed2iBase.transform.rotation.w = quat.w();
-    collectiontfMessage.transforms.push_back(zedToZed2iBase);
-  }
-
-  {
-    ///////////////////////////////////////////////////////
-    geometry_msgs::TransformStamped zed2iToZed2iCenter;
-    zed2iToZed2iCenter.header.frame_id = "zed2i_base_link";
-    zed2iToZed2iCenter.header.stamp = collectiontfMessage.transforms[0].header.stamp;
-    zed2iToZed2iCenter.child_frame_id = "zed2i_camera_center";
-    // conversion from Tranform to message
-
-    tf2::Vector3 translation = tf2::Vector3(0.0, 0.0, 0.0);
-
-    // X Y Z W
-    tf2::Quaternion quat = tf2::Quaternion(0.0, 0.0, 0.0, 1.0);
-
-    zed2iToZed2iCenter.transform.translation.x = translation.x();
-    zed2iToZed2iCenter.transform.translation.y = translation.y();
-    zed2iToZed2iCenter.transform.translation.z = translation.z();
-    zed2iToZed2iCenter.transform.rotation.x = quat.x();
-    zed2iToZed2iCenter.transform.rotation.y = quat.y();
-    zed2iToZed2iCenter.transform.rotation.z = quat.z();
-    zed2iToZed2iCenter.transform.rotation.w = quat.w();
-    collectiontfMessage.transforms.push_back(zed2iToZed2iCenter);
-  }
-
-  {
-    ///////////////////////////////////////////////////////
-    geometry_msgs::TransformStamped zed2iCenterToZed2iLeftCamera;
-    zed2iCenterToZed2iLeftCamera.header.frame_id = "zed2i_camera_center";
-    zed2iCenterToZed2iLeftCamera.header.stamp = collectiontfMessage.transforms[0].header.stamp;
-    zed2iCenterToZed2iLeftCamera.child_frame_id = "zed2i_left_camera_frame";
-    // conversion from Tranform to message
-
-    tf2::Vector3 translation = tf2::Vector3(-0.01, 0.060, 0.0);
-
-    // X Y Z W
-    tf2::Quaternion quat = tf2::Quaternion(0.0, 0.0, 0.0, 1.0);
-
-    zed2iCenterToZed2iLeftCamera.transform.translation.x = translation.x();
-    zed2iCenterToZed2iLeftCamera.transform.translation.y = translation.y();
-    zed2iCenterToZed2iLeftCamera.transform.translation.z = translation.z();
-    zed2iCenterToZed2iLeftCamera.transform.rotation.x = quat.x();
-    zed2iCenterToZed2iLeftCamera.transform.rotation.y = quat.y();
-    zed2iCenterToZed2iLeftCamera.transform.rotation.z = quat.z();
-    zed2iCenterToZed2iLeftCamera.transform.rotation.w = quat.w();
-    collectiontfMessage.transforms.push_back(zed2iCenterToZed2iLeftCamera);
-  }
-
-  {
-    ///////////////////////////////////////////////////////
-    geometry_msgs::TransformStamped zed2iCenterToZed2iRightCamera;
-    zed2iCenterToZed2iRightCamera.header.frame_id = "zed2i_camera_center";
-    zed2iCenterToZed2iRightCamera.header.stamp = collectiontfMessage.transforms[0].header.stamp;
-    zed2iCenterToZed2iRightCamera.child_frame_id = "zed2i_right_camera_frame";
-    // conversion from Tranform to message
-
-    tf2::Vector3 translation = tf2::Vector3(-0.01, -0.060, 0.0);
-
-    // X Y Z W
-    tf2::Quaternion quat = tf2::Quaternion(0.0, 0.0, 0.0, 1.0);
-
-    zed2iCenterToZed2iRightCamera.transform.translation.x = translation.x();
-    zed2iCenterToZed2iRightCamera.transform.translation.y = translation.y();
-    zed2iCenterToZed2iRightCamera.transform.translation.z = translation.z();
-    zed2iCenterToZed2iRightCamera.transform.rotation.x = quat.x();
-    zed2iCenterToZed2iRightCamera.transform.rotation.y = quat.y();
-    zed2iCenterToZed2iRightCamera.transform.rotation.z = quat.z();
-    zed2iCenterToZed2iRightCamera.transform.rotation.w = quat.w();
-    collectiontfMessage.transforms.push_back(zed2iCenterToZed2iRightCamera);
-  }
-
-  {
-    ///////////////////////////////////////////////////////
-    geometry_msgs::TransformStamped zed2iLeftCameraToZed2iIMU;
-    zed2iLeftCameraToZed2iIMU.header.frame_id = "zed2i_left_camera_frame";
-    zed2iLeftCameraToZed2iIMU.header.stamp = collectiontfMessage.transforms[0].header.stamp;
-    zed2iLeftCameraToZed2iIMU.child_frame_id = "zed2i_imu_link";
-    // conversion from Tranform to message
-
-    tf2::Vector3 translation = tf2::Vector3(-0.002000, -0.023061, 0.000217);
-
-    // X Y Z W
-    tf2::Quaternion quat = tf2::Quaternion(-0.00183512, 0.000211432, -0.00651105, 0.999977);
-
-    zed2iLeftCameraToZed2iIMU.transform.translation.x = translation.x();
-    zed2iLeftCameraToZed2iIMU.transform.translation.y = translation.y();
-    zed2iLeftCameraToZed2iIMU.transform.translation.z = translation.z();
-    zed2iLeftCameraToZed2iIMU.transform.rotation.x = quat.x();
-    zed2iLeftCameraToZed2iIMU.transform.rotation.y = quat.y();
-    zed2iLeftCameraToZed2iIMU.transform.rotation.z = quat.z();
-    zed2iLeftCameraToZed2iIMU.transform.rotation.w = quat.w();
-    collectiontfMessage.transforms.push_back(zed2iLeftCameraToZed2iIMU);
-  }
-  {
-    ///////////////////////////////////////////////////////
-    geometry_msgs::TransformStamped zed2iLeftCameraToZed2iLeftOptical;
-    zed2iLeftCameraToZed2iLeftOptical.header.frame_id = "zed2i_left_camera_frame";
-    zed2iLeftCameraToZed2iLeftOptical.header.stamp = collectiontfMessage.transforms[0].header.stamp;
-    zed2iLeftCameraToZed2iLeftOptical.child_frame_id = "zed2i_left_camera_optical_frame";
-    // conversion from Tranform to message
-
-    tf2::Vector3 translation = tf2::Vector3(0.0, 0.0, 0.0);
-
-    // X Y Z W
-    tf2::Quaternion quat = tf2::Quaternion(-0.500, 0.500, -0.500, 0.500);
-
-    zed2iLeftCameraToZed2iLeftOptical.transform.translation.x = translation.x();
-    zed2iLeftCameraToZed2iLeftOptical.transform.translation.y = translation.y();
-    zed2iLeftCameraToZed2iLeftOptical.transform.translation.z = translation.z();
-    zed2iLeftCameraToZed2iLeftOptical.transform.rotation.x = quat.x();
-    zed2iLeftCameraToZed2iLeftOptical.transform.rotation.y = quat.y();
-    zed2iLeftCameraToZed2iLeftOptical.transform.rotation.z = quat.z();
-    zed2iLeftCameraToZed2iLeftOptical.transform.rotation.w = quat.w();
-    collectiontfMessage.transforms.push_back(zed2iLeftCameraToZed2iLeftOptical);
-  }
-
-  {
-    ///////////////////////////////////////////////////////
-    geometry_msgs::TransformStamped zed2iRightCameraToZed2iRightOptical;
-    zed2iRightCameraToZed2iRightOptical.header.frame_id = "zed2i_right_camera_frame";
-    zed2iRightCameraToZed2iRightOptical.header.stamp = collectiontfMessage.transforms[0].header.stamp;
-    zed2iRightCameraToZed2iRightOptical.child_frame_id = "zed2i_right_camera_optical_frame";
-    // conversion from Tranform to message
-
-    tf2::Vector3 translation = tf2::Vector3(0.0, 0.0, 0.0);
-
-    // X Y Z W
-    tf2::Quaternion quat = tf2::Quaternion(-0.500, 0.500, -0.500, 0.500);
-
-    zed2iRightCameraToZed2iRightOptical.transform.translation.x = translation.x();
-    zed2iRightCameraToZed2iRightOptical.transform.translation.y = translation.y();
-    zed2iRightCameraToZed2iRightOptical.transform.translation.z = translation.z();
-    zed2iRightCameraToZed2iRightOptical.transform.rotation.x = quat.x();
-    zed2iRightCameraToZed2iRightOptical.transform.rotation.y = quat.y();
-    zed2iRightCameraToZed2iRightOptical.transform.rotation.z = quat.z();
-    zed2iRightCameraToZed2iRightOptical.transform.rotation.w = quat.w();
-    collectiontfMessage.transforms.push_back(zed2iRightCameraToZed2iRightOptical);
-  }
 }
 
 }  // namespace box_post_processor

@@ -1,23 +1,19 @@
-from box_auto.utils import get_bag, upload_bag, run_ros_command
+from box_auto.utils import get_bag, upload_bag, run_ros_command, kill_roscore
 
 if __name__ == "__main__":
+    bags = []
+    bags.append(get_bag("*nuc_livox.bag"))
+    bags.append(get_bag("*nuc_hesai_post_processed.bag"))
 
-    # Get the bag paths
-    livox_bag = get_bag("*nuc_livox.bag")
-    hesai_bag = get_bag("*nuc_hesai_post_processed.bag")
+    kill_roscore()
+    out_bags = []
+    for bag in bags:
 
-    # Get the output bag paths
-    livox_out_bag = livox_bag.replace("nuc_livox.bag", "nuc_livox_filtered.bag")
-    hesai_out_bag = hesai_bag.replace("nuc_hesai_post_processed.bag", "nuc_hesai_filtered.bag")
+        out_bag = bag.replace(".bag", "_filtered.bag")
+        out_bags.append(out_bag)
+        run_ros_command(
+            f"roslaunch box_auto box_filter_lidars.launch global_input_bag_path:={bag} global_output_bag_path:={out_bag}"
+        )
+    kill_roscore()
 
-    # Run for hesai
-    operation_mode = "hesai"
-    run_ros_command(
-        f"roslaunch box_auto box_filter_lidars.launch operation_mode:={operation_mode} global_input_bag_path:={hesai_bag} global_output_bag_path:={hesai_out_bag}")
-
-    # Run for livox
-    operation_mode = "livox"
-    run_ros_command(
-        f"roslaunch box_auto box_filter_lidars.launch operation_mode:={operation_mode} global_input_bag_path:={livox_bag} global_output_bag_path:={livox_out_bag}")
-
-    upload_bag([livox_out_bag, hesai_out_bag])
+    upload_bag([out_bags[0], out_bags[1]])

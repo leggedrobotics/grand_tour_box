@@ -20,10 +20,26 @@
 
 namespace box_post_processor {
 
+struct BoxTfParams {
+  std::vector<std::pair<std::string, std::string>> frameMapping;
+  std::vector<std::pair<std::string, std::string>> framePairs;
+  std::vector<std::string> childFramesToRemove;
+  std::vector<std::string> parentFramesToRemove;
+  std::vector<std::string> childFramesToInverse;
+};
+
 class BoxTFProcessor {
  public:
   BoxTFProcessor(ros::NodeHandlePtr nh);
   ~BoxTFProcessor() = default;
+
+  bool combineTransforms(std::vector<tf2_msgs::TFMessage>& tfMsgs, const std::string& startFrame, const std::string& targetFrame,
+                         geometry_msgs::TransformStamped& outTf, std::vector<const geometry_msgs::TransformStamped*>& chainOut);
+
+  void updateFrameNames(std::vector<tf2_msgs::TFMessage>& tfMsgs, const std::vector<std::pair<std::string, std::string>>& frameMapping);
+  std::string extractDatePrefix(const std::string& globalPath);
+  std::string createOutputBagName(const std::string& inputGlobalPath, const std::string& outputSuffix);
+  bool loadBoxTfParameters(ros::NodeHandle& nh, BoxTfParams& params);
 
   void initialize();
   inline double elapsedMilliseconds() { return std::chrono::duration_cast<std::chrono::milliseconds>(endTime_ - startTime_).count(); }
@@ -35,7 +51,6 @@ class BoxTFProcessor {
   std::chrono::time_point<std::chrono::steady_clock> startTime_;
   std::chrono::time_point<std::chrono::steady_clock> endTime_;
 
-  // std::string buildUpLogFilename(const std::string& typeSuffix, const std::string& extension = ".txt");
   bool createOutputDirectory();
   bool processRosbags(std::vector<std::string>& tfContainingBags);
 
@@ -44,6 +59,9 @@ class BoxTFProcessor {
   ros::NodeHandlePtr nh_;
 
   uint64_t counter_ = 0;
+  std::vector<std::string> frames_;
+  BoxTfParams params;
+  double tfStaticRepetitionPeriod_ = 5;
 };
 
 }  // namespace box_post_processor

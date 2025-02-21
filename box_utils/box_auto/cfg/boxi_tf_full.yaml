@@ -1,0 +1,25 @@
+tfStaticRepetitionPeriod: 5 # seconds
+frameMapping:
+  - new: "velodyne_lidar"
+    old: "lidar"
+
+framePairs:
+  - parent: ""
+    child: ""
+
+childFramesToRemove:
+  - "map"
+  - "aft_mapped"
+  - "battery"
+  - "hbc_receiver"
+  - "footprint"
+  - "feetcenter"
+  - "docking_socket"
+
+parentFramesToRemove:
+  - "map"
+  - "camera_init_CORRECTED"
+  - "camera_init"
+
+childFramesToInverse:
+  - "base"

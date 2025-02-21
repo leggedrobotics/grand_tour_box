@@ -5,11 +5,12 @@
   <arg name="base_path" default=""/>
   <arg name="input_bag_name" default=""/>
   <arg name="output_bag_name" default=""/>
+  <arg name="slow_down_for_debug" default="false"/>
+  <arg name="enable_rviz" default="false"/>
 
   <!-- if this is set, above paremeters are overidden -->
   <arg name="global_input_bag_path" default=""/>
   <arg name="global_output_bag_path" default=""/>
-  <arg name="operation_mode" default="livox"/> <!-- livox or hesai -->
 
   <!-- Output topic rewrite is optional, by default input topic will be reused. -->
   <arg name="output_topic" default=""/>
@@ -19,13 +20,18 @@
   
   <!-- Lets go. -->
   <node name="box_lidar_filter" pkg="box_auto" type="filter_lidar_node" output="screen" required="True">
-    <param name="operation_mode"  value="$(arg operation_mode)"/>
     <param name="base_path"  value="$(arg base_path)"/>
     <param name="input_bag_name"  value="$(arg input_bag_name)"/>
     <param name="output_bag_name" value="$(arg output_bag_name)"/>
     <param name="output_topic" value="$(arg output_topic)"/>
     <param name="global_output_bag_path" value="$(arg global_output_bag_path)"/>
     <param name="global_input_bag_path" value="$(arg global_input_bag_path)"/>
+    <param name="slow_down_for_debug" value="$(arg slow_down_for_debug)"/>
   </node>
+
+  <group if="$(arg enable_rviz)">
+    <node pkg="rviz" name="rviz_hesai" type="rviz" args="-d $(find box_auto)/rviz/rviz_hesai.rviz --geometry 1000x600+1200+100" required="true"/>
+    <node pkg="rviz" name="rviz_livox" type="rviz" args="-d $(find box_auto)/rviz/rviz_livox.rviz --geometry 1000x600+100+100" required="true"/>
+  </group>
 
 </launch>

@@ -42,6 +42,9 @@ class BoxPostProcessor {
 
   ros::Time oldTime_ = ros::Time(0);
 
+  uint32_t oldSeq_ = 300;
+  uint32_t seq_ = 0;
+
   // std::string buildUpLogFilename(const std::string& typeSuffix, const std::string& extension = ".txt");
   bool createOutputDirectory();
   bool processRosbag();
@@ -50,6 +53,8 @@ class BoxPostProcessor {
   //! Tf2.
   tf2_ros::TransformBroadcaster transformBroadcaster_;
   tf2_ros::StaticTransformBroadcaster staticTransformBroadcaster_;
+
+  std::vector<std::string> topics_;
 
   //! Tf topic name.
   std::string tfTopic_{"/tf"};
@@ -75,6 +80,8 @@ class BoxPostProcessor {
   bool isBagReadyToPlay_ = false;
   uint64_t counter_ = 0;
   bool foundTfmsgs_ = false;
+  double maxTimeDifference_ = 0.0;
+  double time_offset_to_be_applied_ = 0.0;
 };
 
 }  // namespace box_post_processor
