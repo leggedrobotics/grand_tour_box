@@ -19,7 +19,7 @@
   <arg name="camera_info_topic" default="/zed2i/zed_node/left/camera_info" /> -->
 
   <!-- Where the output files will be generated. -->
-  <arg name="output_folder_path" default="/home/tutuna/mit_ws/src/large_scale_gaussian_splatting/experiments/rosbag/data_mit_outside" />
+  <arg name="output_folder_path" default="" />
 
   <!-- Number of frames to save. -->
   <arg name="max_color_images" default="4000" />
