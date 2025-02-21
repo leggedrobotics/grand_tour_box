@@ -11,7 +11,7 @@ metadata:
       file: 2024-10-01-11-29-55_jetson_zed2i_images.mcap
       topic: "/gt_box/zed2i/zed_node/right/camera_info"
 
-    - alias: alphasense_cam1
+    - alias: alphasense_cam1_caminfo
       file: 2024-10-01-11-29-55_nuc_alphasense_cor.mcap
       topic: "/gt_box/alphasense_driver_node/cam1/color/camera_info"
     - alias: alphasense_cam2
@@ -27,7 +27,7 @@ metadata:
       file: 2024-10-01-11-29-55_nuc_alphasense_cor.mcap
       topic: "/gt_box/alphasense_driver_node/cam5/color/camera_info"
 
-    - alias: hdr_left
+    - alias: hdr_left_caminfo
       file: 2024-10-01-11-29-55_jetson_hdr_left_updated.mcap
       topic: "/gt_box/hdr_left/camera_info"
     - alias: hdr_front

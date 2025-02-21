@@ -9,8 +9,8 @@ from sensor_msgs.msg import CameraInfo
 from mcap.reader import make_reader
 from dataset_builder.message_parsing import (
     deserialize_message,
-    extract_header_metadata_from_serialized_message,
-    extract_camera_info_metadata_from_serialized_message,
+    extract_header_metadata_from_deserialized_message,
+    extract_camera_info_metadata_from_deserialized_message,
 )
 from dataset_builder.dataset_config import (
     MetadataConfig,
@@ -40,7 +40,7 @@ def load_metadata_from_mcap_file_and_topic(
         for schema, _, ser_message in reader.iter_messages(topics=[topic_desc.topic]):
             assert schema is not None, f"schema is None for message {ser_message}"
             message = deserialize_message(schema, ser_message.data)
-            return extract_header_metadata_from_serialized_message(message)
+            return extract_header_metadata_from_deserialized_message(message)
     raise ValueError(f"no messages found in topic {topic_desc.topic}")
 
 
@@ -57,7 +57,7 @@ def load_camera_info_metadata_from_mcap_file_and_topic(
                 message, CameraInfo
             ), f"topic {topic_desc.topic} does not contain CameraInfo messages"
 
-            return extract_camera_info_metadata_from_serialized_message(message)
+            return extract_camera_info_metadata_from_deserialized_message(message)
     raise ValueError(f"no messages found in topic {topic_desc.topic}")
 
 

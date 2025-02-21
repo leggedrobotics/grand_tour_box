@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import Any
 from typing import Dict
-from typing import Optional
 from typing import Tuple
 from typing import Union
 from typing import cast
@@ -44,7 +43,7 @@ import cv2
 BasicType = Union[np.ndarray, int, float, str, bool]
 
 
-def extract_header_metadata_from_serialized_message(msg: Any) -> Dict[str, Any]:
+def extract_header_metadata_from_deserialized_message(msg: Any) -> Dict[str, Any]:
     header = _extract_header(msg)
     return {
         "frame_id": header.frame_id,
@@ -61,8 +60,10 @@ def _extract_region_of_interest_metadata(msg: RegionOfInterest) -> Dict[str, Any
     }
 
 
-def extract_camera_info_metadata_from_serialized_message(msg: CameraInfo) -> Dict[str, Any]:
-    ret = extract_header_metadata_from_serialized_message(msg)
+def extract_camera_info_metadata_from_deserialized_message(
+    msg: CameraInfo,
+) -> Dict[str, Any]:
+    ret = extract_header_metadata_from_deserialized_message(msg)
     ret["distortion_model"] = msg.distortion_model
     ret["width"] = msg.width
     ret["height"] = msg.height
@@ -243,7 +244,7 @@ def _extract_header(msg: Any) -> Header:
     return header
 
 
-def _extract_header_data_from_serialized_message(msg: Any) -> Dict[str, BasicType]:
+def _extract_header_data_from_deserialized_message(msg: Any) -> Dict[str, BasicType]:
     header = _extract_header(msg)
     return {
         "timestamp": header.stamp.to_sec(),  # type: ignore
@@ -251,7 +252,7 @@ def _extract_header_data_from_serialized_message(msg: Any) -> Dict[str, BasicTyp
     }
 
 
-def _parse_message_data_from_serialized_message(
+def _parse_message_data_from_deserialized_message(
     msg: Any, topic_desc: Topic
 ) -> Dict[str, BasicType]:
     if isinstance(topic_desc, LidarTopic):
@@ -275,8 +276,8 @@ def _parse_message_data_from_serialized_message(
 
 
 def parse_deserialized_message(msg: Any, topic_desc: Topic) -> Dict[str, BasicType]:
-    header_data = _extract_header_data_from_serialized_message(msg)
-    message_data = _parse_message_data_from_serialized_message(msg, topic_desc)
+    header_data = _extract_header_data_from_deserialized_message(msg)
+    message_data = _parse_message_data_from_deserialized_message(msg, topic_desc)
     return {**header_data, **message_data}
 
 
