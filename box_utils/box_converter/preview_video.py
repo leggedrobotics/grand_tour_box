@@ -218,8 +218,11 @@ class VideoGenerator:
                     #   Row 0: Top images (3 columns)
                     #   Row 1: Bottom plots (3 columns) – same height for all
                     #   Row 2: A small row for the common horizontal colorbar
-                    gs = gridspec.GridSpec(3, 3, height_ratios=[1, 1, 0.02])
-                    
+                    gs = gridspec.GridSpec(3, 3, height_ratios=[1, 0.8, 0.2])
+                    gs.update(wspace=0.02, hspace=0.1)
+                    plt.subplots_adjust(left=0.03, right=0.97, top=0.97, bottom=0.03)
+
+
                     # Top row: Image panels
                     top_left_ax = fig.add_subplot(gs[0, 0])
                     top_middle_ax = fig.add_subplot(gs[0, 1])
@@ -238,9 +241,18 @@ class VideoGenerator:
                     S = 40
                     light_blue = "#dde9eb"  # Very light blue background
                     white = "white"        # White grid lines
+
+                    bottom_gs = gridspec.GridSpecFromSubplotSpec(1, 3, subplot_spec=gs[1, :], wspace=0.25)
+                    ax_traj = fig.add_subplot(bottom_gs[0])
+                    ax_traj_pos = ax_traj.get_position()
+                    ax_traj.set_position([ax_traj_pos.x0 + 0.02, ax_traj_pos.y0, ax_traj_pos.width, ax_traj_pos.height])
+                    ax_livox = fig.add_subplot(bottom_gs[1])
+                    ax_hesai = fig.add_subplot(bottom_gs[2])
+                    ax_hesai_pos = ax_hesai.get_position()
+                    ax_hesai.set_position([ax_hesai_pos.x0 - 0.02, ax_hesai_pos.y0, ax_hesai_pos.width, ax_hesai_pos.height])
                     
                     # Bottom Left: Trajectory / Other Information
-                    ax_traj = fig.add_subplot(gs[1, 0])
+                    # ax_traj = fig.add_subplot(gs[1, 0])
                     ax_traj.set_xlim(adjusted_min_x, adjusted_max_x)
                     ax_traj.set_ylim(adjusted_min_y, adjusted_max_y)
                     ax_traj.set_xticks(np.arange(adjusted_min_x, adjusted_max_x, tick_spread_x))
@@ -258,7 +270,7 @@ class VideoGenerator:
                         ax_traj.scatter(x, y, c=z, cmap="plasma", s=20.0, vmin=-5, vmax=5, zorder=3)
                     
                     # Bottom Middle: Livox Pointcloud
-                    ax_livox = fig.add_subplot(gs[1, 1])
+                    # ax_livox = fig.add_subplot(gs[1, 1])
                     if livox is not None:
                         x, y, z = livox
                         mappable_livox = ax_livox.scatter(x, y, c=z, cmap="plasma", s=0.3, vmin=-5, vmax=5, zorder=3)
@@ -277,7 +289,7 @@ class VideoGenerator:
                         spine.set_visible(False)
                     
                     # Bottom Right: Hesai Pointcloud
-                    ax_hesai = fig.add_subplot(gs[1, 2])
+                    # ax_hesai = fig.add_subplot(gs[1, 2])
                     if hesai is not None:
                         x, y, z = hesai
                         mappable_hesai = ax_hesai.scatter(x, y, c=z, cmap="plasma", s=0.3, vmin=-5, vmax=5)
