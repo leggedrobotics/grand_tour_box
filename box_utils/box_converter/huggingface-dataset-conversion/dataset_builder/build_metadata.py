@@ -124,7 +124,7 @@ def write_metadata_files(metadata_dct: Dict[str, Any], metadata_dir: Path) -> No
             yaml.dump(metadata, f)
 
 
-def build_metadata(
+def build_metadata_part(
     *,
     base_dataset_path: Path,
     mcaps_path: Path,

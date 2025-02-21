@@ -2,6 +2,16 @@
 
 Navigate to the folder that contains this file.
 
+## Setting up the Local Environment
+
+we set this up to facilitate the downloading from kleinkram and uploading to huggingface
+
+```bash
+virtualenv -ppython3.12 .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
 ## Downloading the Mission Data
 
 Download the required `.mcap` files for the mission you want to conver and place them into the `data/files` folder.

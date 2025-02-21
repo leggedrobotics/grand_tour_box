@@ -20,5 +20,5 @@ RUN pip install pycryptodomex pyyaml python-gnupg rospkg
 
 WORKDIR /app
 
-COPY requirements.txt requirements.txt
-RUN pip install -r requirements.txt
+COPY requirements-docker.txt requirements-docker.txt
+RUN pip install -r requirements-docker.txt

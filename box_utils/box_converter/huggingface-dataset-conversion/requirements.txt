@@ -1,8 +1,2 @@
-numpy
-opencv-python
-mcap
-rosnumpy
-zarr
-tqdm
-cv_bridge
-scipy
+huggingface-hub
+kleinkram

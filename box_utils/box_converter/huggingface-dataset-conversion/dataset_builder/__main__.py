@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from dataset_builder.build_data import build_data
-from dataset_builder.build_metadata import build_metadata
+from dataset_builder.build_data import build_data_part
+from dataset_builder.build_metadata import build_metadata_part
 from dataset_builder.dataset_config import load_config
 
 from pathlib import Path
@@ -20,13 +20,17 @@ def main() -> int:
     DATASET_PATH.mkdir(parents=True, exist_ok=True)
     topic_registry, metadata_config = load_config(DEFAULT_CONFIG_PATH)
 
-    build_metadata(
+    build_metadata_part(
         base_dataset_path=DATASET_PATH,
         mcaps_path=INPUT_PATH,
         metadata_config=metadata_config,
         topic_registry=topic_registry,
     )
-    build_data(topic_registry=topic_registry)
+    build_data_part(
+        topic_registry=topic_registry,
+        mcaps_path=INPUT_PATH,
+        dataset_base_path=DATASET_PATH,
+    )
 
     return 0
 
