@@ -78,7 +78,7 @@
   <link name="box_base_model">
     <visual>
       <geometry>
-        <mesh filename="package://box_model/urdf/box/mesh/box_colored_units.dae" scale="1 1 1" />
+        <mesh filename="package://box_model/urdf/box/mesh/box.dae" scale="1 1 1" />
       </geometry>
     </visual>
   </link>
@@ -86,7 +86,7 @@
   <link name="cpt7_antenna_back_model">
     <visual>
       <geometry>
-        <mesh filename="package://box_model/urdf/box/mesh/gps_colored_units.dae" scale="1 1 1" />
+        <mesh filename="package://box_model/urdf/box/mesh/gps.dae" scale="1 1 1" />
       </geometry>
     </visual>
   </link>
@@ -95,7 +95,7 @@
   <link name="prism_model">
     <visual>
       <geometry>
-        <mesh filename="package://box_model/urdf/box/mesh/prism_colored_units.dae" scale="1 1 1" />
+        <mesh filename="package://box_model/urdf/box/mesh/prism.dae" scale="1 1 1" />
       </geometry>
     </visual>
   </link> 
