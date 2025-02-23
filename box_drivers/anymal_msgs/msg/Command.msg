@@ -1,0 +1,13 @@
+std_msgs/Header header
+Mode mode
+float64 current
+float64 motor_position
+float64 motor_velocity
+float64 gear_position
+float64 gear_velocity
+float64 joint_position
+float64 joint_velocity
+float64 joint_torque
+float32 pid_gains_p
+float32 pid_gains_i
+float32 pid_gains_d

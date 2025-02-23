@@ -1,0 +1,17 @@
+uint16 NA=0
+uint16 Freeze=1
+uint16 Disable=2
+uint16 Current=3
+uint16 MotorPosition=4
+uint16 MotorVelocity=5
+uint16 GearPosition=6
+uint16 GearVelocity=7
+uint16 JointPosition=8
+uint16 JointVelocity=9
+uint16 JointTorque=10
+uint16 JointPositionVelocity=11
+uint16 JointPositionVelocityTorque=12
+uint16 JointPositionVelocityTorquePidGains=13
+uint16 DemoChangeGravity=14
+uint16 DemoSafeJointVelocity=15
+uint16 mode

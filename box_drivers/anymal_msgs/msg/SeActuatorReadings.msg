@@ -1,0 +1,1 @@
+anymal_msgs/SeActuatorReading[] readings

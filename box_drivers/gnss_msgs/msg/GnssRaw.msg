@@ -1,0 +1,5 @@
+std_msgs/Header header
+geometry_msgs/Vector3 position_ecef
+geometry_msgs/Vector3 position_ecef_std
+geometry_msgs/Vector3 orientation_hrp
+geometry_msgs/Vector3 orientation_hrp_std
