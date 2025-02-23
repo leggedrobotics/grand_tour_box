@@ -1,6 +1,5 @@
 *.egg-info
 *.bag
-*.dae
 *.pdf
 *.PDF
 *.urdf
