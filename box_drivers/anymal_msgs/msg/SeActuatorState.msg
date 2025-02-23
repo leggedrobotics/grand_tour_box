@@ -1,0 +1,11 @@
+std_msgs/Header header
+string name
+uint32 statusword
+float64 current
+float64 gear_position
+float64 gear_velocity
+float64 joint_position
+float64 joint_velocity
+float64 joint_acceleration
+float64 joint_torque
+sensor_msgs/Imu imu
