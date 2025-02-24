@@ -28,7 +28,7 @@ This will get changed later on, but thats how its done right now.
 Run the following command to start the docker container:
 
 ```bash
-docker build -t grand-tour-dataset . && docker run -v "$(pwd):/app" --rm -it grand-tour-dataset
+docker build --ssh default -t grand-tour-dataset . && docker run -v "$(pwd):/app" --rm -it grand-tour-dataset
 ```
 
 ## Run the Dataset Builder
