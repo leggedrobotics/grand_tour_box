@@ -37,9 +37,9 @@ RUN git clone https://github.com/leggedrobotics/tf_bag.git
 RUN git clone https://github.com/leggedrobotics/physical_terrain_parameter_learning.git
 RUN . /opt/ros/$ROS_DISTRO/setup.sh && catkin build
 
-# WORKDIR /catkin_ws/src/app
-# COPY requirements-docker.txt requirements-docker.txt
-# RUN pip install -r requirements-docker.txt
+WORKDIR /app
+COPY requirements-docker.txt requirements-docker.txt
+RUN pip install -r requirements-docker.txt
 
 COPY ./entrypoint.sh /
 ENTRYPOINT ["/entrypoint.sh"]
