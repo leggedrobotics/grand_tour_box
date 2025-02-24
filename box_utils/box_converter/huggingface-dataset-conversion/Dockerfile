@@ -31,16 +31,18 @@ RUN mkdir -p /catkin_ws/src
 WORKDIR /catkin_ws
 RUN catkin init
 
-# installing ros packages
-WORKDIR /catkin_ws/src
-RUN git clone https://github.com/leggedrobotics/tf_bag.git
-RUN git clone https://github.com/leggedrobotics/physical_terrain_parameter_learning.git
-RUN . /opt/ros/$ROS_DISTRO/setup.sh && catkin build
-
+# python deps
 WORKDIR /app
 COPY requirements-docker.txt requirements-docker.txt
 RUN pip install -r requirements-docker.txt
 
+# installing ros packages
+WORKDIR /catkin_ws/src
+ADD git@github.com:leggedrobotics/grand_tour_box.git /catkin_ws/src/
+RUN . /opt/ros/$ROS_DISTRO/setup.sh && catkin build anymal_msgs
+
+# entrypoint
+WORKDIR /app
 COPY ./entrypoint.sh /
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["bash"]
