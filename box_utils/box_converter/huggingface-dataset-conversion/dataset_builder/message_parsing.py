@@ -84,7 +84,10 @@ CV_BRIDGE = CvBridge()
 def extract_and_save_image_from_message(
     msg: CompressedImage, image_index: int, *, topic_desc: ImageTopic, image_dir: Path
 ) -> None:
-    image = CV_BRIDGE.compressed_imgmsg_to_cv2(msg)
+    if topic_desc.compressed:
+        image = CV_BRIDGE.compressed_imgmsg_to_cv2(msg)
+    else:
+        image = CV_BRIDGE.imgmsg_to_cv2(msg)
     file_path = image_dir / f"{image_index:06d}.{topic_desc.format}"
     cv2.imwrite(str(file_path), image)
 

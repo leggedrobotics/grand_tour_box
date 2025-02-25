@@ -38,3 +38,10 @@ Once you are inside the docker container you can run the dataset builder:
 ```bash
 python -m dataset_builder
 ```
+
+## Profiling the Converter
+
+```bash
+python -m cProfile -o o.pstat dataset_builder.py
+gprof2dot -f pstats o.pstat | dot -Tsvg -o o.svg
+```

@@ -60,6 +60,7 @@ class Topic:
 @dataclass
 class ImageTopic(Topic):
     format: str
+    compressed: bool = True
 
 
 @dataclass
