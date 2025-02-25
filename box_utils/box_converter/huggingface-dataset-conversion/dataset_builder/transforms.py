@@ -56,7 +56,7 @@ def _convert_from_homogeneous_transform(
 
 
 def _semi_direct_product(
-    transforms: Sequence[Tuple[Translation, Rotation]]
+    transforms: Sequence[Tuple[Translation, Rotation]],
 ) -> Tuple[Translation, Rotation]:
     ret = HomTransform(np.eye(4))
     for t, r in transforms:
