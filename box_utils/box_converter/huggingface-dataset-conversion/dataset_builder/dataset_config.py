@@ -444,8 +444,3 @@ def load_config(config_path: Path) -> Tuple[TopicRegistry, MetadataConfig]:
         load_topic_registry_from_config(data_config_object),
         load_metadata_config(metadata_config_object),
     )
-
-
-if __name__ == "__main__":
-    config = Path(__file__).parent / "configs" / "default.yaml"
-    topic_registry, metadata_config = load_config(config)

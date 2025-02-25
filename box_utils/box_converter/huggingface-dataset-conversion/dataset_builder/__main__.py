@@ -6,7 +6,7 @@ from dataset_builder.build_data import build_data_part
 from dataset_builder.build_metadata import build_metadata_part
 from dataset_builder.dataset_config import load_config
 
-DEFAULT_CONFIG_PATH = Path(__file__).parent / "configs" / "default.yaml"
+DEFAULT_CONFIG_PATH = Path(__file__).parent / "configs" / "full.yaml"
 
 DATA_PATH = Path(__file__).parent.parent / "data"
 INPUT_PATH = DATA_PATH / "files"
