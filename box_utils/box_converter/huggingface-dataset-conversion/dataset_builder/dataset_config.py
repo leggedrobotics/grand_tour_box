@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 from typing import Dict
 from typing import List
 from typing import Mapping
-from typing import Optional
 from typing import Sequence
 from typing import Tuple
 
@@ -85,7 +84,8 @@ class OdometryTopic(Topic): ...
 
 
 @dataclass
-class AnymalStateTopic(Topic): ...
+class AnymalStateTopic(Topic):
+    feet: List[str] = field(default_factory=list)
 
 
 @dataclass
@@ -200,10 +200,18 @@ def extract_imu_topic_attributes(
     return {topic.alias: (topic_tp.copy(), topic) for topic in imu_topics}
 
 
-def extract_anymal_state_topic_attributes(
-    anymal_state_topics: Sequence[AnymalStateTopic],
-) -> TopicRegistry:
-    topic_tp = {
+def build_anymal_state_topic(anymal_state_topic: AnymalStateTopic) -> AttributeTypes:
+    ANYMAL_FOOT_CONTACT_MSG = {
+        "wrench_force": ArrayType((3,), np.float64),
+        "wrench_torque": ArrayType((3,), np.float64),
+        "normal": ArrayType((3,), np.float64),
+        "friction": ArrayType(tuple(), np.float64),
+        "restitution": ArrayType(tuple(), np.float64),
+        "state": ArrayType(tuple(), np.uint8),
+        "contact": ArrayType(tuple(), np.uint8),  # 0: no contact, 1: contact
+    }
+
+    ret = {
         "pose_cov": ArrayType((6, 6), np.float64),
         "twist_cov": ArrayType((6, 6), np.float64),
         "pose_pos": ArrayType((3,), np.float64),
@@ -212,7 +220,21 @@ def extract_anymal_state_topic_attributes(
         "twist_ang": ArrayType((3,), np.float64),
     }
 
-    return {topic.alias: (topic_tp.copy(), topic) for topic in anymal_state_topics}
+    for foot in anymal_state_topic.feet:
+        ret.update(
+            {f"{foot}_{key}": value for key, value in ANYMAL_FOOT_CONTACT_MSG.items()}
+        )
+    return ret
+
+
+def extract_anymal_state_topic_attributes(
+    anymal_state_topics: Sequence[AnymalStateTopic],
+) -> TopicRegistry:
+
+    return {
+        topic.alias: (build_anymal_state_topic(topic), topic)
+        for topic in anymal_state_topics
+    }
 
 
 def extract_odometry_topic_attributes(

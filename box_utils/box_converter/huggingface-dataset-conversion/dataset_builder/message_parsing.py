@@ -27,7 +27,7 @@ from sensor_msgs.msg import MagneticField
 from sensor_msgs.msg import NavSatFix
 from sensor_msgs.msg import PointCloud2
 from sensor_msgs.msg import RegionOfInterest
-from anymal_msgs.msg import AnymalState
+from anymal_msgs.msg import AnymalState, Contact  # type: ignore
 from std_msgs.msg import Header
 from tf2_msgs.msg import TFMessage
 
@@ -94,8 +94,59 @@ def extract_and_save_image_from_message(
     cv2.imwrite(str(file_path), image)
 
 
-def _parse_anymal_state(msg: AnymalState) -> Dict[str, BasicType]:
-    return _parse_odometry(cast(Odometry, msg))
+def _get_no_contact_date() -> Dict[str, BasicType]:
+    return {
+        "wrench_force": np.zeros(3),
+        "wrench_torque": np.zeros(3),
+        "normal": np.zeros(3),
+        "friction": np.zeros(1),
+        "restitution": np.zeros(1),
+        "state": np.zeros(1),
+        "contact": 0,
+    }
+
+
+def _parse_contact(msg: Contact) -> Tuple[Dict[str, BasicType], str]:
+    data = {
+        "wrench_force": _parse_vector3(msg.wrench.force),
+        "wrench_torque": _parse_vector3(msg.wrench.torque),
+        "normal": _parse_vector3(msg.normal),
+        "friction": msg.friction,
+        "restitution": msg.restitution,
+        "state": msg.state,
+        "contact": 1,
+    }
+    return data, msg.name
+
+
+"""
+"wrench_force": ArrayType((3,), np.float64),
+        "wrench_torque": ArrayType((3,), np.float64),
+        "normal": ArrayType((3,), np.float64),
+        "friction": ArrayType((1,), np.float64),
+        "restitution": ArrayType((1,), np.float64),
+        "state": ArrayType((1,), np.uint8),
+        "contact": ArrayType((1,), np.uint8),  # 0: no contact, 1: contact
+"""
+
+
+def _parse_anymal_state(
+    msg: AnymalState, topic_desc: AnymalStateTopic
+) -> Dict[str, BasicType]:
+    ret = _parse_odometry(cast(Odometry, msg))
+    contacts_data = {}
+    for contact in msg.contacts:
+        contact_data, name = _parse_contact(contact)
+        assert name in topic_desc.feet
+        contacts_data[name] = contact_data
+    for name in topic_desc.feet:
+        if name in contacts_data:
+            continue
+        contacts_data[name] = _get_no_contact_date()
+
+    for name, contact_data in contacts_data.items():
+        ret.update({f"{name}_{k}": v for k, v in contact_data.items()})
+    return ret
 
 
 def _pad_point_cloud(points: np.ndarray, max_points: int) -> np.ndarray:
