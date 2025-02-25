@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import os
 import shutil
+import tarfile
 from functools import partial
 from pathlib import Path
 from typing import Callable
@@ -9,25 +11,21 @@ from typing import Generator
 from typing import List
 from typing import Optional
 from typing import Tuple
-from typing import Union, cast
+from typing import Union
+from typing import cast
 
-import os
-import tarfile
 import numpy as np
 import zarr
 import zarr.storage
 from mcap.reader import make_reader
 from sensor_msgs.msg import CompressedImage
 from tqdm import tqdm
-import shutil
 
-from dataset_builder.dataset_config import (
-    TopicRegistry,
-    Topic,
-    ImageTopic,
-    AttributeTypes,
-    ArrayType,
-)
+from dataset_builder.dataset_config import ArrayType
+from dataset_builder.dataset_config import AttributeTypes
+from dataset_builder.dataset_config import ImageTopic
+from dataset_builder.dataset_config import Topic
+from dataset_builder.dataset_config import TopicRegistry
 from dataset_builder.message_parsing import deserialize_message
 from dataset_builder.message_parsing import extract_and_save_image_from_message
 from dataset_builder.message_parsing import parse_deserialized_message

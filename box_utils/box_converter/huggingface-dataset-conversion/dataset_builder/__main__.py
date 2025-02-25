@@ -1,10 +1,10 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from dataset_builder.build_data import build_data_part
 from dataset_builder.build_metadata import build_metadata_part
 from dataset_builder.dataset_config import load_config
-
-from pathlib import Path
 
 DEFAULT_CONFIG_PATH = Path(__file__).parent / "configs" / "default.yaml"
 

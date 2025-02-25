@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any
 from typing import Dict
 from typing import Tuple
 from typing import Union
 from typing import cast
 
+import cv2
 import mcap.records
 import numpy as np
 from cv_bridge import CvBridge
@@ -18,15 +20,17 @@ from geometry_msgs.msg import Vector3
 from nav_msgs.msg import Odometry
 from ros_numpy import numpify
 from roslib.message import get_message_class  # type: ignore
-from sensor_msgs.msg import CompressedImage, CameraInfo, RegionOfInterest
+from sensor_msgs.msg import CameraInfo
+from sensor_msgs.msg import CompressedImage
 from sensor_msgs.msg import Imu
 from sensor_msgs.msg import MagneticField
 from sensor_msgs.msg import NavSatFix
 from sensor_msgs.msg import PointCloud2
+from sensor_msgs.msg import RegionOfInterest
 from std_msgs.msg import Header
 from tf2_msgs.msg import TFMessage
-from pathlib import Path
 
+from dataset_builder.dataset_config import ImageTopic
 from dataset_builder.dataset_config import ImuTopic
 from dataset_builder.dataset_config import LidarTopic
 from dataset_builder.dataset_config import MagneticFieldTopic
@@ -35,10 +39,7 @@ from dataset_builder.dataset_config import OdometryTopic
 from dataset_builder.dataset_config import PointTopic
 from dataset_builder.dataset_config import PoseTopic
 from dataset_builder.dataset_config import SingletonTransformTopic
-from dataset_builder.dataset_config import Topic, ImageTopic
-
-import cv2
-
+from dataset_builder.dataset_config import Topic
 
 BasicType = Union[np.ndarray, int, float, str, bool]
 

@@ -2,10 +2,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 from typing import Dict
 from typing import List
 from typing import Mapping
-from typing import Optional, Any
+from typing import Optional
 from typing import Sequence
 from typing import Tuple
 
