@@ -27,9 +27,11 @@ from sensor_msgs.msg import MagneticField
 from sensor_msgs.msg import NavSatFix
 from sensor_msgs.msg import PointCloud2
 from sensor_msgs.msg import RegionOfInterest
+from anymal_msgs.msg import AnymalState
 from std_msgs.msg import Header
 from tf2_msgs.msg import TFMessage
 
+from dataset_builder.dataset_config import AnymalStateTopic
 from dataset_builder.dataset_config import ImageTopic
 from dataset_builder.dataset_config import ImuTopic
 from dataset_builder.dataset_config import LidarTopic
@@ -90,6 +92,10 @@ def extract_and_save_image_from_message(
         image = CV_BRIDGE.imgmsg_to_cv2(msg)
     file_path = image_dir / f"{image_index:06d}.{topic_desc.format}"
     cv2.imwrite(str(file_path), image)
+
+
+def _parse_anymal_state(msg: AnymalState) -> Dict[str, BasicType]:
+    return _parse_odometry(cast(Odometry, msg))
 
 
 def _pad_point_cloud(points: np.ndarray, max_points: int) -> np.ndarray:
@@ -275,6 +281,8 @@ def _parse_message_data_from_deserialized_message(
         return _parse_tf2_singleton_message(msg)
     elif isinstance(topic_desc, OdometryTopic):
         return _parse_odometry(msg)
+    elif isinstance(topic_desc, AnymalStateTopic):
+        return _parse_anymal_state(msg)
     else:
         return {}
 

@@ -39,6 +39,18 @@ Once you are inside the docker container you can run the dataset builder:
 python -m dataset_builder
 ```
 
+## Configuring the Converter
+
+Currently the converter can be configured by editing the `config/default.yaml` file.
+
+The config has two parts, the `metadata` and the `data` part.
+The first is used to specify the parsing and conversion of the metadata.
+I.e. topics or parts of topics that remain largly static.
+The latter is used to specify the parsing and conversion of the "data", which is anything that is not metadata.
+
+```yaml
+```
+
 ## Profiling the Converter
 
 ```bash

@@ -19,6 +19,7 @@ LIDAR_TOPICS_KEY = "lidar_topics"
 POSE_TOPICS_KEY = "pose_topics"
 IMU_TOPICS_KEY = "imu_topics"
 ODOMETRY_TOPICS_KEY = "odometry_topics"
+ANYMAL_STATE_TOPICS_KEY = "anymal_state_topics"
 NAV_SAT_FIX_TOPICS_KEY = "nav_sat_fix_topics"
 MAGNETIC_FIELD_TOPICS_KEY = "magnetic_field_topics"
 POINT_TOPICS_KEY = "point_topics"
@@ -37,6 +38,7 @@ ALLOWED_KEYS = [
     POSE_TOPICS_KEY,
     IMU_TOPICS_KEY,
     ODOMETRY_TOPICS_KEY,
+    ANYMAL_STATE_TOPICS_KEY,
     NAV_SAT_FIX_TOPICS_KEY,
     MAGNETIC_FIELD_TOPICS_KEY,
     POINT_TOPICS_KEY,
@@ -80,6 +82,10 @@ class ImuTopic(Topic): ...
 
 @dataclass
 class OdometryTopic(Topic): ...
+
+
+@dataclass
+class AnymalStateTopic(Topic): ...
 
 
 @dataclass
@@ -192,6 +198,21 @@ def extract_imu_topic_attributes(
     }
 
     return {topic.alias: (topic_tp.copy(), topic) for topic in imu_topics}
+
+
+def extract_anymal_state_topic_attributes(
+    anymal_state_topics: Sequence[AnymalStateTopic],
+) -> TopicRegistry:
+    topic_tp = {
+        "pose_cov": ArrayType((6, 6), np.float64),
+        "twist_cov": ArrayType((6, 6), np.float64),
+        "pose_pos": ArrayType((3,), np.float64),
+        "pose_orien": ArrayType((4,), np.float64),
+        "twist_lin": ArrayType((3,), np.float64),
+        "twist_ang": ArrayType((3,), np.float64),
+    }
+
+    return {topic.alias: (topic_tp.copy(), topic) for topic in anymal_state_topics}
 
 
 def extract_odometry_topic_attributes(
@@ -319,6 +340,13 @@ def load_topic_registry_from_config(
             for topic_obj in data_config_object.get(ODOMETRY_TOPICS_KEY, [])
         ]
         registry.update(extract_odometry_topic_attributes(odometry_topics))
+
+        # anymal_state topics (essentially the same as odometry)
+        anymal_state_topics = [
+            AnymalStateTopic(**topic_obj)
+            for topic_obj in data_config_object.get(ANYMAL_STATE_TOPICS_KEY, [])
+        ]
+        registry.update(extract_anymal_state_topic_attributes(anymal_state_topics))
 
         # nav_sat_fix topics
         nav_sat_fix_topics = [
