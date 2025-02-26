@@ -50,6 +50,25 @@ The latter is used to specify the parsing and conversion of the "data", which is
 
 #### `metadata` section
 
+The `metadata` section supports the following keys:
+
+- `camera_intrinsic`: Specifies the topics that contain camera infos
+  It takes a list of the following entries:
+  ```yaml
+  - alias: *desired topic name*
+    file: *mcap file name*
+    topic: *topic inside the mcap file*
+  ```
+- `frame_transforms`: Specifies how the frame transforms should be computed
+  It takes the following keys:
+
+  ```yaml
+  frame_transforms:
+    base_frame: *name frame to use as a base*
+    file: *mcap file name that contains the static frame transforms*
+    topic: *topic inside the mcap file that contains the static frame transforms*
+  ```
+
 #### `data` section
 
 The `data` section supports the following keys:
