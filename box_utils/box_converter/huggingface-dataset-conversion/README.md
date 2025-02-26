@@ -41,7 +41,7 @@ python -m dataset_builder
 
 ## Configuring the Converter
 
-Currently the converter can be configured by editing the [`dataset_builder/config/full.yaml`](dataset_builder/config/full.yaml) file.
+Currently the converter can be configured by editing the [`dataset_builder/configs/full.yaml`](dataset_builder/configs/full.yaml) file.
 
 The config has two parts, the `metadata` and the `data` part.
 The first is used to specify the parsing and conversion of the metadata.
