@@ -127,5 +127,6 @@ gprof2dot -f pstats o.pstat | dot -Tsvg -o o.svg
 
 ##### Profiling Results
 
-- 60-70% of the time is spent reading and writing images
-- 20% of time is spent inside the mcap message iterator function
+- 60-70% of the time is spent reading and writing images (we can't really improve this)
+- 20% of time is spent inside the mcap message iterator function (we can't really improve this)
+- 10-15% of the time is spent inside our code (not worth improving)
