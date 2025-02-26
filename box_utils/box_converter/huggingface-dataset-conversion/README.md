@@ -54,7 +54,8 @@ The latter is used to specify the parsing and conversion of the "data", which is
 
 The `data` section supports the following keys:
 
-- `image_topisc`: specifies all topics that should be parsed using the image parser it takes a list of the following entries:
+- `image_topics`: Specifies all topics that should be parsed using the image parser.
+  It takes a list of the following entries:
 
   ```yaml
   - alias: *desired topic name*
@@ -64,7 +65,39 @@ The `data` section supports the following keys:
     format: *png or jpg, desired format to save the images*
   ```
 
-TODO
+- `lidar_topics`: Specifies all topics that should be parsed as a point cloud.
+  It takes a list of the following entries:
+
+  ```yaml
+  - alias: *desired topic name*
+    file: *mcap file name*
+    topic: *topic inside the mcap file*
+    max_points: *max number of point cloud points that can be contained in a message*
+    attributes:
+      - ... *list of attributes that are contained in each point*
+  ```
+
+- `pose_topics`: Specifies all topics that should be parsed as a pose.
+  It takes a list of the following entries:
+
+  ```yaml
+  - alias: *desired topic name*
+    file: *mcap file name*
+    topic: *topic inside the mcap file*
+    covariance: *true or false, tells the parser if the pose has a covariance matrix*
+  ```
+
+- `imu_topics`, `odometry_topics`, `nav_sat_fix_topics`, `point_topics`, `singleton_transform_topics`:
+  Specify all topics that should be parsed with their respective parsers.
+  They all take a list of the following entries:
+
+  ```yaml
+  - alias: *desired topic name*
+    file: *mcap file name*
+    topic: *topic inside the mcap file*
+  ```
+
+  Note that the `singleton_transform_topics` are generally very similar to `pose_topics`, i.e. they are a list containing a single pose.
 
 ## Profiling the Converter
 
