@@ -48,8 +48,23 @@ The first is used to specify the parsing and conversion of the metadata.
 I.e. topics or parts of topics that remain largly static.
 The latter is used to specify the parsing and conversion of the "data", which is anything that is not metadata.
 
-```yaml
-```
+#### `metadata` section
+
+#### `data` section
+
+The `data` section supports the following keys:
+
+- `image_topisc`: specifies all topics that should be parsed using the image parser it takes a list of the following entries:
+
+  ```yaml
+  - alias: *desired topic name*
+    file: *mcap file name*
+    topic: *topic inside the mcap file*
+    compressed: *true or false, tells the parser if msg is CompressedImage or Image*
+    format: *png or jpg, desired format to save the images*
+  ```
+
+TODO
 
 ## Profiling the Converter
 
@@ -57,3 +72,8 @@ The latter is used to specify the parsing and conversion of the "data", which is
 python -m cProfile -o o.pstat dataset_builder.py
 gprof2dot -f pstats o.pstat | dot -Tsvg -o o.svg
 ```
+
+##### Profiling Results
+
+- 60-70% of the time is spent reading and writing images
+- 20% of time is spent inside the mcap message iterator function
