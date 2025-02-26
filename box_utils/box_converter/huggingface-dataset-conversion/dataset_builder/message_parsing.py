@@ -27,7 +27,7 @@ from sensor_msgs.msg import MagneticField
 from sensor_msgs.msg import NavSatFix
 from sensor_msgs.msg import PointCloud2
 from sensor_msgs.msg import RegionOfInterest
-from anymal_msgs.msg import AnymalState, Contact  # type: ignore
+from anymal_msgs.msg import AnymalState, Contact, ExtendedJointState  # type: ignore
 from std_msgs.msg import Header
 from tf2_msgs.msg import TFMessage
 
@@ -130,6 +130,15 @@ def _parse_contact(msg: Contact) -> Tuple[Dict[str, BasicType], str]:
 """
 
 
+def _parse_extended_joint_state(msg: ExtendedJointState) -> Dict[str, BasicType]:
+    return {
+        "joint_positions": np.array(msg.position),
+        "joint_velocities": np.array(msg.velocity),
+        "joint_accelerations": np.array(msg.acceleration),
+        "joint_efforts": np.array(msg.effort),
+    }
+
+
 def _parse_anymal_state(
     msg: AnymalState, topic_desc: AnymalStateTopic
 ) -> Dict[str, BasicType]:
@@ -146,6 +155,7 @@ def _parse_anymal_state(
 
     for name, contact_data in contacts_data.items():
         ret.update({f"{name}_{k}": v for k, v in contact_data.items()})
+    ret.update(_parse_extended_joint_state(msg.joints))
     return ret
 
 

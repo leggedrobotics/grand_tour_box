@@ -86,6 +86,7 @@ class OdometryTopic(Topic): ...
 @dataclass
 class AnymalStateTopic(Topic):
     feet: List[str] = field(default_factory=list)
+    joint_names: List[str] = field(default_factory=list)
 
 
 @dataclass
@@ -211,6 +212,7 @@ def build_anymal_state_topic(anymal_state_topic: AnymalStateTopic) -> AttributeT
         "contact": ArrayType(tuple(), np.uint8),  # 0: no contact, 1: contact
     }
 
+    n_joints = len(anymal_state_topic.joint_names)
     ret = {
         "pose_cov": ArrayType((6, 6), np.float64),
         "twist_cov": ArrayType((6, 6), np.float64),
@@ -218,6 +220,10 @@ def build_anymal_state_topic(anymal_state_topic: AnymalStateTopic) -> AttributeT
         "pose_orien": ArrayType((4,), np.float64),
         "twist_lin": ArrayType((3,), np.float64),
         "twist_ang": ArrayType((3,), np.float64),
+        "joint_positions": ArrayType((n_joints,), np.float64),
+        "joint_velocities": ArrayType((n_joints,), np.float64),
+        "joint_accelerations": ArrayType((n_joints,), np.float64),
+        "joint_efforts": ArrayType((n_joints,), np.float64),
     }
 
     for foot in anymal_state_topic.feet:
