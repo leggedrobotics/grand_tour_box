@@ -34,6 +34,8 @@ set(CATKIN_PACKAGE_DEPENDENCIES
   pcl_conversions
   rospy
   cv_bridge
+  anymal_msgs
+  gnss_msgs
   )
 
 # We pass the path of the `FindXYZ.cmake` files to `CMAKE_MODULE_PATH`
