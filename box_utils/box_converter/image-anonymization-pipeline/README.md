@@ -30,3 +30,13 @@ this folder contains the code and dependencies to run the image anonymization pi
   ```bash
   gprof2dot -f pstats o.pstat | dot -Tsvg -o o.svg
   ```
+
+### Results:
+
+- see [`rtx_4090.svg`](./profiling/rtx_4090.svg) for the profiling results on a RTX 4090 GPU.
+- see [`rtx_4060.svg`](./profiling/rtx_4060.svg) for the profiling results on a RTX 4060 GPU.
+
+Based on this we can estimate that the compute time on a single `RTX 4090` is approximately
+_30-40s per 1s of mission time_ . This already accounts for the different cameras that need to be blurred.
+
+With a total mission duration of approximately 32,000s we get a total compute time of _355_ hours.

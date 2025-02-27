@@ -414,10 +414,6 @@ CAMERA_CONFIG: Dict[str, Tuple[List[str], bool, str]] = {
         False,
         "alphasense.bag",
     ),
-}
-
-"""
-{
     "*_jetson_hdr_left_rect.bag": (
         [
             "/gt_box/hdr_left_rect/image_rect/compressed",
@@ -448,7 +444,6 @@ CAMERA_CONFIG: Dict[str, Tuple[List[str], bool, str]] = {
         "zed2i.bag",
     ),
 }
-"""
 
 
 def main() -> int:
