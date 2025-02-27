@@ -14,11 +14,25 @@ import torchvision
 import tqdm
 from cv_bridge import CvBridge
 from std_msgs.msg import Int32
+from logging import getLogger
+from argparse import ArgumentParser
+
+logger = getLogger(__name__)
 
 
 warnings.filterwarnings("ignore", category=UserWarning)
 
-MODELS_PATH = Path(__file__).parent.parent.parent.parent.parent / "models"
+MODELS_PATH = Path(__file__).parent / "models"
+assert MODELS_PATH.is_dir()
+
+DATA_PATH = Path(__file__).parent / "data"
+assert DATA_PATH.is_dir()
+
+INPUT_PATH = DATA_PATH / "files"
+assert INPUT_PATH.is_dir()
+
+OUTPUT_PATH = DATA_PATH / "anon"
+OUTPUT_PATH.mkdir(exist_ok=True)
 
 FACE_MODEL_SCORE_THRESHOLD = 0.4
 LP_MODEL_SCORE_THRESHOLD = 0.85
@@ -39,12 +53,17 @@ class Detectors(NamedTuple):
     lp_threshold: float = LP_MODEL_SCORE_THRESHOLD
 
 
-def get_bag(*args, **kwargs) -> str:
-    raise NotImplementedError
+def get_bag(patter: str) -> Path:
+    matched_files = list(INPUT_PATH.glob(patter))
+    if len(matched_files) == 0:
+        raise FileNotFoundError(f"No files found for pattern {patter}")
+    if len(matched_files) > 1:
+        raise ValueError(f"Multiple files found for pattern {patter}")
+    return matched_files[0]
 
 
-def upload_bag(*args, **kwargs) -> None:
-    raise NotImplementedError
+def upload_bag(path: Path) -> None:
+    logger.info(f"uploading {path}... (dry run)")
 
 
 def get_device() -> torch.device:
@@ -283,10 +302,8 @@ def save_image_to_ros1_message(
     """\
     save a BGR image as a message, if grayscale is True the image is converted to grayscale
     """
-
     if grayscale:
         raw = raw[..., 0]
-
     if compressed:
         return cv_bridge.cv2_to_compressed_imgmsg(raw, dst_format="jpg")
     else:
@@ -323,19 +340,23 @@ def save_image_to_bag(
 def anonymize_image_topics_in_bagfile(
     input_path: Path,
     output_path: Path,
+    *,
     image_topics: Sequence[str],
     detectors: Detectors,
     flip_images_for_inference: bool = False,
+    head: Optional[int] = None,
 ) -> None:
     cv_bridge = CvBridge()
     with rosbag.Bag(str(input_path), "r") as in_bag, rosbag.Bag(
         str(output_path), "w", compression="lz4"
     ) as out_bag:
-        for topic, msg, timestamp in tqdm.tqdm(
-            in_bag.read_messages(),
+        for idx, (topic, msg, timestamp) in tqdm.tqdm(
+            enumerate(in_bag.read_messages()),
             total=in_bag.get_message_count(),
             desc=f"processing {input_path} - {len(image_topics)} image topics",
         ):
+            if head is not None and idx >= head:
+                break
             if topic not in image_topics:
                 out_bag.write(topic, msg, timestamp)
                 continue
@@ -362,24 +383,26 @@ def anonymize_image_topics_in_bagfile(
 
 
 def process_bagfile(
-    bag_pattern: str,
+    input_path: Path,
+    output_path: Path,
+    *,
     image_topics: Sequence[str],
     flip_images_for_inference: bool,
     detectors: Detectors,
+    head: Optional[int] = None,
 ) -> None:
-    input_path = Path(cast(str, get_bag(bag_pattern)))
-
-    output_dir = input_path.parent / f"out_{time.time_ns()}"
-    output_dir.mkdir(exist_ok=True)
-
-    output_path = output_dir / f"{input_path.stem}_anonymized{input_path.suffix}"
     anonymize_image_topics_in_bagfile(
-        input_path, output_path, image_topics, detectors, flip_images_for_inference
+        input_path,
+        output_path,
+        image_topics=image_topics,
+        detectors=detectors,
+        flip_images_for_inference=flip_images_for_inference,
+        head=head,
     )
     upload_bag(output_path)
 
 
-CAMERA_CONFIG: Dict[str, Tuple[List[str], bool]] = {
+CAMERA_CONFIG: Dict[str, Tuple[List[str], bool, str]] = {
     "*_nuc_alphasense_cor.bag": (
         [
             "/gt_box/alphasense_driver_node/cam2/color_corrected/image/compressed",
@@ -389,24 +412,32 @@ CAMERA_CONFIG: Dict[str, Tuple[List[str], bool]] = {
             "/gt_box/alphasense_driver_node/cam4/color_corrected/image/compressed",
         ],
         False,
+        "alphasense.bag",
     ),
+}
+
+"""
+{
     "*_jetson_hdr_left_rect.bag": (
         [
-            "/gt_box/hdr_left_rect/image_raw/compressed",
+            "/gt_box/hdr_left_rect/image_rect/compressed",
         ],
         False,
+        "hdr_left.bag",
     ),
     "*_jetson_hdr_front_rect.bag": (
         [
-            "/gt_box/hdr_front_rect/image_raw/compressed",
+            "/gt_box/hdr_front_rect/image_rect/compressed",
         ],
         False,
+        "hdr_front.bag",
     ),
     "*_jetson_hdr_right_rect.bag": (
         [
-            "/gt_box/hdr_right_rect/image_raw/compressed",
+            "/gt_box/hdr_right_rect/image_rect/compressed",
         ],
         False,
+        "hdr_right.bag",
     ),
     "*_jetson_zed2i_images.bag": (
         [
@@ -414,14 +445,31 @@ CAMERA_CONFIG: Dict[str, Tuple[List[str], bool]] = {
             "/gt_box/zed2i/zed_node/right/image_rect_color/compressed",
         ],
         True,
+        "zed2i.bag",
     ),
 }
+"""
 
 
 def main() -> int:
+    parser = ArgumentParser()
+    parser.add_argument("--head", type=int, default=None)
+    args = parser.parse_args()
+
     detectors = load_detectors(MODELS_PATH)
-    for pattern, (topics, flip) in CAMERA_CONFIG.items():
-        process_bagfile(pattern, topics, flip, detectors)
+    for pattern, (topics, flip, out_name) in CAMERA_CONFIG.items():
+        input_path = get_bag(pattern)
+        output_path = OUTPUT_PATH / out_name
+        anonymize_image_topics_in_bagfile(
+            input_path,
+            output_path,
+            image_topics=topics,
+            detectors=detectors,
+            flip_images_for_inference=flip,
+            head=args.head,
+        )
+        upload_bag(output_path)
+
     return 0
 
 
