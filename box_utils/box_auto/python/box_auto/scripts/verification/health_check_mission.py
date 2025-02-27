@@ -6,7 +6,6 @@ import logging
 from colorama import init, Fore, Style
 import statistics
 import sys
-import os
 from box_auto.utils import WS, MISSION_DATA, ARTIFACT_FOLDER
 
 YAML_FILE = str(Path(WS) / "src/grand_tour_box/box_utils/box_auto/cfg/health_check_reference_data.yaml")
@@ -22,8 +21,10 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 logger.propagate = False
 
+
 class ColoredFormatter(logging.Formatter):
     """Custom formatter for colored logging"""
+
     format_str = "%(levelname)s - %(message)s"
     FORMATS = {
         logging.DEBUG: Fore.CYAN + format_str + Style.RESET_ALL,
@@ -66,7 +67,7 @@ def validate_bags(
     reference_folder: Optional[str] = None,
     yaml_file: Optional[str] = None,
     mission_folder: str = None,
-    time_tolerance: float = 1.0
+    time_tolerance: float = 1.0,
 ) -> bool:
     if reference_folder and yaml_file:
         raise ValueError("Cannot specify both reference_folder and yaml_file")
@@ -88,10 +89,11 @@ def validate_bags(
 
     return validate_mission_folder(reference_data, mission_folder, time_tolerance)
 
+
 def generate_reference_data(folder_path: str) -> Dict:
     """
     Autogenerate reference data from existing bags in a reference folder.
-    You may manually edit the resulting YAML to specify freq_tolerance_percent, 
+    You may manually edit the resulting YAML to specify freq_tolerance_percent,
     dropped_frames_threshold_percent, etc.
     """
     reference_data = {}
@@ -111,6 +113,7 @@ def generate_reference_data(folder_path: str) -> Dict:
                 }
     return reference_data
 
+
 def validate_mission_folder(reference_data: Dict, mission_folder: str, time_tolerance: float) -> bool:
     """
     Core validation function that checks:
@@ -125,8 +128,7 @@ def validate_mission_folder(reference_data: Dict, mission_folder: str, time_tole
     logger.info("-" * 90)
 
     mission_bags = {
-        bag_file.name[bag_file.name.find("_") :]: bag_file
-        for bag_file in Path(mission_folder).glob("*.bag")
+        bag_file.name[bag_file.name.find("_") :]: bag_file for bag_file in Path(mission_folder).glob("*.bag")
     }
 
     missing_bags = [
@@ -165,7 +167,9 @@ def validate_mission_folder(reference_data: Dict, mission_folder: str, time_tole
                     validation_passed = False
                     continue
                 elif info.topics[topic].msg_type not in ref_topic_info["msg_type"]:
-                    logger.error(f"❌ Type mismatch for topic {topic} in {mission_bag_path.name}. Expected {ref_topic_info['msg_type']}, got {info.topics[topic].msg_type}")
+                    logger.error(
+                        f"❌ Type mismatch for topic {topic} in {mission_bag_path.name}. Expected {ref_topic_info['msg_type']}, got {info.topics[topic].msg_type}"
+                    )
                     validation_passed = False
                     continue
 
@@ -195,15 +199,13 @@ def validate_mission_folder(reference_data: Dict, mission_folder: str, time_tole
     logger.info("-" * 90)
 
     check_timing_bags = [
-        ref_key
-        for ref_key, ref_config in reference_data.items()
-        if ref_config.get("check_start_end_times", True) 
+        ref_key for ref_key, ref_config in reference_data.items() if ref_config.get("check_start_end_times", True)
     ]
 
     if timing_info["start_times"]:
         median_start = statistics.median(timing_info["start_times"].values())
         for bag_key, start_time in timing_info["start_times"].items():
-            if not bag_key in check_timing_bags:
+            if bag_key not in check_timing_bags:
                 continue
             if abs(start_time - median_start) > time_tolerance:
                 type = "early" if start_time < median_start else "late"
@@ -213,7 +215,7 @@ def validate_mission_folder(reference_data: Dict, mission_folder: str, time_tole
     if timing_info["end_times"]:
         median_end = statistics.median(timing_info["end_times"].values())
         for bag_key, end_time in timing_info["end_times"].items():
-            if not bag_key in check_timing_bags:
+            if bag_key not in check_timing_bags:
                 continue
             if abs(end_time - median_end) > time_tolerance:
                 type = "early" if end_time < median_end else "late"
@@ -229,10 +231,11 @@ def validate_mission_folder(reference_data: Dict, mission_folder: str, time_tole
         logger.error("❌ Some checks failed. See logs for details.")
     return validation_passed
 
+
 def get_header_timestamps(bag: rosbag.Bag, topic: str) -> list:
     timestamps = []
     for _, msg, arrival_time in bag.read_messages(topics=[topic]):
-        if type(msg).__name__ == '_std_msgs__Header':
+        if type(msg).__name__ == "_std_msgs__Header":
             timestamp = msg.stamp.to_sec()
         else:  # Otherwise, try accessing msg.header.stamp
             try:
@@ -249,15 +252,11 @@ def get_header_timestamps(bag: rosbag.Bag, topic: str) -> list:
 
 
 def check_topic_frequency(
-    bag,
-    info,
-    topic: str,
-    ref_topic_info: Dict[str, Union[float, str, list]],
-    bag_name: str
+    bag, info, topic: str, ref_topic_info: Dict[str, Union[float, str, list]], bag_name: str
 ) -> bool:
     """
     Frequency check using the bag's own metadata (topic_info.frequency).
-    We compare it to the reference freq from the YAML and ensure 
+    We compare it to the reference freq from the YAML and ensure
     it is within freq_tolerance_percent.
     """
     actual_freq = info.topics[topic].frequency
@@ -267,10 +266,12 @@ def check_topic_frequency(
     # If we have no reference freq, skip
     if not ref_freq or ref_freq <= 0:
         return True
-    
+
     # If the frequency is an unreasonable value, check the actual timestamps
     if actual_freq is None or actual_freq > 1000 or actual_freq <= 0:
-        logger.warning(f"⚠️  Frequency invalid for {topic} in {bag_name}. Freq is {actual_freq}. Calculating from timestamps instead.")
+        logger.warning(
+            f"⚠️  Frequency invalid for {topic} in {bag_name}. Freq is {actual_freq}. Calculating from timestamps instead."
+        )
         timestamps = get_header_timestamps(bag, topic)
         if len(timestamps) < 2:
             logger.warning(f"⚠️  Not enough messages on {topic} in {bag_name} for frequency check.")
@@ -295,11 +296,9 @@ def check_topic_frequency(
         )
     return True
 
+
 def check_dropped_frames(
-    bag: rosbag.Bag,
-    topic: str,
-    ref_topic_info: Dict[str, Union[float, str, list]],
-    bag_name: str
+    bag: rosbag.Bag, topic: str, ref_topic_info: Dict[str, Union[float, str, list]], bag_name: str
 ) -> bool:
     """
     Dropped frames check:
@@ -355,8 +354,10 @@ def check_dropped_frames(
 
     return True
 
+
 if __name__ == "__main__":
     import argparse
+
     parser = argparse.ArgumentParser(description="ROS Bag Validation Script")
     parser.add_argument("--reference_folder", type=str, default=None, help="Path to reference folder")
     parser.add_argument("--yaml_file", type=str, default=None, help="Path to YAML file")

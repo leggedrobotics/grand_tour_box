@@ -73,7 +73,7 @@ def downgrade_camerainfo_to_rosbag1(src: Path, dst: Path, replace: bool = False)
         camera_info_msg = {}
         seq_per_topic = {}
         with rosbag.Bag(src, "r") as input_bag:
-            with rosbag.Bag(dst, "w") as output_bag:
+            with rosbag.Bag(dst, "w", compression="lz4") as output_bag:
                 for topic, msg, t in input_bag.read_messages():
                     if topic not in seq_per_topic:
                         seq_per_topic[topic] = 0

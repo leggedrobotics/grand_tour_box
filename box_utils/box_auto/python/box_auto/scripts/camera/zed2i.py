@@ -21,13 +21,13 @@ if __name__ == "__main__":
             "*_jetson_zed2i_depth.bag",
             "*_jetson_zed2i_images.bag",
             "*_jetson_zed2i_prop.bag",
-            "*_jetson_zed2i_tf.bag"
+            "*_jetson_zed2i_tf.bag",
         ]
 
         # Iterate through each output pattern to ensure it is located where its expected.
         for pattern in output_patterns:
             get_bag(pattern=pattern, auto_download=False)
 
-        print("ZED2i automation script is successfully finished. Self-terminating.")        
+        print("ZED2i automation script is successfully finished. Self-terminating.")
 
         exit(0)

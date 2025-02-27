@@ -18,6 +18,7 @@ from .utils import (
 )
 from .gps_utils import GPS_utils
 from .okviz_trajectory_to_bag import okviz_trajectory_to_bag
+from .run_local import execute_command_per_mission, deployments
 
 __all__ = [
     "WS",
@@ -38,4 +39,6 @@ __all__ = [
     "create_github_issue",
     "RosbagMessageGenerator",
     "okviz_trajectory_to_bag",
+    "execute_command_per_mission",
+    "deployments",
 ]

@@ -46,7 +46,7 @@ def organize_data_folders(data_folder, cpt7_folder):
     mission_to_start = {}
     for folder in subfolders:
 
-        for p in [f"{folder}_jetson_utils.bag", "alphasense_front_center.bag"]:
+        for p in [f"{folder}_jetson_utils.bag", "alphasense_front_center.bag", f"{folder}_nuc_livox.bag"]:
             rosbag_path = os.path.join(data_folder, folder, p)
             if os.path.exists(rosbag_path):
                 rosbag_start, rosbag_end = get_rosbag_times(rosbag_path)
@@ -88,7 +88,7 @@ def main():
     parser = argparse.ArgumentParser(description="Organize mission folders and GPS data")
     parser.add_argument(
         "--data_folder",
-        default="/media/jonfrey/BoxiS2-2TB/deployment_day_8",
+        default="/media/jonfrey/T7/deployment_day_10",
         type=str,
         help="Path to the mission folder",
     )

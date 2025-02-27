@@ -92,7 +92,7 @@ def process_rosbag(input_bag_path, output_bag_path):
 
     prev_msg = None
 
-    with rosbag.Bag(output_bag_path, "w") as outbag:
+    with rosbag.Bag(output_bag_path, "w", compression="lz4") as outbag:
         with rosbag.Bag(input_bag_path, "r") as inbag:
             for topic, msg, t in inbag.read_messages():
                 if topic == "/gt_box/inertial_explorer/tc/gt_poses_novatel":

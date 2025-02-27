@@ -25,6 +25,7 @@ def main():
                 suc = True if len(log_files) == 1 else False
 
             if not suc:
+                exit(2)
                 raise ValueError("Failed to find LOG file.")
 
             log_file = log_files[0]
@@ -65,11 +66,11 @@ def main():
             if results.returncode == 1:
                 print(results.returncode, results.stdout)
                 if "_ERROR_ No records were decoded" in results.stdout:
-                    exit(1)
-                elif "_ERROR_ Failed to download base station data from " in results.stdout:
                     exit(3)
-                else:
+                elif "_ERROR_ Failed to download base station data from " in results.stdout:
                     exit(4)
+                else:
+                    exit(5)
     exit(0)
 
 

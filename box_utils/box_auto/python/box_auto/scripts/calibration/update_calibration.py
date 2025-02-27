@@ -15,7 +15,7 @@ CAMERA_INFO_PATTERNS = [
     "*_jetson_hdr_left_updated.bag",
     "*_jetson_hdr_front_updated.bag",
     "*_nuc_alphasense_updated.bag",
-    # "*_jetson_zed2i_images.bag",
+    "*_jetson_zed2i_images.bag",
 ]
 
 
@@ -74,7 +74,7 @@ def update_tf_static(tf_static_msg, start_end=False):
 
     def write(tf_static_msg, output_bag_path, start_time, start_end):
         # Create output bag with repeated tf_static messages
-        with rosbag.Bag(output_bag_path, "w") as out_bag:
+        with rosbag.Bag(output_bag_path, "w", compression="lz4") as out_bag:
             current_time = start_time
 
             while current_time <= end_time:
