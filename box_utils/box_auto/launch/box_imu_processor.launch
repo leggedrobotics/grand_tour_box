@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<launch>
+
+  <!-- Arguments -->
+  
+  <!-- Replay Options -->
+  <arg name="use_sim_time" default="true"/>
+  <arg name="input_rosbag_file" default=""/> 
+  <arg name="output_rosbag_file" default=""/>
+  <arg name="mode" default=""/>
+  
+  <!-- Time offset in milliseconds -->
+  <arg name="time_offset_to_apply" default="0.0"/> 
+
+  <!-- Parameters are here -->
+  <arg name="config_path" default="$(find box_auto)/cfg/boxi_imu_processor.yaml" />
+
+  <!-- Parameters are here -->
+  <!-- ROS Param -->
+  <rosparam file="$(arg config_path)" command="load"/>
+
+  <!-- ROS Param -->
+  <param name="/use_sim_time" value="$(arg use_sim_time)"/>
+
+  <!-- Main Node -->
+  <node name="box_imu_processor" pkg="box_auto"
+        type="post_processor_node" output="screen" required="True">
+    <param name="input_rosbag_file" value="$(arg input_rosbag_file)"/>
+    <param name="output_rosbag_file" value="$(arg output_rosbag_file)"/>
+    <param name="time_offset_to_apply" value="$(arg time_offset_to_apply)"/>
+    <param name="mode" value="$(arg mode)"/>
+  </node>
+
+</launch>

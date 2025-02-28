@@ -1,5 +1,5 @@
 #include <ros/ros.h>
-#include "box_post_processor/box_post_processor.hpp"
+#include "box_post_processor/box_imu_processor.hpp"
 
 int main(int argc, char* argv[0]) {
   ros::init(argc, argv, "box_post_processor");

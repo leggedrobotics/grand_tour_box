@@ -17,7 +17,7 @@ set(CMAKE_COMPILER_IS_GNUCXX 1)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(SRC_FILES
-  src/box_post_processor.cpp
+  src/box_imu_processor.cpp
   src/box_tf_processor.cpp
   src/merge.cpp
 )
@@ -60,7 +60,7 @@ find_package(Eigen3 REQUIRED)
 find_package(OpenMP QUIET)
 if (OpenMP_FOUND)
   add_compile_options("${OpenMP_CXX_FLAGS}")
-  add_definitions(-Dbox_post_processor_OPENMP_FOUND=${OpenMP_FOUND})
+  add_definitions(-Dbox_imu_processor_OPENMP_FOUND=${OpenMP_FOUND})
 endif ()
 find_package(catkin REQUIRED COMPONENTS
   ${CATKIN_PACKAGE_DEPENDENCIES}

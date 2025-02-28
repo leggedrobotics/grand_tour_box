@@ -1,0 +1,17 @@
+
+adis:
+  max_time_difference_millisecond: 5.2 # Millisecond
+  topics:
+    - "/gt_box/adis16475_node/imu"
+stim:
+    max_time_difference_millisecond: 2.2 # Millisecond
+    topics:
+      - "/gt_box/stim320/acceletometer_temperature"
+      - "/gt_box/stim320/imu"
+      - "/gt_box/stim320/gyroscope_temperature"
+livox:
+    max_time_difference_millisecond: 5.2 # Millisecond
+    topics:
+      - "/gt_box/livox/imu"
+      - "/gt_box/livox/imu_si_compliant"
+      - "/gt_box/livox/lidar"
