@@ -205,7 +205,6 @@ def read_bag_file(bag_path):
                             bag_out.write("/gt_box/ap20/prism_position", new_msg, new_msg.header.stamp)
 
                             all_matches = all_matches[i - 1 :]
-                            print("all_matches: ", len(all_matches))
                         else:
                             print("delta to high - removing the timestamp")
                     else:

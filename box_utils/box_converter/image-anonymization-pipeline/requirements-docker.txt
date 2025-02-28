@@ -1,0 +1,7 @@
+numpy
+opencv-python
+tqdm
+cv_bridge
+torch
+torchvision
+kleinkram

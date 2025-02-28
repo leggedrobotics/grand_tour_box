@@ -1,0 +1,1 @@
+rsync -a --delete -z -h -r -v --exclude 'grand_tour_box/box_drivers/*' --exclude 'grand_tour_box/box_drivers_ros/*' --exclude 'grand_tour_box/box_applications/*' --exclude '*.git/*' --exclude '__pycache__' --exclude '*.pyc' --exclude '*_pb2_grpc.py' --exclude '*_pb2.py' --exclude '*boxi.egg-info*' --exclude 'grand_tour_box/videos'  ~/git/grand_tour_box euler:/cluster/home/$USER
