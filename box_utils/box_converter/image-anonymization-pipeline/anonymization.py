@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import subprocess
-import time
 import warnings
 from argparse import ArgumentParser
 from enum import Enum
@@ -110,9 +109,7 @@ def get_detections(
     return boxes.tolist()
 
 
-def create_mask_from_detections(
-    image: np.ndarray, detections: List[List[float]]
-) -> np.ndarray:
+def create_mask_from_detections(image: np.ndarray, detections: List[List[float]]) -> np.ndarray:
     """\
     takes a list of [x1, y1, x2, y2] detections and returns a 0 1 mask the same size as the image
     """
@@ -158,9 +155,7 @@ def pixelate_mask(image: np.ndarray, mask: np.ndarray) -> np.ndarray:
     return image
 
 
-def draw_boxes_of_detections(
-    image: np.ndarray, detections: List[List[float]]
-) -> np.ndarray:
+def draw_boxes_of_detections(image: np.ndarray, detections: List[List[float]]) -> np.ndarray:
     """\
     draws a box around each detection
     """
@@ -246,16 +241,10 @@ def blur_and_annotate_image(
     if flipped:
         image_bgr = cv2.rotate(image_bgr, cv2.ROTATE_180)
 
-    detections = get_detections(
-        detectors.face_detector, image_bgr, detectors.face_threshold
-    )
-    detections += get_detections(
-        detectors.lp_detector, image_bgr, detectors.lp_threshold
-    )
+    detections = get_detections(detectors.face_detector, image_bgr, detectors.face_threshold)
+    detections += get_detections(detectors.lp_detector, image_bgr, detectors.lp_threshold)
 
-    blurred_image, annotated_image = blur_and_annotated_image_given_detections(
-        image_bgr, detections
-    )
+    blurred_image, annotated_image = blur_and_annotated_image_given_detections(image_bgr, detections)
 
     number_of_detections = count_number_of_detections(detections)
 
@@ -320,9 +309,7 @@ def save_image_to_bag(
     """
 
     # write the image
-    msg = save_image_to_ros1_message(
-        image, cv_bridge, compressed=compressed, grayscale=grayscale
-    )
+    msg = save_image_to_ros1_message(image, cv_bridge, compressed=compressed, grayscale=grayscale)
     msg.header.stamp = timestamp
     bag.write(topic, msg, timestamp)
 
@@ -342,9 +329,7 @@ def anonymize_image_topics_in_bagfile(
     head: Optional[int] = None,
 ) -> None:
     cv_bridge = CvBridge()
-    with rosbag.Bag(str(input_path), "r") as in_bag, rosbag.Bag(
-        str(output_path), "w", compression="lz4"
-    ) as out_bag:
+    with rosbag.Bag(str(input_path), "r") as in_bag, rosbag.Bag(str(output_path), "w", compression="lz4") as out_bag:
         for idx, (topic, msg, timestamp) in tqdm.tqdm(
             enumerate(in_bag.read_messages()),
             total=in_bag.get_message_count(),
@@ -398,23 +383,23 @@ FULL_CONFIG: Dict[str, AnonymizerConfig] = {
         )
     },
     "hdr": {
-        "{}_jetson_hdr_left_rect.bag": (
+        "{}_jetson_hdr_left_updated.bag": (
             [
-                "/gt_box/hdr_left_rect/image_rect/compressed",
+                "/gt_box/hdr_left/image_raw/compressed",
             ],
             False,
             "{}_jetson_hdr_left_anon.bag",
         ),
-        "{}_jetson_hdr_front_rect.bag": (
+        "{}_jetson_hdr_front_updated.bag": (
             [
-                "/gt_box/hdr_front_rect/image_rect/compressed",
+                "/gt_box/hdr_front/image_raw/compressed",
             ],
             False,
             "{}_jetson_hdr_front_anon.bag",
         ),
-        "{}_jetson_hdr_right_rect.bag": (
+        "{}_jetson_hdr_right_updated.bag": (
             [
-                "/gt_box/hdr_right_rect/image_rect/compressed",
+                "/gt_box/hdr_right/image_raw/compressed",
             ],
             False,
             "{}_jetson_hdr_right_anon.bag",
@@ -447,9 +432,7 @@ def get_mission(mission_id: str) -> Mission:
     return missions[0]
 
 
-def download_files(
-    *, config: AnonymizerConfig, mission_id: UUID, input_path: Path
-) -> None:
+def download_files(*, config: AnonymizerConfig, mission_id: UUID, input_path: Path) -> None:
     kleinkram.download(
         mission_ids=[mission_id],
         file_names=list(config.keys()),
@@ -458,9 +441,7 @@ def download_files(
     )
 
 
-def upload_files(
-    *, config: AnonymizerConfig, mission_id: UUID, output_path: Path
-) -> None:
+def upload_files(*, config: AnonymizerConfig, mission_id: UUID, output_path: Path) -> None:
     file_paths = [output_path / out_name for _, _, out_name in config.values()]
     kleinkram.upload(mission_id=mission_id, files=file_paths, verbose=True)
 
@@ -472,9 +453,7 @@ def main() -> int:
     parser.add_argument("--cam", type=str, required=True)
     args = parser.parse_args()
 
-    assert (
-        args.cam in FULL_CONFIG
-    ), f"camera {args.cam} not in {list(FULL_CONFIG.keys())!r}"
+    assert args.cam in FULL_CONFIG, f"camera {args.cam} not in {list(FULL_CONFIG.keys())!r}"
 
     mission = get_mission(args.mission_id)
 

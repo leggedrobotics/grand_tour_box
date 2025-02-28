@@ -24,6 +24,14 @@ this folder contains the code and dependencies to run the image anonymization pi
     python anonymization.py --mission-id 344d631c-387a-4aa4-bb21-92b9659ea21f --cam hdr
   ```
 
+- debug for cluster
+  ```bash
+  srun --account=es_hutter --ntasks=1 --cpus-per-task=4 --gpus=1 --time=4:00:00 --mem-per-cpu=8024 --tmp=20000 --pty bash
+  
+
+  singularity exec --nv --writable  --containall $TMPDIR/grand-tour-dataset.sif /bin/bash -c 'export KLEINKRAM_CONFIG="$(cat ~/.kleinkram.json)"; /entrypoint.sh  python /app/anonymization.py --mission-id 344d631c-387a-4aa4-bb21-92b9659ea21f --cam hdr --head 100'
+  ```
+
 ## Profiling
 
 - [Download](https://www.projectaria.com/tools/egoblur/) the ego blur models `ego_blur_face.jit` and `ego_blur_lp.jit`.
