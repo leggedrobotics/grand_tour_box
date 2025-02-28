@@ -261,7 +261,7 @@ def convert_csv_to_bag(
 
     with open(input_file_cov_path, "r") as cov_file, open(input_file_pose_path, "r") as pose_file, rosbag.Bag(
         tf_gt_path, "w"
-    ) as tf_gt_bag, rosbag.Bag(pose_gt_path, "w") as pose_gt_bag:
+    ) as tf_gt_bag, rosbag.Bag(pose_gt_path, "w", compression="lz4") as pose_gt_bag:
 
         # Use zip to process both files simultaneously
         for cov_line, pose_line in zip(cov_file, pose_file):

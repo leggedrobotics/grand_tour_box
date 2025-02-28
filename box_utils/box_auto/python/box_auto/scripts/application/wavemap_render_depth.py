@@ -23,7 +23,7 @@ class Saver:
 
         if save_rosbag:
             self.bag_path = self.folder / f"{rosbag_prefix}_wavemap.bag"
-            self.bag = rosbag.Bag(self.bag_path, "w")
+            self.bag = rosbag.Bag(self.bag_path, "w", compression="lz4")
 
     def save_ros(self, depth_image, topic, header=None, t=None):
         msg = ImageRos()

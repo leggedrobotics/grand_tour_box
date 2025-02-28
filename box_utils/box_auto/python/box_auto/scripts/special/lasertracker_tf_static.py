@@ -44,7 +44,7 @@ def write_tf_static_bag(output_bag_path, R, t, timestamp):
     static_transform.transforms.append(transform)
 
     # Write to a ROS bag
-    with rosbag.Bag(output_bag_path, "w") as bag:
+    with rosbag.Bag(output_bag_path, "w", compression="lz4") as bag:
         bag.write("/tf_static", static_transform, t=timestamp)
 
 

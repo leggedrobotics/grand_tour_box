@@ -139,9 +139,7 @@ def _parse_extended_joint_state(msg: ExtendedJointState) -> Dict[str, BasicType]
     }
 
 
-def _parse_anymal_state(
-    msg: AnymalState, topic_desc: AnymalStateTopic
-) -> Dict[str, BasicType]:
+def _parse_anymal_state(msg: AnymalState, topic_desc: AnymalStateTopic) -> Dict[str, BasicType]:
     ret = _parse_odometry(cast(Odometry, msg))
     contacts_data = {}
     for contact in msg.contacts:
@@ -177,27 +175,19 @@ def _fix_dlio_point_cloud2_msg(msg: PointCloud2) -> PointCloud2:
     return msg
 
 
-def _parse_point_cloud2(
-    msg: PointCloud2, topic_desc: LidarTopic
-) -> Dict[str, BasicType]:
+def _parse_point_cloud2(msg: PointCloud2, topic_desc: LidarTopic) -> Dict[str, BasicType]:
     msg = _fix_dlio_point_cloud2_msg(msg)
     structured_array = numpify(msg)
     assert structured_array is not None
 
     coordinates = ["x", "y", "z"]
     points = np.array([structured_array[c] for c in coordinates])
-    ret = {
-        "point_cloud_points": _pad_point_cloud(
-            points.transpose(1, 0), topic_desc.max_points
-        )
-    }
+    ret = {"point_cloud_points": _pad_point_cloud(points.transpose(1, 0), topic_desc.max_points)}
 
     for name in structured_array.dtype.names:
         if name in coordinates:
             continue
-        ret[f"point_cloud_{name}"] = _pad_point_cloud(
-            np.array(structured_array[name]), topic_desc.max_points
-        )
+        ret[f"point_cloud_{name}"] = _pad_point_cloud(np.array(structured_array[name]), topic_desc.max_points)
     return ret  # type: ignore
 
 
@@ -255,9 +245,7 @@ def _parse_odometry(msg: Odometry) -> Dict[str, BasicType]:
     }
 
 
-def _parse_pose(
-    msg: Union[PoseStamped, PoseWithCovarianceStamped], topic_desc: PoseTopic
-) -> Dict[str, BasicType]:
+def _parse_pose(msg: Union[PoseStamped, PoseWithCovarianceStamped], topic_desc: PoseTopic) -> Dict[str, BasicType]:
     ret = {}
     if topic_desc.covariance:
         msg = cast(PoseWithCovarianceStamped, msg)
@@ -323,9 +311,7 @@ def _extract_header_data_from_deserialized_message(msg: Any) -> Dict[str, BasicT
     }
 
 
-def _parse_message_data_from_deserialized_message(
-    msg: Any, topic_desc: Topic
-) -> Dict[str, BasicType]:
+def _parse_message_data_from_deserialized_message(msg: Any, topic_desc: Topic) -> Dict[str, BasicType]:
     if isinstance(topic_desc, LidarTopic):
         return _parse_point_cloud2(msg, topic_desc)
     elif isinstance(topic_desc, NavSatFixTopic):

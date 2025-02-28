@@ -78,11 +78,9 @@ def process_bags(calibrations) -> None:
 
             with rosbag.Bag(input_bag_path, "r") as input_bag, rosbag.Bag(output_bag_path, "w") as output_bag:
                 with tqdm(total=input_bag.get_message_count(), desc=f"Processing {k}") as pbar:
-                    for topic, msg, t in input_bag.read_messages():
-                        if topic in v["topics"]:
-                            msg.linear_acceleration_covariance = linear_acceleration_covariance
-                            msg.angular_velocity_covariance = angular_velocity_covariance
-
+                    for topic, msg, t in input_bag.read_messages(topics=v["topics"]):
+                        msg.linear_acceleration_covariance = linear_acceleration_covariance
+                        msg.angular_velocity_covariance = angular_velocity_covariance
                         output_bag.write(topic, msg, t)
                         pbar.update(1)
 

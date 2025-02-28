@@ -1,0 +1,156 @@
+#!/usr/bin/env python3
+
+import os
+import rosbag
+from time import sleep
+from box_auto.utils import get_bag, upload_bag, kill_roscore
+import tf
+from geometry_msgs.msg import TransformStamped, Quaternion
+from tf2_msgs.msg import TFMessage
+import copy
+from tqdm import tqdm
+
+
+WS = "/home/catkin_ws"
+PRE = f"source /opt/ros/noetic/setup.bash; source {WS}/devel/setup.bash;"
+
+
+def launch_undistorter(
+    input_rosbag_path,
+    input_trajectory_bag_path,
+    input_tf_static_bag_path,
+    output_bag_path,
+    pcd_topic_in,
+    pcd_topic_out,
+    child_frame,
+    parent_frame,
+    sensor_frame,
+):
+    os.environ["ROS_MASTER_URI"] = "http://localhost:11311"
+    kill_roscore()
+
+    os.system("bash -c '" + PRE + "roscore&' ")
+    sleep(1)
+    command = (
+        f"bash -c '"
+        f"{PRE} "
+        f"roslaunch pointcloud_undistortion undistort_pointcloud.launch "
+        f"hesai_bag_path:={input_rosbag_path} "
+        f"trajectory_bag_path:={input_trajectory_bag_path} "
+        f"tf_static_bag_path:={input_tf_static_bag_path} "
+        f"output_bag_path:={output_bag_path} "
+        f"pcd_topic_in:={pcd_topic_in} "
+        f"pcd_topic_out:={pcd_topic_out} "
+        f"child_frame:={child_frame} "
+        f"parent_frame:={parent_frame} "
+        f"sensor_frame:={sensor_frame}'"
+    )
+    os.system(command)
+    sleep(5)
+
+    upload_bag(output_bag_path)
+
+
+def switch_tf(exists_skip=False):
+    if exists_skip:
+        try:
+            get_bag("*_lpc_tf_reverse.bag")
+            return
+        except:
+            pass
+
+    # Get input and output bag file names
+    bag_in = get_bag("*_lpc_tf.bag")
+    bag_out = bag_in.replace("_lpc_tf.bag", "_lpc_tf_reverse.bag")
+
+    # Open input and output bag files
+    with rosbag.Bag(bag_in, "r") as in_bag, rosbag.Bag(bag_out, "w", compression="lz4") as out_bag:
+        tf_message_count = in_bag.get_message_count() - 1  # -1 to exclude the /tf_static message
+
+        for topic, msg, t in tqdm(
+            in_bag.read_messages(topics=["/tf"]), total=tf_message_count, desc="Processing TF messages"
+        ):
+            new_transforms = []
+            for transform in msg.transforms:
+                if transform.header.frame_id == "odom" and transform.child_frame_id == "base":
+                    # Invert the transform
+                    inverted_transform = TransformStamped()
+                    inverted_transform.header = copy.deepcopy(transform.header)
+                    inverted_transform.header.frame_id = transform.child_frame_id
+                    inverted_transform.child_frame_id = transform.header.frame_id
+
+                    # Invert the translation
+                    inverted_transform.transform.translation.x = -transform.transform.translation.x
+                    inverted_transform.transform.translation.y = -transform.transform.translation.y
+                    inverted_transform.transform.translation.z = -transform.transform.translation.z
+
+                    # Invert the rotation
+                    inverted_rotation = tf.transformations.quaternion_inverse(
+                        [
+                            transform.transform.rotation.x,
+                            transform.transform.rotation.y,
+                            transform.transform.rotation.z,
+                            transform.transform.rotation.w,
+                        ]
+                    )
+                    inverted_transform.transform.rotation = Quaternion(
+                        x=inverted_rotation[0], y=inverted_rotation[1], z=inverted_rotation[2], w=inverted_rotation[3]
+                    )
+
+                    new_transforms.append(inverted_transform)
+                else:
+                    new_transforms.append(transform)
+
+            out_bag.write(topic, TFMessage(transforms=new_transforms), t)
+
+
+if __name__ == "__main__":
+    switch_tf(exists_skip=True)
+
+    input_trajectory_bag_path = get_bag("*_lpc_tf_reverse.bag")
+    input_tf_static_path = get_bag("*_tf_static_start_end.bag")
+
+    # Hesai
+    input_hesai_bag_path = get_bag("*_nuc_hesai_filtered.bag")
+    output_hesai_bag_path = input_hesai_bag_path.replace("_nuc_hesai_filtered.bag", "_nuc_hesai_undist.bag")
+    launch_undistorter(
+        input_hesai_bag_path,
+        input_trajectory_bag_path,
+        input_tf_static_path,
+        output_hesai_bag_path,
+        pcd_topic_in="/gt_box/hesai/points",
+        pcd_topic_out="/gt_box/hesai/points_undistorted",
+        child_frame="odom",
+        parent_frame="base",
+        sensor_frame="hesai_lidar",
+    )
+
+    # Livox
+    input_livox_bag_path = get_bag("*_nuc_livox_filtered.bag")
+    output_livox_bag_path = input_livox_bag_path.replace("_nuc_livox_filtered.bag", "_nuc_livox_undist.bag")
+    launch_undistorter(
+        input_livox_bag_path,
+        input_trajectory_bag_path,
+        input_tf_static_path,
+        output_livox_bag_path,
+        pcd_topic_in="/gt_box/livox/lidar",
+        pcd_topic_out="/gt_box/livox/lidar_undistorted",
+        child_frame="odom",
+        parent_frame="base",
+        sensor_frame="livox_lidar",
+    )
+
+    # # Velodyne
+    # input_vlp_bag_path = get_bag( "*_npc_velodyne_filtered.bag")
+    # output_vlp_bag_path = input_vlp_bag_path.replace("_nuc_livox_filtered.bag", "_npc_velodyne_undist.bag")
+    # launch_undistorter(
+    #     input_vlp_bag_path,
+    #     input_trajectory_bag_path,
+    #     input_tf_static_path,
+    #     output_vlp_bag_path,
+    #     pcd_topic_in = "/anymal/velodyne/points",
+    #     pcd_topic_out = "/anymal/velodyne/points_undistorted",
+    #     child_frame = "odom",
+    #     parent_frame = "base",
+    #     sensor_frame = "velodyne_lidar"
+    # )

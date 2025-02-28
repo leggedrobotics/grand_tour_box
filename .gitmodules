@@ -88,3 +88,6 @@
 [submodule "box_applications/elevation_mapping_cupy"]
 	path = box_applications/elevation_mapping_cupy
 	url = git@github.com:leggedrobotics/elevation_mapping_cupy.git
+[submodule "box_drivers/grand_tour_depth_benchmark"]
+	path = box_drivers/grand_tour_depth_benchmark
+	url = git@github.com:leggedrobotics/grand_tour_depth_benchmark.git

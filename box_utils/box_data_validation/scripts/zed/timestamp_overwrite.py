@@ -8,7 +8,7 @@ import os
 def restamp_bag(input_bag_path):
     output_bag_path = os.path.splitext(input_bag_path)[0] + "_restamped.bag"
 
-    with rosbag.Bag(output_bag_path, "w") as outbag:
+    with rosbag.Bag(output_bag_path, "w", compression="lz4") as outbag:
         for topic, msg, t in rosbag.Bag(input_bag_path).read_messages():
             # Replace tf timestamps if applicable
             if topic == "/tf" and msg.transforms:

@@ -1,6 +1,7 @@
 import rospy
 from box_health.msg import ClockFrequencies
 
+
 def read_clock_info(file_path):
     clock_info = {}
     with open(file_path, "r") as file:
@@ -30,7 +31,7 @@ def publish_clock_frequencies():
         rate.sleep()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     try:
         publish_clock_frequencies()
     except rospy.ROSInterruptException:

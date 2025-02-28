@@ -51,14 +51,10 @@ def _np_arrays_from_buffered_messages(
     for record in buffer:
         for key, value in record.items():
             data[key].append(value)
-    array_data = {
-        key: np.array(data[key], dtype=attr.dtype) for key, attr in attr_tps.items()
-    }
+    array_data = {key: np.array(data[key], dtype=attr.dtype) for key, attr in attr_tps.items()}
 
     for key, attr in attr_tps.items():
-        assert (
-            array_data[key].shape[1:] == attr.shape
-        ), f"{key}: {array_data[key].shape[1:]} != {attr.shape}"
+        assert array_data[key].shape[1:] == attr.shape, f"{key}: {array_data[key].shape[1:]} != {attr.shape}"
     return array_data
 
 
@@ -147,9 +143,7 @@ def _compute_zarr_array_chunk_size(tp: ArrayType) -> Tuple[int, ...]:
     return (n_slices,) + tp.shape
 
 
-def _create_zarr_arrays_for_topic(
-    attributes: AttributeTypes, zarr_group: zarr.Group
-) -> int:
+def _create_zarr_arrays_for_topic(attributes: AttributeTypes, zarr_group: zarr.Group) -> int:
     """\
     initializes zarr arrays for all attributes with appropriate
     shapes, dtypes, and chunk sizes
@@ -248,9 +242,7 @@ def _tar_ball_dataset(base_dataset_path: Path) -> None:
         shutil.rmtree(image_files / folder)
 
 
-def build_data_part(
-    *, mcaps_path: Path, dataset_base_path: Path, topic_registry: TopicRegistry
-) -> None:
+def build_data_part(*, mcaps_path: Path, dataset_base_path: Path, topic_registry: TopicRegistry) -> None:
     for attribute_types, topic_desc in tqdm(topic_registry.values()):
         mcap_file = mcaps_path / topic_desc.file
         _generate_dataset_from_topic_description_and_attribute_types(

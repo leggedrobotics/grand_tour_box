@@ -53,9 +53,7 @@ def _load_camera_info_metadata_from_mcap_file_and_topic(
         for schema, _, ser_message in reader.iter_messages(topics=[topic_desc.topic]):
             assert schema is not None, f"schema is None for message {ser_message}"
             message = deserialize_message(schema, ser_message.data)
-            assert isinstance(
-                message, CameraInfo
-            ), f"topic {topic_desc.topic} does not contain CameraInfo messages"
+            assert isinstance(message, CameraInfo), f"topic {topic_desc.topic} does not contain CameraInfo messages"
 
             return extract_camera_info_metadata_from_deserialized_message(message)
     raise ValueError(f"no messages found in topic {topic_desc.topic}")
@@ -67,9 +65,7 @@ def _load_tf_metadata_from_mcap_file_and_topic(
 ) -> Dict[str, Any]:
     with open(mcap_path, "rb") as f:
         reader = make_reader(f)
-        for schema, _, ser_message in reader.iter_messages(
-            topics=[frame_transform_config.topic]
-        ):
+        for schema, _, ser_message in reader.iter_messages(topics=[frame_transform_config.topic]):
             assert schema is not None, f"schema is None for message {ser_message}"
             message = deserialize_message(schema, ser_message.data)
             assert isinstance(
@@ -86,9 +82,7 @@ def _get_frame_id_from_topic(mcaps_path: Path, topic_desc: Topic) -> Dict[str, s
     return ret
 
 
-def _get_camera_info_from_topic(
-    mcaps_path: Path, topic_desc: CameraInfoTopic
-) -> Dict[str, Any]:
+def _get_camera_info_from_topic(mcaps_path: Path, topic_desc: CameraInfoTopic) -> Dict[str, Any]:
     mcap_path = mcaps_path / topic_desc.file
     ret = _load_camera_info_metadata_from_mcap_file_and_topic(mcap_path, topic_desc)
     return ret
@@ -101,9 +95,7 @@ def _get_frame_ids(mcaps_path: Path, topic_reg: TopicRegistry) -> Dict[str, Any]
     return ret
 
 
-def _get_camera_infos(
-    mcaps_path: Path, metadata_config: MetadataConfig
-) -> Dict[str, Any]:
+def _get_camera_infos(mcaps_path: Path, metadata_config: MetadataConfig) -> Dict[str, Any]:
     ret = {}
     for cam_info_topic_desc in metadata_config.camera_intrinsics:
         cam_info = _get_camera_info_from_topic(mcaps_path, cam_info_topic_desc)
@@ -111,9 +103,7 @@ def _get_camera_infos(
     return ret
 
 
-def _get_frame_transform_metadata(
-    mcaps_path: Path, frame_transform_config: FrameTransformConfig
-) -> Dict[str, Any]:
+def _get_frame_transform_metadata(mcaps_path: Path, frame_transform_config: FrameTransformConfig) -> Dict[str, Any]:
     mcap_path = mcaps_path / frame_transform_config.file
     return _load_tf_metadata_from_mcap_file_and_topic(mcap_path, frame_transform_config)
 
@@ -133,18 +123,14 @@ def build_metadata_part(
 ) -> None:
     frame_id_metadata = _get_frame_ids(mcaps_path, topic_registry)
     cam_info_metadata = _get_camera_infos(mcaps_path, metadata_config)
-    transform_metadata = _get_frame_transform_metadata(
-        mcaps_path, metadata_config.frame_transforms
-    )
+    transform_metadata = _get_frame_transform_metadata(mcaps_path, metadata_config.frame_transforms)
 
     # merge metadata and split by topic
     metadata = {}
     for alias, frame_id in frame_id_metadata.items():
         metadata[alias] = {**frame_id, "topic": alias}
     for alias, cam_info in cam_info_metadata.items():
-        assert (
-            alias not in metadata
-        ), f"alias {alias} for camera_info topic is not unique"
+        assert alias not in metadata, f"alias {alias} for camera_info topic is not unique"
         metadata[alias] = {"camera_info": cam_info}
 
     # try to get transform for each frame_id

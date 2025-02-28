@@ -12,6 +12,7 @@ import yaml
 import rospy
 from box_auto.utils import get_bag
 from scipy.spatial.transform import Rotation as R
+import sys
 
 
 def extract_imu_data(
@@ -192,6 +193,7 @@ class IMUSyncOptimizer:
         self, t1, y1, t2, y2, num_iterations=5000, learning_rate=0.001, max_duration_fft_window_in_s=30
     ):
         # Interpolate both signals to a common time grid
+
         t_min = max(t1.min(), t2.min())
         t_max = min(min(t1.max(), t2.max()), t_min + max_duration_fft_window_in_s)
 
@@ -287,11 +289,11 @@ def process_all(directory, output_folder, axis, plot, skip_seconds):
     #         "tf_bag_pattern": "*_tf_static.bag",
     # }
     validation_imus = [
-        {
-            "topic": "/gt_box/ap20/imu",
-            "bag_pattern": "*_jetson_ap20_synced.bag",
-            "max_offset_ms": 1,
-        },
+        # {
+        #     "topic": "/gt_box/ap20/imu",
+        #     "bag_pattern": "*_jetson_ap20_synced.bag",
+        #     "max_offset_ms": 1,
+        # },
         {
             "topic": "/gt_box/stim320/imu",
             "bag_pattern": "*_jetson_stim.bag",
@@ -312,11 +314,11 @@ def process_all(directory, output_folder, axis, plot, skip_seconds):
             "bag_pattern": "*_nuc_alphasense.bag",
             "max_offset_ms": 1,
         },
-        {
-            "topic": "/gt_box/cpt7/offline_from_novatel_logs/imu",
-            "bag_pattern": "*_cpt7_raw_imu.bag",
-            "max_offset_ms": 1,
-        },
+        # {
+        #     "topic": "/gt_box/cpt7/offline_from_novatel_logs/imu",
+        #     "bag_pattern": "*_cpt7_raw_imu.bag",
+        #     "max_offset_ms": 1,
+        # },
     ]
 
     # validation_imus = [
@@ -361,6 +363,7 @@ def process_all(directory, output_folder, axis, plot, skip_seconds):
         print(log)
         return
 
+    print("reference_imu_file: ", reference_imu_file)
     sync_optimizer = IMUSyncOptimizer(reference_imu_file, reference_imu["topic"], tf_bag_file, axis, skip_seconds)
 
     rr.init("imu_timesync", spawn=False)
@@ -379,7 +382,9 @@ def process_all(directory, output_folder, axis, plot, skip_seconds):
 
         pattern = validation_imu["bag_pattern"]
         topic = validation_imu["topic"]
+        print("bag_file: ", bag_file)
         optimal_offset_ns, suc = sync_optimizer.time_sync_imu(bag_file, validation_imu["topic"])
+
         if not suc:
             log = f"{pattern} [FAILED] - Error processing data - {topic}"
             summary[pattern[2:]] = log
@@ -422,40 +427,57 @@ if __name__ == "__main__":
     master_summary = {}
     mission_summary = {}
 
-    missions = [
-        "2024-10-01-11-29-55_polybahn",
-        "2024-10-01-11-47-44_main_building_hall",
-        "2024-11-02-17-18-32_sphinx_walking_stairs_2",
-        "2024-11-03-13-51-43_eigergletscher_hike_down",
-        "2024-11-14-13-45-37_heap_testsite",
-        "2024-11-25-16-36-19_leica_warehouse_groundfloor",
-        "2024-11-11-12-42-47_pilatus_kulm_hike",
-        "2024-11-18-13-22-14_arche_demolished",
-    ]
+    from box_auto.utils import deployments
+    from box_auto.utils import BOX_AUTO_DIR
 
-    for t in [30, 60, 90, 120, 150]:
-        for mission in missions:
-            os.environ["MISSION_DATA"] = f"/media/jonfrey/Untitled/box_paper_dataset_v2/{mission}"
+    skip_till_found = True
+    for deployment in deployments:
+        for mission in deployment["mission_names"]:
+            # if mission == "2024-11-25-11-44-05":
+            #     skip_till_found = False
 
-            # from box_auto.utils import MISSION_DATA
-            MISSION_DATA = f"/media/jonfrey/Untitled/box_paper_dataset_v2/{mission}"
-            for axis in ["x", "y", "z"]:
-                print("Running for axis: ", axis)
+            # if skip_till_found:
+            #     continue
 
-                summary_path = Path(MISSION_DATA) / "verification" / "imu_timesync_summary.yaml"
-                summary_path.parent.mkdir(exist_ok=True)
+            MISSION_DATA = str(os.path.join(deployment["data_folder"], mission))
+            os.environ["MISSION_DATA"] = MISSION_DATA
 
-                master_summary[axis], offset_results = process_all(
-                    MISSION_DATA, output_folder=summary_path.parent, axis=axis, plot=False, skip_seconds=t
-                )
+            for t in [60, 120, 180]:
+                # from box_auto.utils import MISSION_DATA
 
-                mission_summary[mission + axis + "_" + str(t)] = offset_results
-                # Dump the dictionary to a YAML file
-                with open(str(summary_path), "w") as file:
-                    yaml.dump(master_summary, file, default_flow_style=False, width=1000)
+                for axis in ["x", "y"]:
+                    # Redirect stdout to devnull
+                    with open(os.devnull, "w") as devnull:
+                        old_stdout = sys.stdout
+                        old_stderr = sys.stderr
+                        sys.stdout = devnull
+                        sys.stderr = devnull
+                        try:
+                            summary_path = Path(MISSION_DATA) / "verification" / "imu_timesync_summary.yaml"
+                            summary_path.parent.mkdir(exist_ok=True)
+
+                            master_summary[axis], offset_results = process_all(
+                                MISSION_DATA, output_folder=summary_path.parent, axis=axis, plot=False, skip_seconds=t
+                            )
+
+                            mission_summary[mission + "_" + axis + "_" + str(t)] = offset_results
+                            # Dump the dictionary to a YAML file
+                            with open(str(summary_path), "w") as file:
+                                yaml.dump(master_summary, file, default_flow_style=False, width=1000)
+
+                            print("[ GOOD ] - ", mission + "_" + axis + "_" + str(t))
+
+                        except Exception as e:
+                            print("[ FAIL ] - ", mission + "_" + axis + "_" + str(t))
+                            print(e)
+                        finally:
+                            sys.stdout = old_stdout
+                            sys.stderr = old_stderr
 
     print(mission_summary)
 
-    summary_path = Path(MISSION_DATA) / "verification" / "all_missions_summary_skip_30.yaml"
+    summary_path = Path(BOX_AUTO_DIR) / "cfg" / "all_missions_summary_xy_60_120_180.yaml"
     with open(str(summary_path), "w") as file:
         yaml.dump(mission_summary, file, default_flow_style=False, width=1000)
+
+    print("Finished successfull all results can be found in: ", str(summary_path))
