@@ -121,7 +121,7 @@ def invert_transform(transform_msg):
 
 def okviz_trajectory_to_bag(input_csv, output_bag, world, sensor, cfg_str=None, cfg_topic=None):
     """Convert CSV file to ROS bag with pose and tf messages."""
-    with rosbag.Bag(output_bag, "w") as bag:
+    with rosbag.Bag(output_bag, "w", compression="lz4") as bag:
         write_cfg_str = cfg_str is not None and cfg_topic is not None
 
         with open(input_csv, "r") as csvfile:

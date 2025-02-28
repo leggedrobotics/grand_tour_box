@@ -89,9 +89,7 @@ def get_detections(
     return boxes.tolist()
 
 
-def create_mask_from_detections(
-    image: np.ndarray, detections: List[List[float]]
-) -> np.ndarray:
+def create_mask_from_detections(image: np.ndarray, detections: List[List[float]]) -> np.ndarray:
     """\
     takes a list of [x1, y1, x2, y2] detections and returns a 0 1 mask the same size as the image
     """
@@ -137,9 +135,7 @@ def pixelate_mask(image: np.ndarray, mask: np.ndarray) -> np.ndarray:
     return image
 
 
-def draw_boxes_of_detections(
-    image: np.ndarray, detections: List[List[float]]
-) -> np.ndarray:
+def draw_boxes_of_detections(image: np.ndarray, detections: List[List[float]]) -> np.ndarray:
     """\
     draws a box around each detection
     """
@@ -225,16 +221,10 @@ def blur_and_annotate_image(
     if flipped:
         image_bgr = cv2.rotate(image_bgr, cv2.ROTATE_180)
 
-    detections = get_detections(
-        detectors.face_detector, image_bgr, detectors.face_threshold
-    )
-    detections += get_detections(
-        detectors.lp_detector, image_bgr, detectors.lp_threshold
-    )
+    detections = get_detections(detectors.face_detector, image_bgr, detectors.face_threshold)
+    detections += get_detections(detectors.lp_detector, image_bgr, detectors.lp_threshold)
 
-    blurred_image, annotated_image = blur_and_annotated_image_given_detections(
-        image_bgr, detections
-    )
+    blurred_image, annotated_image = blur_and_annotated_image_given_detections(image_bgr, detections)
 
     number_of_detections = count_number_of_detections(detections)
 
@@ -301,9 +291,7 @@ def save_image_to_bag(
     """
 
     # write the image
-    msg = save_image_to_ros1_message(
-        image, cv_bridge, compressed=compressed, grayscale=grayscale
-    )
+    msg = save_image_to_ros1_message(image, cv_bridge, compressed=compressed, grayscale=grayscale)
     msg.header.stamp = timestamp
     bag.write(topic, msg, timestamp)
 
@@ -321,9 +309,7 @@ def anonymize_image_topics_in_bagfile(
     flip_images_for_inference: bool = False,
 ) -> None:
     cv_bridge = CvBridge()
-    with rosbag.Bag(str(input_path), "r") as in_bag, rosbag.Bag(
-        str(output_path), "w", compression="lz4"
-    ) as out_bag:
+    with rosbag.Bag(str(input_path), "r") as in_bag, rosbag.Bag(str(output_path), "w", compression="lz4") as out_bag:
         for topic, msg, timestamp in tqdm.tqdm(
             in_bag.read_messages(),
             total=in_bag.get_message_count(),
@@ -366,9 +352,7 @@ def process_bagfile(
     output_dir.mkdir(exist_ok=True)
 
     output_path = output_dir / f"{input_path.stem}_anonymized{input_path.suffix}"
-    anonymize_image_topics_in_bagfile(
-        input_path, output_path, image_topics, detectors, flip_images_for_inference
-    )
+    anonymize_image_topics_in_bagfile(input_path, output_path, image_topics, detectors, flip_images_for_inference)
     upload_bag(output_path)
 
 

@@ -4,6 +4,7 @@ import rosbag
 import rospy
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import PoseWithCovarianceStamped, Point, Quaternion, TransformStamped, Vector3, PoseStamped
+from gnss_msgs.msg import GnssRaw
 from tf2_msgs.msg import TFMessage
 from scipy.spatial.transform import Rotation
 from pathlib import Path
@@ -31,6 +32,7 @@ def main():
 
     gps_files = [str(s) for s in (Path(MISSION_DATA) / "ie").rglob("*_GrandTour-LocalFrame-minimal.txt")]
     post_proc_modes = [s.split("/")[-1].split("_")[1] for s in gps_files]
+    print(post_proc_modes, MISSION_DATA)
     bag_paths = [
         str(Path(s).parent.parent / (date + f"_cpt7_ie_{mode}.bag")) for s, mode in zip(gps_files, post_proc_modes)
     ]
@@ -66,40 +68,37 @@ def main():
                 nsecs = int(nsecs + "0" * (9 - len(nsecs)))
 
                 timestamp = rospy.Time(secs=secs, nsecs=nsecs)
+                msg = GnssRaw()
+                msg.position_ecef.x = position[0]
+                msg.position_ecef.y = position[1]
+                msg.position_ecef.z = position[2]
+
+                msg.position_ecef_std.x = position_std[0]
+                msg.position_ecef_std.y = position_std[1]
+                msg.position_ecef_std.z = position_std[2]
+
+                msg.orientation_hrp.x = orientation_hrp[0]
+                msg.orientation_hrp.y = orientation_hrp[1]
+                msg.orientation_hrp.z = orientation_hrp[2]
+
+                msg.orientation_hrp_std.x = orientation_hrp_std[0]
+                msg.orientation_hrp_std.y = orientation_hrp_std[1]
+                msg.orientation_hrp_std.z = orientation_hrp_std[2]
+                msg.header.seq = i
+                msg.header.stamp = timestamp
+                msg.header.frame_id = frame_id
 
                 if i == 0:
-                    msg = Vector3(x=position[0], y=position[1], z=position[2])
                     bag.write(
-                        topic=f"/gt_box/inertial_explorer/{post_proc_mode}/origin/position_ecef", msg=msg, t=timestamp
-                    )
-                    msg = Vector3(x=position_std[0], y=position_std[1], z=position_std[2])
-                    bag.write(
-                        topic=f"/gt_box/inertial_explorer/{post_proc_mode}/origin/position_ecef_std",
-                        msg=msg,
-                        t=timestamp,
-                    )
-                    msg = Vector3(x=orientation_hrp[0], y=orientation_hrp[1], z=orientation_hrp[2])
-                    bag.write(
-                        topic=f"/gt_box/inertial_explorer/{post_proc_mode}/origin/orientation_hrp", msg=msg, t=timestamp
-                    )
-                    msg = Vector3(x=orientation_hrp_std[0], y=orientation_hrp_std[1], z=orientation_hrp_std[2])
-                    bag.write(
-                        topic=f"/gt_box/inertial_explorer/{post_proc_mode}/origin/orientation_hrp_std",
+                        topic=f"/gt_box/inertial_explorer/{post_proc_mode}/origin",
                         msg=msg,
                         t=timestamp,
                     )
 
-                msg = Vector3(x=position[0], y=position[1], z=position[2])
-                bag.write(topic=f"/gt_box/inertial_explorer/{post_proc_mode}/raw/position_ecef", msg=msg, t=timestamp)
-                msg = Vector3(x=position_std[0], y=position_std[1], z=position_std[2])
                 bag.write(
-                    topic=f"/gt_box/inertial_explorer/{post_proc_mode}/raw/position_ecef_std", msg=msg, t=timestamp
-                )
-                msg = Vector3(x=orientation_hrp[0], y=orientation_hrp[1], z=orientation_hrp[2])
-                bag.write(topic=f"/gt_box/inertial_explorer/{post_proc_mode}/raw/orientation_hrp", msg=msg, t=timestamp)
-                msg = Vector3(x=orientation_hrp_std[0], y=orientation_hrp_std[1], z=orientation_hrp_std[2])
-                bag.write(
-                    topic=f"/gt_box/inertial_explorer/{post_proc_mode}/raw/orientation_hrp_std", msg=msg, t=timestamp
+                    topic=f"/gt_box/inertial_explorer/{post_proc_mode}/raw",
+                    msg=msg,
+                    t=timestamp,
                 )
 
                 if start_time is None:

@@ -15,7 +15,7 @@ if __name__ == "__main__":
         "/gt_box/alphasense_driver_node/cam3/color/image/compressed": "alphasense_front_left",
     }
     with rosbag.Bag(input_file_path, "r") as inbag:
-        with rosbag.Bag(output_file_path, "w") as outbag:
+        with rosbag.Bag(output_file_path, "w", compression="lz4") as outbag:
             for topic, msg, t in inbag.read_messages():
                 if topic in frame_id_map:
                     msg.header.frame_id = frame_id_map[topic]

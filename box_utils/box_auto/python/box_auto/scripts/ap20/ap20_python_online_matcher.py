@@ -93,6 +93,7 @@ def read_bag_file(bag_path):
 
     all_matches = []
     counter_ts = 0
+    counter_positions_in = 0
     output_bag_path = bag_path.replace("jetson_ap20_aux", "jetson_ap20_synced")
 
     if os.path.exists(output_bag_path):
@@ -100,14 +101,22 @@ def read_bag_file(bag_path):
 
     with rosbag.Bag(output_bag_path, "w") as bag_out:
         with rosbag.Bag(bag_path, "r") as bag:
+            for topic, msg, t in bag.read_messages():
+
+                bag_start_time = t
+                if t is not None:
+                    break
+            target_time = bag_start_time + rospy.Duration.from_sec(2)
 
             for topic, msg, t in bag.read_messages(
-                topics=["/gt_box/ap20/imu_debug", "/gt_box/ap20/position_debug", "/gt_box/ap20/timestamp_debug"]
+                topics=["/gt_box/ap20/imu_debug", "/gt_box/ap20/position_debug", "/gt_box/ap20/timestamp_debug"],
+                start_time=target_time,
             ):
                 if topic == "/gt_box/ap20/imu_debug":
                     imu_debug_data.append(msg)
                 elif topic == "/gt_box/ap20/position_debug":
                     position_debug_data.append(msg)
+                    counter_positions_in += 1
                 elif topic == "/gt_box/ap20/timestamp_debug":
                     timestamp_debug_data.append(msg)
 
@@ -196,11 +205,22 @@ def read_bag_file(bag_path):
                             bag_out.write("/gt_box/ap20/prism_position", new_msg, new_msg.header.stamp)
 
                             all_matches = all_matches[i - 1 :]
+                            print("all_matches: ", len(all_matches))
                         else:
                             print("delta to high - removing the timestamp")
                     else:
                         if ref == -1:
                             position_debug_data.appendleft(position)
+                        else:
+                            print("Skipped writing the message ?", ref)
+                            print(
+                                "Last IMU match ",
+                                all_matches[0].imu_time.to_sec(),
+                                "Match position data",
+                                position.position.header.stamp.to_sec(),
+                            )
+                            if all_matches[0].imu_time.to_sec() > position.position.header.stamp.to_sec() + 30:
+                                print("Wrong reset matching positions")
 
                 if len(imu_debug_data) > 0 and len(timestamp_debug_data) > 0:
                     new_imu_msg = imu_debug_data.popleft()
@@ -213,6 +233,9 @@ def read_bag_file(bag_path):
                         if valid:
                             last_match = candidate
                             last_match.publish(bag_out, counter)
+
+                            all_matches = []
+
                             all_matches.append(last_match)
                         else:
                             if candidate.get_line_delay() < 0.0:
@@ -238,6 +261,13 @@ def read_bag_file(bag_path):
                                 + " --- "
                                 + f"{new_imu_msg.header.seq} ERROR - Hardware Accuracy bad"
                             )
+                            # Correct way would be to only discard the timestamp
+
+                            if res["N_imu_time"] > 0:
+                                imu_debug_data.appendleft(new_imu_msg)
+                                continue
+
+                            print("resync")
 
                         if res["N_imu_messages"] == res["N_imu_count"] != res["N_imu_time"]:
                             print(
@@ -256,6 +286,10 @@ def read_bag_file(bag_path):
                             matching_results["prefect_match"] += 1
                             last_match = candidate
                             last_match.publish(bag_out, counter)
+
+                            # if all_matches[-1].imu_time.to_sec() > last_match.imu_time.to_sec():
+                            #     all_matches = []
+
                             all_matches.append(last_match)
                             line_delay.append(res["ROS_arrivial_line_delay"])
                             if line_delay[-1] > 0.01:
@@ -266,6 +300,9 @@ def read_bag_file(bag_path):
                             matching_results["prefect_match"] += 1
                             last_match = candidate
                             last_match.publish(bag_out, counter)
+
+                            # if all_matches[-1].imu_time.to_sec() > last_match.imu_time.to_sec():
+                            #     all_matches = []
                             all_matches.append(last_match)
                             line_delay.append(res["ROS_arrivial_line_delay"])
                             if line_delay[-1] > 0.01:
@@ -290,8 +327,15 @@ def read_bag_file(bag_path):
                                 + " --- "
                                 + "WARNING - We assume it is now working again and we are synced == 1.005 ???"
                             )
+
                             last_match = candidate
                             last_match.publish(bag_out, counter)
+                            # if all_matches[-1].imu_time.to_sec() > last_match.imu_time.to_sec():
+                            #     all_matches = []
+
+                            if all_matches[-1].imu_time.to_sec() > last_match.imu_time.to_sec():
+                                all_matches = []
+
                             all_matches.append(last_match)
                             line_delay.append(res["ROS_arrivial_line_delay"])
 
@@ -334,7 +378,7 @@ def read_bag_file(bag_path):
         " median: ",
         np.median(np.array(line_delay)),
     )
-
+    print("counter_positions_in: ", counter_positions_in, " counter_ts: ", counter_ts)
     print(np.where(np.array(line_delay) == np.array(line_delay).max()))
 
     return {

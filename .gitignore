@@ -20,3 +20,7 @@ box_utils/box_auto/compose/*_local.yaml
 box_utils/box_auto/cfg/*_local.yaml
 videos/*
 .secrets/*
+box_utils/box_converter/image-anonymization-pipeline/models/ego_blur_face.jit
+box_utils/box_converter/image-anonymization-pipeline/models/ego_blur_lp.jit
+box_utils/box_auto/cfg/all_missions_summary_xy_60_120_180.yaml
+box_utils/box_auto/cfg/mission_metadata.yaml

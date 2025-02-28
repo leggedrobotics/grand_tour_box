@@ -46,6 +46,8 @@ set(CATKIN_PACKAGE_DEPENDENCIES
   cv_bridge
   visualization_msgs
   open3d_catkin
+  anymal_msgs
+  gnss_msgs
   )
 
 # We pass the path of the `FindXYZ.cmake` files to `CMAKE_MODULE_PATH`

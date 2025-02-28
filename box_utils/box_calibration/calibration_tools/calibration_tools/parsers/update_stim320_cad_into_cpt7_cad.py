@@ -57,8 +57,7 @@ def save_xyzrpy_yaml(path, data):
     for k, v in data.items():
         t = v[:3, -1].tolist()
         rpy = Rotation.from_matrix(v[:3, :3]).as_euler("xyz").tolist()
-        output_data[k] = dict(x=t[0], y=t[1], z=t[2],
-                              roll=rpy[0], pitch=rpy[1], yaw=rpy[2])
+        output_data[k] = dict(x=t[0], y=t[1], z=t[2], roll=rpy[0], pitch=rpy[1], yaw=rpy[2])
     with open(path, "w") as f:
         yaml.dump(output_data, f, Dumper=NoOrderedDumper, default_flow_style=False, sort_keys=False)
 
@@ -79,19 +78,20 @@ def load_xyzrpy_yaml(path):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Parse HTML Assembly file and current STIM320 CAD"
-                                                 " and output new CAD based in CPT7.")
+    parser = argparse.ArgumentParser(
+        description="Parse HTML Assembly file and current STIM320 CAD" " and output new CAD based in CPT7."
+    )
     parser.add_argument("--input_html", "-i", type=str, help="Path to the HTML file to parse.")
     args = parser.parse_args()
     html_transformations = parse_html(args.input_html)
-    OLD_REFERENCE_FRAME = 'STIM320 Coordinate System'
-    NEW_REFERENCE_FRAME = 'CPT7 Coordinate System'
+    OLD_REFERENCE_FRAME = "STIM320 Coordinate System"
+    NEW_REFERENCE_FRAME = "CPT7 Coordinate System"
     T_cadbase_oldref = html_transformations[OLD_REFERENCE_FRAME]
     T_cadbase_newref = html_transformations[NEW_REFERENCE_FRAME]
     T_newref_oldref = np.linalg.inv(T_cadbase_newref) @ T_cadbase_oldref
 
     rospack = rospkg.RosPack()
-    package_name = 'box_calibration'
+    package_name = "box_calibration"
     package_path = rospack.get_path(package_name)
     old_calibration_in_STIM320 = load_xyzrpy_yaml(os.path.join(package_path, "calibration/tf/calibration_latest.yaml"))
 
@@ -114,10 +114,9 @@ def main():
         print(v)
         print()
 
-    save_xyzrpy_yaml(os.path.join(
-        package_path,
-        "calibration/tf/calibration_latest_in_cpt7.yaml"),
-        new_calibration_in_cpt7)
+    save_xyzrpy_yaml(
+        os.path.join(package_path, "calibration/tf/calibration_latest_in_cpt7.yaml"), new_calibration_in_cpt7
+    )
 
 
 if __name__ == "__main__":

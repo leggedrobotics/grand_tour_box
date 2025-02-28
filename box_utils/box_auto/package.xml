@@ -32,7 +32,9 @@
   <depend>nav_msgs</depend>
   <depend>visualization_msgs</depend>
   <depend>open3d_catkin</depend>
-
+  <depend>anymal_msgs</depend>
+  <depend>gnss_msgs</depend>
+  
   <!-- To disable 3rd party application building. Set export DEBUG_MODE=1 -->
   <depend condition="$DEBUG_MODE != 1">direct_lidar_inertial_odometry</depend>
   <depend condition="$DEBUG_MODE != 1">raw_image_pipeline_python</depend>

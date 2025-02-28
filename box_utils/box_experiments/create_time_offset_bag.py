@@ -38,7 +38,7 @@ def create_time_offset_bag(offset_time_in_ns, topic_name, output_folder, input_p
     output_bag_path.parent.mkdir(parents=True, exist_ok=True)
 
     with rosbag.Bag(bag_input_path, "r") as bag_reader:
-        with rosbag.Bag(str(output_bag_path), "w") as bag_writer:
+        with rosbag.Bag(str(output_bag_path), "w", compression="lz4") as bag_writer:
             for topic, msg, t in bag_reader.read_messages():
 
                 if topic == topic_name:

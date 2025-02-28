@@ -16,7 +16,7 @@ def parse_csv_to_posestamped(input_csv, output_rosbag):
     with open(input_csv, mode="r") as csv_file:
         csv_reader = csv.DictReader(csv_file, delimiter=";")
         # Create the ROS bag
-        with rosbag.Bag(output_rosbag, "w") as bag:
+        with rosbag.Bag(output_rosbag, "w", compression="lz4") as bag:
             for row in csv_reader:
                 # Extract data
                 try:
