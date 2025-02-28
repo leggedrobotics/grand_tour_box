@@ -1,13 +1,17 @@
 from box_auto.utils import UUID_MAPPING
 import os
 
+# srun --account=es_hutter --ntasks=1 --cpus-per-task=1 --gpus=1 --time=4:00:00 --mem-per-cpu=8024 --pty bash
+
 SCHEDULE = False
 submit_dir = os.path.expanduser("~/git/grand_tour_box/box_utils/box_converter/cluster/.submit")
 
+if not os.path.exists(submit_dir):
+    os.makedirs(submit_dir)
+
 for uuid, new_uuid in UUID_MAPPING.items():
     for topic_key in ["hdr_left", "hdr_right", "hdr_front"]:
-        content = f"""
-#!/bin/bash
+        content = f"""#!/bin/bash
 
 #SBATCH --account=es_hutter
 #SBATCH --ntasks=1
