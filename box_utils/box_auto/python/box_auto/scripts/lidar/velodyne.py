@@ -51,6 +51,11 @@ def launch_nodes(patterns, output_bag_path):
     print("Moving and uploading bag!")
     kill_roscore()
 
+    # Remove the merged rosbag file as it's no longer needed
+    if os.path.exists(merged_rosbag_path):
+        print(f"Removing merged rosbag at {merged_rosbag_path}")
+        os.remove(merged_rosbag_path)
+
     upload_bag(output_bag_path)
 
 

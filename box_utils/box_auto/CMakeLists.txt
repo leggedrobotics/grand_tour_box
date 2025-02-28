@@ -48,6 +48,7 @@ set(CATKIN_PACKAGE_DEPENDENCIES
   open3d_catkin
   anymal_msgs
   gnss_msgs
+  any_velodyne_pointcloud
   )
 
 # We pass the path of the `FindXYZ.cmake` files to `CMAKE_MODULE_PATH`

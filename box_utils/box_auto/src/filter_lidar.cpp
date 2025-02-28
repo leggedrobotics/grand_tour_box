@@ -242,8 +242,10 @@ int main(int argc, char** argv) {
     operation_mode = "livox";
   } else if (input_bag_path.find("hesai") != std::string::npos) {
     operation_mode = "hesai";
+  } else if (input_bag_path.find("velodyne") != std::string::npos) {
+    operation_mode = "velodyne";
   } else {
-    ROS_ERROR("Input bag path does not specify a valid operation mode (livox or hesai): %s", input_bag_path.c_str());
+    ROS_ERROR("Input bag path does not specify a valid operation mode (livox, velodyne or hesai): %s", input_bag_path.c_str());
     return -1;
   }
 
@@ -318,17 +320,16 @@ int main(int argc, char** argv) {
     ROS_INFO(" - Range: [%f, %f]", range.first, range.second);
   }
 
+  // Print input topics in green color
+  ROS_INFO("\033[32mInput topics for mode %s:\033[0m", operation_mode.c_str());
+  for (const auto& topic : input_topics) {
+    ROS_INFO("\033[32m - %s\033[0m", topic.c_str());
+  }
+
   input_topic = input_topics[0];
 
   std::string output_topic = "";
   nh.getParam("output_topic", output_topic);
-
-  // If output topic is empty, use input topic
-  if (output_topic.empty()) {
-    output_topic = input_topic;
-  }
-
-  ros::Publisher pub = nh.advertise<sensor_msgs::PointCloud2>(output_topic + "/filtered", 1, true);
 
   // Open bags
   rosbag::Bag input_bag, output_bag;
@@ -349,7 +350,8 @@ int main(int argc, char** argv) {
     return -1;
   }
 
-  std::string cloud_frame;
+  std::string pub_topic{""};
+  std::string cloud_frame{""};
   {
     // Extract the frame id from the first valid point cloud message
     rosbag::View frame_view(input_bag, rosbag::TopicQuery(input_topic));
@@ -357,6 +359,7 @@ int main(int argc, char** argv) {
       sensor_msgs::PointCloud2::ConstPtr cloud_msg = frame_msg.instantiate<sensor_msgs::PointCloud2>();
       if (cloud_msg) {
         cloud_frame = cloud_msg->header.frame_id;
+        pub_topic = frame_msg.getTopic();
         break;
       }
     }
@@ -365,6 +368,8 @@ int main(int argc, char** argv) {
     ROS_WARN("Could not determine cloud frame, defaulting to 'hesai_lidar'");
     return -1;
   }
+
+  ros::Publisher pub = nh.advertise<sensor_msgs::PointCloud2>(pub_topic + "/filtered", 1, true);
 
   visualization_msgs::Marker marker;
   marker.header.frame_id = cloud_frame;  // Adjust frame as needed
@@ -409,7 +414,9 @@ int main(int argc, char** argv) {
   size_t total_msgs = view.size();
   size_t processed = 0;
   for (const rosbag::MessageInstance& msg : view) {
-    if (msg.getTopic() == input_topic) {
+    // Check if the message topic is in the input_topics vector
+    if (std::find(input_topics.begin(), input_topics.end(), msg.getTopic()) != input_topics.end()) {
+      // if (msg.getTopic() == input_topic) {
       sensor_msgs::PointCloud2::ConstPtr cloud_msg = msg.instantiate<sensor_msgs::PointCloud2>();
       if (!cloud_msg) {
         // Not the correct type or empty
@@ -540,13 +547,13 @@ int main(int argc, char** argv) {
         return -1;
       }
 
-      if (pub.getNumSubscribers() > 0) {
+      if ((pub.getNumSubscribers() > 0) && (input_topics[0] == msg.getTopic())) {
         pub.publish(filtered_msg);
       }
       ros::spinOnce();
 
       // Write to output bag
-      output_bag.write(output_topic, filtered_msg.header.stamp, filtered_msg);
+      output_bag.write(msg.getTopic(), filtered_msg.header.stamp, filtered_msg);
 
       if (slow_down_for_debug) {
         rate.sleep();
@@ -561,6 +568,8 @@ int main(int argc, char** argv) {
         }
         output_bag.write(msg.getTopic(), imu_msg->header.stamp, imu_msg);
       } else if (operation_mode == "hesai") {
+        output_bag.write(msg.getTopic(), msg.getTime(), msg);
+      } else if (operation_mode == "velodyne") {
         output_bag.write(msg.getTopic(), msg.getTime(), msg);
       } else {
         ROS_ERROR("Unknown operation mode: %s", operation_mode.c_str());
