@@ -323,9 +323,9 @@ def add_universal_attributes(
 
 
 def load_topic_registry_from_config(
-    data_config_object: Mapping[str, List[Mapping[str, Any]]],
+    data_config_object: Mapping[str, List[Mapping[str, Any]]], mission_name: str
 ) -> TopicRegistry:
-    registry = {}
+    registry: TopicRegistry = {}
     assert isinstance(
         data_config_object, Mapping
     ), "data part of config file must be a mapping"
@@ -405,12 +405,17 @@ def load_topic_registry_from_config(
         registry.update(
             extract_singleton_transform_topic_attributes(singleton_transform_topics)
         )
+        for _, topic_obj in registry.values():
+            topic_obj.file = topic_obj.file.format(mission_name)
+
     except Exception as e:
         raise ValueError(f"error parsing data part of config file: {e}") from e
     return add_universal_attributes(registry)
 
 
-def load_metadata_config(metadata_config_object: Mapping[str, Any]) -> MetadataConfig:
+def load_metadata_config(
+    metadata_config_object: Mapping[str, Any], mission_name: str
+) -> MetadataConfig:
     camera_intrinsics_object = metadata_config_object.get(CAMERA_INTRISICS_KEY, [])
 
     try:
@@ -430,11 +435,17 @@ def load_metadata_config(metadata_config_object: Mapping[str, Any]) -> MetadataC
             f"error parsing {FRAME_TRANSFORMS_KEY!r} part of config file: {e}"
         ) from e
 
+    # format file names
+    frame_transforms.file = frame_transforms.file.format(mission_name)
+    for camera in camera_intrinsics:
+        camera.file = camera.file.format(mission_name)
+
     return MetadataConfig(camera_intrinsics, frame_transforms)
 
 
-def load_config(config_path: Path) -> Tuple[TopicRegistry, MetadataConfig]:
-
+def load_config(
+    config_path: Path, mission_name: str
+) -> Tuple[TopicRegistry, MetadataConfig]:
     with open(config_path, "r") as f:
         config_object = yaml.safe_load(f)
 
@@ -447,6 +458,6 @@ def load_config(config_path: Path) -> Tuple[TopicRegistry, MetadataConfig]:
         ) from e
 
     return (
-        load_topic_registry_from_config(data_config_object),
-        load_metadata_config(metadata_config_object),
+        load_topic_registry_from_config(data_config_object, mission_name),
+        load_metadata_config(metadata_config_object, mission_name),
     )

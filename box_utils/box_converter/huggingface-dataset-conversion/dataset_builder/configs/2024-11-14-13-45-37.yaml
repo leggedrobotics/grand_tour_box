@@ -1,0 +1,277 @@
+metadata:
+  camera_intrinsics:
+    - alias: zed2i_depth_caminfo
+      file: "{}_jetson_zed2i_depth.mcap"
+      topic: /gt_box/zed2i/zed_node/depth/camera_info
+
+    - alias: zed2i_left_caminfo
+      file: "{}_jetson_zed2i_images.mcap"
+      topic: "/gt_box/zed2i/zed_node/left/camera_info"
+    - alias: zed2i_right_caminfo
+      file: "{}_jetson_zed2i_images.mcap"
+      topic: "/gt_box/zed2i/zed_node/right/camera_info"
+
+    - alias: alphasense_cam1_caminfo
+      file: "{}_nuc_alphasense.mcap"
+      topic: "/gt_box/alphasense_driver_node/cam1/color/camera_info"
+    - alias: alphasense_cam2_caminfo
+      file: "{}_nuc_alphasense.mcap"
+      topic: "/gt_box/alphasense_driver_node/cam2/color/camera_info"
+    - alias: alphasense_cam3_caminfo
+      file: "{}_nuc_alphasense.mcap"
+      topic: "/gt_box/alphasense_driver_node/cam3/color/camera_info"
+    - alias: alphasense_cam4_caminfo
+      file: "{}_nuc_alphasense.mcap"
+      topic: "/gt_box/alphasense_driver_node/cam4/color/camera_info"
+    - alias: alphasense_cam5_caminfo
+      file: "{}_nuc_alphasense.mcap"
+      topic: "/gt_box/alphasense_driver_node/cam5/color/camera_info"
+
+    - alias: hdr_left_caminfo
+      file: "{}_jetson_hdr_left_updated.mcap"
+      topic: "/gt_box/hdr_left/camera_info"
+    - alias: hdr_front_caminfo
+      file: "{}_jetson_hdr_front_updated.mcap"
+      topic: "/gt_box/hdr_front/camera_info"
+    - alias: hdr_right_caminfo
+      file: "{}_jetson_hdr_right_updated.mcap"
+      topic: "/gt_box/hdr_right/camera_info"
+  frame_transforms:
+    base_frame: base
+    file: "{}_tf_static.mcap"
+    topic: /tf_static
+
+data:
+  image_topics:
+    - alias: zed2i_depth
+      file: "{}_jetson_zed2i_depth.mcap"
+      topic: "/gt_box/zed2i/zed_node/depth_mono/depth_registered/compressed"
+      compressed: true
+      format: png
+    - alias: zed2i_confidence
+      file: "{}_jetson_zed2i_depth.mcap"
+      topic: "/gt_box/zed2i/zed_node/confidence_mono/confidence_map/compressed"
+      format: png
+      compressed: true
+
+    - alias: zed2i_left
+      file: "{}_jetson_zed2i_images.mcap"
+      topic: "/gt_box/zed2i/zed_node/left/image_rect_color/compressed"
+      format: jpeg
+      compressed: true
+    - alias: zed2i_right
+      file: "{}_jetson_zed2i_images.mcap"
+      topic: "/gt_box/zed2i/zed_node/right/image_rect_color/compressed"
+      format: jpeg
+      compressed: true
+
+    - alias: alphasense_cam1
+      file: "{}_nuc_alphasense.mcap"
+      topic: "/gt_box/alphasense_driver_node/cam1/color/image/compressed"
+      format: jpeg
+      compressed: true
+    - alias: alphasense_cam2
+      file: "{}_nuc_alphasense.mcap"
+      topic: "/gt_box/alphasense_driver_node/cam2/color/image/compressed"
+      format: jpeg
+      compressed: true
+    - alias: alphasense_cam3
+      file: "{}_nuc_alphasense.mcap"
+      topic: "/gt_box/alphasense_driver_node/cam3/color/image/compressed"
+      format: jpeg
+      compressed: true
+    - alias: alphasense_cam4
+      file: "{}_nuc_alphasense.mcap"
+      topic: "/gt_box/alphasense_driver_node/cam4/color/image/compressed"
+      format: jpeg
+      compressed: true
+    - alias: alphasense_cam5
+      file: "{}_nuc_alphasense.mcap"
+      topic: "/gt_box/alphasense_driver_node/cam5/color/image/compressed"
+      format: jpeg
+      compressed: true
+
+    - alias: hdr_left
+      file: "{}_jetson_hdr_left_updated.mcap"
+      topic: "/gt_box/hdr_left/image_raw/compressed"
+      format: jpeg
+      compressed: true
+    - alias: hdr_front
+      file: "{}_jetson_hdr_front_updated.mcap"
+      topic: "/gt_box/hdr_front/image_raw/compressed"
+      format: jpeg
+      compressed: true
+    - alias: hdr_right
+      file: "{}_jetson_hdr_right_updated.mcap"
+      topic: "/gt_box/hdr_right/image_raw/compressed"
+      format: jpeg
+      compressed: true
+
+  lidar_topics:
+    - alias: hesai
+      file: "{}_nuc_hesai_post_processed.mcap"
+      topic: "/gt_box/hesai/points"
+      max_points: 64000
+      attributes:
+        - intensity
+        - ring
+        - timestamp
+    - alias: livox
+      file: "{}_nuc_livox.mcap"
+      topic: "/gt_box/livox/lidar"
+      max_points: 64000
+      attributes:
+        - intensity
+        - tag
+        - line
+        - timestamp
+    - alias: dlio
+      file: "{}_hesai_dlio.mcap"
+      topic: "/dlio/deskewed_point_cloud"
+      max_points: 64000
+      attributes:
+        - intensity
+        - timestamp
+
+  # pose_topics:
+    # do we want both? is the 2nd a superset of the 1st?
+    # - alias: ground_truth
+    #   file: "{}_gt_pose.mcap"
+    #   topic: "/gt_box/ground_truth/pose_stamped"
+    #   covariance: false
+    # - alias: ground_truth_with_cov
+    #   file: "{}_gt_pose.mcap"
+    #   topic: "/gt_box/ground_truth/pose_with_covariance"
+    #   covariance: true
+
+    # - alias: dlio_pose
+    #   file: "{}_hesai_dlio.mcap"
+    #   topic: "/dlio/lidar_odometry_as_posestamped"
+    #   covariance: false
+
+    # novatel, do we want all 4?
+    # - alias: novatel
+    #   file: "{}_cpt7_gps_ie.mcap"
+    #   topic: "/gt_box/inertial_explorer/gt_poses_novatel"
+    #   covariance: true
+    # - alias: novatel_dgps
+    #   file: "{}_cpt7_ie_dgps.mcap"
+    #   topic: "/gt_box/inertial_explorer/dgps/gt_poses_novatel"
+    #   covariance: true
+    # - alias: novatel_tc
+    #   file: "{}_cpt7_ie_tc.mcap"
+    #   topic: "/gt_box/inertial_explorer/tc/gt_poses_novatel"
+    #   covariance: true
+    # - alias: novatel_lc
+    #   file: "{}_cpt7_ie_lc.mcap"
+    #   topic: "/gt_box/inertial_explorer/lc/gt_poses_novatel"
+    #   covariance: true
+    # - alias: novatel_ppp
+    #   file: "{}_cpt7_ie_ppp.mcap"
+    #   topic: "/gt_box/inertial_explorer/ppp/gt_poses_novatel"
+    #   covariance: true
+
+  imu_topics:
+    - alias: adis_imu
+      file: "{}_jetson_adis.mcap"
+      topic: "/gt_box/adis16475_node/imu"
+    - alias: ap20_imu
+      file: "{}_jetson_ap20_synced.mcap"
+      topic: "/gt_box/ap20/imu"
+    - alias: stim_imu
+      file: "{}_jetson_stim.mcap"
+      topic: "/gt_box/stim320/imu"
+
+    # do we want both?
+    - alias: livox_imu
+      file: "{}_nuc_livox.mcap"
+      topic: "/gt_box/livox/imu"
+    - alias: livox_imu_si_compliant
+      file: "{}_nuc_livox.mcap"
+      topic: "/gt_box/livox/imu_si_compliant"
+
+    - alias: zed2i_imu
+      file: "{}_jetson_zed2i_prop.mcap"
+      topic: "/gt_box/zed2i/zed_node/imu/data"
+
+    # do we want both?
+    - alias: cpt7_imu
+      file: "{}_nuc_cpt7.mcap"
+      topic: "/gt_box/cpt7/gps/imu"
+    - alias: cpt7_imu_offline_from_novatel
+      file: "{}_cpt7_raw_imu.mcap"
+      topic: "/gt_box/cpt7/offline_from_novatel_logs/imu"
+
+  # we should use better aliases that are conistent with the corresponding point clouds / poses
+  odometry_topics:
+    # do we want all of these?
+    # - alias: novatel_odometry
+    #   file: "{}_cpt7_gps_ie.mcap"
+    #   topic: "/gt_box/inertial_explorer/odometry"
+    # - alias: novatel_tc_odometry
+    #   file: "{}_cpt7_ie_tc.mcap"
+    #   topic: "/gt_box/inertial_explorer/tc/odometry"
+    # - alias: novatel_ppp_odometry
+    #   file: "{}_cpt7_ie_ppp.mcap"
+    #   topic: "/gt_box/inertial_explorer/ppp/odometry"
+    # - alias: novatel_lc_odometry
+    #   file: "{}_cpt7_ie_lc.mcap"
+    #   topic: "/gt_box/inertial_explorer/lc/odometry"
+    # - alias: novatel_dgps_odometry
+    #   file: "{}_cpt7_ie_dgps.mcap"
+    #   topic: "/gt_box/inertial_explorer/dgps/odometry"
+
+    # do we want both?
+    # - alias: dlio_odometry
+    #   file: "{}_hesai_dlio.mcap"
+    #   topic: "/dlio/lidar_odometry"
+    - alias: dlio_map_odometry
+      file: "{}_hesai_dlio.mcap"
+      topic: "/dlio/lidar_map_odometry"
+
+    - alias: cpt7_odometry
+      file: "{}_nuc_cpt7.mcap"
+      topic: "/gt_box/cpt7/odom"
+    - alias: zed2i_odometry
+      file: "{}_jetson_zed2i_prop.mcap"
+      topic: "/gt_box/zed2i/zed_node/odom"
+
+  nav_sat_fix_topics:
+    - alias: cpt7_gps
+      file: "{}_nuc_cpt7.mcap"
+      topic: "/gt_box/cpt7/gps/fix"
+
+  magnetic_field_topics:
+    - alias: zed2i_magnetic_field
+      file: "{}_jetson_zed2i_prop.mcap"
+      topic: "/gt_box/zed2i/zed_node/imu/mag"
+
+  # is this a duplicate of the "ground_truth" stuff?
+  point_topics:
+    - alias: prism
+      file: "{}_jetson_ap20_synced.mcap"
+      topic: "/gt_box/ap20/prism_position"
+
+  singleton_transform_topics:
+    # im pretty sure this is a duplicate of cpt7_gps
+    # - alias: cpt7_gps_tf
+    #   file: "{}_cpt7_gps_ie.mcap"
+    #   topic: "/tf"
+    # - alias: cpt7_dgps_tf
+    #   file: "{}_cpt7_ie_dgps.mcap"
+    #   topic: "/tf"
+    # - alias: cpt7_lc_tf
+    #   file: "{}_cpt7_ie_lc.mcap"
+    #   topic: "/tf"
+    # - alias: cpt7_tc_tf
+    #   file: "{}_cpt7_ie_tc.mcap"
+    #   topic: "/tf"
+    # - alias: cpt7_ppp_tf
+    #   file: "{}_cpt7_ie_ppp.mcap"
+    #   topic: "/tf"
+    # - alias: cpt7_post_processed_tf
+    #   file: "{}_nuc_cpt7_post_processed_tf.mcap"
+    #   topic: "/tf"
+    - alias: zed2i_tf
+      file: "{}_jetson_zed2i_tf.mcap"
+      topic: "/tf"
