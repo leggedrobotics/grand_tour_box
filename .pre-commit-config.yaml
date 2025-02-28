@@ -28,5 +28,5 @@ repos:
     rev: v4.5.0 # Use the version you want
     hooks:
       - id: check-added-large-files
-        args: ["--maxkb=2000"]
+        args: ["--maxkb=5000"]
 

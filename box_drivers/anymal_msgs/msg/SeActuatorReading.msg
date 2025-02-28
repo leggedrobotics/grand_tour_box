@@ -1,0 +1,3 @@
+std_msgs/Header header
+anymal_msgs/SeActuatorState state
+anymal_msgs/SeActuatorCommand commanded
