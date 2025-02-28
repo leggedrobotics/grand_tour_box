@@ -1,5 +1,7 @@
 FROM ros:noetic
 
+ARG KLEINKRAM_CONFIG
+
 RUN apt-get update && apt-get install -y \
     python3-pip \
     python3-virtualenv \
@@ -26,10 +28,15 @@ RUN pip install \
     empy==3.3.4 \
     && :
 
+# copy the model files
+COPY ./models /models
+
 # python deps
 WORKDIR /app
 COPY requirements-docker.txt requirements-docker.txt
 RUN pip install -r requirements-docker.txt
+
+COPY ./anonymization.py /app/anonymization.py
 
 # entrypoint
 WORKDIR /app

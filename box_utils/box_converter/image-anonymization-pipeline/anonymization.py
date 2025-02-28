@@ -1,38 +1,46 @@
 from __future__ import annotations
 
+import subprocess
 import time
 import warnings
+from argparse import ArgumentParser
 from enum import Enum
+from logging import getLogger
 from pathlib import Path
-from typing import Any, Dict, List, NamedTuple, Optional, Sequence, Tuple, cast
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import NamedTuple
+from typing import Optional
+from typing import Sequence
+from typing import Tuple
+from uuid import UUID
 
 import cv2
+import kleinkram
 import numpy as np
 import rosbag
 import torch
 import torchvision
 import tqdm
 from cv_bridge import CvBridge
+from kleinkram.models import Mission
 from std_msgs.msg import Int32
-from logging import getLogger
-from argparse import ArgumentParser
 
 logger = getLogger(__name__)
-
-
 warnings.filterwarnings("ignore", category=UserWarning)
 
-MODELS_PATH = Path(__file__).parent / "models"
+MODELS_PATH = Path("/models")
 assert MODELS_PATH.is_dir()
 
-DATA_PATH = Path(__file__).parent / "data"
-assert DATA_PATH.is_dir()
+DATA_PATH = Path("/data")
+DATA_PATH.mkdir(exist_ok=False)
 
-INPUT_PATH = DATA_PATH / "files"
-assert INPUT_PATH.is_dir()
+INPUT_PATH = DATA_PATH / "input"
+INPUT_PATH.mkdir(exist_ok=False)
 
-OUTPUT_PATH = DATA_PATH / "anon"
-OUTPUT_PATH.mkdir(exist_ok=True)
+OUTPUT_PATH = DATA_PATH / "output"
+OUTPUT_PATH.mkdir(exist_ok=False)
 
 FACE_MODEL_SCORE_THRESHOLD = 0.4
 LP_MODEL_SCORE_THRESHOLD = 0.85
@@ -51,19 +59,6 @@ class Detectors(NamedTuple):
     lp_detector: torch.jit.ScriptModule
     face_threshold: float = FACE_MODEL_SCORE_THRESHOLD
     lp_threshold: float = LP_MODEL_SCORE_THRESHOLD
-
-
-def get_bag(patter: str) -> Path:
-    matched_files = list(INPUT_PATH.glob(patter))
-    if len(matched_files) == 0:
-        raise FileNotFoundError(f"No files found for pattern {patter}")
-    if len(matched_files) > 1:
-        raise ValueError(f"Multiple files found for pattern {patter}")
-    return matched_files[0]
-
-
-def upload_bag(path: Path) -> None:
-    logger.info(f"uploading {path}... (dry run)")
 
 
 def get_device() -> torch.device:
@@ -381,89 +376,126 @@ def anonymize_image_topics_in_bagfile(
                 detections_count,
             )
 
-
-def process_bagfile(
-    input_path: Path,
-    output_path: Path,
-    *,
-    image_topics: Sequence[str],
-    flip_images_for_inference: bool,
-    detectors: Detectors,
-    head: Optional[int] = None,
-) -> None:
-    anonymize_image_topics_in_bagfile(
-        input_path,
-        output_path,
-        image_topics=image_topics,
-        detectors=detectors,
-        flip_images_for_inference=flip_images_for_inference,
-        head=head,
-    )
-    upload_bag(output_path)
+    # reindex the bagfile (probably not needed)
+    subprocess.run(["rosbag", "reindex", str(output_path)])
 
 
-CAMERA_CONFIG: Dict[str, Tuple[List[str], bool, str]] = {
-    "*_nuc_alphasense_cor.bag": (
-        [
-            "/gt_box/alphasense_driver_node/cam2/color_corrected/image/compressed",
-            "/gt_box/alphasense_driver_node/cam3/color_corrected/image/compressed",
-            "/gt_box/alphasense_driver_node/cam1/color_corrected/image/compressed",
-            "/gt_box/alphasense_driver_node/cam5/color_corrected/image/compressed",
-            "/gt_box/alphasense_driver_node/cam4/color_corrected/image/compressed",
-        ],
-        False,
-        "alphasense.bag",
-    ),
-    "*_jetson_hdr_left_rect.bag": (
-        [
-            "/gt_box/hdr_left_rect/image_rect/compressed",
-        ],
-        False,
-        "hdr_left.bag",
-    ),
-    "*_jetson_hdr_front_rect.bag": (
-        [
-            "/gt_box/hdr_front_rect/image_rect/compressed",
-        ],
-        False,
-        "hdr_front.bag",
-    ),
-    "*_jetson_hdr_right_rect.bag": (
-        [
-            "/gt_box/hdr_right_rect/image_rect/compressed",
-        ],
-        False,
-        "hdr_right.bag",
-    ),
-    "*_jetson_zed2i_images.bag": (
-        [
-            "/gt_box/zed2i/zed_node/left/image_rect_color/compressed",
-            "/gt_box/zed2i/zed_node/right/image_rect_color/compressed",
-        ],
-        True,
-        "zed2i.bag",
-    ),
+AnonymizerConfig = Dict[str, Tuple[List[str], bool, str]]
+
+
+FULL_CONFIG: Dict[str, AnonymizerConfig] = {
+    "alphasense": {
+        "{}_nuc_alphasense_color.bag": (
+            [
+                "/gt_box/alphasense_driver_node/cam1/color_corrected/image/compressed",
+                "/gt_box/alphasense_driver_node/cam2/color_corrected/image/compressed",
+                "/gt_box/alphasense_driver_node/cam3/color_corrected/image/compressed",
+                "/gt_box/alphasense_driver_node/cam4/color_corrected/image/compressed",
+                "/gt_box/alphasense_driver_node/cam5/color_corrected/image/compressed",
+            ],
+            False,
+            "{}_nuc_alphasense_anon.bag",
+        )
+    },
+    "hdr": {
+        "{}_jetson_hdr_left_rect.bag": (
+            [
+                "/gt_box/hdr_left_rect/image_rect/compressed",
+            ],
+            False,
+            "{}_jetson_hdr_left_anon.bag",
+        ),
+        "{}_jetson_hdr_front_rect.bag": (
+            [
+                "/gt_box/hdr_front_rect/image_rect/compressed",
+            ],
+            False,
+            "{}_jetson_hdr_front_anon.bag",
+        ),
+        "{}_jetson_hdr_right_rect.bag": (
+            [
+                "/gt_box/hdr_right_rect/image_rect/compressed",
+            ],
+            False,
+            "{}_jetson_hdr_right_anon.bag",
+        ),
+    },
+    "zed2i": {
+        "{}_jetson_zed2i_images.bag": (
+            [
+                "/gt_box/zed2i/zed_node/left/image_rect_color/compressed",
+                "/gt_box/zed2i/zed_node/right/image_rect_color/compressed",
+            ],
+            True,
+            "{}_jetson_zed2i_images_anon.bag",
+        ),
+    },
 }
+
+
+def get_anonymizer_config(prefix: str, camera: str) -> AnonymizerConfig:
+    raw_config = FULL_CONFIG[camera]
+    return {
+        input_pattern.format(prefix): (topics, flip, output_pattern.format(prefix))
+        for input_pattern, (topics, flip, output_pattern) in raw_config.items()
+    }
+
+
+def get_mission(mission_id: str) -> Mission:
+    missions = kleinkram.list_missions(mission_ids=[mission_id])
+    assert len(missions) == 1
+    return missions[0]
+
+
+def download_files(
+    *, config: AnonymizerConfig, mission_id: UUID, input_path: Path
+) -> None:
+    kleinkram.download(
+        mission_ids=[mission_id],
+        file_names=list(config.keys()),
+        dest=input_path,
+        verbose=True,
+    )
+
+
+def upload_files(
+    *, config: AnonymizerConfig, mission_id: UUID, output_path: Path
+) -> None:
+    file_paths = [output_path / out_name for _, _, out_name in config.values()]
+    kleinkram.upload(mission_id=mission_id, files=file_paths, verbose=True)
 
 
 def main() -> int:
     parser = ArgumentParser()
     parser.add_argument("--head", type=int, default=None)
+    parser.add_argument("--mission-id", type=str, required=True)
+    parser.add_argument("--cam", type=str, required=True)
     args = parser.parse_args()
 
+    assert (
+        args.cam in FULL_CONFIG
+    ), f"camera {args.cam} not in {list(FULL_CONFIG.keys())!r}"
+
+    mission = get_mission(args.mission_id)
+
+    # get anonymizer config
+    config = get_anonymizer_config(prefix=mission.name, camera=args.cam)
+
+    # download the files that need to be anonymized
+    download_files(config=config, mission_id=mission.id, input_path=INPUT_PATH)
+
     detectors = load_detectors(MODELS_PATH)
-    for pattern, (topics, flip, out_name) in CAMERA_CONFIG.items():
-        input_path = get_bag(pattern)
-        output_path = OUTPUT_PATH / out_name
+    for filename, (topics, flip, out_name) in config.items():
         anonymize_image_topics_in_bagfile(
-            input_path,
-            output_path,
+            INPUT_PATH / filename,
+            OUTPUT_PATH / out_name,
             image_topics=topics,
             detectors=detectors,
             flip_images_for_inference=flip,
             head=args.head,
         )
-        upload_bag(output_path)
+
+    upload_files(config=config, mission_id=mission.id, output_path=OUTPUT_PATH)
 
     return 0
 

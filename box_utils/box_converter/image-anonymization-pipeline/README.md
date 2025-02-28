@@ -4,9 +4,25 @@ this folder contains the code and dependencies to run the image anonymization pi
 
 ## Running The Anonymization Pipeline
 
-### Starting the Docker Container
+### Running Docker Container
 
-### Running the Anonymization
+- build:
+  make sure to `klein login` before building the docker image
+  (perhaps also delete the old config before you login to make sure the refresh token is as new as possible).
+
+  ```bash
+  docker build -t grand-tour-dataset .
+  ```
+
+- run
+  for the `--cam` argument you can provide either `hdr`, `alphasense` or `zed2i`.
+
+  ```bash
+  docker run --rm -it --gpus all \
+    --env KLEINKRAM_CONFIG="$(cat ~/.kleinkram.json)" \
+    grand-tour-dataset \
+    python anonymization.py --mission-id 344d631c-387a-4aa4-bb21-92b9659ea21f --cam hdr
+  ```
 
 ## Profiling
 
