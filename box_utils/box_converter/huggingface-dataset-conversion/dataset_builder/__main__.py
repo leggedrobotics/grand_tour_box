@@ -5,7 +5,9 @@ from pathlib import Path
 from dataset_builder.build_data import build_data_part
 from dataset_builder.build_metadata import build_metadata_part
 from dataset_builder.dataset_config import load_config
-
+import kleinkram
+from uuid import UUID
+from argparse import ArgumentParser
 
 MISSION_NAME = "2024-11-14-13-45-37"
 DEFAULT_CONFIG_PATH = Path(__file__).parent / "configs" / f"{MISSION_NAME}.yaml"
@@ -16,21 +18,60 @@ INPUT_PATH = DATA_PATH / "files" / MISSION_NAME
 DATASET_PATH = DATA_PATH / "dataset" / MISSION_NAME
 
 
-def main() -> int:
+def download_mission(mission_id: UUID, input_path: Path) -> None:
+    kleinkram.download(
+        mission_ids=[mission_id], file_names=["*.bag"], dest=input_path, verbose=True
+    )
 
-    DATASET_PATH.mkdir(parents=True, exist_ok=True)
-    topic_registry, metadata_config = load_config(DEFAULT_CONFIG_PATH, MISSION_NAME)
+
+def run_converter(
+    input_path: Path, output_path: Path, *, config_path: Path, mission_prefix: str
+) -> None:
+    output_path.mkdir(parents=True, exist_ok=True)
+
+    assert input_path.is_dir()
+    topic_registry, metadata_config = load_config(config_path, mission_prefix)
 
     build_metadata_part(
-        base_dataset_path=DATASET_PATH,
-        mcaps_path=INPUT_PATH,
+        base_dataset_path=output_path,
+        bags_path=input_path,
         metadata_config=metadata_config,
         topic_registry=topic_registry,
     )
     build_data_part(
         topic_registry=topic_registry,
-        mcaps_path=INPUT_PATH,
-        dataset_base_path=DATASET_PATH,
+        bags_path=input_path,
+        dataset_base_path=output_path,
+    )
+
+
+def main() -> int:
+    parser = ArgumentParser()
+    parser.add_argument(
+        "--config",
+        type=Path,
+        default=DEFAULT_CONFIG_PATH,
+        help="Path to the configuration file",
+    )
+    parser.add_argument(
+        "--mission-id",
+        type=str,
+        default=MISSION_NAME,
+        help="Prefix for the mission",
+    )
+
+    args = parser.parse_args()
+
+    missions = kleinkram.list_missions(mission_ids=[args.mission_id])
+    assert len(missions) == 1
+    mission = missions[0]
+    download_mission(mission_id=mission.id, input_path=INPUT_PATH)
+
+    run_converter(
+        input_path=INPUT_PATH,
+        output_path=DATASET_PATH,
+        config_path=args.config,
+        mission_prefix=MISSION_NAME,
     )
 
     return 0

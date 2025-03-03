@@ -17,7 +17,6 @@ from typing import cast
 import numpy as np
 import zarr
 import zarr.storage
-from mcap.reader import make_reader
 from sensor_msgs.msg import CompressedImage
 from tqdm import tqdm
 
@@ -26,9 +25,9 @@ from dataset_builder.dataset_config import AttributeTypes
 from dataset_builder.dataset_config import ImageTopic
 from dataset_builder.dataset_config import Topic
 from dataset_builder.dataset_config import TopicRegistry
-from dataset_builder.message_parsing import deserialize_message
 from dataset_builder.message_parsing import extract_and_save_image_from_message
 from dataset_builder.message_parsing import parse_deserialized_message
+from dataset_builder.utils import messages_in_bag_with_topic
 
 DATA_PREFIX = "data"
 IMAGE_PREFIX = "images"
@@ -51,17 +50,21 @@ def _np_arrays_from_buffered_messages(
     for record in buffer:
         for key, value in record.items():
             data[key].append(value)
-    array_data = {key: np.array(data[key], dtype=attr.dtype) for key, attr in attr_tps.items()}
+    array_data = {
+        key: np.array(data[key], dtype=attr.dtype) for key, attr in attr_tps.items()
+    }
 
     for key, attr in attr_tps.items():
-        assert array_data[key].shape[1:] == attr.shape, f"{key}: {array_data[key].shape[1:]} != {attr.shape}"
+        assert (
+            array_data[key].shape[1:] == attr.shape
+        ), f"{key}: {array_data[key].shape[1:]} != {attr.shape}"
     return array_data
 
 
 ImageExtractorCallback = Callable[[CompressedImage, int], None]
 
 
-def _data_chunks_from_mcap_topic(
+def _data_chunks_from_bag_topic(
     path: Path,
     *,
     topic_desc: Topic,
@@ -70,7 +73,7 @@ def _data_chunks_from_mcap_topic(
     image_extractor: Optional[ImageExtractorCallback],
 ) -> Generator[Dict[str, np.ndarray], None, None]:
     """\
-    read messages from mcap file and topic yielding chunks of data that can
+    read messages from bag file and topic yielding chunks of data that can
     be stored in zarr format. For optimal performance the `chunk_size` should be
     similar to the zarr chunk size.
     """
@@ -80,33 +83,20 @@ def _data_chunks_from_mcap_topic(
     if image_extractor is not None and not isinstance(topic_desc, ImageTopic):
         raise ValueError("image_extractor must not be provided for non-image topics")
 
-    with open(path, "rb") as f:
-        reader = make_reader(f)
+    buffer = []
+    for idx, message in enumerate(
+        messages_in_bag_with_topic(path, topic=topic_desc.topic)
+    ):
+        # handle data to store in zarr format
+        buffer.append(parse_deserialized_message(message, topic_desc=topic_desc))
 
-        # get number of messages in topic for progress bar
-        channels = reader.get_summary().channels  # type: ignore
-        topic_id = {v.topic: k for k, v in channels.items()}[topic_desc.topic]  # type: ignore
-        message_count: int = reader.get_summary().statistics.channel_message_counts[topic_id]  # type: ignore
+        if image_extractor is not None:
+            message = cast(CompressedImage, message)
+            image_extractor(message, idx)
 
-        buffer = []
-        for msg_idx, (schema, _, ser_message) in tqdm(
-            enumerate(reader.iter_messages(topics=[topic_desc.topic])),
-            total=message_count,
-            leave=False,
-        ):
-            assert schema is not None, f"schema is None for message {ser_message}"
-            message = deserialize_message(schema, ser_message.data)
-
-            # handle data to store in zarr format
-            buffer.append(parse_deserialized_message(message, topic_desc=topic_desc))
-
-            if image_extractor is not None:
-                message = cast(CompressedImage, message)
-                image_extractor(message, msg_idx)
-
-            if len(buffer) == chunk_size:
-                yield _np_arrays_from_buffered_messages(buffer, attribute_types)
-                buffer = []
+        if len(buffer) == chunk_size:
+            yield _np_arrays_from_buffered_messages(buffer, attribute_types)
+            buffer = []
 
         if buffer:
             yield _np_arrays_from_buffered_messages(buffer, attribute_types)
@@ -143,7 +133,9 @@ def _compute_zarr_array_chunk_size(tp: ArrayType) -> Tuple[int, ...]:
     return (n_slices,) + tp.shape
 
 
-def _create_zarr_arrays_for_topic(attributes: AttributeTypes, zarr_group: zarr.Group) -> int:
+def _create_zarr_arrays_for_topic(
+    attributes: AttributeTypes, zarr_group: zarr.Group
+) -> int:
     """\
     initializes zarr arrays for all attributes with appropriate
     shapes, dtypes, and chunk sizes
@@ -209,7 +201,7 @@ def _generate_dataset_from_topic_description_and_attribute_types(
     else:
         image_extractor = None
 
-    for chunk in _data_chunks_from_mcap_topic(
+    for chunk in _data_chunks_from_bag_topic(
         path,
         topic_desc=topic_desc,
         attribute_types=attribute_types,
@@ -242,12 +234,14 @@ def _tar_ball_dataset(base_dataset_path: Path) -> None:
         shutil.rmtree(image_files / folder)
 
 
-def build_data_part(*, mcaps_path: Path, dataset_base_path: Path, topic_registry: TopicRegistry) -> None:
+def build_data_part(
+    *, bags_path: Path, dataset_base_path: Path, topic_registry: TopicRegistry
+) -> None:
     for attribute_types, topic_desc in tqdm(topic_registry.values()):
-        mcap_file = mcaps_path / topic_desc.file
+        bag_file = bags_path / topic_desc.file
         _generate_dataset_from_topic_description_and_attribute_types(
             dataset_base_path,
-            mcap_file,
+            bag_file,
             topic_desc=topic_desc,
             attribute_types=attribute_types,
         )
