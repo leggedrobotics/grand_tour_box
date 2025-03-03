@@ -4,8 +4,7 @@ from rosbag import Bag
 import re
 import argparse
 import tqdm
-import os
-from box_auto.utils import MISSION_DATA
+from box_auto.utils import MISSION_DATA, upload_bag
 
 
 def merge_bags_single(input_bag, output_bag, topics="*", upload="No", verbose=False):
@@ -51,9 +50,8 @@ def merge_bags_single(input_bag, output_bag, topics="*", upload="No", verbose=Fa
     if verbose:
         print("Total: Included %d messages and skipped %d" % (total_included_count, total_skipped_count))
 
-    if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE" and upload == "Yes":
-        uuid = os.environ["MISSION_UUID"]
-        os.system(f"klein upload --mission {uuid} {output_bag}")
+    if upload == "Yes":
+        upload_bag(output_bag)
 
     return total_included_count, total_skipped_count
 

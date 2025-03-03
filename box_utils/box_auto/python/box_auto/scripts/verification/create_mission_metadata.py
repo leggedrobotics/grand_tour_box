@@ -80,7 +80,7 @@ def create_metadata():
             _, gnss_dgps = get_file("*_cpt7_ie_dgps.bag", directory=str(p))
             _, gnss_ppp = get_file("*_cpt7_ie_ppp.bag", directory=str(p))
             _, gnss_tc = get_file("*_cpt7_ie_tc.bag", directory=str(p))
-            _, gnss_lc = get_file("*_cpt7_ie_ls.bag", directory=str(p))
+            _, gnss_lc = get_file("*_cpt7_ie_lc.bag", directory=str(p))
 
             # Fill in the bag_start_time and bag_stop_time
             metadata[mission_name] = {
