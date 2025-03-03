@@ -114,13 +114,13 @@ deployments = [
     {
         "data_folder": "/media/jonfrey/Data/deployment_day_16",
         "mission_names": [
-            "2024-11-25-11-44-05",
+            # "2024-11-25-11-44-05", # Lasertracker bags
+            # "2024-11-25-11-56-26", # Lasertracker bags
+            # "2024-11-25-13-52-08", # BAGS at leica for Leica
+            # "2024-11-25-14-01-49", # BAGS at leica for Leica
             "2024-11-25-14-57-08",
-            "2024-11-25-11-56-26",
             "2024-11-25-16-02-15",
-            "2024-11-25-13-52-08",
             "2024-11-25-16-36-19",
-            "2024-11-25-14-01-49",
         ],
     },
     {

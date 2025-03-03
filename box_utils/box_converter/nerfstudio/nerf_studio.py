@@ -1,4 +1,3 @@
-import os
 import yaml
 import argparse
 from pathlib import Path
@@ -15,20 +14,7 @@ from sensor_msgs.msg import CameraInfo, CompressedImage
 
 from torchvision.io.image import read_image
 from torchvision.models.segmentation import fcn_resnet50, FCN_ResNet50_Weights
-from box_auto.utils import MISSION_DATA
-
-
-def get_bag(directory, pattern):
-    # Get reference bag path
-    if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
-        uuid = os.environ["MISSION_UUID"]
-        os.system(f"klein download --mission {uuid} --dest {MISSION_DATA} '{pattern}'")
-
-    files = [str(s) for s in Path(directory).rglob(pattern)]
-    if len(files) != 1:
-        print(f"Error: More or less matching bag files found: {pattern} in directory {directory}")
-        return [], False
-    return files[0], True
+from box_auto.utils import MISSION_DATA, get_bag
 
 
 def undistort_image(image, camera_info, new_camera_info=None):
@@ -226,13 +212,13 @@ def main():
         config = yaml.safe_load(f)
 
     input_folder = args.mission_data
-    tf_bag_path, suc = get_bag(args.mission_data, "*_tf_static_hesai_dlio_tf.bag")
+    tf_bag_path, suc = get_bag("*_tf_static_hesai_dlio_tf.bag", args.mission_data)
 
     # Load camera infos
     camera_infos = {}
     camera_keys = {}
     for camera in config["cameras"]:
-        bag_file, suc = get_bag(args.mission_data, camera["bag_pattern"])
+        bag_file, suc = get_bag(camera["bag_pattern"], args.mission_data)
         if not suc:
             print("Failed to find: ", camera["bag_pattern"])
 

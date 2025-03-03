@@ -1,12 +1,12 @@
 import pathlib
 import json
 import os
-from pathlib import Path
 import requests
 import sys
-from box_auto.utils import create_github_issue, MISSION_DATA, ARTIFACT_FOLDER, WS
+from box_auto.utils import create_github_issue, MISSION_DATA, ARTIFACT_FOLDER, WS, get_bag
 from box_auto.scripts.verification.health_check_mission import validate_bags, LOG_FILE
-from box_auto.scripts.verification.topic_freq import read_rosbag_and_generate_histograms
+
+# from box_auto.scripts.verification.topic_freq import read_rosbag_and_generate_histograms
 
 
 def fetch_mission_metadata_and_append():
@@ -87,7 +87,7 @@ def analyze_mission_and_report():
     metadata = fetch_mission_metadata_and_append()
 
     # Generate histograms of the topics
-    output_dir = pathlib.Path(ARTIFACT_FOLDER) / "topic_frequency_histograms"
+    # output_dir = pathlib.Path(ARTIFACT_FOLDER) / "topic_frequency_histograms"
     # for bag_file in pathlib.Path(MISSION_DATA).rglob("*.bag"):
     #     name = bag_file.stem
     #     read_rosbag_and_generate_histograms(bag_file, output_dir, name)
@@ -124,11 +124,7 @@ def analyze_mission_and_report():
 
 
 if __name__ == "__main__":
-    if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
-        project_uuid = os.environ.get("PROJECT_UUID")
-        mission_uuid = os.environ["MISSION_UUID"]
-        print(f"Dowloading Mission from KleinKram UUID: {mission_uuid}")
-        os.system(f"klein download --project {project_uuid} --mission {mission_uuid} --dest {MISSION_DATA} '*.bag'")
+    get_bag("*.bag")
 
     validation_passed = analyze_mission_and_report()
     return_code = 1
