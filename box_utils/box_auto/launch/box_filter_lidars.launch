@@ -30,9 +30,9 @@
   </node>
 
   <group if="$(arg enable_rviz)">
-    <node pkg="rviz" name="rviz_hesai" type="rviz" args="-d $(find box_auto)/rviz/rviz_hesai.rviz --geometry 1000x600+1200+100" required="true"/>
-    <node pkg="rviz" name="rviz_livox" type="rviz" args="-d $(find box_auto)/rviz/rviz_livox.rviz --geometry 1000x600+100+100" required="true"/>
-    <node pkg="rviz" name="rviz_velodyne" type="rviz" args="-d $(find box_auto)/rviz/rviz_velodyne.rviz --geometry 1000x600+600-500" required="true"/>
+    <node pkg="rviz" name="rviz_hesai" type="rviz" args="-d $(find box_auto)/rviz/rviz_hesai.rviz --geometry 1000x1000+1200+100" required="true"/>
+    <node pkg="rviz" name="rviz_livox" type="rviz" args="-d $(find box_auto)/rviz/rviz_livox.rviz --geometry 1000x1000+100+100" required="true"/>
+    <node pkg="rviz" name="rviz_velodyne" type="rviz" args="-d $(find box_auto)/rviz/rviz_velodyne.rviz --geometry 1000x1000+600-500" required="true"/>
 
   </group>
 

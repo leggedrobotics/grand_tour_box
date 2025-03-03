@@ -4,14 +4,15 @@ mode:
       - "/gt_box/hesai/points"
     disable_density_filtering: true
     density_filtering_radius: 0.4
-    angular_filtering_range: 1.0
+    angular_filtering_range: 50.0
     density_filtering_min_neighbors: 10
     crop_box:
-      min: [-0.5, -0.5, -0.25, 1.0]
-      max: [0.5, 1.5, 0.5, 1.0]
+      min: [-0.3, -0.15, -0.25, 1.0]
+      max: [0.3, 0.8, 0.3, 1.0]
     angle_ranges:
       - [320.0, 345.0]
       - [205.0, 230.0]
+      - [70.0, 110.0]
   livox:
     input_topic:
       - "/gt_box/livox/lidar"
@@ -20,8 +21,8 @@ mode:
     angular_filtering_range: 20.0
     density_filtering_min_neighbors: 10
     crop_box:
-      min: [-0.9, -0.5, -0.05, 1.0]
-      max: [0.5, 0.5, 0.75, 1.0]
+      min: [-0.9, -0.3, -0.05, 1.0]
+      max: [0.15, 0.3, 0.75, 1.0]
     angle_ranges:
       - [55.0, 65.0]
       - [295.0, 305.0]
@@ -37,8 +38,8 @@ mode:
     angular_filtering_range: 50.0
     density_filtering_min_neighbors: 10
     crop_box:
-      min: [-0.5, -0.75, -0.5, 1.0]
-      max: [1.0, 0.75, 0.5, 1.0]
+      min: [-0.15, -0.3, -0.3, 1.0]
+      max: [0.9, 0.3, 0.3, 1.0]
     angle_ranges:
       - [75.0, 85.0]
       - [95.0, 105.0]
