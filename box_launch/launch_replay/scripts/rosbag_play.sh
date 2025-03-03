@@ -33,7 +33,7 @@ keys=(
     "_tf_static.bag"
     "_lpc_tf.bag"
     "_tf_static_with_dlio.bag"
-    "_nuc_livox_filtered.bag"
+    "_nuc_livox_ready.bag"
     "_nuc_livox.bag"
     "_nuc_cpt7.bag"
     "_jetson_hdr_right_calib.bag"

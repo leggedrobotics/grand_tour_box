@@ -2,30 +2,26 @@
   <!-- Arguments -->
 
   <!-- Depth and Images are found by string matching in this folder. If left empty not used. -->
-  <arg name="bag_file_directory" default="/home/tutuna/Music/outside_mit/" />
+  <arg name="bag_file_directory" default="" />
 
   <!-- Handling of single bag. Optional. If left empty not used. -->
   <arg name="global_rosbag_path" default="" />
 
   <!-- Topics to read -->
   <arg name="save_confidence" default="false" />
-  <arg name="confidence_topic" default="/gt_box/zed2i/zed_node/confidence/confidence_map/compressedDepth" />
-  <arg name="depth_topic" default="/gt_box/zed2i/zed_node/depth/depth_registered/compressedDepth" />
-  <arg name="color_topic" default="/gt_box/zed2i/zed_node/left/image_rect_color/compressed" />
-  <arg name="camera_info_topic" default="/gt_box/zed2i/zed_node/left/camera_info" />
-
-  <!-- <arg name="depth_topic" default="/zed2i/zed_node/depth/depth_registered/compressedDepth" />
-  <arg name="color_topic" default="/zed2i/zed_node/left/image_rect_color/compressed" />
-  <arg name="camera_info_topic" default="/zed2i/zed_node/left/camera_info" /> -->
+  <arg name="confidence_topic" default="/boxi/zed2i/confidence/image_raw/compressedDepth" />
+  <arg name="depth_topic" default="/boxi/zed2i/depth/image_raw/compressedDepth" />
+  <arg name="color_topic" default="/boxi/zed2i/left/image_raw/compressed" />
+  <arg name="camera_info_topic" default="/boxi/zed2i/left/camera_info" />
 
   <!-- Where the output files will be generated. -->
   <arg name="output_folder_path" default="" />
 
   <!-- Number of frames to save. -->
-  <arg name="max_color_images" default="4000" />
+  <arg name="max_color_images" default="" />
 
   <!-- The saving will start from Nth image in the bag. Often first images are not good. -->
-  <arg name="frames_to_skip" default="83736" />
+  <arg name="frames_to_skip" default="" />
 
   <!-- EXR is a format allowing saving 32-BIT depth images. It can be retrieved with the right libraries but not as common. -->
   <arg name="save_as_exr" default="false" />
@@ -35,7 +31,7 @@
 
   <!-- The list of rosbags that have the /tf , /tf_static topics. All will be accumulated. -->
   <!-- Format:   <arg name="tf_bag_paths" default="[bag1.bag, bag2.bag, bag3.bag]"/> -->
-  <arg name="tf_bag_paths" default="[dlio_grandtour_postprocessed_.bag, recorded_serialized_tf.bag, aux_updated.bag]"/>
+  <arg name="tf_bag_paths" default="[]"/>
   <rosparam param="tf_containing_bag_paths" subst_value="True">$(arg tf_bag_paths) </rosparam >
 
   <!-- Cool node -->

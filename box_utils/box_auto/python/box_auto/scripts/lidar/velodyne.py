@@ -59,7 +59,14 @@ def launch_nodes(patterns, output_bag_path):
 
 if __name__ == "__main__":
 
-    # We need /tf for deskewing
+    # Velodyne Packet Processor
+    # This script processes Velodyne LiDAR data from ROS bag files. It performs the following operations:
+    # 1. Merges multiple input bag files containing Velodyne packets, TF, and TF static data
+    # 2. Replays the merged bag through the Velodyne driver
+    # 3. The processing converts raw Velodyne packets to point clouds
+    # 4. Applies motion undistortion to the point clouds using TF data
+    # 5. Outputs both the original (distorted) and undistorted point clouds
+
     patterns = ["*_lpc_tf.bag", "*_tf_static.bag", "*_npc_velodyne.bag"]
 
     # To get global path of the output bag

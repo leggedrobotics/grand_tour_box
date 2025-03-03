@@ -197,8 +197,8 @@ services:
   #   - hesai_post_processed.bag
   #   - livox.bag
   # Output:
-  #   - hesai_filtered.bag
-  #   - livox_filtered.bag
+  #   - hesai_ready.bag
+  #   - livox_ready.bag
   filter_pointclouds: 
     <<: *common-config
     container_name: filter_pointclouds

@@ -117,13 +117,9 @@ if __name__ == "__main__":
         lidar_topic = "/gt_box/hesai/points"
         tag = "hesai_"
     elif args.lidar == "livox":
-        try:
-            get_bag("*_nuc_livox_ready.bag")
-            patterns = [imu_pattern, "*_tf_static.bag", "*_nuc_livox_ready.bag"]
-            lidar_topic = "/gt_box/livox/lidar"
-        except:
-            patterns = [imu_pattern, "*_tf_static.bag", "*_nuc_livox.bag"]
-            lidar_topic = "/gt_box/livox/lidar"
+        get_bag("*_nuc_livox_ready.bag")
+        patterns = [imu_pattern, "*_tf_static.bag", "*_nuc_livox_ready.bag"]
+        lidar_topic = "/gt_box/livox/lidar"
         tag = "livox_"
     else:
         print(f"LiDAR not supported: {args.lidar}")

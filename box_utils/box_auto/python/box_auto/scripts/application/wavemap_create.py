@@ -17,7 +17,7 @@ def main():
     date = [(str(s.name)).split("_")[0] for s in Path(MISSION_DATA).glob("*_nuc_livox*.bag")][0]
     OUTPUT = f"{date}_wavemap.wvmp"
     TF_BAG = get_bag("*_tf_static_dlio_tf.bag")
-    POINTCLOUD_BAGS = [get_bag("*_hesai_dlio.bag"), get_bag("*_nuc_livox_filtered.bag")]
+    POINTCLOUD_BAGS = [get_bag("*_hesai_dlio.bag"), get_bag("*_nuc_livox_ready.bag")]
     (Path(ARTIFACT_FOLDER) / "wavemap").mkdir(exist_ok=True, parents=True)
     OUTFILE = str(Path(ARTIFACT_FOLDER) / "wavemap" / OUTPUT)
 

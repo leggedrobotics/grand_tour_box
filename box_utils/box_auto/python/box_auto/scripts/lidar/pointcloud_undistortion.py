@@ -73,8 +73,7 @@ def switch_tf(exists_skip=False):
             new_transforms = []
             for transform in msg.transforms:
                 if transform.header.frame_id == "odom" and transform.child_frame_id == "base":
-                    # Invert the transform properly:
-                    # Given a transform T = {R, t}, the inverse is T^-1 = {R^-1, -R^-1 * t}
+                    # Invert the transform
                     inverted_transform = TransformStamped()
                     inverted_transform.header = copy.deepcopy(transform.header)
                     inverted_transform.header.frame_id = transform.child_frame_id
@@ -129,8 +128,8 @@ if __name__ == "__main__":
     input_tf_static_path = get_bag("*_tf_static_start_end.bag")
 
     # Hesai
-    input_hesai_bag_path = get_bag("*_nuc_hesai_filtered.bag")
-    output_hesai_bag_path = input_hesai_bag_path.replace("_nuc_hesai_filtered.bag", "_nuc_hesai_undist.bag")
+    input_hesai_bag_path = get_bag("*_nuc_hesai_ready.bag")
+    output_hesai_bag_path = input_hesai_bag_path.replace("_nuc_hesai_ready.bag", "_nuc_hesai_undist.bag")
     launch_undistorter(
         input_hesai_bag_path,
         input_trajectory_bag_path,
@@ -144,8 +143,8 @@ if __name__ == "__main__":
     )
 
     # Livox
-    input_livox_bag_path = get_bag("*_nuc_livox_filtered.bag")
-    output_livox_bag_path = input_livox_bag_path.replace("_nuc_livox_filtered.bag", "_nuc_livox_undist.bag")
+    input_livox_bag_path = get_bag("*_nuc_livox_ready.bag")
+    output_livox_bag_path = input_livox_bag_path.replace("_nuc_livox_ready.bag", "_nuc_livox_undist.bag")
     launch_undistorter(
         input_livox_bag_path,
         input_trajectory_bag_path,
