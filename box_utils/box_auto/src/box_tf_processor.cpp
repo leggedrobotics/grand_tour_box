@@ -6,6 +6,10 @@
 #include <tf2/convert.h>
 #include <tf2_eigen/tf2_eigen.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf2_msgs/TFMessage.h>
+#include <tf2_ros/buffer.h>
+#include <tf2_ros/transform_listener.h>
+
 #include <algorithm>
 #include <filesystem>
 #include <iostream>
@@ -20,18 +24,17 @@ BoxTFProcessor::BoxTFProcessor(ros::NodeHandlePtr nh) : nh_(nh) {}
 
 // Combine transforms along a chain from startFrame to targetFrame.
 // Returns true and sets outTf if a valid chain is found, otherwise returns false.
-bool BoxTFProcessor::combineTransforms(std::vector<tf2_msgs::TFMessage>& tfMsgs, const std::string& startFrame,
-                                       const std::string& targetFrame, geometry_msgs::TransformStamped& outTf,
-                                       std::vector<const geometry_msgs::TransformStamped*>& chainOut) {
-  chainOut.clear();
-
+bool BoxTFProcessor::combineTransforms(tf2_ros::Buffer& tfBuffer, std::vector<tf2_msgs::TFMessage>& tfStatic, const std::string& startFrame,
+                                       const std::string& targetFrame) {
+  geometry_msgs::TransformStamped outTf;
   // Identity case: if startFrame == targetFrame, return an identity transform.
   if (startFrame == targetFrame) {
     outTf.header.frame_id = startFrame;
     outTf.child_frame_id = targetFrame;
     bool foundStamp = false;
-    for (const auto& msg : tfMsgs) {
-      for (const auto& t : msg.transforms) {
+    // Use tfStatic for a valid timestamp if available.
+    for (const auto& staticMsg : tfStatic) {
+      for (const auto& t : staticMsg.transforms) {
         if (t.header.frame_id == startFrame || t.child_frame_id == targetFrame) {
           outTf.header.stamp = t.header.stamp;
           foundStamp = true;
@@ -49,76 +52,33 @@ bool BoxTFProcessor::combineTransforms(std::vector<tf2_msgs::TFMessage>& tfMsgs,
     return true;
   }
 
-  // Build a graph: map each parent frame to pointers of outgoing transforms.
-  std::unordered_map<std::string, std::vector<const geometry_msgs::TransformStamped*>> graph;
-  for (auto& msg : tfMsgs) {
-    for (auto& t : msg.transforms) {
-      graph[t.header.frame_id].push_back(&t);
-    }
-  }
+  // Non-identity case: use tfBuffer to retrieve the transform.
+  try {
+    // lookupTransform(targetFrame, startFrame, ...) returns a transform T such that:
+    //   p_target = T * p_start
+    // with header.frame_id = targetFrame and child_frame_id = startFrame.
+    // Invert it so that the result has header.frame_id = startFrame and child_frame_id = targetFrame.
+    geometry_msgs::TransformStamped tfStamped = tfBuffer.lookupTransform(targetFrame, startFrame, ros::Time(0));
 
-  // BFS: Each node is a pair (current frame, chain of transform pointers used so far).
-  using Node = std::pair<std::string, std::vector<const geometry_msgs::TransformStamped*>>;
-  std::queue<Node> q;
-  q.push({startFrame, {}});
-  std::unordered_set<std::string> visited;
-  visited.insert(startFrame);
+    tf2::Transform tf;
+    tf2::fromMsg(tfStamped.transform, tf);
+    tf2::Transform tfInv = tf.inverse();
 
-  bool found = false;
-  std::vector<const geometry_msgs::TransformStamped*> chainFound;
+    outTf.header.frame_id = startFrame;
+    outTf.child_frame_id = targetFrame;
+    outTf.header.stamp = tfStamped.header.stamp;
+    outTf.transform = tf2::toMsg(tfInv);
 
-  while (!q.empty()) {
-    auto [frame, chain] = q.front();
-    q.pop();
+    // Add the computed transform to the tfStatic vector.
+    tf2_msgs::TFMessage staticTfMsg;
+    staticTfMsg.transforms.push_back(outTf);
+    tfStatic.push_back(staticTfMsg);
 
-    if (frame == targetFrame) {
-      chainFound = chain;
-      found = true;
-      break;
-    }
-
-    if (graph.count(frame)) {
-      for (const auto* t_ptr : graph[frame]) {
-        const std::string& nextFrame = t_ptr->child_frame_id;
-        if (visited.insert(nextFrame).second) {
-          auto newChain = chain;
-          newChain.push_back(t_ptr);
-          q.push({nextFrame, std::move(newChain)});
-        }
-      }
-    }
-  }
-
-  if (!found) {
-    ROS_ERROR_STREAM("No valid transform chain found from " << startFrame << " to " << targetFrame);
+    return true;
+  } catch (tf2::TransformException& ex) {
+    ROS_ERROR_STREAM("Failed to lookup transform from " << startFrame << " to " << targetFrame << ": " << ex.what());
     return false;
   }
-
-  // Compose the transforms along the found chain.
-  tf2::Transform combined;
-  combined.setIdentity();
-  for (const auto* t_ptr : chainFound) {
-    tf2::Transform tf;
-    try {
-      tf2::fromMsg(t_ptr->transform, tf);
-    } catch (const std::exception& e) {
-      ROS_ERROR_STREAM("Error converting transform: " << e.what());
-      return false;
-    }
-    combined *= tf;
-  }
-
-  outTf.header.frame_id = startFrame;
-  outTf.child_frame_id = targetFrame;
-  // Use the header timestamp of the first transform in the chain.
-  if (!chainFound.empty()) {
-    outTf.header.stamp = chainFound.front()->header.stamp;
-  } else {
-    outTf.header.stamp = ros::Time(0);
-  }
-  outTf.transform = tf2::toMsg(combined);
-  chainOut = chainFound;
-  return true;
 }
 
 void BoxTFProcessor::updateFrameNames(std::vector<tf2_msgs::TFMessage>& tfMsgs,
@@ -265,6 +225,29 @@ bool BoxTFProcessor::loadBoxTfParameters(ros::NodeHandle& nh, BoxTfParams& param
     return false;
   }
 
+  XmlRpc::XmlRpcValue xmlRotationOverrides;
+  if (nh.getParam("/rotationOverrides", xmlRotationOverrides)) {
+    if (xmlRotationOverrides.getType() == XmlRpc::XmlRpcValue::TypeArray) {
+      for (int i = 0; i < xmlRotationOverrides.size(); ++i) {
+        if (xmlRotationOverrides[i].hasMember("parent") && xmlRotationOverrides[i].hasMember("child") &&
+            xmlRotationOverrides[i].hasMember("axis") && xmlRotationOverrides[i].hasMember("angle_deg")) {
+          std::string parent = static_cast<std::string>(xmlRotationOverrides[i]["parent"]);
+          std::string child = static_cast<std::string>(xmlRotationOverrides[i]["child"]);
+          std::string axis = static_cast<std::string>(xmlRotationOverrides[i]["axis"]);
+          double angle_deg = static_cast<double>(xmlRotationOverrides[i]["angle_deg"]);
+          params.rotationOverrides.push_back({parent, child, axis, angle_deg});
+        } else {
+          ROS_WARN("rotationOverrides entry %d is missing required keys.", i);
+        }
+      }
+    } else {
+      ROS_ERROR("Parameter 'rotationOverrides' is not an array.");
+      return false;
+    }
+  } else {
+    ROS_INFO("No rotationOverrides parameter provided.");
+  }
+
   return true;
 }
 
@@ -280,6 +263,7 @@ void BoxTFProcessor::initialize() {
     ROS_INFO("Loaded framePairs: %zu entries", params.framePairs.size());
     ROS_INFO("Loaded childFramesToRemove: %zu entries", params.childFramesToRemove.size());
     ROS_INFO("Loaded parentFramesToRemove: %zu entries", params.parentFramesToRemove.size());
+    ROS_INFO("Loaded rotationOverride: %zu entries", params.rotationOverrides.size());
   } else {
     ROS_ERROR("Failed to load box_tf parameters. Exitting.");
     ros::shutdown();
@@ -339,6 +323,62 @@ bool BoxTFProcessor::createOutputDirectory() {
   return false;
 }
 
+void BoxTFProcessor::applyRotationOverrides(std::vector<tf2_msgs::TFMessage>& tfStaticMsgs) {
+  // Early return if tfStaticMsgs is empty.
+  if (tfStaticMsgs.empty()) {
+    return;
+  }
+
+  bool foundAtLeastOne = false;
+  for (auto& msg : tfStaticMsgs) {
+    for (auto& transform : msg.transforms) {
+      for (const auto& override : params.rotationOverrides) {
+        if (transform.header.frame_id == override.parent_frame && transform.child_frame_id == override.child_frame) {
+          foundAtLeastOne = true;
+
+          // Convert the current rotation to a tf2 quaternion.
+          tf2::Quaternion q_orig;
+          tf2::fromMsg(transform.transform.rotation, q_orig);
+
+          // Convert the current translation to a tf2 vector.
+          tf2::Vector3 t_orig(transform.transform.translation.x, transform.transform.translation.y, transform.transform.translation.z);
+
+          // Convert the provided angle from degrees to radians.
+          double angle_rad = override.angle_deg * M_PI / 180.0;
+          tf2::Quaternion q_add;
+          if (override.axis == "x" || override.axis == "X") {
+            q_add.setRPY(angle_rad, 0, 0);
+          } else if (override.axis == "y" || override.axis == "Y") {
+            q_add.setRPY(0, angle_rad, 0);
+          } else if (override.axis == "z" || override.axis == "Z") {
+            q_add.setRPY(0, 0, angle_rad);
+          } else {
+            ROS_WARN_STREAM("Invalid axis: " << override.axis << " for rotation override, skipping.");
+            continue;
+          }
+
+          // Compute the new rotation: additional override applied to the original.
+          tf2::Quaternion q_new = q_add * q_orig;
+          q_new.normalize();
+          transform.transform.rotation = tf2::toMsg(q_new);
+
+          // Apply the rotation override to the translation vector.
+          // This rotates the translation vector by q_add.
+          tf2::Vector3 t_new = tf2::quatRotate(q_add, t_orig);
+          transform.transform.translation.x = t_new.x();
+          transform.transform.translation.y = t_new.y();
+          transform.transform.translation.z = t_new.z();
+        }
+      }
+    }
+  }
+
+  if (!foundAtLeastOne) {
+    ROS_ERROR("No rotation overrides applied.");
+    throw std::runtime_error("No rotation overrides were applied despite having override configurations.");
+  }
+}
+
 bool BoxTFProcessor::processRosbags(std::vector<std::string>& tfContainingBags) {
   std::vector<std::string> topics;
   topics.push_back("/tf");
@@ -353,8 +393,6 @@ bool BoxTFProcessor::processRosbags(std::vector<std::string>& tfContainingBags) 
   // Create me a high resolution clock timer from std chrono
   // Start the timer.
   startTime_ = std::chrono::steady_clock::now();
-
-  // Iterate over the bags. Using tfContainingBags and a for loop
 
   ROS_INFO_STREAM("\033[92m"
                   << " Post processing the Rosbag "
@@ -423,15 +461,46 @@ bool BoxTFProcessor::processRosbags(std::vector<std::string>& tfContainingBags) 
   ROS_INFO_STREAM("First TF timestamp: " << firstTFTime);
   ROS_INFO_STREAM("Last TF timestamp: " << lastTFTime);
 
+  tf2_ros::Buffer tfBuffer_(ros::Duration(lastTFTime.toSec() - firstTFTime.toSec() + 5.0));
+  for (const auto& staticMsg : tfStaticVector_) {
+    for (const auto& transform : staticMsg.transforms) {
+      tfBuffer_.setTransform(transform, "default_authority", true);
+    }
+  }
+
+  for (const auto& tfMsg : tfVector_) {
+    for (const auto& transform : tfMsg.transforms) {
+      tfBuffer_.setTransform(transform, "default_authority", false);
+    }
+  }
+
   {
-    // Merge all tfStatic messages into one message.
+    // Merge all tfStatic messages into one message while avoiding duplicates
     if (!tfStaticVector_.empty()) {
+      // Use a set to track parent-child pairs we've already seen
+      std::set<std::pair<std::string, std::string>> seenPairs;
       tf2_msgs::TFMessage mergedStaticMsg;
+
       for (const auto& msg : tfStaticVector_) {
-        mergedStaticMsg.transforms.insert(mergedStaticMsg.transforms.end(), msg.transforms.begin(), msg.transforms.end());
+        for (const auto& transform : msg.transforms) {
+          // Create a pair representing this parent-child relationship
+          std::pair<std::string, std::string> framePair(transform.header.frame_id, transform.child_frame_id);
+
+          // Only add this transform if we haven't seen this parent-child pair before
+          if (seenPairs.find(framePair) == seenPairs.end()) {
+            mergedStaticMsg.transforms.push_back(transform);
+            seenPairs.insert(framePair);
+            ROS_DEBUG_STREAM("Adding unique transform: " << transform.header.frame_id << " -> " << transform.child_frame_id);
+          } else {
+            ROS_DEBUG_STREAM("Skipping duplicate transform: " << transform.header.frame_id << " -> " << transform.child_frame_id);
+          }
+        }
       }
+
+      // Replace the original vector with our deduplicated version
       tfStaticVector_.clear();
       tfStaticVector_.push_back(mergedStaticMsg);
+      ROS_INFO_STREAM("Merged static transforms: found " << mergedStaticMsg.transforms.size() << " unique transforms");
     }
   }
 
@@ -476,39 +545,40 @@ bool BoxTFProcessor::processRosbags(std::vector<std::string>& tfContainingBags) 
   }
 
   // We'll store each combined transform along with its chain for later removal.
-  std::vector<std::pair<geometry_msgs::TransformStamped, std::vector<const geometry_msgs::TransformStamped*>>> combinedResults;
+  // We'll store each combined transform along with its (empty) chain for later removal.
+  // std::vector<std::pair<geometry_msgs::TransformStamped, std::vector<const geometry_msgs::TransformStamped*>>> combinedResults;
 
-  // First, compute all combinations without modifying tfVector.
-  for (const auto& pair : params.framePairs) {
-    geometry_msgs::TransformStamped combinedTf;
-    std::vector<const geometry_msgs::TransformStamped*> chain;
-    if (combineTransforms(tfStaticVector_, pair.first, pair.second, combinedTf, chain)) {
-      ROS_INFO_STREAM("Combined transform from " << pair.first << " to " << pair.second << " computed.");
-      combinedResults.push_back({combinedTf, chain});
-    } else {
-      ROS_ERROR_STREAM("Failed to combine transforms from " << pair.first << " to " << pair.second);
-    }
-  }
-
-  // Now, remove all individual transforms that are part of any chain.
-  std::unordered_set<const geometry_msgs::TransformStamped*> removalSet;
-  for (const auto& entry : combinedResults) {
-    for (const auto* ptr : entry.second) {
-      removalSet.insert(ptr);
-    }
-  }
-  for (auto& msg : tfStaticVector_) {
-    msg.transforms.erase(
-        std::remove_if(msg.transforms.begin(), msg.transforms.end(),
-                       [&removalSet](const geometry_msgs::TransformStamped& t) { return removalSet.find(&t) != removalSet.end(); }),
-        msg.transforms.end());
-  }
+  // // Now, remove all individual transforms that are part of any chain.
+  // std::unordered_set<const geometry_msgs::TransformStamped*> removalSet;
+  // for (const auto& entry : combinedResults) {
+  //   for (const auto* ptr : entry.second) {
+  //     removalSet.insert(ptr);
+  //   }
+  // }
+  // for (auto& msg : tfStaticVector_) {
+  //   msg.transforms.erase(
+  //       std::remove_if(msg.transforms.begin(), msg.transforms.end(),
+  //                      [&removalSet](const geometry_msgs::TransformStamped& t) { return removalSet.find(&t) != removalSet.end(); }),
+  //       msg.transforms.end());
+  // }
 
   // Add all combined transforms as new tf2_msgs::TFMessage entries.
-  for (const auto& entry : combinedResults) {
-    tf2_msgs::TFMessage newMsg;
-    newMsg.transforms.push_back(entry.first);
-    tfStaticVector_.push_back(newMsg);
+  // for (const auto& entry : combinedResults) {
+  //   tf2_msgs::TFMessage newMsg;
+  //   newMsg.transforms.push_back(entry.first);
+  //   tfStaticVector_.push_back(newMsg);
+  // }
+
+  // Add all child frames from framePairs to childFramesToRemove
+  for (const auto& pair : params.framePairs) {
+    const std::string& childFrame = pair.second;
+
+    // Check if the child frame is already in childFramesToRemove
+    if (std::find(params.childFramesToRemove.begin(), params.childFramesToRemove.end(), childFrame) == params.childFramesToRemove.end()) {
+      // If not present, add it
+      params.childFramesToRemove.push_back(childFrame);
+      ROS_INFO_STREAM("Added " << childFrame << " to childFramesToRemove");
+    }
   }
 
   // Remove transforms with child frame ids in childFramesToRemove
@@ -549,8 +619,46 @@ bool BoxTFProcessor::processRosbags(std::vector<std::string>& tfContainingBags) 
     filterByParent(tfStaticVector_);
   }
 
+  // First, compute all combinations without modifying tfVector.
+  for (const auto& pair : params.framePairs) {
+    // geometry_msgs::TransformStamped combinedTf;
+    // std::vector<const geometry_msgs::TransformStamped*> chain; // Will remain empty.
+    if (combineTransforms(tfBuffer_, tfStaticVector_, pair.first, pair.second)) {
+      ROS_INFO_STREAM("Combined transform from " << pair.first << " to " << pair.second << " computed.");
+      // combinedResults.push_back({combinedTf, chain});
+    } else {
+      ROS_ERROR_STREAM("Failed to combine transforms from " << pair.first << " to " << pair.second);
+    }
+  }
+
   // --- Update the Frame Names ---
   updateFrameNames(tfStaticVector_, params.frameMapping);
+
+  // Apply pre-defined rotations
+  applyRotationOverrides(tfStaticVector_);
+
+  // Special case: Find transforms with parent "Y" and child "X" and negate translation
+  {
+    bool foundSpecialTransform = false;
+    for (auto& tfStaticMsg : tfStaticVector_) {
+      for (auto& transform : tfStaticMsg.transforms) {
+        if (transform.header.frame_id == "zed2i_left_camera_optical_frame" &&
+            transform.child_frame_id == "zed2i_right_camera_optical_frame") {
+          // Multiply translation components by -1
+          transform.transform.translation.x *= -1;
+          transform.transform.translation.y *= -1;
+          transform.transform.translation.z *= -1;
+
+          foundSpecialTransform = true;
+          ROS_INFO_STREAM("Negated translation for transform from zed2i_left_camera_optical_frame to zed2i_right_camera_optical_frame");
+        }
+      }
+    }
+
+    if (!foundSpecialTransform) {
+      ROS_WARN_STREAM("No transforms found with parent 'zed2i_left_camera_optical_frame' and child 'zed2i_right_camera_optical_frame'");
+    }
+  }
 
   {
     ROS_INFO_STREAM("Repeating tf_static transforms every " << tfStaticRepetitionPeriod_ << " second(s) from " << firstTFTime << " to "

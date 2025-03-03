@@ -9,7 +9,7 @@ from geometry_msgs.msg import TransformStamped, Quaternion
 from tf2_msgs.msg import TFMessage
 import copy
 from tqdm import tqdm
-
+import numpy as np
 
 WS = "/home/catkin_ws"
 PRE = f"source /opt/ros/noetic/setup.bash; source {WS}/devel/setup.bash;"
@@ -73,28 +73,46 @@ def switch_tf(exists_skip=False):
             new_transforms = []
             for transform in msg.transforms:
                 if transform.header.frame_id == "odom" and transform.child_frame_id == "base":
-                    # Invert the transform
+                    # Invert the transform properly:
+                    # Given a transform T = {R, t}, the inverse is T^-1 = {R^-1, -R^-1 * t}
                     inverted_transform = TransformStamped()
                     inverted_transform.header = copy.deepcopy(transform.header)
                     inverted_transform.header.frame_id = transform.child_frame_id
                     inverted_transform.child_frame_id = transform.header.frame_id
 
-                    # Invert the translation
-                    inverted_transform.transform.translation.x = -transform.transform.translation.x
-                    inverted_transform.transform.translation.y = -transform.transform.translation.y
-                    inverted_transform.transform.translation.z = -transform.transform.translation.z
+                    # Extract the original rotation as a quaternion
+                    original_quaternion = [
+                        transform.transform.rotation.x,
+                        transform.transform.rotation.y,
+                        transform.transform.rotation.z,
+                        transform.transform.rotation.w,
+                    ]
+                    # Compute the inverse rotation
+                    inverted_quaternion = tf.transformations.quaternion_inverse(original_quaternion)
 
-                    # Invert the rotation
-                    inverted_rotation = tf.transformations.quaternion_inverse(
+                    # Convert the inverted quaternion to a rotation matrix
+                    R_inv = tf.transformations.quaternion_matrix(inverted_quaternion)[:3, :3]
+
+                    # Extract the original translation vector
+                    original_translation = np.array(
                         [
-                            transform.transform.rotation.x,
-                            transform.transform.rotation.y,
-                            transform.transform.rotation.z,
-                            transform.transform.rotation.w,
+                            transform.transform.translation.x,
+                            transform.transform.translation.y,
+                            transform.transform.translation.z,
                         ]
                     )
+                    # Compute the inverted translation: t_inv = -R_inv * t
+                    inverted_translation = -np.dot(R_inv, original_translation)
+
+                    inverted_transform.transform.translation.x = inverted_translation[0]
+                    inverted_transform.transform.translation.y = inverted_translation[1]
+                    inverted_transform.transform.translation.z = inverted_translation[2]
+
                     inverted_transform.transform.rotation = Quaternion(
-                        x=inverted_rotation[0], y=inverted_rotation[1], z=inverted_rotation[2], w=inverted_rotation[3]
+                        x=inverted_quaternion[0],
+                        y=inverted_quaternion[1],
+                        z=inverted_quaternion[2],
+                        w=inverted_quaternion[3],
                     )
 
                     new_transforms.append(inverted_transform)
@@ -139,18 +157,3 @@ if __name__ == "__main__":
         parent_frame="base",
         sensor_frame="livox_lidar",
     )
-
-    # # Velodyne
-    # input_vlp_bag_path = get_bag( "*_npc_velodyne_filtered.bag")
-    # output_vlp_bag_path = input_vlp_bag_path.replace("_nuc_livox_filtered.bag", "_npc_velodyne_undist.bag")
-    # launch_undistorter(
-    #     input_vlp_bag_path,
-    #     input_trajectory_bag_path,
-    #     input_tf_static_path,
-    #     output_vlp_bag_path,
-    #     pcd_topic_in = "/anymal/velodyne/points",
-    #     pcd_topic_out = "/anymal/velodyne/points_undistorted",
-    #     child_frame = "odom",
-    #     parent_frame = "base",
-    #     sensor_frame = "velodyne_lidar"
-    # )

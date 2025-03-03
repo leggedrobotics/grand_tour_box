@@ -39,6 +39,16 @@ childFramesToRemove:
   - "livox_model"
   - "box_base_model"
   - "face_shell_rear"
+  - lidar_parent
+  - "zed2i_right_camera_frame"
+  - "depth_camera_front_lower_camera_parent"
+  - "depth_camera_front_upper_camera_parent"
+  - "depth_camera_rear_lower_camera_parent"
+  - "depth_camera_rear_upper_camera_parent"
+  - "face_rear"
+  - "face_front"
+  - "depth_camera_left_camera_parent"
+  - "depth_camera_right_camera_parent"
 
 parentFramesToRemove:
   - "map"
@@ -48,6 +58,10 @@ parentFramesToRemove:
   - "wide_angle_camera_front_camera"
   - "face_front"
   - "face_rear"
+  - "depth_camera_front_lower_camera"
+  - "depth_camera_front_upper_camera"
+  - "depth_camera_rear_lower_camera"
+  - "depth_camera_rear_upper_camera"
   - "depth_camera_front_lower_camera_parent"
   - "depth_camera_front_upper_camera_parent"
   - "depth_camera_rear_lower_camera_parent"
@@ -69,3 +83,14 @@ parentFramesToRemove:
 
 childFramesToInverse:
   - "base"
+
+# Absolutely not the best way to do it.
+rotationOverrides:
+  - parent: "zed2i_left_camera_optical_frame"
+    child: "zed2i_right_camera_optical_frame"
+    axis: "x" # Ros convention is YAW, PITCH, ROLL hence (z, y, x)
+    angle_deg: 0.0
+  - parent: "zed2i_left_camera_frame"
+    child: "zed2i_left_camera_optical_frame"
+    axis: "x" # Ros convention is YAW, PITCH, ROLL hence (z, y, x)
+    angle_deg: 180.0

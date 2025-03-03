@@ -30,7 +30,7 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     print(f"Using configuration: {args.config_name}")
-    patterns = ["*_nuc_tf.bag", "*_tf_static.bag", "*_lpc_tf.bag", "*_dlio_new_formulation_minus_1ms.bag"]
+    patterns = ["*_nuc_tf.bag", "*_tf_static.bag", "*_lpc_tf.bag", "*_jetson_zed2i_tf.bag", "*_dlio.bag"]  # _gt_tf.bag
 
     path = Path(WS) / "src/grand_tour_box/box_utils/box_auto/cfg" / (args.config_name + ".yaml")
 
@@ -53,7 +53,6 @@ if __name__ == "__main__":
         background=False,
     )
     kill_roscore()
-    print("\033[92mTF and TF_Static Successfully curated.\033[0m")
     sleep(1)
 
     # Deploy .zip file reader e.g.

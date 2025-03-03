@@ -20,8 +20,6 @@ def launch_nodes(patterns, output_bag_path):
     for pattern in patterns:
         f = get_bag(pattern)
         inputs.append(f)
-        timestamp = str(f).split("/")[-1]
-        timestamp = timestamp.split("_")[0]
 
     assert len(inputs) == len(patterns), "Failure did not find all the bags required"
 

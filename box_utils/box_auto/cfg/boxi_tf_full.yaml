@@ -15,6 +15,7 @@ childFramesToRemove:
   - "footprint"
   - "feetcenter"
   - "docking_socket"
+  - "zed2i_right_camera_frame"
 
 parentFramesToRemove:
   - "map"
@@ -23,3 +24,13 @@ parentFramesToRemove:
 
 childFramesToInverse:
   - "base"
+
+rotationOverrides:
+  - parent: "zed2i_left_camera_optical_frame"
+    child: "zed2i_right_camera_optical_frame"
+    axis: "x" # Ros convention is YAW, PITCH, ROLL hence (z, y, x)
+    angle_deg: 0.0
+  - parent: "zed2i_left_camera_frame"
+    child: "zed2i_left_camera_optical_frame"
+    axis: "x" # Ros convention is YAW, PITCH, ROLL hence (z, y, x)
+    angle_deg: 180.0

@@ -7,6 +7,7 @@
 #include <ros/ros.h>
 #include <rosbag/bag.h>
 #include <rosbag/view.h>
+#include <sensor_msgs/Image.h>
 #include <sensor_msgs/Imu.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <sensor_msgs/point_cloud2_iterator.h>
@@ -568,8 +569,15 @@ int main(int argc, char** argv) {
         }
         output_bag.write(msg.getTopic(), imu_msg->header.stamp, imu_msg);
       } else if (operation_mode == "hesai") {
-        output_bag.write(msg.getTopic(), msg.getTime(), msg);
+        sensor_msgs::Image::ConstPtr img_msg = msg.instantiate<sensor_msgs::Image>();
+        if (!img_msg) {
+          continue;
+        }
+        // Updates the timestamp of the image messages (range and intensity)
+        output_bag.write(msg.getTopic(), img_msg->header.stamp, msg);
+
       } else if (operation_mode == "velodyne") {
+        // Velodyne packets are handled here.
         output_bag.write(msg.getTopic(), msg.getTime(), msg);
       } else {
         ROS_ERROR("Unknown operation mode: %s", operation_mode.c_str());
