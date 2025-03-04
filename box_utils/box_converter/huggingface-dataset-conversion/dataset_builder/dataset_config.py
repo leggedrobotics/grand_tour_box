@@ -14,7 +14,6 @@ import numpy as np
 import numpy.typing
 import yaml
 
-
 METADATA_KEY = "metadata"
 DATA_KEY = "data"
 

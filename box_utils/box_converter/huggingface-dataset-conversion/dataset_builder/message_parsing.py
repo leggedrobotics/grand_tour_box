@@ -12,14 +12,15 @@ import numpy as np
 from anymal_msgs.msg import AnymalState  # type: ignore
 from anymal_msgs.msg import Contact  # type: ignore
 from anymal_msgs.msg import ExtendedJointState  # type: ignore
-from gps_common.msg import GPSFix  # type: ignore
 from cv_bridge import CvBridge
 from geometry_msgs.msg import Point
 from geometry_msgs.msg import PointStamped
-from geometry_msgs.msg import PoseStamped, Twist
+from geometry_msgs.msg import PoseStamped
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from geometry_msgs.msg import Quaternion
+from geometry_msgs.msg import Twist
 from geometry_msgs.msg import Vector3
+from gps_common.msg import GPSFix  # type: ignore
 from nav_msgs.msg import Odometry
 from ros_numpy import numpify
 from sensor_msgs.msg import CameraInfo
@@ -37,6 +38,7 @@ from tf2_msgs.msg import TFMessage
 
 from dataset_builder.dataset_config import AnymalStateTopic
 from dataset_builder.dataset_config import FluidPressureTopic
+from dataset_builder.dataset_config import GPSFixTopic
 from dataset_builder.dataset_config import ImageTopic
 from dataset_builder.dataset_config import ImuTopic
 from dataset_builder.dataset_config import LidarTopic
@@ -46,8 +48,9 @@ from dataset_builder.dataset_config import OdometryTopic
 from dataset_builder.dataset_config import PointTopic
 from dataset_builder.dataset_config import PoseTopic
 from dataset_builder.dataset_config import SingletonTransformTopic
-from dataset_builder.dataset_config import TemperatureTopic, TwistTopic, GPSFixTopic
+from dataset_builder.dataset_config import TemperatureTopic
 from dataset_builder.dataset_config import Topic
+from dataset_builder.dataset_config import TwistTopic
 
 BasicType = Union[np.ndarray, int, float, str, bool]
 

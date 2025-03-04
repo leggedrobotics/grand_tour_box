@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import io
 from pathlib import Path
 from typing import Any
 from typing import Generator
@@ -7,7 +8,6 @@ from typing import Generator
 import rosbag  # type: ignore
 from roslib.message import get_message_class  # type: ignore
 from tqdm import tqdm
-import io
 
 # these messages types need to be parsed using roslib
 # otherwise some other downstream stuff complains about the exact
