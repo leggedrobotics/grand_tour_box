@@ -19,6 +19,7 @@ DATASET_PATH = DATA_PATH / "dataset" / MISSION_NAME
 
 
 def download_mission(mission_id: UUID, input_path: Path) -> None:
+    input_path.mkdir(parents=True, exist_ok=True)
     kleinkram.download(
         mission_ids=[mission_id], file_names=["*.bag"], dest=input_path, verbose=True
     )
@@ -28,7 +29,6 @@ def run_converter(
     input_path: Path, output_path: Path, *, config_path: Path, mission_prefix: str
 ) -> None:
     output_path.mkdir(parents=True, exist_ok=True)
-
     assert input_path.is_dir()
     topic_registry, metadata_config = load_config(config_path, mission_prefix)
 
@@ -54,7 +54,7 @@ def main() -> int:
         help="Path to the configuration file",
     )
     parser.add_argument(
-        "--mission-id",
+        "--mission-name",
         type=str,
         default=MISSION_NAME,
         help="Prefix for the mission",
@@ -62,7 +62,7 @@ def main() -> int:
 
     args = parser.parse_args()
 
-    missions = kleinkram.list_missions(mission_ids=[args.mission_id])
+    missions = kleinkram.list_missions(mission_names=[args.mission_name])
     assert len(missions) == 1
     mission = missions[0]
     download_mission(mission_id=mission.id, input_path=INPUT_PATH)

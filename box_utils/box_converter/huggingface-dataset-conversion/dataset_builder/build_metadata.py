@@ -34,7 +34,9 @@ def _load_metadata_from_bag_file_and_topic(
     bag_path: Path,
     topic_desc: Topic,
 ) -> Dict[str, Any]:
-    for message in messages_in_bag_with_topic(bag_path, topic_desc.topic):
+    for message in messages_in_bag_with_topic(
+        bag_path, topic_desc.topic, progress_bar=False
+    ):
         return extract_header_metadata_from_deserialized_message(message)
     raise ValueError(f"no messages found in topic {topic_desc.topic}")
 
@@ -43,7 +45,9 @@ def _load_camera_info_metadata_from_bag_file_and_topic(
     bag_path: Path,
     topic_desc: CameraInfoTopic,
 ) -> Dict[str, Any]:
-    for message in messages_in_bag_with_topic(bag_path, topic_desc.topic):
+    for message in messages_in_bag_with_topic(
+        bag_path, topic_desc.topic, progress_bar=False
+    ):
         assert isinstance(
             message, CameraInfo
         ), f"topic {topic_desc.topic} does not contain CameraInfo messages"
@@ -56,7 +60,9 @@ def _load_tf_metadata_from_bag_file_and_topic(
     bag_path: Path,
     frame_transform_config: FrameTransformConfig,
 ) -> Dict[str, Any]:
-    for message in messages_in_bag_with_topic(bag_path, frame_transform_config.topic):
+    for message in messages_in_bag_with_topic(
+        bag_path, frame_transform_config.topic, progress_bar=False
+    ):
         assert isinstance(
             message, TFMessage
         ), f"topic {frame_transform_config.topic} does not contain TFMessage messages"

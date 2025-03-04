@@ -1,42 +1,21 @@
-# Running the Conversion
-
-Navigate to the folder that contains this file.
-
-## Setting up the Local Environment
-
-we set this up to facilitate the downloading from kleinkram and uploading to huggingface
+# Grand Tour Huggingface Dataset Converter
 
 ```bash
-virtualenv -ppython3.12 .venv
+virtualenv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
+pip install kleinkram
+
+klein login
 ```
 
-## Downloading the Mission Data
-
-Download the required `.bag` files for the mission you want to conver and place them into the `data/files` folder.
-I.e., if you are using the kleinkram cli you can do:
+## Run inside Docker
 
 ```bash
-klein download -p GrandTour -m ... --dest data/files "*.bag"
+docker build --ssh default -t grand-tour-dataset .
 ```
 
-This will get changed later on, but thats how its done right now.
-
-## Starting the Docker Container
-
-Run the following command to start the docker container:
-
 ```bash
-docker build --ssh default -t grand-tour-dataset . && docker run -v "$(pwd):/app" --rm -it grand-tour-dataset
-```
-
-## Run the Dataset Builder
-
-Once you are inside the docker container you can run the dataset builder:
-
-```bash
-python -m dataset_builder
+docker run -v "$(pwd):/app" --env KLEINKRAM_CONFIG="$(cat ~/.kleinkram.json)" --rm -it grand-tour-dataset python -m dataset_builder
 ```
 
 ## Configuring the Converter
@@ -126,6 +105,9 @@ gprof2dot -f pstats o.pstat | dot -Tsvg -o o.svg
 ```
 
 ##### Profiling Results
+
+Since we switched to to reading bag files instead of mcap performance has dropped by about half.
+But overall most time is still spent inside ros packages.
 
 - 60-70% of the time is spent reading and writing images (we can't really improve this)
 - 20% of time is spent inside the bag message iterator function (we can't really improve this)

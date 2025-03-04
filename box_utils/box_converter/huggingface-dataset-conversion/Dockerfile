@@ -39,7 +39,15 @@ RUN pip install -r requirements-docker.txt
 # installing ros packages
 WORKDIR /catkin_ws/src
 ADD git@github.com:leggedrobotics/grand_tour_box.git /catkin_ws/src/
-RUN . /opt/ros/$ROS_DISTRO/setup.sh && catkin build anymal_msgs
+ADD git@github.com:ros-drivers/gps_umd.git /catkin_ws/src/
+ADD git@github.com:ANYbotics/signal_logger.git /catkin_ws/src/
+ADD git@github.com:GAVLab/gavlab_msgs.git /catkin_ws/src/
+RUN . /opt/ros/$ROS_DISTRO/setup.sh && catkin build \
+    anymal_msgs \
+    gps_common \
+    signal_logger_msgs \
+    gnss_msgs \
+    && :
 
 # entrypoint
 WORKDIR /app
