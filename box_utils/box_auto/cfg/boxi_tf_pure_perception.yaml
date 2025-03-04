@@ -5,6 +5,8 @@ frameMapping:
 
 framePairs:
   - parent: "base"
+    child: "lidar"
+  - parent: "base"
     child: "depth_camera_front_lower_depth_optical_frame"
   - parent: "base"
     child: "depth_camera_front_upper_depth_optical_frame"
@@ -16,8 +18,6 @@ framePairs:
     child: "depth_camera_left_depth_optical_frame"
   - parent: "base"
     child: "depth_camera_right_depth_optical_frame"
-  - parent: "base"
-    child: "lidar"
 
 childFramesToRemove:
   - "map"
@@ -47,6 +47,8 @@ childFramesToRemove:
   - "depth_camera_rear_upper_camera_parent"
   - "face_rear"
   - "face_front"
+  - "control"
+  - "loco_footprint"
   - "depth_camera_left_camera_parent"
   - "depth_camera_right_camera_parent"
 

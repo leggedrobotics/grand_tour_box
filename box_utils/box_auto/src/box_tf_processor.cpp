@@ -429,6 +429,9 @@ bool BoxTFProcessor::processRosbags(std::vector<std::string>& tfContainingBags) 
         foundAtopic = true;
         tf2_msgs::TFMessage::ConstPtr message = messageInstance.instantiate<tf2_msgs::TFMessage>();
         if (message != nullptr) {
+          if (message->transforms.empty()) {
+            continue;  // Skip if the message does not contain any transforms
+          }
           tfVector_.push_back(*message);
         }
       }
@@ -437,6 +440,9 @@ bool BoxTFProcessor::processRosbags(std::vector<std::string>& tfContainingBags) 
         foundAtopic = true;
         tf2_msgs::TFMessage::ConstPtr message = messageInstance.instantiate<tf2_msgs::TFMessage>();
         if (message != nullptr) {
+          if (message->transforms.empty()) {
+            continue;  // Skip if the message does not contain any transforms
+          }
           tfStaticVector_.push_back(*message);
         }
       }
@@ -454,6 +460,33 @@ bool BoxTFProcessor::processRosbags(std::vector<std::string>& tfContainingBags) 
   if (tfVector_.empty() && tfStaticVector_.empty()) {
     ROS_ERROR_STREAM("No TF messages found in the bag.");
     return false;
+  }
+
+  // Sort tfVector_ by timestamp of the first transform in each message
+  std::sort(tfVector_.begin(), tfVector_.end(), [](const tf2_msgs::TFMessage& a, const tf2_msgs::TFMessage& b) {
+    if (a.transforms.empty()) return false;
+    if (b.transforms.empty()) return true;
+    return a.transforms.front().header.stamp < b.transforms.front().header.stamp;
+  });
+
+  // Sort tfStaticVector_ by timestamp of the first transform in each message
+  std::sort(tfStaticVector_.begin(), tfStaticVector_.end(), [](const tf2_msgs::TFMessage& a, const tf2_msgs::TFMessage& b) {
+    if (a.transforms.empty()) return false;
+    if (b.transforms.empty()) return true;
+    return a.transforms.front().header.stamp < b.transforms.front().header.stamp;
+  });
+
+  // Additionally, sort transforms within each message by timestamp
+  for (auto& msg : tfVector_) {
+    std::sort(
+        msg.transforms.begin(), msg.transforms.end(),
+        [](const geometry_msgs::TransformStamped& a, const geometry_msgs::TransformStamped& b) { return a.header.stamp < b.header.stamp; });
+  }
+
+  for (auto& msg : tfStaticVector_) {
+    std::sort(
+        msg.transforms.begin(), msg.transforms.end(),
+        [](const geometry_msgs::TransformStamped& a, const geometry_msgs::TransformStamped& b) { return a.header.stamp < b.header.stamp; });
   }
 
   ros::Time firstTFTime = tfVector_.front().transforms.front().header.stamp - ros::Duration(1.0);
@@ -474,46 +507,46 @@ bool BoxTFProcessor::processRosbags(std::vector<std::string>& tfContainingBags) 
     }
   }
 
-  {
-    // Merge all tfStatic messages into one message while avoiding duplicates
-    if (!tfStaticVector_.empty()) {
-      // Use a set to track parent-child pairs we've already seen
-      std::set<std::pair<std::string, std::string>> seenPairs;
-      tf2_msgs::TFMessage mergedStaticMsg;
+  // {
+  //   // Merge all tfStatic messages into one message while avoiding duplicates
+  //   if (!tfStaticVector_.empty()) {
+  //     // Use a set to track parent-child pairs we've already seen
+  //     std::set<std::pair<std::string, std::string>> seenPairs;
+  //     tf2_msgs::TFMessage mergedStaticMsg;
 
-      for (const auto& msg : tfStaticVector_) {
-        for (const auto& transform : msg.transforms) {
-          // Create a pair representing this parent-child relationship
-          std::pair<std::string, std::string> framePair(transform.header.frame_id, transform.child_frame_id);
+  //     for (const auto& msg : tfStaticVector_) {
+  //       for (const auto& transform : msg.transforms) {
+  //         // Create a pair representing this parent-child relationship
+  //         std::pair<std::string, std::string> framePair(transform.header.frame_id, transform.child_frame_id);
 
-          // Only add this transform if we haven't seen this parent-child pair before
-          if (seenPairs.find(framePair) == seenPairs.end()) {
-            mergedStaticMsg.transforms.push_back(transform);
-            seenPairs.insert(framePair);
-            ROS_DEBUG_STREAM("Adding unique transform: " << transform.header.frame_id << " -> " << transform.child_frame_id);
-          } else {
-            ROS_DEBUG_STREAM("Skipping duplicate transform: " << transform.header.frame_id << " -> " << transform.child_frame_id);
-          }
-        }
-      }
+  //         // Only add this transform if we haven't seen this parent-child pair before
+  //         if (seenPairs.find(framePair) == seenPairs.end()) {
+  //           mergedStaticMsg.transforms.push_back(transform);
+  //           seenPairs.insert(framePair);
+  //           ROS_INFO_STREAM("Adding unique transform: " << transform.header.frame_id << " -> " << transform.child_frame_id);
+  //         } else {
+  //           ROS_DEBUG_STREAM("Skipping duplicate transform: " << transform.header.frame_id << " -> " << transform.child_frame_id);
+  //         }
+  //       }
+  //     }
 
-      // Replace the original vector with our deduplicated version
-      tfStaticVector_.clear();
-      tfStaticVector_.push_back(mergedStaticMsg);
-      ROS_INFO_STREAM("Merged static transforms: found " << mergedStaticMsg.transforms.size() << " unique transforms");
-    }
-  }
+  //     // Replace the original vector with our deduplicated version
+  //     tfStaticVector_.clear();
+  //     tfStaticVector_.push_back(mergedStaticMsg);
+  //     ROS_INFO_STREAM("Merged static transforms: found " << mergedStaticMsg.transforms.size() << " unique transforms");
+  //   }
+  // }
 
-  if (!tfVector_.empty() && !tfVector_[0].transforms.empty()) {
-    for (auto& tfStaticMsg : tfStaticVector_) {
-      for (auto& transform : tfStaticMsg.transforms) {
-        transform.header.stamp = firstTFTime;
-      }
-    }
-  } else {
-    ROS_ERROR_STREAM("tfVector_ is empty or has no valid transforms to extract time.");
-    return false;
-  }
+  // if (!tfVector_.empty() && !tfVector_[0].transforms.empty()) {
+  //   for (auto& tfStaticMsg : tfStaticVector_) {
+  //     for (auto& transform : tfStaticMsg.transforms) {
+  //       transform.header.stamp = firstTFTime;
+  //     }
+  //   }
+  // } else {
+  //   ROS_ERROR_STREAM("tfVector_ is empty or has no valid transforms to extract time.");
+  //   return false;
+  // }
 
   // List of child frame ids to remove
   if (params.childFramesToInverse.empty()) {
@@ -660,25 +693,96 @@ bool BoxTFProcessor::processRosbags(std::vector<std::string>& tfContainingBags) 
     }
   }
 
-  {
-    ROS_INFO_STREAM("Repeating tf_static transforms every " << tfStaticRepetitionPeriod_ << " second(s) from " << firstTFTime << " to "
-                                                            << lastTFTime);
+  // {
+  //   ROS_INFO_STREAM("Repeating tf_static transforms every " << tfStaticRepetitionPeriod_ << " second(s) from " << firstTFTime << " to "
+  //                                                           << lastTFTime);
 
-    // Repeat the tf_static transforms every "tfStaticRepetitionPeriod_" seconds between first and last times.
-    for (ros::Time t = firstTFTime; t <= lastTFTime; t += ros::Duration(tfStaticRepetitionPeriod_)) {
-      for (const auto& tfStaticMsg : tfStaticVector_) {
-        // Create a modified copy with updated header times.
-        tf2_msgs::TFMessage repeatedMsg = tfStaticMsg;
-        for (auto& transform : repeatedMsg.transforms) {
+  //   // Repeat the tf_static transforms every "tfStaticRepetitionPeriod_" seconds between first and last times.
+  //   for (ros::Time t = firstTFTime; t <= lastTFTime; t += ros::Duration(tfStaticRepetitionPeriod_)) {
+  //     for (const auto& tfStaticMsg : tfStaticVector_) {
+  //       // Create a modified copy with updated header times.
+  //       tf2_msgs::TFMessage repeatedMsg = tfStaticMsg;
+  //       for (auto& transform : repeatedMsg.transforms) {
+  //         transform.header.stamp = t;
+  //       }
+  //       outBag.write("/tf_static", t, repeatedMsg);
+  //     }
+  //   }
+  // }
+
+  {
+    // Find the earliest timestamp in tfStaticVector_
+    ros::Time earliestStaticTime = firstTFTime;  // Default to firstTFTime
+    bool foundValidTime = false;
+
+    // for (const auto& tfStaticMsg : tfStaticVector_) {
+    //   for (const auto& transform : tfStaticMsg.transforms) {
+    //     if (transform.header.stamp != ros::Time(0) && (!foundValidTime || transform.header.stamp < earliestStaticTime)) {
+    //       earliestStaticTime = transform.header.stamp;
+    //       foundValidTime = true;
+    //     }
+    //   }
+    // }
+
+    ROS_INFO_STREAM("Writing tf_static transforms with timestamp: " << earliestStaticTime);
+
+    // Combine all static transforms into a single message
+    tf2_msgs::TFMessage combinedStaticMsg;
+    std::set<std::pair<std::string, std::string>> seenPairs;
+
+    // Collect all unique transforms from all static messages
+    for (const auto& tfStaticMsg : tfStaticVector_) {
+      for (const auto& transform : tfStaticMsg.transforms) {
+        // Create a pair representing this parent-child relationship
+        std::pair<std::string, std::string> framePair(transform.header.frame_id, transform.child_frame_id);
+
+        // Only add this transform if we haven't seen this parent-child pair before
+        if (seenPairs.find(framePair) == seenPairs.end()) {
+          // Add to the combined message with the earliest timestamp
+          geometry_msgs::TransformStamped updatedTransform = transform;
+          updatedTransform.header.stamp = earliestStaticTime;
+          combinedStaticMsg.transforms.push_back(updatedTransform);
+          seenPairs.insert(framePair);
+        }
+      }
+    }
+
+    // // Write the single combined message to the bag
+    // if (!combinedStaticMsg.transforms.empty()) {
+    //   ROS_INFO_STREAM("Writing combined tf_static message with " << combinedStaticMsg.transforms.size()
+    //                                                              << " unique transforms at timestamp " << earliestStaticTime);
+    //   outBag.write("/tf_static", earliestStaticTime, combinedStaticMsg);
+    // } else {
+    //   ROS_WARN_STREAM("No static transforms found to write");
+    // }
+
+    // Write the combined static message periodically
+    if (!combinedStaticMsg.transforms.empty()) {
+      ros::Time startTime = earliestStaticTime - ros::Duration(1.0);
+      ROS_INFO_STREAM("Writing combined tf_static message with "
+                      << combinedStaticMsg.transforms.size() << " unique transforms periodically from " << startTime << " to " << lastTFTime
+                      << " every " << tfStaticRepetitionPeriod_ << " seconds");
+
+      // Repeat the tf_static transforms at regular intervals
+      for (ros::Time t = startTime; t <= lastTFTime; t += ros::Duration(tfStaticRepetitionPeriod_)) {
+        // Update all transforms to have the current timestamp
+        for (auto& transform : combinedStaticMsg.transforms) {
           transform.header.stamp = t;
         }
-        outBag.write("/tf_static", t, repeatedMsg);
+        outBag.write("/tf_static", t, combinedStaticMsg);
       }
+    } else {
+      ROS_WARN_STREAM("No static transforms found to write");
     }
   }
 
   ROS_INFO_STREAM("Writing to Rosbag: " << rosbagFullname_);
   for (const auto& tfMessage : tfVector_) {
+    // Skip if there are no transforms in this message
+    if (tfMessage.transforms.empty()) {
+      continue;
+    }
+
     if (tfMessage.transforms[0].header.stamp < ros::TIME_MIN) {
       ROS_ERROR_STREAM("The ROS time of the transform is invalid: " << tfMessage.transforms[0].header.stamp);
       return false;

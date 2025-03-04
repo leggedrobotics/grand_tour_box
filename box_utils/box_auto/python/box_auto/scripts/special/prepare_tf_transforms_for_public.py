@@ -30,7 +30,10 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     print(f"Using configuration: {args.config_name}")
-    patterns = ["*_nuc_tf.bag", "*_tf_static.bag", "*_lpc_tf.bag", "*_jetson_zed2i_tf.bag", "*_dlio.bag"]  # _gt_tf.bag
+    patterns = ["*_nuc_tf.bag", "*_tf_static.bag", "*_lpc_tf.bag", "*_jetson_zed2i_tf.bag"]  # _tf_static_start_end
+    # ,
+    # "*_dlio.bag",
+    # "*_gt_tf.bag" ]
 
     path = Path(WS) / "src/grand_tour_box/box_utils/box_auto/cfg" / (args.config_name + ".yaml")
 
