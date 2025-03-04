@@ -1,13 +1,14 @@
 from __future__ import annotations
 
+from argparse import ArgumentParser
 from pathlib import Path
+from uuid import UUID
+
+import kleinkram
 
 from dataset_builder.build_data import build_data_part
 from dataset_builder.build_metadata import build_metadata_part
 from dataset_builder.dataset_config import load_config
-import kleinkram
-from uuid import UUID
-from argparse import ArgumentParser
 
 MISSION_NAME = "2024-11-14-13-45-37"
 DEFAULT_CONFIG_PATH = Path(__file__).parent / "configs" / f"{MISSION_NAME}.yaml"

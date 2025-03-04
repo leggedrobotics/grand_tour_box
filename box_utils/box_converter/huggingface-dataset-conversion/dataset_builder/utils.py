@@ -1,8 +1,10 @@
 from __future__ import annotations
 
-import rosbag
 from pathlib import Path
-from typing import Generator, Any
+from typing import Any
+from typing import Generator
+
+import rosbag
 from tqdm import tqdm
 
 

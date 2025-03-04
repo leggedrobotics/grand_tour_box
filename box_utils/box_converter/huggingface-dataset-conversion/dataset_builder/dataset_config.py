@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+from dataclasses import field
 from pathlib import Path
 from typing import Any
 from typing import Dict
@@ -13,36 +14,12 @@ import numpy as np
 import numpy.typing
 import yaml
 
-IMAGE_TOPICS_KEY = "image_topics"
-LIDAR_TOPICS_KEY = "lidar_topics"
-POSE_TOPICS_KEY = "pose_topics"
-IMU_TOPICS_KEY = "imu_topics"
-ODOMETRY_TOPICS_KEY = "odometry_topics"
-ANYMAL_STATE_TOPICS_KEY = "anymal_state_topics"
-NAV_SAT_FIX_TOPICS_KEY = "nav_sat_fix_topics"
-MAGNETIC_FIELD_TOPICS_KEY = "magnetic_field_topics"
-POINT_TOPICS_KEY = "point_topics"
-SINGLETON_TRANSFORM_TOPICS_KEY = "singleton_transform_topics"
 
 METADATA_KEY = "metadata"
 DATA_KEY = "data"
 
 CAMERA_INTRISICS_KEY = "camera_intrinsics"
 FRAME_TRANSFORMS_KEY = "frame_transforms"
-
-
-ALLOWED_KEYS = [
-    IMAGE_TOPICS_KEY,
-    LIDAR_TOPICS_KEY,
-    POSE_TOPICS_KEY,
-    IMU_TOPICS_KEY,
-    ODOMETRY_TOPICS_KEY,
-    ANYMAL_STATE_TOPICS_KEY,
-    NAV_SAT_FIX_TOPICS_KEY,
-    MAGNETIC_FIELD_TOPICS_KEY,
-    POINT_TOPICS_KEY,
-    SINGLETON_TRANSFORM_TOPICS_KEY,
-]
 
 
 @dataclass(frozen=True)
@@ -110,6 +87,22 @@ class CameraInfoTopic(Topic): ...
 
 
 @dataclass
+class TemperatureTopic(Topic): ...
+
+
+@dataclass
+class FluidPressureTopic(Topic): ...
+
+
+@dataclass
+class TwistTopic(Topic): ...
+
+
+@dataclass
+class GPSFixTopic(Topic): ...
+
+
+@dataclass
 class FrameTransformConfig:
     base_frame: str
     topic: str
@@ -156,7 +149,7 @@ def build_pose_attr_types(covar: bool) -> AttributeTypes:
     return column_types
 
 
-def extract_image_topic_attributes(
+def _build_image_topic_attributes(
     image_topics: Sequence[ImageTopic],
 ) -> TopicRegistry:
     ret: TopicRegistry = {}
@@ -165,7 +158,7 @@ def extract_image_topic_attributes(
     return ret
 
 
-def extract_lidar_topic_attributes(
+def _build_lidar_topic_attributes(
     lidar_topics: Sequence[LidarTopic],
 ) -> TopicRegistry:
     ret: TopicRegistry = {}
@@ -177,7 +170,7 @@ def extract_lidar_topic_attributes(
     return ret
 
 
-def extract_pose_topic_attributes(
+def _build_pose_topic_attributes(
     pose_topics: Sequence[PoseTopic],
 ) -> TopicRegistry:
     ret: TopicRegistry = {}
@@ -186,7 +179,7 @@ def extract_pose_topic_attributes(
     return ret
 
 
-def extract_imu_topic_attributes(
+def _build_imu_topic_attributes(
     imu_topics: Sequence[ImuTopic],
 ) -> TopicRegistry:
     topic_tp = {
@@ -199,6 +192,26 @@ def extract_imu_topic_attributes(
     }
 
     return {topic.alias: (topic_tp.copy(), topic) for topic in imu_topics}
+
+
+def _build_temperature_topic_attributes(
+    temperature_topics: Sequence[TemperatureTopic],
+) -> TopicRegistry:
+    topic_tp = {
+        "temp": ArrayType(tuple(), np.float64),
+        "var": ArrayType(tuple(), np.float64),
+    }
+    return {topic.alias: (topic_tp.copy(), topic) for topic in temperature_topics}
+
+
+def _build_fluid_pressure_topic_attributes(
+    fluid_pressure_topics: Sequence[FluidPressureTopic],
+) -> TopicRegistry:
+    topic_tp = {
+        "pressure": ArrayType(tuple(), np.float64),
+        "var": ArrayType(tuple(), np.float64),
+    }
+    return {topic.alias: (topic_tp.copy(), topic) for topic in fluid_pressure_topics}
 
 
 def build_anymal_state_topic(anymal_state_topic: AnymalStateTopic) -> AttributeTypes:
@@ -233,7 +246,7 @@ def build_anymal_state_topic(anymal_state_topic: AnymalStateTopic) -> AttributeT
     return ret
 
 
-def extract_anymal_state_topic_attributes(
+def _build_anymal_state_topic_attributes(
     anymal_state_topics: Sequence[AnymalStateTopic],
 ) -> TopicRegistry:
 
@@ -243,7 +256,7 @@ def extract_anymal_state_topic_attributes(
     }
 
 
-def extract_odometry_topic_attributes(
+def _build_odometry_topic_attributes(
     odometry_topics: Sequence[OdometryTopic],
 ) -> TopicRegistry:
     topic_tp = {
@@ -258,7 +271,7 @@ def extract_odometry_topic_attributes(
     return {topic.alias: (topic_tp.copy(), topic) for topic in odometry_topics}
 
 
-def extract_nav_sat_fix_topic_attributes(
+def _build_nav_sat_fix_topic_attributes(
     nav_sat_fix_topics: Sequence[NavSatFixTopic],
 ) -> TopicRegistry:
     topic_tp = {
@@ -272,7 +285,7 @@ def extract_nav_sat_fix_topic_attributes(
     return {topic.alias: (topic_tp.copy(), topic) for topic in nav_sat_fix_topics}
 
 
-def extract_magnetic_field_topic_attributes(
+def _build_magnetic_field_topic_attributes(
     magnetic_field_topics: Sequence[MagneticFieldTopic],
 ) -> TopicRegistry:
 
@@ -284,7 +297,7 @@ def extract_magnetic_field_topic_attributes(
     return {topic.alias: (topic_tp.copy(), topic) for topic in magnetic_field_topics}
 
 
-def extract_point_topic_attributes(
+def _build_point_topic_attributes(
     point_topics: Sequence[PointTopic],
 ) -> TopicRegistry:
     topic_tp = {
@@ -294,7 +307,7 @@ def extract_point_topic_attributes(
     return {topic.alias: (topic_tp.copy(), topic) for topic in point_topics}
 
 
-def extract_singleton_transform_topic_attributes(
+def _build_singleton_transform_topic_attributes(
     singleton_transform_topics: Sequence[SingletonTransformTopic],
 ) -> TopicRegistry:
     topic_tp = {
@@ -305,6 +318,51 @@ def extract_singleton_transform_topic_attributes(
     return {
         topic.alias: (topic_tp.copy(), topic) for topic in singleton_transform_topics
     }
+
+
+def _build_gps_fix_topic_attributes(
+    gps_fix_topics: Sequence[GPSFixTopic],
+):
+    topic_tp = {
+        "lat": ArrayType(tuple(), np.float64),
+        "long": ArrayType(tuple(), np.float64),
+        "alt": ArrayType(tuple(), np.float64),
+        "track": ArrayType(tuple(), np.float64),
+        "speed": ArrayType(tuple(), np.float64),
+        "climb": ArrayType(tuple(), np.float64),
+        "pitch": ArrayType(tuple(), np.float64),
+        "roll": ArrayType(tuple(), np.float64),
+        "dip": ArrayType(tuple(), np.float64),
+        "time": ArrayType(tuple(), np.float64),
+        "gdop": ArrayType(tuple(), np.float64),
+        "pdop": ArrayType(tuple(), np.float64),
+        "hdop": ArrayType(tuple(), np.float64),
+        "vdop": ArrayType(tuple(), np.float64),
+        "tdop": ArrayType(tuple(), np.float64),
+        "err": ArrayType(tuple(), np.float64),
+        "err_hor": ArrayType(tuple(), np.float64),
+        "err_ver": ArrayType(tuple(), np.float64),
+        "err_track": ArrayType(tuple(), np.float64),
+        "err_speed": ArrayType(tuple(), np.float64),
+        "err_climb": ArrayType(tuple(), np.float64),
+        "err_time": ArrayType(tuple(), np.float64),
+        "err_pitch": ArrayType(tuple(), np.float64),
+        "err_roll": ArrayType(tuple(), np.float64),
+        "err_dip": ArrayType(tuple(), np.float64),
+        "pos_cov": ArrayType((3, 3), np.float64),
+        "pos_cov_type": ArrayType(tuple(), np.uint8),
+    }
+    return {topic.alias: (topic_tp.copy(), topic) for topic in gps_fix_topics}
+
+
+def _build_twist_topic_attributes(
+    twist_topics: Sequence[TwistTopic],
+):
+    topic_tp = {
+        "twist_lin": ArrayType((3,), np.float64),
+        "twist_ang": ArrayType((3,), np.float64),
+    }
+    return {topic.alias: (topic_tp.copy(), topic) for topic in twist_topics}
 
 
 UNIVERSAL_ATTRIBUTES: Dict[str, ArrayType] = {
@@ -322,6 +380,33 @@ def add_universal_attributes(
     }
 
 
+TOPIC_TYPES = {
+    "image_topics": (ImageTopic, _build_image_topic_attributes),
+    "lidar_topics": (LidarTopic, _build_lidar_topic_attributes),
+    "pose_topics": (PoseTopic, _build_pose_topic_attributes),
+    "imu_topics": (ImuTopic, _build_imu_topic_attributes),
+    "odometry_topics": (OdometryTopic, _build_odometry_topic_attributes),
+    "anymal_state_topics": (AnymalStateTopic, _build_anymal_state_topic_attributes),
+    "nav_sat_fix_topics": (NavSatFixTopic, _build_nav_sat_fix_topic_attributes),
+    "magnetic_field_topics": (
+        MagneticFieldTopic,
+        _build_magnetic_field_topic_attributes,
+    ),
+    "point_topics": (PointTopic, _build_point_topic_attributes),
+    "singleton_transform_topics": (
+        SingletonTransformTopic,
+        _build_singleton_transform_topic_attributes,
+    ),
+    "temperature_topics": (TemperatureTopic, _build_temperature_topic_attributes),
+    "fluid_pressure_topics": (
+        FluidPressureTopic,
+        _build_fluid_pressure_topic_attributes,
+    ),
+    "gps_fix_topics": (GPSFixTopic, _build_gps_fix_topic_attributes),
+    "twist_topics": (TwistTopic, _build_twist_topic_attributes),
+}
+
+
 def load_topic_registry_from_config(
     data_config_object: Mapping[str, List[Mapping[str, Any]]], mission_name: str
 ) -> TopicRegistry:
@@ -331,80 +416,16 @@ def load_topic_registry_from_config(
     ), "data part of config file must be a mapping"
 
     for key in data_config_object.keys():
-        assert key in ALLOWED_KEYS, f"unknown key in config: {key}"
+        assert key in TOPIC_TYPES.keys(), f"unknown key in config: {key}"
 
     try:
-        # image topics
-        image_topics = [
-            ImageTopic(**topic_obj)
-            for topic_obj in data_config_object.get(IMAGE_TOPICS_KEY, [])
-        ]
-        registry.update(extract_image_topic_attributes(image_topics))
-
-        # lidar topics
-        lidar_topics = [
-            LidarTopic(**topic_obj)
-            for topic_obj in data_config_object.get(LIDAR_TOPICS_KEY, [])
-        ]
-        registry.update(extract_lidar_topic_attributes(lidar_topics))
-
-        # pose topics
-        pose_topics = [
-            PoseTopic(**topic_obj)
-            for topic_obj in data_config_object.get(POSE_TOPICS_KEY, [])
-        ]
-        registry.update(extract_pose_topic_attributes(pose_topics))
-
-        # imu topics
-        imu_topics = [
-            ImuTopic(**topic_obj)
-            for topic_obj in data_config_object.get(IMU_TOPICS_KEY, [])
-        ]
-        registry.update(extract_imu_topic_attributes(imu_topics))
-
-        # odometry topics
-        odometry_topics = [
-            OdometryTopic(**topic_obj)
-            for topic_obj in data_config_object.get(ODOMETRY_TOPICS_KEY, [])
-        ]
-        registry.update(extract_odometry_topic_attributes(odometry_topics))
-
-        # anymal_state topics (essentially the same as odometry)
-        anymal_state_topics = [
-            AnymalStateTopic(**topic_obj)
-            for topic_obj in data_config_object.get(ANYMAL_STATE_TOPICS_KEY, [])
-        ]
-        registry.update(extract_anymal_state_topic_attributes(anymal_state_topics))
-
-        # nav_sat_fix topics
-        nav_sat_fix_topics = [
-            NavSatFixTopic(**topic_obj)
-            for topic_obj in data_config_object.get(NAV_SAT_FIX_TOPICS_KEY, [])
-        ]
-        registry.update(extract_nav_sat_fix_topic_attributes(nav_sat_fix_topics))
-
-        # magnetic_field topics
-        magnetic_field_topics = [
-            MagneticFieldTopic(**topic_obj)
-            for topic_obj in data_config_object.get(MAGNETIC_FIELD_TOPICS_KEY, [])
-        ]
-        registry.update(extract_magnetic_field_topic_attributes(magnetic_field_topics))
-
-        # point topics
-        point_topics = [
-            PointTopic(**topic_obj)
-            for topic_obj in data_config_object.get(POINT_TOPICS_KEY, [])
-        ]
-        registry.update(extract_point_topic_attributes(point_topics))
-
-        # singleton_transform topics
-        singleton_transform_topics = [
-            SingletonTransformTopic(**topic_obj)
-            for topic_obj in data_config_object.get(SINGLETON_TRANSFORM_TOPICS_KEY, [])
-        ]
-        registry.update(
-            extract_singleton_transform_topic_attributes(singleton_transform_topics)
-        )
+        for key, (topic_type, _build_fn) in TOPIC_TYPES.items():
+            if key in data_config_object:
+                topics = [
+                    topic_type(**topic_obj)
+                    for topic_obj in data_config_object.get(key, [])
+                ]
+                registry.update(_build_fn(topics))
         for _, topic_obj in registry.values():
             topic_obj.file = topic_obj.file.format(mission_name)
 

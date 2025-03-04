@@ -9,10 +9,14 @@ from typing import cast
 
 import cv2
 import numpy as np
+from anymal_msgs.msg import AnymalState  # type: ignore
+from anymal_msgs.msg import Contact  # type: ignore
+from anymal_msgs.msg import ExtendedJointState  # type: ignore
+from gps_common.msg import GPSFix  # type: ignore
 from cv_bridge import CvBridge
 from geometry_msgs.msg import Point
 from geometry_msgs.msg import PointStamped
-from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import PoseStamped, Twist
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from geometry_msgs.msg import Quaternion
 from geometry_msgs.msg import Vector3
@@ -20,16 +24,19 @@ from nav_msgs.msg import Odometry
 from ros_numpy import numpify
 from sensor_msgs.msg import CameraInfo
 from sensor_msgs.msg import CompressedImage
+from sensor_msgs.msg import FluidPressure
+from sensor_msgs.msg import Image
 from sensor_msgs.msg import Imu
 from sensor_msgs.msg import MagneticField
 from sensor_msgs.msg import NavSatFix
 from sensor_msgs.msg import PointCloud2
 from sensor_msgs.msg import RegionOfInterest
-from anymal_msgs.msg import AnymalState, Contact, ExtendedJointState  # type: ignore
+from sensor_msgs.msg import Temperature
 from std_msgs.msg import Header
 from tf2_msgs.msg import TFMessage
 
 from dataset_builder.dataset_config import AnymalStateTopic
+from dataset_builder.dataset_config import FluidPressureTopic
 from dataset_builder.dataset_config import ImageTopic
 from dataset_builder.dataset_config import ImuTopic
 from dataset_builder.dataset_config import LidarTopic
@@ -39,6 +46,7 @@ from dataset_builder.dataset_config import OdometryTopic
 from dataset_builder.dataset_config import PointTopic
 from dataset_builder.dataset_config import PoseTopic
 from dataset_builder.dataset_config import SingletonTransformTopic
+from dataset_builder.dataset_config import TemperatureTopic, TwistTopic, GPSFixTopic
 from dataset_builder.dataset_config import Topic
 
 BasicType = Union[np.ndarray, int, float, str, bool]
@@ -81,8 +89,25 @@ def extract_camera_info_metadata_from_deserialized_message(
 CV_BRIDGE = CvBridge()
 
 
+def _parse_quaternion(msg: Quaternion) -> np.ndarray:
+    return np.array([msg.x, msg.y, msg.z, msg.w])
+
+
+def _parse_vector3(msg: Union[Point, Vector3]) -> np.ndarray:
+    return np.array([msg.x, msg.y, msg.z])
+
+
+def _parse_covariance(arr: Union[np.ndarray, Tuple[float, ...]], n: int) -> np.ndarray:
+    assert len(arr) == n * n
+    return np.array(arr).reshape(n, n)
+
+
 def extract_and_save_image_from_message(
-    msg: CompressedImage, image_index: int, *, topic_desc: ImageTopic, image_dir: Path
+    msg: Union[CompressedImage, Image],
+    image_index: int,
+    *,
+    topic_desc: ImageTopic,
+    image_dir: Path,
 ) -> None:
     if topic_desc.compressed:
         image = CV_BRIDGE.compressed_imgmsg_to_cv2(msg)
@@ -117,17 +142,6 @@ def _parse_contact(msg: Contact) -> Tuple[Dict[str, BasicType], str]:
     return data, msg.name
 
 
-"""
-"wrench_force": ArrayType((3,), np.float64),
-        "wrench_torque": ArrayType((3,), np.float64),
-        "normal": ArrayType((3,), np.float64),
-        "friction": ArrayType((1,), np.float64),
-        "restitution": ArrayType((1,), np.float64),
-        "state": ArrayType((1,), np.uint8),
-        "contact": ArrayType((1,), np.uint8),  # 0: no contact, 1: contact
-"""
-
-
 def _parse_extended_joint_state(msg: ExtendedJointState) -> Dict[str, BasicType]:
     return {
         "joint_positions": np.array(msg.position),
@@ -140,7 +154,7 @@ def _parse_extended_joint_state(msg: ExtendedJointState) -> Dict[str, BasicType]
 def _parse_anymal_state(
     msg: AnymalState, topic_desc: AnymalStateTopic
 ) -> Dict[str, BasicType]:
-    ret = _parse_odometry(cast(Odometry, msg))
+    ret = _parse_odometry(cast(Odometry, msg), topic_desc)
     contacts_data = {}
     for contact in msg.contacts:
         contact_data, name = _parse_contact(contact)
@@ -199,7 +213,7 @@ def _parse_point_cloud2(
     return ret  # type: ignore
 
 
-def _parse_nav_sat_fix(msg: NavSatFix) -> Dict[str, BasicType]:
+def _parse_nav_sat_fix(msg: NavSatFix, _: Topic) -> Dict[str, BasicType]:
     data = {
         "lat": msg.latitude,
         "long": msg.longitude,
@@ -210,20 +224,7 @@ def _parse_nav_sat_fix(msg: NavSatFix) -> Dict[str, BasicType]:
     return data
 
 
-def _parse_quaternion(msg: Quaternion) -> np.ndarray:
-    return np.array([msg.x, msg.y, msg.z, msg.w])
-
-
-def _parse_vector3(msg: Union[Point, Vector3]) -> np.ndarray:
-    return np.array([msg.x, msg.y, msg.z])
-
-
-def _parse_covariance(arr: Union[np.ndarray, Tuple[float, ...]], n: int) -> np.ndarray:
-    assert len(arr) == n * n
-    return np.array(arr).reshape(n, n)
-
-
-def _parse_magnetic_field(msg: MagneticField) -> Dict[str, BasicType]:
+def _parse_magnetic_field(msg: MagneticField, _: Topic) -> Dict[str, BasicType]:
     data = {
         "b_field": _parse_vector3(msg.magnetic_field),
         "b_field_cov": _parse_covariance(msg.magnetic_field_covariance, 3),
@@ -231,7 +232,7 @@ def _parse_magnetic_field(msg: MagneticField) -> Dict[str, BasicType]:
     return data  # type: ignore
 
 
-def _parse_imu(msg: Imu) -> Dict[str, BasicType]:
+def _parse_imu(msg: Imu, _: Topic) -> Dict[str, BasicType]:
     return {
         "orien": _parse_quaternion(msg.orientation),
         "orien_cov": _parse_covariance(msg.orientation_covariance, 3),
@@ -242,7 +243,7 @@ def _parse_imu(msg: Imu) -> Dict[str, BasicType]:
     }
 
 
-def _parse_odometry(msg: Odometry) -> Dict[str, BasicType]:
+def _parse_odometry(msg: Odometry, _: Topic) -> Dict[str, BasicType]:
     return {
         "pose_pos": _parse_vector3(msg.pose.pose.position),
         "pose_orien": _parse_quaternion(msg.pose.pose.orientation),
@@ -274,18 +275,72 @@ def _parse_pose(
 
 def _parse_point(
     msg: PointStamped,
+    _: Topic,
 ) -> Dict[str, BasicType]:
     return {
         "point": _parse_vector3(msg.point),
     }
 
 
-def _parse_tf2_singleton_message(msg: TFMessage) -> Dict[str, BasicType]:
+def _parse_tf2_singleton_message(msg: TFMessage, _: Topic) -> Dict[str, BasicType]:
     assert len(msg.transforms) == 1
     transform = msg.transforms[0]  # type: ignore
     return {
         "translation": _parse_vector3(transform.transform.translation),
         "rotation": _parse_quaternion(transform.transform.rotation),
+    }
+
+
+def _parse_temperature_message(msg: Temperature, _: Topic) -> Dict[str, BasicType]:
+    return {
+        "temp": msg.temperature,
+        "var": msg.variance,
+    }
+
+
+def _parse_fluid_pressure_message(msg: FluidPressure, _: Topic) -> Dict[str, BasicType]:
+    return {
+        "pres": msg.fluid_pressure,
+        "var": msg.variance,
+    }
+
+
+def _parse_twist_message(msg: Twist, _: Topic) -> Dict[str, BasicType]:
+    return {
+        "twist_lin": _parse_vector3(msg.linear),
+        "twist_ang": _parse_vector3(msg.angular),
+    }
+
+
+def _parse_gps_fix_message(msg: GPSFix, _: Topic) -> Dict[str, BasicType]:
+    return {
+        "long": msg.longitude,
+        "lat": msg.latitude,
+        "alt": msg.altitude,
+        "track": msg.track,
+        "speed": msg.speed,
+        "climb": msg.climb,
+        "pitch": msg.pitch,
+        "roll": msg.roll,
+        "dip": msg.dip,
+        "time": msg.time,
+        "gdop": msg.gdop,
+        "pdop": msg.pdop,
+        "hdop": msg.hdop,
+        "vdop": msg.vdop,
+        "tdop": msg.tdop,
+        "err": msg.err,
+        "err_hor": msg.err_hor,
+        "err_ver": msg.err_ver,
+        "err_track": msg.err_track,
+        "err_speed": msg.err_speed,
+        "err_climb": msg.err_climb,
+        "err_time": msg.err_time,
+        "err_pitch": msg.err_pitch,
+        "err_roll": msg.err_roll,
+        "err_dip": msg.err_dip,
+        "pos_cov": np.array(msg.position_covariance).reshape(3, 3),
+        "pos_cov_type": msg.position_covariance_type,
     }
 
 
@@ -321,29 +376,30 @@ def _extract_header_data_from_deserialized_message(msg: Any) -> Dict[str, BasicT
     }
 
 
+MESSAGE_PARSING_FUNCTIONS = [
+    (LidarTopic, _parse_point_cloud2),
+    (NavSatFixTopic, _parse_nav_sat_fix),
+    (MagneticFieldTopic, _parse_magnetic_field),
+    (ImuTopic, _parse_imu),
+    (PoseTopic, _parse_pose),
+    (PointTopic, _parse_point),
+    (SingletonTransformTopic, _parse_tf2_singleton_message),
+    (OdometryTopic, _parse_odometry),
+    (AnymalStateTopic, _parse_anymal_state),
+    (TemperatureTopic, _parse_temperature_message),
+    (FluidPressureTopic, _parse_fluid_pressure_message),
+    (TwistTopic, _parse_twist_message),
+    (GPSFixTopic, _parse_gps_fix_message),
+]
+
+
 def _parse_message_data_from_deserialized_message(
     msg: Any, topic_desc: Topic
 ) -> Dict[str, BasicType]:
-    if isinstance(topic_desc, LidarTopic):
-        return _parse_point_cloud2(msg, topic_desc)
-    elif isinstance(topic_desc, NavSatFixTopic):
-        return _parse_nav_sat_fix(msg)
-    elif isinstance(topic_desc, MagneticFieldTopic):
-        return _parse_magnetic_field(msg)
-    elif isinstance(topic_desc, ImuTopic):
-        return _parse_imu(msg)
-    elif isinstance(topic_desc, PoseTopic):
-        return _parse_pose(msg, topic_desc)
-    elif isinstance(topic_desc, PointTopic):
-        return _parse_point(msg)
-    elif isinstance(topic_desc, SingletonTransformTopic):
-        return _parse_tf2_singleton_message(msg)
-    elif isinstance(topic_desc, OdometryTopic):
-        return _parse_odometry(msg)
-    elif isinstance(topic_desc, AnymalStateTopic):
-        return _parse_anymal_state(msg, topic_desc)
-    else:
-        return {}
+    for topic_type, parser in MESSAGE_PARSING_FUNCTIONS:
+        if isinstance(topic_desc, topic_type):
+            return parser(msg, topic_desc)
+    return {}
 
 
 def parse_deserialized_message(msg: Any, topic_desc: Topic) -> Dict[str, BasicType]:
