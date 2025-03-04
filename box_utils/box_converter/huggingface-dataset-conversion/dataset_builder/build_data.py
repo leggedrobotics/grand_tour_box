@@ -237,7 +237,10 @@ def _tar_ball_dataset(base_dataset_path: Path) -> None:
 def build_data_part(
     *, bags_path: Path, dataset_base_path: Path, topic_registry: TopicRegistry
 ) -> None:
-    for attribute_types, topic_desc in tqdm(topic_registry.values()):
+    progress = tqdm(topic_registry.values())
+    for attribute_types, topic_desc in progress:
+        progress.set_description(f"Processing {topic_desc.alias}")
+
         bag_file = bags_path / topic_desc.file
         _generate_dataset_from_topic_description_and_attribute_types(
             dataset_base_path,
