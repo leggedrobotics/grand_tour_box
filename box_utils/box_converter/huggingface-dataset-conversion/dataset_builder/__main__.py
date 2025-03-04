@@ -10,11 +10,10 @@ from dataset_builder.build_data import build_data_part
 from dataset_builder.build_metadata import build_metadata_part
 from dataset_builder.dataset_config import load_config
 
-MISSION_NAME = "2024-11-14-13-45-37"
-DEFAULT_CONFIG_PATH = Path(__file__).parent / "configs" / f"{MISSION_NAME}.yaml"
+MISSION_NAME = "2024-11-11-12-42-47"
+DEFAULT_CONFIG_PATH = Path(__file__).parent.parent / "configs" / f"{MISSION_NAME}.yaml"
 
-DATA_PATH = Path(__file__).parent.parent / "data"
-
+DATA_PATH = Path("/data")
 INPUT_PATH = DATA_PATH / "files" / MISSION_NAME
 DATASET_PATH = DATA_PATH / "dataset" / MISSION_NAME
 

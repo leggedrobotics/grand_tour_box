@@ -98,8 +98,8 @@ def _data_chunks_from_bag_topic(
             yield _np_arrays_from_buffered_messages(buffer, attribute_types)
             buffer = []
 
-        if buffer:
-            yield _np_arrays_from_buffered_messages(buffer, attribute_types)
+    if buffer:
+        yield _np_arrays_from_buffered_messages(buffer, attribute_types)
 
 
 def _create_zarr_group_for_topic(zarr_root: Path, topic_alias: str) -> zarr.Group:
