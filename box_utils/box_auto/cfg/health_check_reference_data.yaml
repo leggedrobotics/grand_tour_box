@@ -414,7 +414,7 @@ _nuc_alphasense_intrinsics.bag:
       checking: freq
       freq: null
       msg_type: std_msgs/String
-_nuc_hesai_filtered.bag:
+_nuc_hesai_ready.bag:
   topics:
     /gt_box/hesai/packet_loss:
       checking: freq
@@ -424,7 +424,7 @@ _nuc_hesai_filtered.bag:
       checking: freq
       freq: 9.999985694905718
       msg_type: sensor_msgs/PointCloud2
-_nuc_livox_filtered.bag:
+_nuc_livox_ready.bag:
   topics:
     /gt_box/livox/imu:
       checking: freq
@@ -437,6 +437,20 @@ _nuc_livox_filtered.bag:
     /gt_box/livox/lidar:
       checking: freq
       freq: 10.016009169930271
+      msg_type: sensor_msgs/PointCloud2
+_npc_velodyne_ready.bag:
+  topics:
+    /anymal/velodyne/packets:
+        checking: freq
+        freq: 9.999985694905718
+        msg_type: any_velodyne_msgs/VelodyneScan
+    /anymal/velodyne/points:
+      checking: freq
+      freq: 9.999985694905718
+      msg_type: sensor_msgs/PointCloud2
+    /anymal/velodyne/points_undistorted:
+      checking: freq
+      freq: 9.999985694905718
       msg_type: sensor_msgs/PointCloud2
 _nuc_livox_intrinsics.bag:
   topics:

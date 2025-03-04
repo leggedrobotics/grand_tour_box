@@ -1,17 +1,27 @@
 <launch>
   <!-- Arguments -->
 
-  <!-- Depth and Images are found by string matching in this folder. -->
+  <!-- Depth and Images are found by string matching in this folder. If left empty not used. -->
   <arg name="bag_file_directory" default="" />
+
+  <!-- Handling of single bag. Optional. If left empty not used. -->
+  <arg name="global_rosbag_path" default="" />
+
+  <!-- Topics to read -->
+  <arg name="save_confidence" default="false" />
+  <arg name="confidence_topic" default="/boxi/zed2i/confidence/image_raw/compressedDepth" />
+  <arg name="depth_topic" default="/boxi/zed2i/depth/image_raw/compressedDepth" />
+  <arg name="color_topic" default="/boxi/zed2i/left/image_raw/compressed" />
+  <arg name="camera_info_topic" default="/boxi/zed2i/left/camera_info" />
 
   <!-- Where the output files will be generated. -->
   <arg name="output_folder_path" default="" />
 
   <!-- Number of frames to save. -->
-  <arg name="max_color_images" default="100" />
+  <arg name="max_color_images" default="" />
 
   <!-- The saving will start from Nth image in the bag. Often first images are not good. -->
-  <arg name="frames_to_skip" default="600" />
+  <arg name="frames_to_skip" default="" />
 
   <!-- EXR is a format allowing saving 32-BIT depth images. It can be retrieved with the right libraries but not as common. -->
   <arg name="save_as_exr" default="false" />
@@ -20,11 +30,18 @@
   <arg name="map_frame" default="dlio_map" />
 
   <!-- The list of rosbags that have the /tf , /tf_static topics. All will be accumulated. -->
-  <arg name="tf_bag_paths" default="[/bag1.bag, bag2.bag, bag3.bag]"/>
+  <!-- Format:   <arg name="tf_bag_paths" default="[bag1.bag, bag2.bag, bag3.bag]"/> -->
+  <arg name="tf_bag_paths" default="[]"/>
   <rosparam param="tf_containing_bag_paths" subst_value="True">$(arg tf_bag_paths) </rosparam >
 
   <!-- Cool node -->
-  <node pkg="box_auto" type="decompression_and_saving" name="decompression_and_saving_node" output="screen" required="true">
+  <node pkg="box_auto" type="zed2i_decompression_and_saving" name="zed2i_decompression_and_saving_node" output="screen" required="true">
+    <param name="global_rosbag_path" value="$(arg global_rosbag_path)"/>
+    <param name="depth_topic" value="$(arg depth_topic)"/>
+    <param name="save_confidence" value="$(arg save_confidence)"/>
+    <param name="confidence_topic" value="$(arg confidence_topic)"/>
+    <param name="color_topic" value="$(arg color_topic)"/>
+    <param name="camera_info_topic" value="$(arg camera_info_topic)"/>
     <param name="max_color_images" value="$(arg max_color_images)"/>
     <param name="bag_file_directory" value="$(arg bag_file_directory)"/>
     <param name="output_folder_path" value="$(arg output_folder_path)"/>

@@ -1,0 +1,98 @@
+tfStaticRepetitionPeriod: 5 # seconds
+frameMapping:
+  - new: "velodyne_lidar"
+    old: "lidar"
+
+framePairs:
+  - parent: "base"
+    child: "lidar"
+  - parent: "base"
+    child: "depth_camera_front_lower_depth_optical_frame"
+  - parent: "base"
+    child: "depth_camera_front_upper_depth_optical_frame"
+  - parent: "base"
+    child: "depth_camera_rear_lower_depth_optical_frame"
+  - parent: "base"
+    child: "depth_camera_rear_upper_depth_optical_frame"
+  - parent: "base"
+    child: "depth_camera_left_depth_optical_frame"
+  - parent: "base"
+    child: "depth_camera_right_depth_optical_frame"
+
+childFramesToRemove:
+  - "map"
+  - "aft_mapped"
+  - "battery"
+  - "bottom_shell"
+  - "docking_socket"
+  - "top_shell"
+  - "hatch_shell"
+  - "hbc_receiver"
+  - "body_top"
+  - "base_inertia"
+  - "footprint"
+  - "feetcenter"
+  - "face_shell_front"
+  - "hesai_model"
+  - "prism_model"
+  - "hesai_model"
+  - "livox_model"
+  - "box_base_model"
+  - "face_shell_rear"
+  - lidar_parent
+  - "zed2i_right_camera_frame"
+  - "depth_camera_front_lower_camera_parent"
+  - "depth_camera_front_upper_camera_parent"
+  - "depth_camera_rear_lower_camera_parent"
+  - "depth_camera_rear_upper_camera_parent"
+  - "face_rear"
+  - "face_front"
+  - "control"
+  - "loco_footprint"
+  - "depth_camera_left_camera_parent"
+  - "depth_camera_right_camera_parent"
+
+parentFramesToRemove:
+  - "map"
+  - "camera_init_CORRECTED"
+  - "camera_init"
+  - "wide_angle_camera_rear_camera"
+  - "wide_angle_camera_front_camera"
+  - "face_front"
+  - "face_rear"
+  - "depth_camera_front_lower_camera"
+  - "depth_camera_front_upper_camera"
+  - "depth_camera_rear_lower_camera"
+  - "depth_camera_rear_upper_camera"
+  - "depth_camera_front_lower_camera_parent"
+  - "depth_camera_front_upper_camera_parent"
+  - "depth_camera_rear_lower_camera_parent"
+  - "depth_camera_rear_upper_camera_parent"
+  - "depth_camera_left_camera_parent"
+  - "depth_camera_right_camera_parent"
+  - "depth_camera_front_upper_infra1_frame"
+  - "depth_camera_front_lower_infra1_frame"
+  - "depth_camera_rear_upper_infra1_frame"
+  - "depth_camera_rear_lower_infra1_frame"
+  - "depth_camera_left_infra1_frame"
+  - "depth_camera_right_infra1_frame"
+  - "depth_camera_front_upper_infra2_frame"
+  - "depth_camera_front_lower_infra2_frame"
+  - "depth_camera_rear_upper_infra2_frame"
+  - "depth_camera_rear_lower_infra2_frame"
+  - "depth_camera_left_infra2_frame"
+  - "depth_camera_right_infra2_frame"
+
+childFramesToInverse:
+  - "base"
+
+# Absolutely not the best way to do it.
+rotationOverrides:
+  - parent: "zed2i_left_camera_optical_frame"
+    child: "zed2i_right_camera_optical_frame"
+    axis: "x" # Ros convention is YAW, PITCH, ROLL hence (z, y, x)
+    angle_deg: 0.0
+  - parent: "zed2i_left_camera_frame"
+    child: "zed2i_left_camera_optical_frame"
+    axis: "x" # Ros convention is YAW, PITCH, ROLL hence (z, y, x)
+    angle_deg: 180.0

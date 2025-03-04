@@ -82,6 +82,10 @@
 	path = box_applications/anymal_d_simple_description
 	url = git@github.com:leggedrobotics/anymal_d_simple_description.git
 	branch = master
+[submodule "box_drivers/anybotics_velodyne"]
+	path = box_drivers/anybotics_velodyne
+	url = git@github.com:leggedrobotics/anybotics_velodyne.git
+	branch = grandtour
 [submodule "box_applications/wavemap"]
 	path = box_applications/wavemap
 	url = git@github.com:ethz-asl/wavemap.git

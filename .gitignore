@@ -2,6 +2,7 @@
 *.bag
 *.pdf
 *.PDF
+*.log
 *.urdf
 *.mcap
 *_pb2_grpc.py
