@@ -300,7 +300,7 @@ def _parse_temperature_message(msg: Temperature, _: Topic) -> Dict[str, BasicTyp
 
 def _parse_fluid_pressure_message(msg: FluidPressure, _: Topic) -> Dict[str, BasicType]:
     return {
-        "pres": msg.fluid_pressure,
+        "pressure": msg.fluid_pressure,
         "var": msg.variance,
     }
 
