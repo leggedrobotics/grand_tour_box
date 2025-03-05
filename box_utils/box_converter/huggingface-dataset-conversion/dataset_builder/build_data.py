@@ -14,19 +14,21 @@ from typing import Tuple
 from typing import Union
 from typing import cast
 
+import cv2
 import numpy as np
 import zarr
 import zarr.storage
-from sensor_msgs.msg import CompressedImage, Image
 from cv_bridge import CvBridge
+from sensor_msgs.msg import CompressedImage
+from sensor_msgs.msg import Image
 from tqdm import tqdm
-import cv2
 
 from dataset_builder.dataset_config import ArrayType
 from dataset_builder.dataset_config import AttributeTypes
 from dataset_builder.dataset_config import ImageTopic
 from dataset_builder.dataset_config import Topic
 from dataset_builder.dataset_config import TopicRegistry
+from dataset_builder.message_parsing import BasicType
 from dataset_builder.message_parsing import parse_deserialized_message
 from dataset_builder.utils import messages_in_bag_with_topic
 
@@ -34,7 +36,6 @@ DATA_PREFIX = "data"
 IMAGE_PREFIX = "images"
 
 
-BasicType = Union[np.ndarray, int, float, str, bool]
 ImageExtractorCallback = Callable[
     [Union[CompressedImage, Image], int, ImageTopic], None
 ]

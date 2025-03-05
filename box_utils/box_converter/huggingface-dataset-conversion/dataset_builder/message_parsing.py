@@ -2,8 +2,10 @@ from __future__ import annotations
 
 from typing import Any
 from typing import Dict
+from typing import List
+from typing import Optional
 from typing import Tuple
-from typing import Union, Optional, List
+from typing import Union
 from typing import cast
 
 import numpy as np
