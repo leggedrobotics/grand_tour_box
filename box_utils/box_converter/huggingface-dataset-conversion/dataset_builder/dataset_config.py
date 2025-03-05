@@ -36,14 +36,14 @@ class Topic:
 
 @dataclass
 class ImageTopic(Topic):
-    format: str
+    format: str = "jpeg"
     compressed: bool = True
 
 
 @dataclass
 class LidarTopic(Topic):
-    attributes: List[str]
     max_points: int
+    attributes: List[str] = field(default_factory=list)
 
 
 @dataclass
@@ -82,10 +82,6 @@ class SingletonTransformTopic(Topic): ...
 
 
 @dataclass
-class CameraInfoTopic(Topic): ...
-
-
-@dataclass
 class TemperatureTopic(Topic): ...
 
 
@@ -102,23 +98,53 @@ class GPSFixTopic(Topic): ...
 
 
 @dataclass
+class GnssRawTopic(Topic): ...
+
+
+@dataclass
+class ActuatorReadingsTopic(Topic):
+    actuator_names: List[str] = field(default_factory=list)
+
+
+@dataclass
+class BatteryStateTopic(Topic): ...
+
+
+@dataclass
+class CameraInfoTopic(Topic): ...
+
+
+@dataclass
 class FrameTransformConfig:
-    base_frame: str
     topic: str
     file: str
+    base_frame: str = "base"
 
 
 @dataclass
 class MetadataConfig:
-    camera_intrinsics: List[CameraInfoTopic]
     frame_transforms: FrameTransformConfig
+    camera_intrinsics: List[CameraInfoTopic] = field(default_factory=list)
 
 
 AttributeTypes = Dict[str, ArrayType]
 TopicRegistry = Dict[str, Tuple[AttributeTypes, Topic]]
 
 
-def build_point_cloud_attr_types(
+def _build_gnssraw_topics_attributes(
+    gnssraw_topics: Sequence[GnssRawTopic],
+) -> TopicRegistry:
+    topic_tp = {
+        "position_ecef": ArrayType((3,), np.float64),
+        "position_ecef_std": ArrayType((3,), np.float64),
+        "orientation_hrp": ArrayType((3,), np.float64),
+        "orientation_hrp_std": ArrayType((3,), np.float64),
+    }
+
+    return {topic.alias: (topic_tp.copy(), topic) for topic in gnssraw_topics}
+
+
+def _build_point_cloud_attr_types(
     properties: Sequence[str], max_points: int
 ) -> AttributeTypes:
     POINT_CLOUD_PROPERTIES: Dict[str, ArrayType] = {
@@ -137,7 +163,7 @@ def build_point_cloud_attr_types(
     return column_types
 
 
-def build_pose_attr_types(covar: bool) -> AttributeTypes:
+def _build_pose_attr_types(covar: bool) -> AttributeTypes:
     column_types = {
         "pose_pos": ArrayType((3,), np.float64),
         "pose_orien": ArrayType((4,), np.float64),
@@ -148,7 +174,7 @@ def build_pose_attr_types(covar: bool) -> AttributeTypes:
     return column_types
 
 
-def _build_image_topic_attributes(
+def _build_image_topics_attributes(
     image_topics: Sequence[ImageTopic],
 ) -> TopicRegistry:
     ret: TopicRegistry = {}
@@ -157,28 +183,28 @@ def _build_image_topic_attributes(
     return ret
 
 
-def _build_lidar_topic_attributes(
+def _build_lidar_topics_attributes(
     lidar_topics: Sequence[LidarTopic],
 ) -> TopicRegistry:
     ret: TopicRegistry = {}
     for topic in lidar_topics:
         ret[topic.alias] = (
-            build_point_cloud_attr_types(topic.attributes, topic.max_points),
+            _build_point_cloud_attr_types(topic.attributes, topic.max_points),
             topic,
         )
     return ret
 
 
-def _build_pose_topic_attributes(
+def _build_pose_topics_attributes(
     pose_topics: Sequence[PoseTopic],
 ) -> TopicRegistry:
     ret: TopicRegistry = {}
     for topic in pose_topics:
-        ret[topic.alias] = (build_pose_attr_types(topic.covariance), topic)
+        ret[topic.alias] = (_build_pose_attr_types(topic.covariance), topic)
     return ret
 
 
-def _build_imu_topic_attributes(
+def _build_imu_topics_attributes(
     imu_topics: Sequence[ImuTopic],
 ) -> TopicRegistry:
     topic_tp = {
@@ -193,7 +219,7 @@ def _build_imu_topic_attributes(
     return {topic.alias: (topic_tp.copy(), topic) for topic in imu_topics}
 
 
-def _build_temperature_topic_attributes(
+def _build_temperature_topics_attributes(
     temperature_topics: Sequence[TemperatureTopic],
 ) -> TopicRegistry:
     topic_tp = {
@@ -203,7 +229,7 @@ def _build_temperature_topic_attributes(
     return {topic.alias: (topic_tp.copy(), topic) for topic in temperature_topics}
 
 
-def _build_fluid_pressure_topic_attributes(
+def _build_fluid_pressure_topics_attributes(
     fluid_pressure_topics: Sequence[FluidPressureTopic],
 ) -> TopicRegistry:
     topic_tp = {
@@ -213,7 +239,9 @@ def _build_fluid_pressure_topic_attributes(
     return {topic.alias: (topic_tp.copy(), topic) for topic in fluid_pressure_topics}
 
 
-def build_anymal_state_topic(anymal_state_topic: AnymalStateTopic) -> AttributeTypes:
+def _build_anymal_state_single_topic_attributes(
+    anymal_state_topic: AnymalStateTopic,
+) -> AttributeTypes:
     ANYMAL_FOOT_CONTACT_MSG = {
         "wrench_force": ArrayType((3,), np.float64),
         "wrench_torque": ArrayType((3,), np.float64),
@@ -245,17 +273,17 @@ def build_anymal_state_topic(anymal_state_topic: AnymalStateTopic) -> AttributeT
     return ret
 
 
-def _build_anymal_state_topic_attributes(
+def _build_anymal_state_topics_attributes(
     anymal_state_topics: Sequence[AnymalStateTopic],
 ) -> TopicRegistry:
 
     return {
-        topic.alias: (build_anymal_state_topic(topic), topic)
+        topic.alias: (_build_anymal_state_single_topic_attributes(topic), topic)
         for topic in anymal_state_topics
     }
 
 
-def _build_odometry_topic_attributes(
+def _build_odometry_topics_attributes(
     odometry_topics: Sequence[OdometryTopic],
 ) -> TopicRegistry:
     topic_tp = {
@@ -270,7 +298,7 @@ def _build_odometry_topic_attributes(
     return {topic.alias: (topic_tp.copy(), topic) for topic in odometry_topics}
 
 
-def _build_nav_sat_fix_topic_attributes(
+def _build_nav_sat_fix_topics_attributes(
     nav_sat_fix_topics: Sequence[NavSatFixTopic],
 ) -> TopicRegistry:
     topic_tp = {
@@ -284,7 +312,7 @@ def _build_nav_sat_fix_topic_attributes(
     return {topic.alias: (topic_tp.copy(), topic) for topic in nav_sat_fix_topics}
 
 
-def _build_magnetic_field_topic_attributes(
+def _build_magnetic_field_topics_attributes(
     magnetic_field_topics: Sequence[MagneticFieldTopic],
 ) -> TopicRegistry:
 
@@ -296,7 +324,7 @@ def _build_magnetic_field_topic_attributes(
     return {topic.alias: (topic_tp.copy(), topic) for topic in magnetic_field_topics}
 
 
-def _build_point_topic_attributes(
+def _build_point_topics_attributes(
     point_topics: Sequence[PointTopic],
 ) -> TopicRegistry:
     topic_tp = {
@@ -306,7 +334,7 @@ def _build_point_topic_attributes(
     return {topic.alias: (topic_tp.copy(), topic) for topic in point_topics}
 
 
-def _build_singleton_transform_topic_attributes(
+def _build_singleton_transform_topics_attributes(
     singleton_transform_topics: Sequence[SingletonTransformTopic],
 ) -> TopicRegistry:
     topic_tp = {
@@ -319,7 +347,7 @@ def _build_singleton_transform_topic_attributes(
     }
 
 
-def _build_gps_fix_topic_attributes(
+def _build_gps_fix_topics_attributes(
     gps_fix_topics: Sequence[GPSFixTopic],
 ):
     topic_tp = {
@@ -354,7 +382,7 @@ def _build_gps_fix_topic_attributes(
     return {topic.alias: (topic_tp.copy(), topic) for topic in gps_fix_topics}
 
 
-def _build_twist_topic_attributes(
+def _build_twist_topics_attributes(
     twist_topics: Sequence[TwistTopic],
 ):
     topic_tp = {
@@ -370,7 +398,7 @@ UNIVERSAL_ATTRIBUTES: Dict[str, ArrayType] = {
 }
 
 
-def add_universal_attributes(
+def _add_universal_attributes(
     registry: TopicRegistry,
 ) -> TopicRegistry:
     return {
@@ -380,33 +408,34 @@ def add_universal_attributes(
 
 
 TOPIC_TYPES = {
-    "image_topics": (ImageTopic, _build_image_topic_attributes),
-    "lidar_topics": (LidarTopic, _build_lidar_topic_attributes),
-    "pose_topics": (PoseTopic, _build_pose_topic_attributes),
-    "imu_topics": (ImuTopic, _build_imu_topic_attributes),
-    "odometry_topics": (OdometryTopic, _build_odometry_topic_attributes),
-    "anymal_state_topics": (AnymalStateTopic, _build_anymal_state_topic_attributes),
-    "nav_sat_fix_topics": (NavSatFixTopic, _build_nav_sat_fix_topic_attributes),
+    "image_topics": (ImageTopic, _build_image_topics_attributes),
+    "lidar_topics": (LidarTopic, _build_lidar_topics_attributes),
+    "pose_topics": (PoseTopic, _build_pose_topics_attributes),
+    "imu_topics": (ImuTopic, _build_imu_topics_attributes),
+    "odometry_topics": (OdometryTopic, _build_odometry_topics_attributes),
+    "anymal_state_topics": (AnymalStateTopic, _build_anymal_state_topics_attributes),
+    "nav_sat_fix_topics": (NavSatFixTopic, _build_nav_sat_fix_topics_attributes),
     "magnetic_field_topics": (
         MagneticFieldTopic,
-        _build_magnetic_field_topic_attributes,
+        _build_magnetic_field_topics_attributes,
     ),
-    "point_topics": (PointTopic, _build_point_topic_attributes),
+    "point_topics": (PointTopic, _build_point_topics_attributes),
     "singleton_transform_topics": (
         SingletonTransformTopic,
-        _build_singleton_transform_topic_attributes,
+        _build_singleton_transform_topics_attributes,
     ),
-    "temperature_topics": (TemperatureTopic, _build_temperature_topic_attributes),
+    "temperature_topics": (TemperatureTopic, _build_temperature_topics_attributes),
     "fluid_pressure_topics": (
         FluidPressureTopic,
-        _build_fluid_pressure_topic_attributes,
+        _build_fluid_pressure_topics_attributes,
     ),
-    "gps_fix_topics": (GPSFixTopic, _build_gps_fix_topic_attributes),
-    "twist_topics": (TwistTopic, _build_twist_topic_attributes),
+    "gps_fix_topics": (GPSFixTopic, _build_gps_fix_topics_attributes),
+    "twist_topics": (TwistTopic, _build_twist_topics_attributes),
+    "gnss_raw_topics": (GnssRawTopic, _build_gnssraw_topics_attributes),
 }
 
 
-def load_topic_registry_from_config(
+def _load_topic_registry_from_config(
     data_config_object: Mapping[str, List[Mapping[str, Any]]], mission_name: str
 ) -> TopicRegistry:
     registry: TopicRegistry = {}
@@ -430,10 +459,10 @@ def load_topic_registry_from_config(
 
     except Exception as e:
         raise ValueError(f"error parsing data part of config file: {e}") from e
-    return add_universal_attributes(registry)
+    return _add_universal_attributes(registry)
 
 
-def load_metadata_config(
+def _load_metadata_config(
     metadata_config_object: Mapping[str, Any], mission_name: str
 ) -> MetadataConfig:
     camera_intrinsics_object = metadata_config_object.get(CAMERA_INTRISICS_KEY, [])
@@ -460,7 +489,7 @@ def load_metadata_config(
     for camera in camera_intrinsics:
         camera.file = camera.file.format(mission_name)
 
-    return MetadataConfig(camera_intrinsics, frame_transforms)
+    return MetadataConfig(frame_transforms, camera_intrinsics)
 
 
 def load_config(
@@ -478,6 +507,6 @@ def load_config(
         ) from e
 
     return (
-        load_topic_registry_from_config(data_config_object, mission_name),
-        load_metadata_config(metadata_config_object, mission_name),
+        _load_topic_registry_from_config(data_config_object, mission_name),
+        _load_metadata_config(metadata_config_object, mission_name),
     )

@@ -37,7 +37,7 @@ def _load_metadata_from_bag_file_and_topic(
     for message in messages_in_bag_with_topic(
         bag_path, topic_desc.topic, progress_bar=False
     ):
-        return extract_header_metadata_from_deserialized_message(message)
+        return extract_header_metadata_from_deserialized_message(message, topic_desc)
     raise ValueError(f"no messages found in topic {topic_desc.topic}")
 
 
@@ -52,7 +52,9 @@ def _load_camera_info_metadata_from_bag_file_and_topic(
             message, CameraInfo
         ), f"topic {topic_desc.topic} does not contain CameraInfo messages"
 
-        return extract_camera_info_metadata_from_deserialized_message(message)
+        return extract_camera_info_metadata_from_deserialized_message(
+            message, topic_desc
+        )
     raise ValueError(f"no messages found in topic {topic_desc.topic}")
 
 

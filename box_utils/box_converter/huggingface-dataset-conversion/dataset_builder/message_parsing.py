@@ -19,6 +19,7 @@ from geometry_msgs.msg import PoseWithCovarianceStamped
 from geometry_msgs.msg import Quaternion
 from geometry_msgs.msg import Twist
 from geometry_msgs.msg import Vector3
+from gnss_msgs.msg import GnssRaw  # type: ignore
 from gps_common.msg import GPSFix  # type: ignore
 from nav_msgs.msg import Odometry
 from ros_numpy import numpify
@@ -33,7 +34,7 @@ from sensor_msgs.msg import Temperature
 from std_msgs.msg import Header
 from tf2_msgs.msg import TFMessage
 
-from dataset_builder.dataset_config import AnymalStateTopic
+from dataset_builder.dataset_config import AnymalStateTopic, GnssRawTopic
 from dataset_builder.dataset_config import FluidPressureTopic
 from dataset_builder.dataset_config import GPSFixTopic
 from dataset_builder.dataset_config import ImuTopic
@@ -62,6 +63,15 @@ def _parse_vector3(msg: Union[Point, Vector3]) -> np.ndarray:
 def _parse_covariance(arr: Union[np.ndarray, Tuple[float, ...]], n: int) -> np.ndarray:
     assert len(arr) == n * n
     return np.array(arr).reshape(n, n)
+
+
+def _parse_gnss_raw(msg: GnssRaw) -> Dict[str, BasicType]:
+    return {
+        "position_ecef": _parse_vector3(msg.position_ecef),
+        "position_ecef_std": _parse_vector3(msg.position_ecef_std),
+        "orientation_hrp": _parse_vector3(msg.orientation_hrp),
+        "orientation_hrp_std": _parse_vector3(msg.orientation_hrp_std),
+    }
 
 
 def _parse_extended_joint_state(msg: ExtendedJointState) -> Dict[str, BasicType]:
@@ -301,22 +311,22 @@ def _extract_tf2_message_header(msg: TFMessage) -> Header:
     return transform.header  # type: ignore
 
 
-SPECIAL_HEADER_MESSAGES_EXTRACT_FUNCTIONS = {
-    "tf2_msgs/TFMessage": _extract_tf2_message_header,
-}
+SPECIAL_HEADER_MESSAGES_EXTRACT_FUNCTIONS = [
+    (SingletonTransformTopic, _extract_tf2_message_header),
+]
 
 
-def _extract_header(msg: Any) -> Header:
-    extract_func = SPECIAL_HEADER_MESSAGES_EXTRACT_FUNCTIONS.get(msg._type)
-    if extract_func is not None:
-        header = extract_func(msg)
-    else:
-        header = _extract_default_header(msg)
-    return header
+def _extract_header(msg: Any, topic_desc: Topic) -> Header:
+    for topic_tp, func in SPECIAL_HEADER_MESSAGES_EXTRACT_FUNCTIONS:
+        if isinstance(topic_desc, topic_tp):
+            return func(msg)
+    return _extract_default_header(msg)
 
 
-def _extract_header_data_from_deserialized_message(msg: Any) -> Dict[str, BasicType]:
-    header = _extract_header(msg)
+def _extract_header_data_from_deserialized_message(
+    msg: Any, topic_desc: Topic
+) -> Dict[str, BasicType]:
+    header = _extract_header(msg, topic_desc)
     return {
         "timestamp": header.stamp.to_sec(),  # type: ignore
         "sequence_id": header.seq,  # type: ignore
@@ -337,6 +347,7 @@ MESSAGE_PARSING_FUNCTIONS = [
     (FluidPressureTopic, _parse_fluid_pressure_message),
     (TwistTopic, _parse_twist_message),
     (GPSFixTopic, _parse_gps_fix_message),
+    (GnssRawTopic, _parse_gnss_raw),
 ]
 
 
@@ -350,7 +361,7 @@ def _parse_message_data_from_deserialized_message(
 
 
 def parse_deserialized_message(msg: Any, topic_desc: Topic) -> Dict[str, BasicType]:
-    header_data = _extract_header_data_from_deserialized_message(msg)
+    header_data = _extract_header_data_from_deserialized_message(msg, topic_desc)
     message_data = _parse_message_data_from_deserialized_message(msg, topic_desc)
     return {**header_data, **message_data}
 
@@ -365,17 +376,19 @@ def _extract_region_of_interest_metadata(msg: RegionOfInterest) -> Dict[str, Any
     }
 
 
-def extract_header_metadata_from_deserialized_message(msg: Any) -> Dict[str, Any]:
-    header = _extract_header(msg)
+def extract_header_metadata_from_deserialized_message(
+    msg: Any, topic_desc: Topic
+) -> Dict[str, Any]:
+    header = _extract_header(msg, topic_desc)
     return {
         "frame_id": header.frame_id,
     }
 
 
 def extract_camera_info_metadata_from_deserialized_message(
-    msg: CameraInfo,
+    msg: CameraInfo, topic_desc: Topic
 ) -> Dict[str, Any]:
-    ret = extract_header_metadata_from_deserialized_message(msg)
+    ret = extract_header_metadata_from_deserialized_message(msg, topic_desc)
     ret["distortion_model"] = msg.distortion_model
     ret["width"] = msg.width
     ret["height"] = msg.height
