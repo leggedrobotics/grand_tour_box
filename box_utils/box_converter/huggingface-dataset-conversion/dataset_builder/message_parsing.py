@@ -1,18 +1,15 @@
 from __future__ import annotations
 
-from pathlib import Path
 from typing import Any
 from typing import Dict
 from typing import Tuple
-from typing import Union
+from typing import Union, Optional, List
 from typing import cast
 
-import cv2
 import numpy as np
 from anymal_msgs.msg import AnymalState  # type: ignore
 from anymal_msgs.msg import Contact  # type: ignore
 from anymal_msgs.msg import ExtendedJointState  # type: ignore
-from cv_bridge import CvBridge
 from geometry_msgs.msg import Point
 from geometry_msgs.msg import PointStamped
 from geometry_msgs.msg import PoseStamped
@@ -24,9 +21,7 @@ from gps_common.msg import GPSFix  # type: ignore
 from nav_msgs.msg import Odometry
 from ros_numpy import numpify
 from sensor_msgs.msg import CameraInfo
-from sensor_msgs.msg import CompressedImage
 from sensor_msgs.msg import FluidPressure
-from sensor_msgs.msg import Image
 from sensor_msgs.msg import Imu
 from sensor_msgs.msg import MagneticField
 from sensor_msgs.msg import NavSatFix
@@ -39,7 +34,6 @@ from tf2_msgs.msg import TFMessage
 from dataset_builder.dataset_config import AnymalStateTopic
 from dataset_builder.dataset_config import FluidPressureTopic
 from dataset_builder.dataset_config import GPSFixTopic
-from dataset_builder.dataset_config import ImageTopic
 from dataset_builder.dataset_config import ImuTopic
 from dataset_builder.dataset_config import LidarTopic
 from dataset_builder.dataset_config import MagneticFieldTopic
@@ -55,43 +49,6 @@ from dataset_builder.dataset_config import TwistTopic
 BasicType = Union[np.ndarray, int, float, str, bool]
 
 
-def extract_header_metadata_from_deserialized_message(msg: Any) -> Dict[str, Any]:
-    header = _extract_header(msg)
-    return {
-        "frame_id": header.frame_id,
-    }
-
-
-def _extract_region_of_interest_metadata(msg: RegionOfInterest) -> Dict[str, Any]:
-    return {
-        "x_offset": msg.x_offset,
-        "y_offset": msg.y_offset,
-        "height": msg.height,
-        "width": msg.width,
-        "do_rectify": msg.do_rectify,
-    }
-
-
-def extract_camera_info_metadata_from_deserialized_message(
-    msg: CameraInfo,
-) -> Dict[str, Any]:
-    ret = extract_header_metadata_from_deserialized_message(msg)
-    ret["distortion_model"] = msg.distortion_model
-    ret["width"] = msg.width
-    ret["height"] = msg.height
-    ret["D"] = list(msg.D)  # type: ignore
-    ret["K"] = list(msg.K)  # type: ignore
-    ret["R"] = list(msg.R)  # type: ignore
-    ret["P"] = list(msg.P)  # type: ignore
-    ret["binning_x"] = msg.binning_x
-    ret["binning_y"] = msg.binning_y
-    ret["roi"] = _extract_region_of_interest_metadata(msg.roi)
-    return ret
-
-
-CV_BRIDGE = CvBridge()
-
-
 def _parse_quaternion(msg: Quaternion) -> np.ndarray:
     return np.array([msg.x, msg.y, msg.z, msg.w])
 
@@ -105,46 +62,6 @@ def _parse_covariance(arr: Union[np.ndarray, Tuple[float, ...]], n: int) -> np.n
     return np.array(arr).reshape(n, n)
 
 
-def extract_and_save_image_from_message(
-    msg: Union[CompressedImage, Image],
-    image_index: int,
-    *,
-    topic_desc: ImageTopic,
-    image_dir: Path,
-) -> None:
-    if topic_desc.compressed:
-        image = CV_BRIDGE.compressed_imgmsg_to_cv2(msg)
-    else:
-        image = CV_BRIDGE.imgmsg_to_cv2(msg)
-    file_path = image_dir / f"{image_index:06d}.{topic_desc.format}"
-    cv2.imwrite(str(file_path), image)
-
-
-def _get_no_contact_date() -> Dict[str, BasicType]:
-    return {
-        "wrench_force": np.zeros(3),
-        "wrench_torque": np.zeros(3),
-        "normal": np.zeros(3),
-        "friction": np.zeros(1),
-        "restitution": np.zeros(1),
-        "state": np.zeros(1),
-        "contact": 0,
-    }
-
-
-def _parse_contact(msg: Contact) -> Tuple[Dict[str, BasicType], str]:
-    data = {
-        "wrench_force": _parse_vector3(msg.wrench.force),
-        "wrench_torque": _parse_vector3(msg.wrench.torque),
-        "normal": _parse_vector3(msg.normal),
-        "friction": msg.friction,
-        "restitution": msg.restitution,
-        "state": msg.state,
-        "contact": 1,
-    }
-    return data, msg.name
-
-
 def _parse_extended_joint_state(msg: ExtendedJointState) -> Dict[str, BasicType]:
     return {
         "joint_positions": np.array(msg.position),
@@ -154,23 +71,48 @@ def _parse_extended_joint_state(msg: ExtendedJointState) -> Dict[str, BasicType]
     }
 
 
+def _parse_contact(msg: Optional[Contact]) -> Tuple[Dict[str, BasicType], str]:
+    data = {
+        "wrench_force": (_parse_vector3(msg.wrench.force) if msg else np.zeros(3)),
+        "wrench_torque": (_parse_vector3(msg.wrench.torque) if msg else np.zeros(3)),
+        "normal": _parse_vector3(msg.normal) if msg else np.zeros(3),
+        "friction": msg.friction if msg else 0,
+        "restitution": msg.restitution if msg else 0,
+        "state": msg.state if msg else 0,
+        "contact": 1 if msg else 0,
+    }
+    return data, msg.name if msg else ""
+
+
+def _parse_contacts(
+    contacts: List[Contact], topic_desc: AnymalStateTopic
+) -> Dict[str, BasicType]:
+    # extract all existing contacts
+    contacts_by_foot_name: Dict[str, Dict[str, BasicType]] = {}
+    for contact in contacts:
+        contact_data, foot_name = _parse_contact(contact)
+        assert foot_name in topic_desc.feet
+        contacts_by_foot_name[foot_name] = contact_data
+
+    # fill the missing contacts with default values
+    for foot_name in topic_desc.feet:
+        if foot_name not in contacts_by_foot_name:
+            contacts_by_foot_name[foot_name] = _parse_contact(None)[0]
+
+    # create the record by prefixing the contact attributes with the foot name
+    ret: Dict[str, BasicType] = {}
+    for foot_name, contact_data in contacts_by_foot_name.items():
+        ret.update({f"{foot_name}_{k}": v for k, v in contact_data.items()})
+    return ret
+
+
 def _parse_anymal_state(
     msg: AnymalState, topic_desc: AnymalStateTopic
 ) -> Dict[str, BasicType]:
-    ret = _parse_odometry(cast(Odometry, msg), topic_desc)
-    contacts_data = {}
-    for contact in msg.contacts:
-        contact_data, name = _parse_contact(contact)
-        assert name in topic_desc.feet
-        contacts_data[name] = contact_data
-    for name in topic_desc.feet:
-        if name in contacts_data:
-            continue
-        contacts_data[name] = _get_no_contact_date()
-
-    for name, contact_data in contacts_data.items():
-        ret.update({f"{name}_{k}": v for k, v in contact_data.items()})
+    ret: Dict[str, BasicType] = {}
+    ret.update(_parse_odometry(cast(Odometry, msg), topic_desc))
     ret.update(_parse_extended_joint_state(msg.joints))
+    ret.update(_parse_contacts(msg.contacts, topic_desc))
     return ret
 
 
@@ -409,3 +351,37 @@ def parse_deserialized_message(msg: Any, topic_desc: Topic) -> Dict[str, BasicTy
     header_data = _extract_header_data_from_deserialized_message(msg)
     message_data = _parse_message_data_from_deserialized_message(msg, topic_desc)
     return {**header_data, **message_data}
+
+
+def _extract_region_of_interest_metadata(msg: RegionOfInterest) -> Dict[str, Any]:
+    return {
+        "x_offset": msg.x_offset,
+        "y_offset": msg.y_offset,
+        "height": msg.height,
+        "width": msg.width,
+        "do_rectify": msg.do_rectify,
+    }
+
+
+def extract_header_metadata_from_deserialized_message(msg: Any) -> Dict[str, Any]:
+    header = _extract_header(msg)
+    return {
+        "frame_id": header.frame_id,
+    }
+
+
+def extract_camera_info_metadata_from_deserialized_message(
+    msg: CameraInfo,
+) -> Dict[str, Any]:
+    ret = extract_header_metadata_from_deserialized_message(msg)
+    ret["distortion_model"] = msg.distortion_model
+    ret["width"] = msg.width
+    ret["height"] = msg.height
+    ret["D"] = list(msg.D)  # type: ignore
+    ret["K"] = list(msg.K)  # type: ignore
+    ret["R"] = list(msg.R)  # type: ignore
+    ret["P"] = list(msg.P)  # type: ignore
+    ret["binning_x"] = msg.binning_x
+    ret["binning_y"] = msg.binning_y
+    ret["roi"] = _extract_region_of_interest_metadata(msg.roi)
+    return ret

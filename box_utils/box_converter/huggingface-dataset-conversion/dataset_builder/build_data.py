@@ -17,15 +17,16 @@ from typing import cast
 import numpy as np
 import zarr
 import zarr.storage
-from sensor_msgs.msg import CompressedImage
+from sensor_msgs.msg import CompressedImage, Image
+from cv_bridge import CvBridge
 from tqdm import tqdm
+import cv2
 
 from dataset_builder.dataset_config import ArrayType
 from dataset_builder.dataset_config import AttributeTypes
 from dataset_builder.dataset_config import ImageTopic
 from dataset_builder.dataset_config import Topic
 from dataset_builder.dataset_config import TopicRegistry
-from dataset_builder.message_parsing import extract_and_save_image_from_message
 from dataset_builder.message_parsing import parse_deserialized_message
 from dataset_builder.utils import messages_in_bag_with_topic
 
@@ -34,6 +35,29 @@ IMAGE_PREFIX = "images"
 
 
 BasicType = Union[np.ndarray, int, float, str, bool]
+ImageExtractorCallback = Callable[
+    [Union[CompressedImage, Image], int, ImageTopic], None
+]
+
+
+CV_BRIDGE = CvBridge()
+
+
+def _extract_and_save_image_from_message(
+    msg: Union[CompressedImage, Image],
+    image_index: int,
+    topic_desc: ImageTopic,
+    /,
+    *,
+    image_dir: Path,
+    cv_bridge: CvBridge,
+) -> None:
+    if topic_desc.compressed:
+        image = cv_bridge.compressed_imgmsg_to_cv2(msg)
+    else:
+        image = cv_bridge.imgmsg_to_cv2(msg)
+    file_path = image_dir / f"{image_index:06d}.{topic_desc.format}"
+    cv2.imwrite(str(file_path), image)
 
 
 def _np_arrays_from_buffered_messages(
@@ -59,9 +83,6 @@ def _np_arrays_from_buffered_messages(
             array_data[key].shape[1:] == attr.shape
         ), f"{key}: {array_data[key].shape[1:]} != {attr.shape}"
     return array_data
-
-
-ImageExtractorCallback = Callable[[CompressedImage, int], None]
 
 
 def _data_chunks_from_bag_topic(
@@ -91,9 +112,7 @@ def _data_chunks_from_bag_topic(
         buffer.append(parse_deserialized_message(message, topic_desc=topic_desc))
 
         if image_extractor is not None:
-            message = cast(CompressedImage, message)
-            image_extractor(message, idx)
-
+            image_extractor(message, idx, cast(ImageTopic, topic_desc))
         if len(buffer) == chunk_size:
             yield _np_arrays_from_buffered_messages(buffer, attribute_types)
             buffer = []
@@ -191,15 +210,13 @@ def _generate_dataset_from_topic_description_and_attribute_types(
     chunk_size = _create_zarr_arrays_for_topic(attribute_types, topic_zarr_group)
 
     # create image saving callback to save images to disk while parsing the remaining data
+    image_extractor = None
     if isinstance(topic_desc, ImageTopic):
         topic_folder = _create_jpeg_topic_folder(jpeg_root_path, topic_desc.alias)
         image_extractor = partial(
-            extract_and_save_image_from_message,
-            topic_desc=topic_desc,
+            _extract_and_save_image_from_message,
             image_dir=topic_folder,
         )
-    else:
-        image_extractor = None
 
     for chunk in _data_chunks_from_bag_topic(
         path,
