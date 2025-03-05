@@ -131,6 +131,49 @@ AttributeTypes = Dict[str, ArrayType]
 TopicRegistry = Dict[str, Tuple[AttributeTypes, Topic]]
 
 
+def _build_single_actuator_reading(name: str) -> Dict[str, ArrayType]:
+    return {
+        f"{name}_state_statusword": ArrayType(tuple(), np.uint32),
+        f"{name}_state_current": ArrayType(tuple(), np.float64),
+        f"{name}_state_gear_position": ArrayType(tuple(), np.float64),
+        f"{name}_state_gear_velocity": ArrayType(tuple(), np.float64),
+        f"{name}_state_joint_position": ArrayType(tuple(), np.float64),
+        f"{name}_state_joint_velocity": ArrayType(tuple(), np.float64),
+        f"{name}_state_joint_acceleration": ArrayType(tuple(), np.float64),
+        f"{name}_state_joint_torque": ArrayType(tuple(), np.float64),
+        f"{name}_state_imu_orien_cov": ArrayType((3, 3), np.float64),
+        f"{name}_state_imu_ang_vel_cov": ArrayType((3, 3), np.float64),
+        f"{name}_state_imu_lin_acc_cov": ArrayType((3, 3), np.float64),
+        f"{name}_state_imu_orien": ArrayType((4,), np.float64),
+        f"{name}_state_imu_ang_vel": ArrayType((3,), np.float64),
+        f"{name}_state_imu_lin_acc": ArrayType((3,), np.float64),
+        f"{name}_command_mode": ArrayType(tuple(), np.uint8),
+        f"{name}_command_current": ArrayType(tuple(), np.float64),
+        f"{name}_command_position": ArrayType(tuple(), np.float64),
+        f"{name}_command_velocity": ArrayType(tuple(), np.float64),
+        f"{name}_command_joint_torque": ArrayType(tuple(), np.float64),
+        f"{name}_command_pid_gains_p": ArrayType(tuple(), np.float32),
+        f"{name}_command_pid_gains_i": ArrayType(tuple(), np.float32),
+        f"{name}_command_pid_gains_d": ArrayType(tuple(), np.float32),
+    }
+
+
+def _build_actuator_readings_single_topic_attributes(topic_desc: Any) -> AttributeTypes:
+    ret = {}
+    for actuator in topic_desc.actuator_names:
+        ret.update(_build_single_actuator_reading(actuator))
+    return ret
+
+
+def _build_actuator_readings_topics_attributes(
+    actuator_readings_topics: Sequence[ActuatorReadingsTopic],
+) -> TopicRegistry:
+    return {
+        topic.alias: (_build_actuator_readings_single_topic_attributes(topic), topic)
+        for topic in actuator_readings_topics
+    }
+
+
 def _build_battery_state_topics_attributes(
     battery_state_topics: Sequence[BatteryStateTopic],
 ) -> TopicRegistry:
@@ -455,6 +498,10 @@ TOPIC_TYPES = {
     "twist_topics": (TwistTopic, _build_twist_topics_attributes),
     "gnss_raw_topics": (GnssRawTopic, _build_gnss_raw_topics_attributes),
     "battery_state_topics": (BatteryStateTopic, _build_battery_state_topics_attributes),
+    "actuator_readings_topics": (
+        ActuatorReadingsTopic,
+        _build_actuator_readings_topics_attributes,
+    ),
 }
 
 

@@ -23,6 +23,10 @@ from gnss_msgs.msg import GnssRaw  # type: ignore
 from gps_common.msg import GPSFix  # type: ignore
 from nav_msgs.msg import Odometry
 from ros_numpy import numpify
+from anymal_msgs.msg import SeActuatorReadings  # type: ignore
+from anymal_msgs.msg import SeActuatorReading  # type: ignore
+from anymal_msgs.msg import SeActuatorCommand  # type: ignore
+from anymal_msgs.msg import SeActuatorState  # type: ignore
 from sensor_msgs.msg import CameraInfo
 from sensor_msgs.msg import FluidPressure
 from sensor_msgs.msg import Imu
@@ -48,7 +52,11 @@ from dataset_builder.dataset_config import PoseTopic
 from dataset_builder.dataset_config import SingletonTransformTopic
 from dataset_builder.dataset_config import TemperatureTopic
 from dataset_builder.dataset_config import Topic
-from dataset_builder.dataset_config import TwistTopic, BatteryStateTopic
+from dataset_builder.dataset_config import (
+    TwistTopic,
+    BatteryStateTopic,
+    ActuatorReadingsTopic,
+)
 
 BasicType = Union[np.ndarray, int, float, str, bool]
 
@@ -66,7 +74,66 @@ def _parse_covariance(arr: Union[np.ndarray, Tuple[float, ...]], n: int) -> np.n
     return np.array(arr).reshape(n, n)
 
 
-def _parse_battery_state(msg: BatteryState) -> Dict[str, BasicType]:
+def _parse_actuator_command(msg: SeActuatorCommand) -> Tuple[Dict[str, BasicType], str]:
+    return {
+        "mode": msg.mode,
+        "current": msg.current,
+        "position": msg.position,
+        "velocity": msg.velocity,
+        "joint_torque": msg.joint_torque,
+        "pid_gains_p": msg.pid_gains_p,
+        "pid_gains_i": msg.pid_gains_i,
+        "pid_gains_d": msg.pid_gains_d,
+    }, msg.name
+
+
+def _parse_actuator_state(msg: SeActuatorState) -> Tuple[Dict[str, BasicType], str]:
+    ret: Dict[str, BasicType] = {
+        "statusword": msg.statusword,
+        "current": msg.current,
+        "gear_position": msg.gear_position,
+        "gear_velocity": msg.gear_velocity,
+        "joint_position": msg.joint_position,
+        "joint_velocity": msg.joint_velocity,
+        "joint_acceleration": msg.joint_acceleration,
+        "joint_torque": msg.joint_torque,
+    }
+
+    state_imu_data = _parse_imu(msg.imu, None)
+    ret.update({f"imu_{k}": v for k, v in state_imu_data.items()})
+
+    return ret, msg.name
+
+
+def _parse_single_actuator_reading(
+    msg: SeActuatorReading,
+) -> Tuple[Dict[str, BasicType], str]:
+    ret: Dict[str, BasicType] = {}
+
+    command_data, command_name = _parse_actuator_command(msg.commanded)
+    state_data, state_name = _parse_actuator_state(msg.state)
+
+    assert command_name == state_name
+    ret.update({f"{command_name}_command_{k}": v for k, v in command_data.items()})
+    ret.update({f"{state_name}_state_{k}": v for k, v in state_data.items()})
+    return ret, command_name
+
+
+def _parse_actuator_readings(
+    msg: SeActuatorReadings, topic_desc: ActuatorReadingsTopic
+) -> Dict[str, BasicType]:
+    ret: Dict[str, BasicType] = {}
+    names = []
+    for reading in msg.readings:
+        actuator_data, actuator_name = _parse_single_actuator_reading(reading)
+        names.append(actuator_name)
+        ret.update(actuator_data)
+
+    assert set(names) == set(topic_desc.actuator_names)
+    return ret
+
+
+def _parse_battery_state(msg: BatteryState, _: Any) -> Dict[str, BasicType]:
     return {
         "is_connected": msg.is_connected,
         "cell_temperature": msg.cell_temperature,
@@ -84,7 +151,7 @@ def _parse_battery_state(msg: BatteryState) -> Dict[str, BasicType]:
     }
 
 
-def _parse_gnss_raw(msg: GnssRaw) -> Dict[str, BasicType]:
+def _parse_gnss_raw(msg: GnssRaw, _: Any) -> Dict[str, BasicType]:
     return {
         "position_ecef": _parse_vector3(msg.position_ecef),
         "position_ecef_std": _parse_vector3(msg.position_ecef_std),
@@ -189,7 +256,7 @@ def _parse_point_cloud2(
     return ret  # type: ignore
 
 
-def _parse_nav_sat_fix(msg: NavSatFix, _: Topic) -> Dict[str, BasicType]:
+def _parse_nav_sat_fix(msg: NavSatFix, _: Any) -> Dict[str, BasicType]:
     data = {
         "lat": msg.latitude,
         "long": msg.longitude,
@@ -200,7 +267,7 @@ def _parse_nav_sat_fix(msg: NavSatFix, _: Topic) -> Dict[str, BasicType]:
     return data
 
 
-def _parse_magnetic_field(msg: MagneticField, _: Topic) -> Dict[str, BasicType]:
+def _parse_magnetic_field(msg: MagneticField, _: Any) -> Dict[str, BasicType]:
     data = {
         "b_field": _parse_vector3(msg.magnetic_field),
         "b_field_cov": _parse_covariance(msg.magnetic_field_covariance, 3),
@@ -208,7 +275,7 @@ def _parse_magnetic_field(msg: MagneticField, _: Topic) -> Dict[str, BasicType]:
     return data  # type: ignore
 
 
-def _parse_imu(msg: Imu, _: Topic) -> Dict[str, BasicType]:
+def _parse_imu(msg: Imu, _: Any) -> Dict[str, BasicType]:
     return {
         "orien": _parse_quaternion(msg.orientation),
         "orien_cov": _parse_covariance(msg.orientation_covariance, 3),
@@ -219,7 +286,7 @@ def _parse_imu(msg: Imu, _: Topic) -> Dict[str, BasicType]:
     }
 
 
-def _parse_odometry(msg: Odometry, _: Topic) -> Dict[str, BasicType]:
+def _parse_odometry(msg: Odometry, _: Any) -> Dict[str, BasicType]:
     return {
         "pose_pos": _parse_vector3(msg.pose.pose.position),
         "pose_orien": _parse_quaternion(msg.pose.pose.orientation),
@@ -251,14 +318,14 @@ def _parse_pose(
 
 def _parse_point(
     msg: PointStamped,
-    _: Topic,
+    _: Any,
 ) -> Dict[str, BasicType]:
     return {
         "point": _parse_vector3(msg.point),
     }
 
 
-def _parse_tf2_singleton_message(msg: TFMessage, _: Topic) -> Dict[str, BasicType]:
+def _parse_tf2_singleton_message(msg: TFMessage, _: Any) -> Dict[str, BasicType]:
     assert len(msg.transforms) == 1
     transform = msg.transforms[0]  # type: ignore
     return {
@@ -267,28 +334,28 @@ def _parse_tf2_singleton_message(msg: TFMessage, _: Topic) -> Dict[str, BasicTyp
     }
 
 
-def _parse_temperature_message(msg: Temperature, _: Topic) -> Dict[str, BasicType]:
+def _parse_temperature_message(msg: Temperature, _: Any) -> Dict[str, BasicType]:
     return {
         "temp": msg.temperature,
         "var": msg.variance,
     }
 
 
-def _parse_fluid_pressure_message(msg: FluidPressure, _: Topic) -> Dict[str, BasicType]:
+def _parse_fluid_pressure_message(msg: FluidPressure, _: Any) -> Dict[str, BasicType]:
     return {
         "pressure": msg.fluid_pressure,
         "var": msg.variance,
     }
 
 
-def _parse_twist_message(msg: Twist, _: Topic) -> Dict[str, BasicType]:
+def _parse_twist_message(msg: Twist, _: Any) -> Dict[str, BasicType]:
     return {
         "twist_lin": _parse_vector3(msg.linear),
         "twist_ang": _parse_vector3(msg.angular),
     }
 
 
-def _parse_gps_fix_message(msg: GPSFix, _: Topic) -> Dict[str, BasicType]:
+def _parse_gps_fix_message(msg: GPSFix, _: Any) -> Dict[str, BasicType]:
     return {
         "long": msg.longitude,
         "lat": msg.latitude,
@@ -330,8 +397,13 @@ def _extract_tf2_message_header(msg: TFMessage) -> Header:
     return transform.header  # type: ignore
 
 
+def _extract_actuator_readings_header(msg: SeActuatorReadings) -> Header:
+    return msg.readings[0].header
+
+
 SPECIAL_HEADER_MESSAGES_EXTRACT_FUNCTIONS = [
     (SingletonTransformTopic, _extract_tf2_message_header),
+    (ActuatorReadingsTopic, _extract_actuator_readings_header),
 ]
 
 
@@ -368,6 +440,7 @@ MESSAGE_PARSING_FUNCTIONS = [
     (GPSFixTopic, _parse_gps_fix_message),
     (GnssRawTopic, _parse_gnss_raw),
     (BatteryStateTopic, _parse_battery_state),
+    (ActuatorReadingsTopic, _parse_actuator_readings),
 ]
 
 
