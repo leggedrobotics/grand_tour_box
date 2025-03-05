@@ -31,6 +31,7 @@ from sensor_msgs.msg import NavSatFix
 from sensor_msgs.msg import PointCloud2
 from sensor_msgs.msg import RegionOfInterest
 from sensor_msgs.msg import Temperature
+from anymal_msgs.msg import BatteryState  # type: ignore
 from std_msgs.msg import Header
 from tf2_msgs.msg import TFMessage
 
@@ -47,7 +48,7 @@ from dataset_builder.dataset_config import PoseTopic
 from dataset_builder.dataset_config import SingletonTransformTopic
 from dataset_builder.dataset_config import TemperatureTopic
 from dataset_builder.dataset_config import Topic
-from dataset_builder.dataset_config import TwistTopic
+from dataset_builder.dataset_config import TwistTopic, BatteryStateTopic
 
 BasicType = Union[np.ndarray, int, float, str, bool]
 
@@ -63,6 +64,24 @@ def _parse_vector3(msg: Union[Point, Vector3]) -> np.ndarray:
 def _parse_covariance(arr: Union[np.ndarray, Tuple[float, ...]], n: int) -> np.ndarray:
     assert len(arr) == n * n
     return np.array(arr).reshape(n, n)
+
+
+def _parse_battery_state(msg: BatteryState) -> Dict[str, BasicType]:
+    return {
+        "is_connected": msg.is_connected,
+        "cell_temperature": msg.cell_temperature,
+        "fet_temperature": msg.fet_temperature,
+        "bms_temperature": msg.bms_temperature,
+        "voltage": msg.voltage,
+        "current": msg.current,
+        "state_of_charge": msg.state_of_charge,
+        "humidity": msg.humidity,
+        "pressure": msg.pressure,
+        "status": msg.status,
+        "health_status": msg.health_status,
+        "battery_status": msg.battery_status,
+        "safety_status": msg.safety_status,
+    }
 
 
 def _parse_gnss_raw(msg: GnssRaw) -> Dict[str, BasicType]:
@@ -348,6 +367,7 @@ MESSAGE_PARSING_FUNCTIONS = [
     (TwistTopic, _parse_twist_message),
     (GPSFixTopic, _parse_gps_fix_message),
     (GnssRawTopic, _parse_gnss_raw),
+    (BatteryStateTopic, _parse_battery_state),
 ]
 
 

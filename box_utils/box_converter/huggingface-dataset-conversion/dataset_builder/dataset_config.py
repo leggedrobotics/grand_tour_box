@@ -131,8 +131,30 @@ AttributeTypes = Dict[str, ArrayType]
 TopicRegistry = Dict[str, Tuple[AttributeTypes, Topic]]
 
 
-def _build_gnssraw_topics_attributes(
-    gnssraw_topics: Sequence[GnssRawTopic],
+def _build_battery_state_topics_attributes(
+    battery_state_topics: Sequence[BatteryStateTopic],
+) -> TopicRegistry:
+    topic_tp = {
+        "is_connected": ArrayType(tuple(), np.uint8),
+        "cell_temperature": ArrayType(tuple(), np.float32),
+        "fet_temperature": ArrayType(tuple(), np.float32),
+        "bms_temperature": ArrayType(tuple(), np.float32),
+        "voltage": ArrayType(tuple(), np.float32),
+        "current": ArrayType(tuple(), np.float32),
+        "state_of_charge": ArrayType(tuple(), np.float32),
+        "humidity": ArrayType(tuple(), np.float32),
+        "pressure": ArrayType(tuple(), np.float32),
+        "status": ArrayType(tuple(), np.uint8),
+        "health_status": ArrayType(tuple(), np.uint8),
+        "battery_status": ArrayType(tuple(), np.uint16),
+        "safety_status": ArrayType(tuple(), np.uint32),
+    }
+
+    return {topic.alias: (topic_tp.copy(), topic) for topic in battery_state_topics}
+
+
+def _build_gnss_raw_topics_attributes(
+    gnss_raw_topics: Sequence[GnssRawTopic],
 ) -> TopicRegistry:
     topic_tp = {
         "position_ecef": ArrayType((3,), np.float64),
@@ -141,7 +163,7 @@ def _build_gnssraw_topics_attributes(
         "orientation_hrp_std": ArrayType((3,), np.float64),
     }
 
-    return {topic.alias: (topic_tp.copy(), topic) for topic in gnssraw_topics}
+    return {topic.alias: (topic_tp.copy(), topic) for topic in gnss_raw_topics}
 
 
 def _build_point_cloud_attr_types(
@@ -431,7 +453,8 @@ TOPIC_TYPES = {
     ),
     "gps_fix_topics": (GPSFixTopic, _build_gps_fix_topics_attributes),
     "twist_topics": (TwistTopic, _build_twist_topics_attributes),
-    "gnss_raw_topics": (GnssRawTopic, _build_gnssraw_topics_attributes),
+    "gnss_raw_topics": (GnssRawTopic, _build_gnss_raw_topics_attributes),
+    "battery_state_topics": (BatteryStateTopic, _build_battery_state_topics_attributes),
 }
 
 
