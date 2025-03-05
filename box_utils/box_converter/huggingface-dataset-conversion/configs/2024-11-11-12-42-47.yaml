@@ -141,6 +141,14 @@ data:
       format: png
       compressed: false
 
+  actuator_readings_topics:
+    - alias: anymal_lpc_readings
+      file: "{}_lpc_general.bag"
+      topic: "/anymal_low_level_controller/actuator_readings"
+      actuator_names:
+        - foo
+        - bar
+
   lidar_topics:
     - alias: hesai
       file: "{}_nuc_hesai_post_processed.bag"

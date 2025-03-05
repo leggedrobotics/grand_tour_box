@@ -1,0 +1,14 @@
+metadata:
+  frame_transforms:
+    base_frame: base
+    file: 2024-10-01-11-29-55_tf_static.mcap
+    topic: /tf_static
+
+data:
+  actuator_readings_topics:
+    - alias: anymal_lpc_readings
+      file: "{}_lpc_general.bag"
+      topic: "/anymal_low_level_controller/actuator_readings"
+      actuator_names:
+        - foo
+        - bar
