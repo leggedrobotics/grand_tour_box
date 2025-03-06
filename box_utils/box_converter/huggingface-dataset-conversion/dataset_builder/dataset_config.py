@@ -61,8 +61,8 @@ class OdometryTopic(Topic): ...
 
 @dataclass
 class AnymalStateTopic(Topic):
+    number_of_joints: int
     feet: List[str] = field(default_factory=list)
-    joint_names: List[str] = field(default_factory=list)
 
 
 @dataclass
@@ -103,7 +103,7 @@ class GnssRawTopic(Topic): ...
 
 @dataclass
 class ActuatorReadingsTopic(Topic):
-    actuator_names: List[str] = field(default_factory=list)
+    number_of_actuators: int
 
 
 @dataclass
@@ -131,37 +131,38 @@ AttributeTypes = Dict[str, ArrayType]
 TopicRegistry = Dict[str, Tuple[AttributeTypes, Topic]]
 
 
-def _build_single_actuator_reading(name: str) -> Dict[str, ArrayType]:
+def _build_single_actuator_reading(idx: int) -> Dict[str, ArrayType]:
+    fmt = f"{idx:02d}"
     return {
-        f"{name}_state_statusword": ArrayType(tuple(), np.uint32),
-        f"{name}_state_current": ArrayType(tuple(), np.float64),
-        f"{name}_state_gear_position": ArrayType(tuple(), np.float64),
-        f"{name}_state_gear_velocity": ArrayType(tuple(), np.float64),
-        f"{name}_state_joint_position": ArrayType(tuple(), np.float64),
-        f"{name}_state_joint_velocity": ArrayType(tuple(), np.float64),
-        f"{name}_state_joint_acceleration": ArrayType(tuple(), np.float64),
-        f"{name}_state_joint_torque": ArrayType(tuple(), np.float64),
-        f"{name}_state_imu_orien_cov": ArrayType((3, 3), np.float64),
-        f"{name}_state_imu_ang_vel_cov": ArrayType((3, 3), np.float64),
-        f"{name}_state_imu_lin_acc_cov": ArrayType((3, 3), np.float64),
-        f"{name}_state_imu_orien": ArrayType((4,), np.float64),
-        f"{name}_state_imu_ang_vel": ArrayType((3,), np.float64),
-        f"{name}_state_imu_lin_acc": ArrayType((3,), np.float64),
-        f"{name}_command_mode": ArrayType(tuple(), np.uint8),
-        f"{name}_command_current": ArrayType(tuple(), np.float64),
-        f"{name}_command_position": ArrayType(tuple(), np.float64),
-        f"{name}_command_velocity": ArrayType(tuple(), np.float64),
-        f"{name}_command_joint_torque": ArrayType(tuple(), np.float64),
-        f"{name}_command_pid_gains_p": ArrayType(tuple(), np.float32),
-        f"{name}_command_pid_gains_i": ArrayType(tuple(), np.float32),
-        f"{name}_command_pid_gains_d": ArrayType(tuple(), np.float32),
+        f"{fmt}_state_statusword": ArrayType(tuple(), np.uint32),
+        f"{fmt}_state_current": ArrayType(tuple(), np.float64),
+        f"{fmt}_state_gear_position": ArrayType(tuple(), np.float64),
+        f"{fmt}_state_gear_velocity": ArrayType(tuple(), np.float64),
+        f"{fmt}_state_joint_position": ArrayType(tuple(), np.float64),
+        f"{fmt}_state_joint_velocity": ArrayType(tuple(), np.float64),
+        f"{fmt}_state_joint_acceleration": ArrayType(tuple(), np.float64),
+        f"{fmt}_state_joint_torque": ArrayType(tuple(), np.float64),
+        f"{fmt}_state_imu_orien_cov": ArrayType((3, 3), np.float64),
+        f"{fmt}_state_imu_ang_vel_cov": ArrayType((3, 3), np.float64),
+        f"{fmt}_state_imu_lin_acc_cov": ArrayType((3, 3), np.float64),
+        f"{fmt}_state_imu_orien": ArrayType((4,), np.float64),
+        f"{fmt}_state_imu_ang_vel": ArrayType((3,), np.float64),
+        f"{fmt}_state_imu_lin_acc": ArrayType((3,), np.float64),
+        f"{fmt}_command_mode": ArrayType(tuple(), np.uint8),
+        f"{fmt}_command_current": ArrayType(tuple(), np.float64),
+        f"{fmt}_command_position": ArrayType(tuple(), np.float64),
+        f"{fmt}_command_velocity": ArrayType(tuple(), np.float64),
+        f"{fmt}_command_joint_torque": ArrayType(tuple(), np.float64),
+        f"{fmt}_command_pid_gains_p": ArrayType(tuple(), np.float32),
+        f"{fmt}_command_pid_gains_i": ArrayType(tuple(), np.float32),
+        f"{fmt}_command_pid_gains_d": ArrayType(tuple(), np.float32),
     }
 
 
 def _build_actuator_readings_single_topic_attributes(topic_desc: Any) -> AttributeTypes:
     ret = {}
-    for actuator in topic_desc.actuator_names:
-        ret.update(_build_single_actuator_reading(actuator))
+    for idx in range(topic_desc.number_of_actuators):
+        ret.update(_build_single_actuator_reading(idx))
     return ret
 
 
@@ -311,16 +312,14 @@ def _build_anymal_state_single_topic_attributes(
         "wrench_force": ArrayType((3,), np.float64),
         "wrench_torque": ArrayType((3,), np.float64),
         "normal": ArrayType((3,), np.float64),
-        "friction": ArrayType(tuple(), np.float64),
-        "restitution": ArrayType(tuple(), np.float64),
+        "friction_coef": ArrayType(tuple(), np.float64),
+        "restitution_coef": ArrayType(tuple(), np.float64),
         "state": ArrayType(tuple(), np.uint8),
         "contact": ArrayType(tuple(), np.uint8),  # 0: no contact, 1: contact
     }
 
-    n_joints = len(anymal_state_topic.joint_names)
+    n_joints = anymal_state_topic.number_of_joints
     ret = {
-        "pose_cov": ArrayType((6, 6), np.float64),
-        "twist_cov": ArrayType((6, 6), np.float64),
         "pose_pos": ArrayType((3,), np.float64),
         "pose_orien": ArrayType((4,), np.float64),
         "twist_lin": ArrayType((3,), np.float64),

@@ -38,7 +38,7 @@ RUN pip install -r requirements-docker.txt
 
 # installing ros packages
 WORKDIR /catkin_ws/src
-ADD git@github.com:leggedrobotics/grand_tour_box.git grand_tour_box
+ADD git@github.com:leggedrobotics/grand_tour_box.git#fix/missing-messages-anymal-msgs grand_tour_box
 ADD git@github.com:ros-drivers/gps_umd.git gps_umd
 ADD git@github.com:ANYbotics/signal_logger.git signal_logger
 RUN . /opt/ros/$ROS_DISTRO/setup.sh && catkin build \

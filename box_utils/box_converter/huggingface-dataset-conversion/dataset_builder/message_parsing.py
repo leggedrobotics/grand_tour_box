@@ -74,7 +74,11 @@ def _parse_covariance(arr: Union[np.ndarray, Tuple[float, ...]], n: int) -> np.n
     return np.array(arr).reshape(n, n)
 
 
-def _parse_actuator_command(msg: SeActuatorCommand) -> Tuple[Dict[str, BasicType], str]:
+def _parse_actuator_command(msg: SeActuatorCommand) -> Dict[str, BasicType]:
+    """\
+    for some reason the anymal actuator readings dont have a name,
+    they all have `msg.name == ''`
+    """
     return {
         "mode": msg.mode,
         "current": msg.current,
@@ -84,10 +88,14 @@ def _parse_actuator_command(msg: SeActuatorCommand) -> Tuple[Dict[str, BasicType
         "pid_gains_p": msg.pid_gains_p,
         "pid_gains_i": msg.pid_gains_i,
         "pid_gains_d": msg.pid_gains_d,
-    }, msg.name
+    }
 
 
-def _parse_actuator_state(msg: SeActuatorState) -> Tuple[Dict[str, BasicType], str]:
+def _parse_actuator_state(msg: SeActuatorState) -> Dict[str, BasicType]:
+    """\
+    for some reason the anymal actuator readings dont have a name,
+    they all have `msg.name == ''`
+    """
     ret: Dict[str, BasicType] = {
         "statusword": msg.statusword,
         "current": msg.current,
@@ -102,34 +110,31 @@ def _parse_actuator_state(msg: SeActuatorState) -> Tuple[Dict[str, BasicType], s
     state_imu_data = _parse_imu(msg.imu, None)
     ret.update({f"imu_{k}": v for k, v in state_imu_data.items()})
 
-    return ret, msg.name
+    return ret
 
 
 def _parse_single_actuator_reading(
-    msg: SeActuatorReading,
-) -> Tuple[Dict[str, BasicType], str]:
+    msg: SeActuatorReading, idx: int
+) -> Dict[str, BasicType]:
+    cdata = _parse_actuator_command(msg.commanded)
+    sdata = _parse_actuator_state(msg.state)
+
     ret: Dict[str, BasicType] = {}
+    ret.update({f"{idx:02d}_command_{k}": v for k, v in cdata.items()})
+    ret.update({f"{idx:02d}_state_{k}": v for k, v in sdata.items()})
 
-    command_data, command_name = _parse_actuator_command(msg.commanded)
-    state_data, state_name = _parse_actuator_state(msg.state)
-
-    assert command_name == state_name
-    ret.update({f"{command_name}_command_{k}": v for k, v in command_data.items()})
-    ret.update({f"{state_name}_state_{k}": v for k, v in state_data.items()})
-    return ret, command_name
+    return ret
 
 
 def _parse_actuator_readings(
     msg: SeActuatorReadings, topic_desc: ActuatorReadingsTopic
 ) -> Dict[str, BasicType]:
-    ret: Dict[str, BasicType] = {}
-    names = []
-    for reading in msg.readings:
-        actuator_data, actuator_name = _parse_single_actuator_reading(reading)
-        names.append(actuator_name)
-        ret.update(actuator_data)
+    assert len(msg.readings) == topic_desc.number_of_actuators
 
-    assert set(names) == set(topic_desc.actuator_names)
+    ret: Dict[str, BasicType] = {}
+    for idx, reading in enumerate(msg.readings):
+        actuator_data = _parse_single_actuator_reading(reading, idx)
+        ret.update(actuator_data)
     return ret
 
 
@@ -174,8 +179,8 @@ def _parse_contact(msg: Optional[Contact]) -> Tuple[Dict[str, BasicType], str]:
         "wrench_force": (_parse_vector3(msg.wrench.force) if msg else np.zeros(3)),
         "wrench_torque": (_parse_vector3(msg.wrench.torque) if msg else np.zeros(3)),
         "normal": _parse_vector3(msg.normal) if msg else np.zeros(3),
-        "friction": msg.friction if msg else 0,
-        "restitution": msg.restitution if msg else 0,
+        "friction_coef": msg.frictionCoefficient if msg else 0,
+        "restitution_coef": msg.restitutionCoefficient if msg else 0,
         "state": msg.state if msg else 0,
         "contact": 1 if msg else 0,
     }
@@ -207,8 +212,12 @@ def _parse_contacts(
 def _parse_anymal_state(
     msg: AnymalState, topic_desc: AnymalStateTopic
 ) -> Dict[str, BasicType]:
-    ret: Dict[str, BasicType] = {}
-    ret.update(_parse_odometry(cast(Odometry, msg), topic_desc))
+    ret: Dict[str, BasicType] = {
+        "pose_pos": _parse_vector3(msg.pose.pose.position),
+        "pose_orien": _parse_quaternion(msg.pose.pose.orientation),
+        "twist_lin": _parse_vector3(msg.twist.twist.linear),
+        "twist_ang": _parse_vector3(msg.twist.twist.angular),
+    }
     ret.update(_parse_extended_joint_state(msg.joints))
     ret.update(_parse_contacts(msg.contacts, topic_desc))
     return ret

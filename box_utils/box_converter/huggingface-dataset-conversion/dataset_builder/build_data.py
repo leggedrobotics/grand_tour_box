@@ -41,9 +41,6 @@ ImageExtractorCallback = Callable[
 ]
 
 
-CV_BRIDGE = CvBridge()
-
-
 def _extract_and_save_image_from_message(
     msg: Union[CompressedImage, Image],
     image_index: int,
@@ -111,7 +108,6 @@ def _data_chunks_from_bag_topic(
     ):
         # handle data to store in zarr format
         buffer.append(parse_deserialized_message(message, topic_desc=topic_desc))
-
         if image_extractor is not None:
             image_extractor(message, idx, cast(ImageTopic, topic_desc))
         if len(buffer) == chunk_size:
@@ -217,6 +213,7 @@ def _generate_dataset_from_topic_description_and_attribute_types(
         image_extractor = partial(
             _extract_and_save_image_from_message,
             image_dir=topic_folder,
+            cv_bridge=CvBridge(),
         )
 
     for chunk in _data_chunks_from_bag_topic(
@@ -230,26 +227,27 @@ def _generate_dataset_from_topic_description_and_attribute_types(
             topic_zarr_group[key].append(data, axis=0)  # type: ignore
 
 
+def _tar_ball_dirs_in_dir(dir: Path) -> None:
+    assert dir.is_dir()
+    for folder in os.listdir(dir):
+        if not os.path.isdir(dir / folder):
+            continue
+        with tarfile.open(dir / f"{folder}.tar", "w") as tar:
+            tar.add(dir / folder, arcname=os.path.basename(folder))
+        shutil.rmtree(dir / folder)
+
+
 def _tar_ball_dataset(base_dataset_path: Path) -> None:
     """\
     tarball topic folders of the dataset, we make sure to only tar folders and not files
     also we dont add any compression - for performance and also because its not needed
     """
     data_files = base_dataset_path / DATA_PREFIX
-    for folder in os.listdir(data_files):
-        if not os.path.isdir(data_files / folder):
-            continue
-        with tarfile.open(data_files / f"{folder}.tar", "w") as tar:
-            tar.add(data_files / folder, arcname=os.path.basename(folder))
-        shutil.rmtree(data_files / folder)
-
+    if data_files.exists():
+        _tar_ball_dirs_in_dir(data_files)
     image_files = base_dataset_path / IMAGE_PREFIX
-    for folder in os.listdir(image_files):
-        if not os.path.isdir(image_files / folder):
-            continue
-        with tarfile.open(image_files / f"{folder}.tar", "w") as tar:
-            tar.add(image_files / folder, arcname=os.path.basename(folder))
-        shutil.rmtree(image_files / folder)
+    if image_files.exists():
+        _tar_ball_dirs_in_dir(image_files)
 
 
 def build_data_part(
