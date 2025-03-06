@@ -1,41 +1,30 @@
-# Running the Conversion
-
-Navigate to the folder that contains this file.
-
-## Setting up the Local Environment
-
-we set this up to facilitate the downloading from kleinkram and uploading to huggingface
+# Grand Tour Huggingface Dataset Converter
 
 ```bash
-virtualenv -ppython3.12 .venv
+virtualenv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
+pip install kleinkram
+
+klein login
 ```
 
-## Downloading the Mission Data
+## Run inside Docker
 
-Download the required `.mcap` files for the mission you want to conver and place them into the `data/files` folder.
-I.e., if you are using the kleinkram cli you can do:
+build the container
 
 ```bash
-klein download -p GrandTour -m ... --dest data/files "*.mcap"
+docker build --ssh default -t grand-tour-dataset .
 ```
 
-This will get changed later on, but thats how its done right now.
-
-## Starting the Docker Container
-
-Run the following command to start the docker container:
+run the container
 
 ```bash
-docker build --ssh default -t grand-tour-dataset . && docker run -v "$(pwd):/app" --rm -it grand-tour-dataset
+docker run -v "$(pwd):/app" --env KLEINKRAM_CONFIG="$(cat ~/.kleinkram.json)" --rm -it grand-tour-dataset
 ```
 
-## Run the Dataset Builder
+run the converter inside the container
 
-Once you are inside the docker container you can run the dataset builder:
-
-```bash
+```
 python -m dataset_builder
 ```
 
@@ -56,8 +45,8 @@ The `metadata` section supports the following keys:
   It takes a list of the following entries:
   ```yaml
   - alias: *desired topic name*
-    file: *mcap file name*
-    topic: *topic inside the mcap file*
+    file: *bag file name*
+    topic: *topic inside the bag file*
   ```
 - `frame_transforms`: Specifies how the frame transforms should be computed
   It takes the following keys:
@@ -65,8 +54,8 @@ The `metadata` section supports the following keys:
   ```yaml
   frame_transforms:
     base_frame: *name frame to use as a base*
-    file: *mcap file name that contains the static frame transforms*
-    topic: *topic inside the mcap file that contains the static frame transforms*
+    file: *bag file name that contains the static frame transforms*
+    topic: *topic inside the bag file that contains the static frame transforms*
   ```
 
 #### `data` section
@@ -78,8 +67,8 @@ The `data` section supports the following keys:
 
   ```yaml
   - alias: *desired topic name*
-    file: *mcap file name*
-    topic: *topic inside the mcap file*
+    file: *bag file name*
+    topic: *topic inside the bag file*
     compressed: *true or false, tells the parser if msg is CompressedImage or Image*
     format: *png or jpg, desired format to save the images*
   ```
@@ -89,8 +78,8 @@ The `data` section supports the following keys:
 
   ```yaml
   - alias: *desired topic name*
-    file: *mcap file name*
-    topic: *topic inside the mcap file*
+    file: *bag file name*
+    topic: *topic inside the bag file*
     max_points: *max number of point cloud points that can be contained in a message*
     attributes:
       - ... *list of attributes that are contained in each point*
@@ -101,8 +90,8 @@ The `data` section supports the following keys:
 
   ```yaml
   - alias: *desired topic name*
-    file: *mcap file name*
-    topic: *topic inside the mcap file*
+    file: *bag file name*
+    topic: *topic inside the bag file*
     covariance: *true or false, tells the parser if the pose has a covariance matrix*
   ```
 
@@ -112,8 +101,8 @@ The `data` section supports the following keys:
 
   ```yaml
   - alias: *desired topic name*
-    file: *mcap file name*
-    topic: *topic inside the mcap file*
+    file: *bag file name*
+    topic: *topic inside the bag file*
   ```
 
   Note that the `singleton_transform_topics` are generally very similar to `pose_topics`, i.e. they are a list containing a single pose.
@@ -127,6 +116,9 @@ gprof2dot -f pstats o.pstat | dot -Tsvg -o o.svg
 
 ##### Profiling Results
 
+Since we switched to to reading bag files instead of mcap performance has dropped by about half.
+But overall most time is still spent inside ros packages.
+
 - 60-70% of the time is spent reading and writing images (we can't really improve this)
-- 20% of time is spent inside the mcap message iterator function (we can't really improve this)
+- 20% of time is spent inside the bag message iterator function (we can't really improve this)
 - 10-15% of the time is spent inside our code (not worth improving)

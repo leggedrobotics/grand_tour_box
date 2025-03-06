@@ -1,8 +1,9 @@
 numpy
 opencv-python
-mcap
 rosnumpy
 zarr
 tqdm
 cv_bridge
 scipy
+kleinkram
+huggingface-hub
