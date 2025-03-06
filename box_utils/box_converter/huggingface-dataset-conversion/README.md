@@ -10,12 +10,22 @@ klein login
 
 ## Run inside Docker
 
+build the container
+
 ```bash
 docker build --ssh default -t grand-tour-dataset .
 ```
 
+run the container
+
 ```bash
-docker run -v "$(pwd):/app" --env KLEINKRAM_CONFIG="$(cat ~/.kleinkram.json)" --rm -it grand-tour-dataset python -m dataset_builder
+docker run -v "$(pwd):/app" --env KLEINKRAM_CONFIG="$(cat ~/.kleinkram.json)" --rm -it grand-tour-dataset
+```
+
+run the converter inside the container
+
+```
+python -m dataset_builder
 ```
 
 ## Configuring the Converter

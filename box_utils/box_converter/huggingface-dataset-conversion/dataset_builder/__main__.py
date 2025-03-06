@@ -10,12 +10,12 @@ from dataset_builder.build_data import build_data_part
 from dataset_builder.build_metadata import build_metadata_part
 from dataset_builder.dataset_config import load_config
 
-# MISSION_NAME = "2024-11-11-12-42-47"
-MISSION_NAME = "2024-10-01-12-00-49"
+MISSION_NAME = "2024-11-11-12-42-47"
+# MISSION_NAME = "2024-10-01-12-00-49"
 
-DEFAULT_CONFIG_PATH = Path(__file__).parent.parent / "configs" / f"testing.yaml"
+DEFAULT_CONFIG_PATH = Path(__file__).parent.parent / "configs" / f"{MISSION_NAME}.yaml"
 
-DATA_PATH = Path(__file__).parent.parent / "data"
+DATA_PATH = Path("/data")  # Path(__file__).parent.parent / "data"
 INPUT_PATH = DATA_PATH / "files" / MISSION_NAME
 DATASET_PATH = DATA_PATH / "dataset" / MISSION_NAME
 
@@ -64,10 +64,10 @@ def main() -> int:
 
     args = parser.parse_args()
 
-    # missions = kleinkram.list_missions(mission_names=[args.mission_name])
-    # assert len(missions) == 1
-    # mission = missions[0]
-    # download_mission(mission_id=mission.id, input_path=INPUT_PATH)
+    missions = kleinkram.list_missions(mission_names=[args.mission_name])
+    assert len(missions) == 1
+    mission = missions[0]
+    download_mission(mission_id=mission.id, input_path=INPUT_PATH)
 
     run_converter(
         input_path=INPUT_PATH,
