@@ -3,7 +3,7 @@
 import os
 import rosbag
 from time import sleep
-from box_auto.utils import get_bag, upload_bag, kill_roscore
+from box_auto.utils import get_bag, upload_bag, kill_roscore, WS
 import tf
 from geometry_msgs.msg import TransformStamped, Quaternion
 from tf2_msgs.msg import TFMessage
@@ -11,7 +11,7 @@ import copy
 from tqdm import tqdm
 import numpy as np
 
-WS = "/home/catkin_ws"
+# WS = "/home/catkin_ws"
 PRE = f"source /opt/ros/noetic/setup.bash; source {WS}/devel/setup.bash;"
 
 
@@ -21,10 +21,9 @@ def launch_undistorter(
     input_tf_static_bag_path,
     output_bag_path,
     pcd_topic_in,
-    pcd_topic_out,
     child_frame,
-    parent_frame,
-    sensor_frame,
+    target_frame,
+    unified_undistortion,
 ):
     os.environ["ROS_MASTER_URI"] = "http://localhost:11311"
     kill_roscore()
@@ -35,15 +34,14 @@ def launch_undistorter(
         f"bash -c '"
         f"{PRE} "
         f"roslaunch pointcloud_undistortion undistort_pointcloud.launch "
-        f"hesai_bag_path:={input_rosbag_path} "
+        f"lidar_bag_path:={input_rosbag_path} "
         f"trajectory_bag_path:={input_trajectory_bag_path} "
         f"tf_static_bag_path:={input_tf_static_bag_path} "
         f"output_bag_path:={output_bag_path} "
-        f"pcd_topic_in:={pcd_topic_in} "
-        f"pcd_topic_out:={pcd_topic_out} "
+        f"lidar_topic:={pcd_topic_in} "
         f"child_frame:={child_frame} "
-        f"parent_frame:={parent_frame} "
-        f"sensor_frame:={sensor_frame}'"
+        f"unified_undistortion:={unified_undistortion} "
+        f"target_frame:={target_frame}'"
     )
     os.system(command)
     sleep(5)
@@ -122,12 +120,20 @@ def switch_tf(exists_skip=False):
 
 
 if __name__ == "__main__":
-    switch_tf(exists_skip=True)
+    is_unified = True
+    input_trajectory_bag_path = None
+    if is_unified:
+        print("Unified undistortion is enabled. Combined tf will be used.")
+        input_trajectory_bag_path = get_bag("*_boxi_tf_pure_perception.bag")
+    else:
+        # Invert the tf
+        switch_tf(exists_skip=True)
+        input_trajectory_bag_path = get_bag("*_lpc_tf_reverse.bag")
 
-    input_trajectory_bag_path = get_bag("*_lpc_tf_reverse.bag")
+    # TF static
     input_tf_static_path = get_bag("*_tf_static_start_end.bag")
 
-    # Hesai
+    # Filtered Hesai bag
     input_hesai_bag_path = get_bag("*_nuc_hesai_ready.bag")
     output_hesai_bag_path = input_hesai_bag_path.replace("_nuc_hesai_ready.bag", "_nuc_hesai_undist.bag")
     launch_undistorter(
@@ -136,13 +142,12 @@ if __name__ == "__main__":
         input_tf_static_path,
         output_hesai_bag_path,
         pcd_topic_in="/gt_box/hesai/points",
-        pcd_topic_out="/gt_box/hesai/points_undistorted",
-        child_frame="odom",
-        parent_frame="base",
-        sensor_frame="hesai_lidar",
+        child_frame="base",
+        target_frame="odom",
+        unified_undistortion=is_unified,
     )
 
-    # Livox
+    # Filtered Livox bag
     input_livox_bag_path = get_bag("*_nuc_livox_ready.bag")
     output_livox_bag_path = input_livox_bag_path.replace("_nuc_livox_ready.bag", "_nuc_livox_undist.bag")
     launch_undistorter(
@@ -151,8 +156,8 @@ if __name__ == "__main__":
         input_tf_static_path,
         output_livox_bag_path,
         pcd_topic_in="/gt_box/livox/lidar",
-        pcd_topic_out="/gt_box/livox/lidar_undistorted",
-        child_frame="odom",
-        parent_frame="base",
-        sensor_frame="livox_lidar",
+        child_frame="base",
+        target_frame="odom",
+        unified_undistortion=is_unified,
     )
+    kill_roscore()
