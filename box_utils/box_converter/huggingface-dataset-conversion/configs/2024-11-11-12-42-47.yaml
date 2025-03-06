@@ -49,6 +49,7 @@ metadata:
     - alias: anymal_cam_rear_upper_caminfo
       file: "{}_lpc_depth_cameras.bag"
       topic: "/depth_camera_rear_upper/depth/camera_info"
+
   frame_transforms:
     base_frame: base
     file: "{}_tf_static.bag"
@@ -145,9 +146,7 @@ data:
     - alias: anymal_lpc_readings
       file: "{}_lpc_general.bag"
       topic: "/anymal_low_level_controller/actuator_readings"
-      actuator_names:
-        - foo
-        - bar
+      number_of_actuators: 12
 
   lidar_topics:
     - alias: hesai
