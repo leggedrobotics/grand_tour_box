@@ -2,6 +2,7 @@ tfStaticRepetitionPeriod: 5 # seconds
 frameMapping:
   - new: "velodyne_lidar"
     old: "lidar"
+    replicate: true
 
 framePairs:
   - parent: ""
@@ -10,12 +11,8 @@ framePairs:
 childFramesToRemove:
   - "map"
   - "aft_mapped"
-  - "battery"
-  - "hbc_receiver"
   - "footprint"
-  - "feetcenter"
-  - "docking_socket"
-  - "zed2i_right_camera_frame"
+  - "feetcenter" 
 
 parentFramesToRemove:
   - "map"

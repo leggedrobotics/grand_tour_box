@@ -25,15 +25,17 @@ if __name__ == "__main__":
     parser.add_argument(
         "--config_name",
         type=str,
-        default="boxi_tf_pure_perception",  # boxi_tf_pure_perception #boxi_tf_full
+        default="boxi_tf_full",  # boxi_tf_pure_perception #boxi_tf_full
         help="The name of the configuration file. Default is 'boxi_tf_pure_perception'.",
     )
     args = parser.parse_args()
     print(f"Using configuration: {args.config_name}")
-    patterns = ["*_nuc_tf.bag", "*_tf_static.bag", "*_lpc_tf.bag", "*_jetson_zed2i_tf.bag"]  # _tf_static_start_end
-    # ,
-    # "*_dlio.bag",
-    # "*_gt_tf.bag" ]
+    patterns = ["*_nuc_tf.bag", "*_tf_static.bag", "*_lpc_tf.bag", "*_jetson_zed2i_tf.bag"]
+
+    # Patterns for optional applications.
+    # "*_hesai_dlio.bag",
+    # "*_gt_tf.bag",
+    # "*_open3d_slam.bag"
 
     path = Path(WS) / "src/grand_tour_box/box_utils/box_auto/cfg" / (args.config_name + ".yaml")
 

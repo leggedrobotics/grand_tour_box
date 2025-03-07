@@ -61,12 +61,13 @@
         <parent link="box_base"/>
         <child link="prism_model"/>
   </joint>
+  
   <!-- Wrong export origins in CAD - the coorect ones are xyz="0 0 0" -->
-  <joint name="base_to_cpt7_antenna_back_model" type="fixed">
+  <!-- <joint name="base_to_cpt7_antenna_back_model" type="fixed">
         <origin xyz="0 0 0.03 " rpy="0.0 0.0 0.0"/>
         <parent link="base"/>
         <child link="cpt7_antenna_back_model"/>
-  </joint>
+  </joint> -->
 
   <!-- <joint name="base_to_cpt7_antenna_back_model" type="fixed">
         <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
@@ -83,13 +84,13 @@
     </visual>
   </link>
 
-  <link name="cpt7_antenna_back_model">
+  <!-- <link name="cpt7_antenna_back_model">
     <visual>
       <geometry>
         <mesh filename="package://box_model/urdf/box/mesh/gps.dae" scale="1 1 1" />
       </geometry>
     </visual>
-  </link>
+  </link> -->
    
 
   <link name="prism_model">

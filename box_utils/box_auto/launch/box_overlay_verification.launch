@@ -1,78 +1,91 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
 
-  <!-- Provide a default empty list for bag paths -->
-  <arg name="data_containing_rosbag_paths" default="/home/tutuna/Videos/stim_bug/2024-11-18-17-31-36/2024-11-18-17-31-36_boxi_tf_pure_perception.bag /home/tutuna/Videos/stim_bug/2024-11-18-17-31-36/2024-11-18-17-31-36_jetson_zed2i_images.bag"/>
+      <!-- Provide a default empty list for bag paths -->
+      <arg name="data_containing_rosbag_paths" default=""/>
 
-  <param name="/use_sim_time" value="true"/>
-  <arg name="enable_viz" default="true" />
+      <param name="/use_sim_time" value="true"/>
+      <arg name="enable_viz" default="true" />
+      <arg name="enable_urdf" default="true" />
 
-  <node name="zed_left_rgb" 
-        pkg="image_transport" 
-        type="republish" 
-        args="compressed in:=/boxi/zed2i/left/image_raw raw out:=/boxi/zed2i/left/image_raw"
-        required="true" />
+      <node name="zed_left_rgb" 
+            pkg="image_transport" 
+            type="republish" 
+            args="compressed in:=/boxi/zed2i/left/image_raw raw out:=/boxi/zed2i/left/image_raw"
+            required="true" />
 
-  <node name="zed_right_rgb" 
-        pkg="image_transport" 
-        type="republish" 
-        args="compressed in:=/boxi/zed2i/right/image_raw raw out:=/boxi/zed2i/right/image_raw"
-        required="true" />
+      <node name="zed_right_rgb" 
+            pkg="image_transport" 
+            type="republish" 
+            args="compressed in:=/boxi/zed2i/right/image_raw raw out:=/boxi/zed2i/right/image_raw"
+            required="true" />
 
-  <node name="zed_depth" 
-        pkg="image_transport" 
-        type="republish" 
-        args="compressedDepth in:=/boxi/zed2i/depth/image_raw raw out:=/boxi/zed2i/depth/image_raw"
-        required="true" />
+      <node name="zed_depth" 
+            pkg="image_transport" 
+            type="republish" 
+            args="compressedDepth in:=/boxi/zed2i/depth/image_raw raw out:=/boxi/zed2i/depth/image_raw"
+            required="true" />
+      
+      <node pkg="rviz" 
+            name="rviz" 
+            type="rviz" 
+            args="-d '$(find box_auto)/rviz/rviz_overlay.rviz'" 
+            required="true" />
     
-  <node pkg="rviz" 
-        name="rviz" 
-        type="rviz" 
-        args="-d '$(find box_auto)/rviz/rviz_overlay.rviz'" 
-        required="true" />
+      <!-- If URDF should be loaded -->
+      <group if="$(arg enable_urdf)">
+            <include file="$(find anymal_d_simple_description)/launch/load.launch" />
+            <include file="$(find box_model)/launch/load_boxi_model.launch" />
+      </group>
     
-  <group if="$(arg enable_viz)">
-    <!-- RQT IM, left RGB view -->
-    <node name="image_view_left" 
-          pkg="image_view" 
-          type="image_view" 
-          respawn="false" 
-          output="screen">
-      <param name="image_transport" value="compressed" />
-      <remap from="image" to="/boxi/zed2i/left/image_raw" />           
-    </node> 
+      <group if="$(arg enable_viz)">
 
-    <!-- RQT IM, right RGB view -->
-    <node name="image_view_right"
-          pkg="image_view" 
-          type="image_view" 
-          respawn="false" 
-          output="screen">
-      <param name="image_transport" value="compressed" />
-      <remap from="image" to="/boxi/zed2i/right/image_raw" />           
-    </node> 
+      <!-- RQT IM, left RGB view -->
+      <node name="image_view_left" 
+            pkg="image_view" 
+            type="image_view" 
+            respawn="false" 
+            required="true"
+            output="screen">
+            <param name="image_transport" value="compressed" />
+            <remap from="image" to="/boxi/zed2i/left/image_raw" />           
+      </node> 
 
-    <!-- Depth RVL view -->
-    <node name="depth_rvl_view" 
-          pkg="image_view" 
-          type="image_view" 
-          respawn="false" 
-          output="screen">
-      <param name="image_transport" value="raw" />
-      <remap from="image" to="/boxi/zed2i/depth/image_raw" />
-      <param name="colormap" value="2" />
-      <param name="min_image_value" value="0.5" />
-      <param name="max_image_value" value="15.0" />
-      <param name="dynamic_range" value="false" />
-      <param name="autosize" value="true" />
-    </node> 
-  </group>
+      <!-- RQT IM, right RGB view -->
+      <node name="image_view_right"
+            pkg="image_view" 
+            type="image_view" 
+            respawn="false" 
+            required="true"
+            output="screen">
+            <param name="image_transport" value="compressed" />
+            <remap from="image" to="/boxi/zed2i/right/image_raw" />           
+      </node> 
 
-  <node pkg="rosbag" 
-        type="play" 
-        name="player" 
-        output="screen" 
-        launch-prefix="xterm -bg lightblue -fg darkslategrey -bd plum -bw 10 -geometry 80x40-50+250 -e" 
-        args="--clock -r 1 $(arg data_containing_rosbag_paths)" />
+      <!-- Depth RVL view -->
+      <node name="depth_rvl_view" 
+            pkg="image_view" 
+            type="image_view" 
+            respawn="false" 
+            required="true"
+            output="screen">
+            <param name="image_transport" value="raw" />
+            <remap from="image" to="/boxi/zed2i/depth/image_raw" />
+            <param name="colormap" value="2" />
+            <param name="min_image_value" value="0.5" />
+            <param name="max_image_value" value="15.0" />
+            <param name="dynamic_range" value="false" />
+            <param name="autosize" value="true" />
+      </node> 
+      </group>
+
+      <!-- Rosbag player -->
+      <node pkg="rosbag" 
+            type="play" 
+            name="player" 
+            output="screen"
+            required="true"
+            launch-prefix="xterm -bg lightblue -fg darkslategrey -bd plum -bw 10 -geometry 80x40-50+250 -e" 
+            args="--clock -r 1 $(arg data_containing_rosbag_paths)" />
 
 </launch>

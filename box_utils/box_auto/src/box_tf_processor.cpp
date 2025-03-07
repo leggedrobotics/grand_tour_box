@@ -82,20 +82,45 @@ bool BoxTFProcessor::combineTransforms(tf2_ros::Buffer& tfBuffer, std::vector<tf
 }
 
 void BoxTFProcessor::updateFrameNames(std::vector<tf2_msgs::TFMessage>& tfMsgs,
-                                      const std::vector<std::pair<std::string, std::string>>& frameMapping) {
+                                      const std::vector<std::tuple<std::string, std::string, bool>>& frameMapping) {
   for (auto& msg : tfMsgs) {
+    std::vector<geometry_msgs::TransformStamped> newTransforms;
+
     for (auto& t : msg.transforms) {
+      bool needsReplication = false;
+      geometry_msgs::TransformStamped replicatedTransform = t;
+
       for (const auto& mapping : frameMapping) {
-        const std::string& newName = mapping.first;
-        const std::string& oldName = mapping.second;
+        const std::string& newName = std::get<0>(mapping);
+        const std::string& oldName = std::get<1>(mapping);
+        const bool replicate = std::get<2>(mapping);
+
         if (t.header.frame_id == oldName) {
-          t.header.frame_id = newName;
+          if (replicate) {
+            needsReplication = true;
+            replicatedTransform.header.frame_id = newName;
+          } else {
+            t.header.frame_id = newName;
+          }
         }
+
         if (t.child_frame_id == oldName) {
-          t.child_frame_id = newName;
+          if (replicate) {
+            needsReplication = true;
+            replicatedTransform.child_frame_id = newName;
+          } else {
+            t.child_frame_id = newName;
+          }
         }
       }
+
+      if (needsReplication) {
+        newTransforms.push_back(replicatedTransform);
+      }
     }
+
+    // Add all replicated transforms to the message
+    msg.transforms.insert(msg.transforms.end(), newTransforms.begin(), newTransforms.end());
   }
 }
 
@@ -138,7 +163,12 @@ bool BoxTFProcessor::loadBoxTfParameters(ros::NodeHandle& nh, BoxTfParams& param
         if (xmlMapping[i].hasMember("new") && xmlMapping[i].hasMember("old")) {
           std::string new_frame = static_cast<std::string>(xmlMapping[i]["new"]);
           std::string old_frame = static_cast<std::string>(xmlMapping[i]["old"]);
-          params.frameMapping.push_back(std::make_pair(new_frame, old_frame));
+          bool replicate = static_cast<bool>(xmlMapping[i]["replicate"]);
+          if (new_frame.empty() || old_frame.empty()) {
+            ROS_WARN("framePairs entry %d has empty 'new_frame' or 'old_frame' value. Skipping.", i);
+            continue;
+          }
+          params.frameMapping.push_back(std::make_tuple(new_frame, old_frame, replicate));
         } else {
           ROS_WARN("frameMapping entry %d is missing 'new' or 'old' keys.", i);
         }
@@ -160,6 +190,11 @@ bool BoxTFProcessor::loadBoxTfParameters(ros::NodeHandle& nh, BoxTfParams& param
         if (xmlPairs[i].hasMember("parent") && xmlPairs[i].hasMember("child")) {
           std::string parent = static_cast<std::string>(xmlPairs[i]["parent"]);
           std::string child = static_cast<std::string>(xmlPairs[i]["child"]);
+          // Skip entries with empty parent or child frames
+          if (parent.empty() || child.empty()) {
+            ROS_WARN("framePairs entry %d has empty 'parent' or 'child' value. Skipping.", i);
+            continue;
+          }
           params.framePairs.push_back(std::make_pair(parent, child));
         } else {
           ROS_WARN("framePairs entry %d is missing 'parent' or 'child' keys.", i);
