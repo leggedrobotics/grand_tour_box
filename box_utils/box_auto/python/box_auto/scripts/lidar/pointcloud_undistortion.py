@@ -11,7 +11,6 @@ import copy
 from tqdm import tqdm
 import numpy as np
 
-# WS = "/home/catkin_ws"
 PRE = f"source /opt/ros/noetic/setup.bash; source {WS}/devel/setup.bash;"
 
 
@@ -133,6 +132,21 @@ if __name__ == "__main__":
     # TF static
     input_tf_static_path = get_bag("*_tf_static_start_end.bag")
 
+    # Remove existing undistorted bags if they exist
+    try:
+        existing_hesai_undist = get_bag("*_hesai_undist.bag")
+        print(f"Removing existing hesai undistorted bag: {existing_hesai_undist}")
+        os.remove(existing_hesai_undist)
+    except:
+        pass
+
+    try:
+        existing_livox_undist = get_bag("*_livox_undist.bag")
+        print(f"Removing existing livox undistorted bag: {existing_livox_undist}")
+        os.remove(existing_livox_undist)
+    except:
+        pass
+
     # Filtered Hesai bag
     input_hesai_bag_path = get_bag("*_nuc_hesai_ready.bag")
     output_hesai_bag_path = input_hesai_bag_path.replace("_nuc_hesai_ready.bag", "_nuc_hesai_undist.bag")
@@ -142,7 +156,7 @@ if __name__ == "__main__":
         input_tf_static_path,
         output_hesai_bag_path,
         pcd_topic_in="/gt_box/hesai/points",
-        child_frame="base",
+        child_frame="base", # Used if not unified
         target_frame="odom",
         unified_undistortion=is_unified,
     )
@@ -156,7 +170,7 @@ if __name__ == "__main__":
         input_tf_static_path,
         output_livox_bag_path,
         pcd_topic_in="/gt_box/livox/lidar",
-        child_frame="base",
+        child_frame="base", # Used if not unified
         target_frame="odom",
         unified_undistortion=is_unified,
     )
