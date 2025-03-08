@@ -9,7 +9,7 @@ if __name__ == "__main__":
     # Ensure no roscore is active
     kill_roscore()
 
-    # Process ZED 2I SVO2 file
+    # Process ZED2i SVO2 file
     for zed_svo in zed_svos:
         print(f"Processing ZED SVO2 file: {zed_svo}")
         return_code = run_ros_command(f"roslaunch zed_wrapper zed2i_replay.launch svo_file:={zed_svo}")
