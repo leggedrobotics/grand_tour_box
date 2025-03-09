@@ -51,7 +51,13 @@ def main():
             cmd += "-snusername RSL_02 "
             cmd += f"-snpassword {IE_API_KEY} "
             cmd += f"-expprofile1 {EXP_PROFILE} "
-            cmd += "-expsrc1 epochs "
+            cmd += "-expsrc1 epochs "  # Print the processed output in the epcoch rate.
+            cmd += "-expkml on "  # export GPS measurements to KML file
+            cmd += "-expsbet on "  # Export the SBET file which contains IMU exchange data.
+            # https://gis.stackexchange.com/questions/175026/open-a-sbet-file-format-in-gis-software
+            cmd += "-expsbetimuframe on "  # Export sbet data in IMU frame.
+            cmd += "-procmsg on "  # Export all data to  "<project name>_ProcMsg.log" file in addition.
+            cmd += f"-expsbetkernel {PROCMODE} "
             cmd += f"-expfile1 {OUTPUT} "
 
             os.chdir("/home/jonfrey/Downloads/waypoint_ie_10_00_1206/bin")
