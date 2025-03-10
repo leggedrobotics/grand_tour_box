@@ -28,7 +28,7 @@ struct RotationOverride {
 };
 
 struct BoxTfParams {
-  std::vector<std::pair<std::string, std::string>> frameMapping;
+  std::vector<std::tuple<std::string, std::string, bool>> frameMapping;
   std::vector<std::pair<std::string, std::string>> framePairs;
   std::vector<std::string> childFramesToRemove;
   std::vector<std::string> parentFramesToRemove;
@@ -44,7 +44,8 @@ class BoxTFProcessor {
   bool combineTransforms(tf2_ros::Buffer& tfBuffer, std::vector<tf2_msgs::TFMessage>& tfStatic, const std::string& startFrame,
                          const std::string& targetFrame);
 
-  void updateFrameNames(std::vector<tf2_msgs::TFMessage>& tfMsgs, const std::vector<std::pair<std::string, std::string>>& frameMapping);
+  void updateFrameNames(std::vector<tf2_msgs::TFMessage>& tfMsgs,
+                        const std::vector<std::tuple<std::string, std::string, bool>>& frameMapping);
   std::string extractDatePrefix(const std::string& globalPath);
   std::string createOutputBagName(const std::string& inputGlobalPath, const std::string& outputSuffix);
   bool loadBoxTfParameters(ros::NodeHandle& nh, BoxTfParams& params);

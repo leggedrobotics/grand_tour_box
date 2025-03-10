@@ -64,6 +64,11 @@ def launch_nodes(
 
     check_duplicate_timestamps(output_bag_path, "/dlio/deskewed_point_cloud")
 
+    # Clean up the merged bag file
+    if os.path.exists(merged_rosbag_path):
+        os.remove(merged_rosbag_path)
+        print(f"Deleted merged bag file: {merged_rosbag_path}")
+
     upload_bag(output_bag_path)
 
 
