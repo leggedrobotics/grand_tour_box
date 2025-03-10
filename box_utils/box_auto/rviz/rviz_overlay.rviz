@@ -34,7 +34,7 @@ Visualization Manager:
   Class: ""
   Displays:
     - Class: rviz/Camera
-      Enabled: true
+      Enabled: false
       Image Rendering: background and overlay
       Image Topic: /boxi/zed2i/left/image_raw
       Name: left_zed
@@ -42,8 +42,9 @@ Visualization Manager:
       Queue Size: 2
       Transport Hint: raw
       Unreliable: false
-      Value: true
+      Value: false
       Visibility:
+        Odometry: true
         TF: true
         Value: true
         anymal_model: true
@@ -130,7 +131,7 @@ Visualization Manager:
       Use rainbow: true
       Value: false
     - Class: rviz/Camera
-      Enabled: false
+      Enabled: true
       Image Rendering: background and overlay
       Image Topic: /boxi/zed2i/right/image_raw
       Name: right_zed
@@ -138,8 +139,9 @@ Visualization Manager:
       Queue Size: 2
       Transport Hint: raw
       Unreliable: false
-      Value: false
+      Value: true
       Visibility:
+        Odometry: true
         TF: true
         Value: true
         anymal_model: true
@@ -183,7 +185,7 @@ Visualization Manager:
       Use rainbow: true
       Value: false
     - Class: rviz/Camera
-      Enabled: true
+      Enabled: false
       Image Rendering: background and overlay
       Image Topic: /gt_box/hdr_front/image_raw
       Name: hdr_front
@@ -191,8 +193,9 @@ Visualization Manager:
       Queue Size: 2
       Transport Hint: compressed
       Unreliable: false
-      Value: true
+      Value: false
       Visibility:
+        Odometry: true
         TF: true
         Value: true
         anymal_model: true
@@ -242,6 +245,7 @@ Visualization Manager:
       Unreliable: false
       Value: false
       Visibility:
+        Odometry: true
         TF: true
         Value: true
         anymal_model: true
@@ -257,7 +261,7 @@ Visualization Manager:
         velodyne: true
       Zoom Factor: 1
     - Class: rviz/Camera
-      Enabled: false
+      Enabled: true
       Image Rendering: background and overlay
       Image Topic: /gt_box/hdr_left/image_raw
       Name: hdr_left
@@ -265,8 +269,9 @@ Visualization Manager:
       Queue Size: 2
       Transport Hint: compressed
       Unreliable: false
-      Value: false
+      Value: true
       Visibility:
+        Odometry: true
         TF: true
         Value: true
         anymal_model: true

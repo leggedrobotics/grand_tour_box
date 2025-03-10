@@ -39,7 +39,7 @@ void BoxPostProcessor::initialize() {
   // Maps for storing parameter values for each mode
 
   for (const auto& param_name : param_names) {
-    double maxTimeDifference = nh_->param<double>("/" + param_name + "/max_time_difference_millisecond", -1.0);
+    double maxTimeDifference = nh_->param<double>("/" + param_name + "/max_time_difference_millisecond", 0.0);
     if (maxTimeDifference < 0.0) {
       throw std::runtime_error("Parameter '" + param_name + "/max_time_difference_millisecond' is not set or negative.");
     }

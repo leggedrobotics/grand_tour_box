@@ -38,7 +38,7 @@ def read_sheet_data(spreadsheet_id, sheet_name):
 
 # Define the spreadsheet ID and sheet name
 SPREADSHEET_ID = "1mENfskg_jO_vJGFM5yonqPuf-wYUNmg26IPv3pOu3gg"
-SHEET_NAME = "bag_overview"
+SHEET_NAME = "topic_overview"
 
 # Read the data and print the list
 data_list_raw = read_sheet_data(SPREADSHEET_ID, SHEET_NAME)
