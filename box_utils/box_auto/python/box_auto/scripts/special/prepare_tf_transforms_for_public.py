@@ -9,14 +9,6 @@ from box_auto.utils import (
     run_ros_command,
 )
 from pathlib import Path
-import yaml
-
-
-def load_config(config_path):
-    with open(config_path, "r") as f:
-        config = yaml.safe_load(f)
-    return config
-
 
 import argparse
 
@@ -30,7 +22,15 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     print(f"Using configuration: {args.config_name}")
-    patterns = ["*_nuc_tf.bag", "*_tf_static.bag", "*_lpc_tf.bag", "*_jetson_zed2i_tf.bag"]
+
+    # The first pattern is used to infer the date tag of the output bag.
+    patterns = [
+        "*_lpc_tf.bag",
+        "*_tf_static.bag",
+        # "*tf_static_urdf.bag",
+        # "*_nuc_tf.bag",
+        "*_jetson_zed2i_tf.bag",
+    ]
 
     # Patterns for optional applications.
     # "*_hesai_dlio.bag",
@@ -52,12 +52,9 @@ if __name__ == "__main__":
     tf_bag_paths = "[" + tf_bag_paths + "]"
 
     kill_roscore()
-    # Run the evo preparation.
     run_ros_command(
         f"roslaunch box_auto box_tf_processor.launch output_folder:={MISSION_DATA} tf_bag_paths:={tf_bag_paths} bag_post_fix:={args.config_name} config_path:={config_path}",
         background=False,
     )
     kill_roscore()
     sleep(1)
-
-    # Deploy .zip file reader e.g.

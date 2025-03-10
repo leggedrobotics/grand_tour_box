@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="urdf_file"                default="$(find box_model)/urdf/box/boxi.urdf"/>
+  <arg name="xacro_file"               default="$(find box_model)/urdf/box/box.urdf.xacro"/>
+
+  <!-- Generate URDF from xacro and save to disk -->
+  <node name="urdf_generator" pkg="box_model" type="generate_urdf.py" output="screen">
+    <param name="xacro_file" value="$(arg xacro_file)"/>
+    <param name="urdf_file" value="$(arg urdf_file)"/>
+  </node>
+
+</launch>

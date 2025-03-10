@@ -35,7 +35,7 @@
       <!-- If URDF should be loaded -->
       <group if="$(arg enable_urdf)">
             <include file="$(find anymal_d_simple_description)/launch/load.launch" />
-            <include file="$(find box_model)/launch/load_boxi_model.launch" />
+            <include file="$(find box_model)/launch/load_boxi.launch" />
       </group>
     
       <group if="$(arg enable_viz)">
