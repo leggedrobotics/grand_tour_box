@@ -13,12 +13,15 @@ from typing import Tuple
 import numpy as np
 import numpy.typing
 import yaml
+import pdb
 
 METADATA_KEY = "metadata"
 DATA_KEY = "data"
 
 CAMERA_INTRISICS_KEY = "camera_intrinsics"
 FRAME_TRANSFORMS_KEY = "frame_transforms"
+
+#TODO: add missing topics according to mission
 
 
 @dataclass(frozen=True)
@@ -124,7 +127,7 @@ class FrameTransformConfig:
 @dataclass
 class MetadataConfig:
     frame_transforms: FrameTransformConfig
-    camera_intrinsics: List[CameraInfoTopic] = field(default_factory=list)
+    camera_intrinsics: List[CameraInfoTopic] = field(default_factory=list) # set a default value to []
 
 
 AttributeTypes = Dict[str, ArrayType]
@@ -507,6 +510,11 @@ TOPIC_TYPES = {
 def _load_topic_registry_from_config(
     data_config_object: Mapping[str, List[Mapping[str, Any]]], mission_name: str
 ) -> TopicRegistry:
+    
+    """
+    Load the topic registry from the data part of the config file
+    """
+
     registry: TopicRegistry = {}
     assert isinstance(
         data_config_object, Mapping
@@ -523,17 +531,22 @@ def _load_topic_registry_from_config(
                     for topic_obj in data_config_object.get(key, [])
                 ]
                 registry.update(_build_fn(topics))
+
         for _, topic_obj in registry.values():
             topic_obj.file = topic_obj.file.format(mission_name)
 
     except Exception as e:
         raise ValueError(f"error parsing data part of config file: {e}") from e
+    
     return _add_universal_attributes(registry)
-
 
 def _load_metadata_config(
     metadata_config_object: Mapping[str, Any], mission_name: str
 ) -> MetadataConfig:
+    """
+    Load the metadata config from the metadata part of the config file
+    """
+    
     camera_intrinsics_object = metadata_config_object.get(CAMERA_INTRISICS_KEY, [])
 
     try:
@@ -560,10 +573,11 @@ def _load_metadata_config(
 
     return MetadataConfig(frame_transforms, camera_intrinsics)
 
-
 def load_config(
     config_path: Path, mission_name: str
 ) -> Tuple[TopicRegistry, MetadataConfig]:
+    
+    # load config --> data and metadata shapes
     with open(config_path, "r") as f:
         config_object = yaml.safe_load(f)
 

@@ -24,6 +24,7 @@ NEEDS_ROSLIB = {
 def messages_in_bag_with_topic(
     bag_path: Path, topic: str, progress_bar: bool = True
 ) -> Generator[Any, None, None]:
+
     with rosbag.Bag(bag_path) as bag:
         total_message = bag.get_message_count(topic)
         for _, msg, _ in tqdm(

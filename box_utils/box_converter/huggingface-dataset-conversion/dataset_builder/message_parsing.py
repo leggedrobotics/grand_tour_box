@@ -10,7 +10,7 @@ from typing import cast
 
 import numpy as np
 from anymal_msgs.msg import AnymalState  # type: ignore
-from anymal_msgs.msg import Contact  # type: ignore
+from anymal_msgs.msg import Contact      # type: ignore
 from anymal_msgs.msg import ExtendedJointState  # type: ignore
 from geometry_msgs.msg import Point
 from geometry_msgs.msg import PointStamped
@@ -23,10 +23,10 @@ from gnss_msgs.msg import GnssRaw  # type: ignore
 from gps_common.msg import GPSFix  # type: ignore
 from nav_msgs.msg import Odometry
 from ros_numpy import numpify
-from anymal_msgs.msg import SeActuatorReadings  # type: ignore
-from anymal_msgs.msg import SeActuatorReading  # type: ignore
-from anymal_msgs.msg import SeActuatorCommand  # type: ignore
-from anymal_msgs.msg import SeActuatorState  # type: ignore
+# from anymal_msgs.msg import SeActuatorReadings  # type: ignore
+# from anymal_msgs.msg import SeActuatorReading   # type: ignore
+# from anymal_msgs.msg import SeActuatorCommand   # type: ignore
+# from anymal_msgs.msg import SeActuatorState     # type: ignore
 from sensor_msgs.msg import CameraInfo
 from sensor_msgs.msg import FluidPressure
 from sensor_msgs.msg import Imu
@@ -35,7 +35,7 @@ from sensor_msgs.msg import NavSatFix
 from sensor_msgs.msg import PointCloud2
 from sensor_msgs.msg import RegionOfInterest
 from sensor_msgs.msg import Temperature
-from anymal_msgs.msg import BatteryState  # type: ignore
+# from anymal_msgs.msg import BatteryState  # type: ignore
 from std_msgs.msg import Header
 from tf2_msgs.msg import TFMessage
 
@@ -74,86 +74,86 @@ def _parse_covariance(arr: Union[np.ndarray, Tuple[float, ...]], n: int) -> np.n
     return np.array(arr).reshape(n, n)
 
 
-def _parse_actuator_command(msg: SeActuatorCommand) -> Dict[str, BasicType]:
-    """\
-    for some reason the anymal actuator readings dont have a name,
-    they all have `msg.name == ''`
-    """
-    return {
-        "mode": msg.mode,
-        "current": msg.current,
-        "position": msg.position,
-        "velocity": msg.velocity,
-        "joint_torque": msg.joint_torque,
-        "pid_gains_p": msg.pid_gains_p,
-        "pid_gains_i": msg.pid_gains_i,
-        "pid_gains_d": msg.pid_gains_d,
-    }
+# def _parse_actuator_command(msg: SeActuatorCommand) -> Dict[str, BasicType]:
+#     """\
+#     for some reason the anymal actuator readings dont have a name,
+#     they all have `msg.name == ''`
+#     """
+#     return {
+#         "mode": msg.mode,
+#         "current": msg.current,
+#         "position": msg.position,
+#         "velocity": msg.velocity,
+#         "joint_torque": msg.joint_torque,
+#         "pid_gains_p": msg.pid_gains_p,
+#         "pid_gains_i": msg.pid_gains_i,
+#         "pid_gains_d": msg.pid_gains_d,
+#     }
 
 
-def _parse_actuator_state(msg: SeActuatorState) -> Dict[str, BasicType]:
-    """\
-    for some reason the anymal actuator readings dont have a name,
-    they all have `msg.name == ''`
-    """
-    ret: Dict[str, BasicType] = {
-        "statusword": msg.statusword,
-        "current": msg.current,
-        "gear_position": msg.gear_position,
-        "gear_velocity": msg.gear_velocity,
-        "joint_position": msg.joint_position,
-        "joint_velocity": msg.joint_velocity,
-        "joint_acceleration": msg.joint_acceleration,
-        "joint_torque": msg.joint_torque,
-    }
+# def _parse_actuator_state(msg: SeActuatorState) -> Dict[str, BasicType]:
+#     """\
+#     for some reason the anymal actuator readings dont have a name,
+#     they all have `msg.name == ''`
+#     """
+#     ret: Dict[str, BasicType] = {
+#         "statusword": msg.statusword,
+#         "current": msg.current,
+#         "gear_position": msg.gear_position,
+#         "gear_velocity": msg.gear_velocity,
+#         "joint_position": msg.joint_position,
+#         "joint_velocity": msg.joint_velocity,
+#         "joint_acceleration": msg.joint_acceleration,
+#         "joint_torque": msg.joint_torque,
+#     }
 
-    state_imu_data = _parse_imu(msg.imu, None)
-    ret.update({f"imu_{k}": v for k, v in state_imu_data.items()})
+#     state_imu_data = _parse_imu(msg.imu, None)
+#     ret.update({f"imu_{k}": v for k, v in state_imu_data.items()})
 
-    return ret
-
-
-def _parse_single_actuator_reading(
-    msg: SeActuatorReading, idx: int
-) -> Dict[str, BasicType]:
-    cdata = _parse_actuator_command(msg.commanded)
-    sdata = _parse_actuator_state(msg.state)
-
-    ret: Dict[str, BasicType] = {}
-    ret.update({f"{idx:02d}_command_{k}": v for k, v in cdata.items()})
-    ret.update({f"{idx:02d}_state_{k}": v for k, v in sdata.items()})
-
-    return ret
+#     return ret
 
 
-def _parse_actuator_readings(
-    msg: SeActuatorReadings, topic_desc: ActuatorReadingsTopic
-) -> Dict[str, BasicType]:
-    assert len(msg.readings) == topic_desc.number_of_actuators
+# def _parse_single_actuator_reading(
+#     msg: SeActuatorReading, idx: int
+# ) -> Dict[str, BasicType]:
+#     cdata = _parse_actuator_command(msg.commanded)
+#     sdata = _parse_actuator_state(msg.state)
 
-    ret: Dict[str, BasicType] = {}
-    for idx, reading in enumerate(msg.readings):
-        actuator_data = _parse_single_actuator_reading(reading, idx)
-        ret.update(actuator_data)
-    return ret
+#     ret: Dict[str, BasicType] = {}
+#     ret.update({f"{idx:02d}_command_{k}": v for k, v in cdata.items()})
+#     ret.update({f"{idx:02d}_state_{k}": v for k, v in sdata.items()})
+
+#     return ret
 
 
-def _parse_battery_state(msg: BatteryState, _: Any) -> Dict[str, BasicType]:
-    return {
-        "is_connected": msg.is_connected,
-        "cell_temperature": msg.cell_temperature,
-        "fet_temperature": msg.fet_temperature,
-        "bms_temperature": msg.bms_temperature,
-        "voltage": msg.voltage,
-        "current": msg.current,
-        "state_of_charge": msg.state_of_charge,
-        "humidity": msg.humidity,
-        "pressure": msg.pressure,
-        "status": msg.status,
-        "health_status": msg.health_status,
-        "battery_status": msg.battery_status,
-        "safety_status": msg.safety_status,
-    }
+# def _parse_actuator_readings(
+#     msg: SeActuatorReadings, topic_desc: ActuatorReadingsTopic
+# ) -> Dict[str, BasicType]:
+#     assert len(msg.readings) == topic_desc.number_of_actuators
+
+#     ret: Dict[str, BasicType] = {}
+#     for idx, reading in enumerate(msg.readings):
+#         actuator_data = _parse_single_actuator_reading(reading, idx)
+#         ret.update(actuator_data)
+#     return ret
+
+
+# def _parse_battery_state(msg: BatteryState, _: Any) -> Dict[str, BasicType]:
+#     return {
+#         "is_connected": msg.is_connected,
+#         "cell_temperature": msg.cell_temperature,
+#         "fet_temperature": msg.fet_temperature,
+#         "bms_temperature": msg.bms_temperature,
+#         "voltage": msg.voltage,
+#         "current": msg.current,
+#         "state_of_charge": msg.state_of_charge,
+#         "humidity": msg.humidity,
+#         "pressure": msg.pressure,
+#         "status": msg.status,
+#         "health_status": msg.health_status,
+#         "battery_status": msg.battery_status,
+#         "safety_status": msg.safety_status,
+#     }
 
 
 def _parse_gnss_raw(msg: GnssRaw, _: Any) -> Dict[str, BasicType]:
@@ -406,13 +406,13 @@ def _extract_tf2_message_header(msg: TFMessage) -> Header:
     return transform.header  # type: ignore
 
 
-def _extract_actuator_readings_header(msg: SeActuatorReadings) -> Header:
-    return msg.readings[0].header
+# def _extract_actuator_readings_header(msg: SeActuatorReadings) -> Header:
+#     return msg.readings[0].header
 
 
 SPECIAL_HEADER_MESSAGES_EXTRACT_FUNCTIONS = [
     (SingletonTransformTopic, _extract_tf2_message_header),
-    (ActuatorReadingsTopic, _extract_actuator_readings_header),
+    # (ActuatorReadingsTopic, _extract_actuator_readings_header),
 ]
 
 
@@ -448,8 +448,8 @@ MESSAGE_PARSING_FUNCTIONS = [
     (TwistTopic, _parse_twist_message),
     (GPSFixTopic, _parse_gps_fix_message),
     (GnssRawTopic, _parse_gnss_raw),
-    (BatteryStateTopic, _parse_battery_state),
-    (ActuatorReadingsTopic, _parse_actuator_readings),
+    # (BatteryStateTopic, _parse_battery_state),
+    # (ActuatorReadingsTopic, _parse_actuator_readings),
 ]
 
 

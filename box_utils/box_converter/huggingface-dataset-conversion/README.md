@@ -107,6 +107,9 @@ The `data` section supports the following keys:
 
   Note that the `singleton_transform_topics` are generally very similar to `pose_topics`, i.e. they are a list containing a single pose.
 
+
+  #TODO: add missing topics according to mission
+
 ## Profiling the Converter
 
 ```bash
