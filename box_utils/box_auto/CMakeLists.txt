@@ -7,15 +7,25 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
 
 ## Source: https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
 #add_compile_options(-Wall -Wextra -Wpedantic -O3)
-add_compile_options(-O3)
+
+set(CMAKE_BUILD_TYPE "Release")
+#add_compile_options(-Wall -Wextra -Wpedantic)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+add_compile_options(-Wno-dev -O3 -std=c++17 -fconcepts )
+set(CMAKE_COMPILER_IS_GNUCXX 1)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(SRC_FILES
-  src/box_post_processor.cpp
+  src/box_imu_processor.cpp
   src/box_tf_processor.cpp
   src/merge.cpp
 )
+
+find_package(PCL 1.10 EXACT REQUIRED PATHS /usr/include/pcl-1.10/)
+include_directories(${PCL_INCLUDE_DIRS})
+add_definitions(${PCL_DEFINITIONS})
+link_directories(${PCL_LIBRARY_DIRS})
 
 set(CATKIN_PACKAGE_DEPENDENCIES
   roscpp
@@ -34,8 +44,11 @@ set(CATKIN_PACKAGE_DEPENDENCIES
   pcl_conversions
   rospy
   cv_bridge
+  visualization_msgs
+  open3d_catkin
   anymal_msgs
   gnss_msgs
+  any_velodyne_pointcloud
   )
 
 # We pass the path of the `FindXYZ.cmake` files to `CMAKE_MODULE_PATH`
@@ -50,7 +63,7 @@ find_package(Eigen3 REQUIRED)
 find_package(OpenMP QUIET)
 if (OpenMP_FOUND)
   add_compile_options("${OpenMP_CXX_FLAGS}")
-  add_definitions(-Dbox_post_processor_OPENMP_FOUND=${OpenMP_FOUND})
+  add_definitions(-Dbox_imu_processor_OPENMP_FOUND=${OpenMP_FOUND})
 endif ()
 find_package(catkin REQUIRED COMPONENTS
   ${CATKIN_PACKAGE_DEPENDENCIES}
@@ -71,8 +84,8 @@ catkin_package(
 )
 
 ## Link libraries
-link_directories(${PCL_LIBRARY_DIRS})
-add_definitions(${PCL_DEFINITIONS})
+# link_directories(${PCL_LIBRARY_DIRS})
+# add_definitions(${PCL_DEFINITIONS})
 
 
 #Include directory#
@@ -152,7 +165,7 @@ target_link_libraries(evo_conversion_node ${catkin_LIBRARIES} ${OpenCV_LIBRARIES
 
 find_package(cmake_clang_tools QUIET)
 if(cmake_clang_tools_FOUND)
-  message(STATUS "Run clang tooling for target " post_processor_node filter_lidar_node)
+  message(STATUS "Run clang tooling for target " post_processor_node filter_lidar_node tf_processor_node zed2i_decompression_and_saving evo_conversion_node merge)
   add_clang_tooling(
     TARGETS post_processor_node
     SOURCE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/include
@@ -179,9 +192,16 @@ LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
 
 install(TARGETS zed2i_decompression_and_saving
-RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
 
 install(TARGETS evo_conversion_node
+RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
+
+install(TARGETS merge
 RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})

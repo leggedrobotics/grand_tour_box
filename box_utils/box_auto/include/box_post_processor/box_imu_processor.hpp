@@ -30,9 +30,8 @@ class BoxPostProcessor {
   inline double elapsedSeconds() { return elapsedMilliseconds() / 1000.0; }
 
  private:
-  std::string rosbagFullname_;
-  std::string rosbagFilename_;
-  std::string outputBagFolder_;
+  std::string outputRosbagFilename_;
+  std::string inputRosbagFilename_;
   std::chrono::time_point<std::chrono::steady_clock> startTime_;
   std::chrono::time_point<std::chrono::steady_clock> endTime_;
 
@@ -42,14 +41,19 @@ class BoxPostProcessor {
 
   ros::Time oldTime_ = ros::Time(0);
 
+  uint32_t oldSeq_ = 300;
+  uint32_t seq_ = 0;
+
   // std::string buildUpLogFilename(const std::string& typeSuffix, const std::string& extension = ".txt");
-  bool createOutputDirectory();
+  // bool createOutputDirectory();
   bool processRosbag();
-  void createZedBasedTransform(tf2_msgs::TFMessage& collectiontfMessage);
+  // void createZedBasedTransform(tf2_msgs::TFMessage& collectiontfMessage);
 
   //! Tf2.
   tf2_ros::TransformBroadcaster transformBroadcaster_;
   tf2_ros::StaticTransformBroadcaster staticTransformBroadcaster_;
+
+  std::vector<std::string> topics_;
 
   //! Tf topic name.
   std::string tfTopic_{"/tf"};
@@ -75,6 +79,12 @@ class BoxPostProcessor {
   bool isBagReadyToPlay_ = false;
   uint64_t counter_ = 0;
   bool foundTfmsgs_ = false;
+  double maxTimeDifference_ = 0.0;
+  double time_offset_to_be_applied_ = 0.0;
+  std::map<std::string, double> timeOffsetsToApply_;
+  std::map<std::string, double> maxTimeDifferences_;
+  std::map<std::string, std::vector<std::string>> allTopics_;
+  std::string mode_;
 };
 
 }  // namespace box_post_processor

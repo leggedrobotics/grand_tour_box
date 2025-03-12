@@ -82,6 +82,10 @@
 	path = box_applications/anymal_d_simple_description
 	url = git@github.com:leggedrobotics/anymal_d_simple_description.git
 	branch = master
+[submodule "box_drivers/anybotics_velodyne"]
+	path = box_drivers/anybotics_velodyne
+	url = git@github.com:leggedrobotics/anybotics_velodyne.git
+	branch = grandtour
 [submodule "box_applications/wavemap"]
 	path = box_applications/wavemap
 	url = git@github.com:ethz-asl/wavemap.git
@@ -91,3 +95,7 @@
 [submodule "box_drivers/grand_tour_depth_benchmark"]
 	path = box_drivers/grand_tour_depth_benchmark
 	url = git@github.com:leggedrobotics/grand_tour_depth_benchmark.git
+[submodule "box_applications/gtsam_catkin"]
+	path = box_applications/gtsam_catkin
+	url = git@github.com:leggedrobotics/gtsam_catkin.git
+	branch = main

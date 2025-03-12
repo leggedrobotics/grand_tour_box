@@ -8,7 +8,7 @@ source /home/opencv_gtsam_ws/devel/setup.bash
 cd /home/catkin_ws
 catkin init
 catkin config --extend /home/opencv_gtsam_ws/devel
-catkin config --cmake-args -DCMAKE_BUILD_TYPE=RelWithDebInfo
+catkin config --cmake-args -DCMAKE_BUILD_TYPE=Release
 
 # grand_tour_box repository
 cd /home/catkin_ws/src; git clone --recurse-submodules --shallow-submodules git@github.com:leggedrobotics/grand_tour_box.git --depth 1
@@ -20,7 +20,6 @@ cd /home/catkin_ws/src; git clone https://github.com/ethz-asl/glog_catkin.git --
 
 # Dependencies: open3d_slam_private
 cd /home/catkin_ws/src;  git clone https://github.com/leggedrobotics/message_logger.git --depth 1
-# Dependencies (not sure if needed): graph_msf_dev
 cd /home/catkin_ws/src; git clone https://github.com/leggedrobotics/libnabo.git --depth 1
 
 
@@ -129,7 +128,7 @@ apt install -y ros-noetic-pcl-ros
 # Dependencies: tf_bag 
 pip3 install importlib-metadata==4.13.0
 
-# Dependencies: graph_msf_dev 
+# Dependencies: general ros 
 apt install -y libeigen3-dev
 apt install -y ros-noetic-kdl-parser
 apt install -y ros-noetic-eigen-conversions
@@ -143,7 +142,7 @@ apt install -y ros-noetic-tf2-eigen
 
 apt update -y
 
-# Build workspace
+# Source workspace
 source /opt/ros/noetic/setup.bash
 source /home/opencv_gtsam_ws/devel/setup.bash
 cd /home/catkin_ws
@@ -154,8 +153,12 @@ export LD_LIBRARY_PATH=$CUDA_HOME/lib64:$LD_LIBRARY_PATH
 export PATH=/usr/local/cuda/bin${PATH:+:${PATH}}
 
 catkin build direct_lidar_inertial_odometry
+
+# Build post-processing package in full (export DEBUG_MODE=1 , to build in debug mode)
+export DEBUG_MODE=0
 catkin build box_auto
 
+# Make sure to add source to bashrc
 echo "source /home/catkin_ws/devel/setup.bash" >> /root/.bashrc
 
 # Install boxi

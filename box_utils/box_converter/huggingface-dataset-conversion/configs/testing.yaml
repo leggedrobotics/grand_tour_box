@@ -1,0 +1,28 @@
+metadata:
+  frame_transforms:
+    base_frame: base
+    file: "{}_tf_static.bag"
+    topic: "/tf_static"
+
+data:
+  actuator_readings_topics:
+    - alias: anymal_lpc_readings
+      file: "{}_lpc_general.bag"
+      topic: "/anymal_low_level_controller/actuator_readings"
+      number_of_actuators: 12
+
+  battery_state_topics:
+    - alias: anymal_battery_state
+      file: "{}_lpc_general.bag"
+      topic: "/pdb/battery_state"
+
+  anymal_state_topics:
+    - alias: anymal_state
+      file: "{}_lpc_state_estimator.bag"
+      topic: "/state_estimator/anymal_state"
+      number_of_joints: 12
+      feet:
+        - LF_FOOT
+        - LH_FOOT
+        - RF_FOOT
+        - RH_FOOT

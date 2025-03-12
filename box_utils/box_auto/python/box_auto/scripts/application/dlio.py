@@ -64,6 +64,11 @@ def launch_nodes(
 
     check_duplicate_timestamps(output_bag_path, "/dlio/deskewed_point_cloud")
 
+    # Clean up the merged bag file
+    if os.path.exists(merged_rosbag_path):
+        os.remove(merged_rosbag_path)
+        print(f"Deleted merged bag file: {merged_rosbag_path}")
+
     upload_bag(output_bag_path)
 
 
@@ -73,7 +78,10 @@ def parse_arguments():
         "--lidar", choices=["hesai", "livox"], default="hesai", help="Select the LiDAR configuration (default: hesai)."
     )
     parser.add_argument(
-        "--imu", choices=["stim320", "cpt7"], default="cpt7", help="Select the IMU configuration (default: cpt7)."
+        "--imu",
+        choices=["stim320", "cpt7", "ap20", "adis", "alphasense", "livox", "zed2i"],
+        default="cpt7",
+        help="Select the IMU configuration (default: cpt7).",
     )
     return parser.parse_args()
 
@@ -109,22 +117,14 @@ if __name__ == "__main__":
 
     # Resolve LiDAR information prefer filtered pointclouds
     if args.lidar == "hesai":
-        try:
-            get_bag("*_nuc_hesai_filtered123.bag")
-            patterns = [imu_pattern, "*_tf_static.bag", "*_nuc_hesai_filtered.bag"]
-            lidar_topic = "/gt_box/hesai/points_filtered"
-        except Exception:
-            patterns = [imu_pattern, "*_tf_static.bag", "*_nuc_hesai_post_processed.bag"]
-            lidar_topic = "/gt_box/hesai/points"
+        get_bag("*_nuc_hesai_ready.bag")
+        patterns = [imu_pattern, "*_tf_static.bag", "*_nuc_hesai_ready.bag"]
+        lidar_topic = "/gt_box/hesai/points"
         tag = "hesai_"
     elif args.lidar == "livox":
-        try:
-            get_bag("*_nuc_livox_filtered123.bag")
-            patterns = [imu_pattern, "*_tf_static.bag", "*_nuc_livox_filtered.bag"]
-            lidar_topic = "/gt_box/livox/lidar_filtered"
-        except:
-            patterns = [imu_pattern, "*_tf_static.bag", "*_nuc_livox.bag"]
-            lidar_topic = "/gt_box/livox/lidar"
+        get_bag("*_nuc_livox_ready.bag")
+        patterns = [imu_pattern, "*_tf_static.bag", "*_nuc_livox_ready.bag"]
+        lidar_topic = "/gt_box/livox/lidar"
         tag = "livox_"
     else:
         print(f"LiDAR not supported: {args.lidar}")

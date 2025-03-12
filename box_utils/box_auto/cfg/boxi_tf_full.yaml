@@ -1,0 +1,33 @@
+tfStaticRepetitionPeriod: 5 # seconds
+frameMapping:
+  - new: "velodyne_lidar"
+    old: "lidar"
+    replicate: true
+
+framePairs:
+  - parent: ""
+    child: ""
+
+childFramesToRemove:
+  - "map"
+  - "aft_mapped"
+  - "footprint"
+  - "feetcenter" 
+
+parentFramesToRemove:
+  - "map"
+  - "camera_init_CORRECTED"
+  - "camera_init"
+
+childFramesToInverse:
+  - "base"
+
+rotationOverrides:
+  - parent: "zed2i_left_camera_optical_frame"
+    child: "zed2i_right_camera_optical_frame"
+    axis: "x" # Ros convention is YAW, PITCH, ROLL hence (z, y, x)
+    angle_deg: 0.0
+  - parent: "zed2i_left_camera_frame"
+    child: "zed2i_left_camera_optical_frame"
+    axis: "x" # Ros convention is YAW, PITCH, ROLL hence (z, y, x)
+    angle_deg: 180.0

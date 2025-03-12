@@ -32,10 +32,17 @@ def _extract_transform_from_transform_msg(
 def _get_source_dest_transforms_from_tf_msg(
     tf: TFMessage,
 ) -> Dict[Tuple[str, str], Tuple[Translation, Rotation]]:
-    return {_get_source_dest_frame_ids(tf): _extract_transform_from_transform_msg(tf.transform) for tf in tf.transforms}
+    return {
+        _get_source_dest_frame_ids(tf): _extract_transform_from_transform_msg(
+            tf.transform
+        )
+        for tf in tf.transforms
+    }
 
 
-def _convert_to_homogeneous_transform(trans: Translation, rot: Rotation) -> HomTransform:
+def _convert_to_homogeneous_transform(
+    trans: Translation, rot: Rotation
+) -> HomTransform:
     ret = np.eye(4)
     ret[:3, :3] = rot.as_matrix()
     ret[:3, 3] = trans
@@ -104,13 +111,17 @@ def _get_metadata_from_transforms(
 
     # build transforms base_frame -> target_frame
     absolute_transforms = {
-        target_frame: _get_absolute_transform(base_frame, target_frame, reverse_edge_dict, transforms)
+        target_frame: _get_absolute_transform(
+            base_frame, target_frame, reverse_edge_dict, transforms
+        )
         for target_frame in traget_frames
     }
 
     # convert the transforms to yaml-serializable metadata
     return {
-        target_frame: _absolute_transform_to_metadata(target_frame, translation, rotation, base_frame)
+        target_frame: _absolute_transform_to_metadata(
+            target_frame, translation, rotation, base_frame
+        )
         for target_frame, (translation, rotation) in absolute_transforms.items()
     }
 
