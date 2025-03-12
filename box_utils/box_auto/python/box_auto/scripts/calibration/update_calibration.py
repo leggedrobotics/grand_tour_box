@@ -168,6 +168,6 @@ if __name__ == "__main__":
     update_tf_static(calibration["tf_static"])
 
     # Step 3: Update camera intrinsics
-    update_camera_info(calibration)
+    # update_camera_info(calibration)
 
     exit(0)
