@@ -62,7 +62,7 @@ for p in [str(s) for s in p.glob("*tf_static_metadata_*.bag") if "new" not in st
                     out.transform.translation.y = tf[0][1]
                     out.transform.translation.z = tf[0][2]
                     rotation_180_z = quaternion_from_euler(0, 0, pi)
-                    rot = quaternion_multiply(rotation_180_z, tf[1])
+                    rot = quaternion_multiply(tf[1], rotation_180_z)
                     out.transform.rotation.x = rot[0]
                     out.transform.rotation.y = rot[1]
                     out.transform.rotation.z = rot[2]
@@ -81,7 +81,7 @@ for p in [str(s) for s in p.glob("*tf_static_metadata_*.bag") if "new" not in st
                     out.transform.translation.y = tf[0][1]
                     out.transform.translation.z = tf[0][2]
 
-                    rot = quaternion_multiply(rotation_180_z, tf[1])
+                    rot = quaternion_multiply(tf[1], rotation_180_z)
                     out.transform.rotation.x = rot[0]
                     out.transform.rotation.y = rot[1]
                     out.transform.rotation.z = rot[2]
@@ -104,4 +104,3 @@ for p in [str(s) for s in p.glob("*tf_static_metadata_*.bag") if "new" not in st
                         msg.data = f.read()
 
                 out_bag.write(topic, msg, _t)
-    break
