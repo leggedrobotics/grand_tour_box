@@ -29,6 +29,9 @@ mkdir -p ~/.vim/colors
 cp /home/catkin_ws/src/grand_tour_box/box_configuration/general/solarized.vim ~/.vim/colors/
 cp /home/catkin_ws/src/grand_tour_box/box_configuration/general/.tmux.conf ~/
 
+# For velodyne_driver
+apt install libpcap-dev -y
+apt install ros-noetic-angles -y
 
 # Dependencies: open3d_slam_private - Upgrade cmake version to 3.19.2
 apt update -y
