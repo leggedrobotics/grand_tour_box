@@ -25,7 +25,6 @@ for p in [str(s) for s in p.glob("*tf_static_metadata_*.bag") if "new" not in st
 
                     msg.transforms = [transform for i, transform in enumerate(msg.transforms) if i not in delete_ids]
                     tf = tf_listener.lookupTransform("box_base", "zed_base_link", time=None, latest=True)
-
                     out = copy.deepcopy(msg.transforms[0])
                     out.header.frame_id = "box_base"
                     out.child_frame_id = "zed2i_base"
@@ -97,6 +96,8 @@ for p in [str(s) for s in p.glob("*tf_static_metadata_*.bag") if "new" not in st
                     cx, cy = cfg["camera_matrix"]["data"][2], cfg["camera_matrix"]["data"][5]
                     cfg["camera_matrix"]["data"][2] = width - cx - 1
                     cfg["camera_matrix"]["data"][5] = height - cy - 1
+                    cfg["projection_matrix"]["data"][2] = width - cx - 1
+                    cfg["projection_matrix"]["data"][6] = height - cy - 1
 
                     with open("/tmp/calib.yaml", "w") as f:
                         yaml.dump(cfg, f)

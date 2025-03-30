@@ -20,14 +20,13 @@ CAMERA_INFO_PATTERNS = [
 
 
 def load_calibration_data() -> Dict[str, Dict[str, Any]]:
-    bag_paths = [str(s) for s in Path(CALIBRATION_DATA_PATH).rglob("*tf_static_metadata_*.bag")]
-
+    bag_paths = [str(s) for s in Path(CALIBRATION_DATA_PATH).glob("*tf_static_metadata_new_*.bag")]
     calibration_data = {}
     # Iterate through all bag files
     for bag_path in bag_paths:
         # Open the bag file
         calibration_dict = {}
-
+        print(bag_path)
         with rosbag.Bag(bag_path, "r") as bag:
             # Iterate through all messages in the bag
             for topic, msg, _t in bag.read_messages():
@@ -168,6 +167,5 @@ if __name__ == "__main__":
     update_tf_static(calibration["tf_static"])
 
     # Step 3: Update camera intrinsics
-    # update_camera_info(calibration)
-
+    update_camera_info(calibration)
     exit(0)

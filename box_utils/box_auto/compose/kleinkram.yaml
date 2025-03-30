@@ -65,10 +65,10 @@ services:
   #   - _hdr.mcap
   # Output:
   #   - _hdr.bag
-  # hdr_convert:
-  #   <<: *ros2-common-config
-  #   container_name: hdr_convert
-  #   command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/general/mcap_to_rosbag.py"]
+  hdr_convert:
+    <<: *ros2-common-config
+    container_name: hdr_convert
+    command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/general/mcap_to_rosbag.py"]
   
   # Input:
   #   - _hdr.bag
