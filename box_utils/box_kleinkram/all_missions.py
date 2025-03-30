@@ -138,11 +138,15 @@ if __name__ == "__main__":
     #     "python3 /home/jonfrey/git/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/cpt7/export_gps_gt_trajectory_bag.py"
     # )
 
+    # execute_command_per_mission(
+    #     "python3 /home/jonfrey/git/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/ap20/ap20_python_online_matcher.py"
+    # )
+    # execute_command_per_mission(
+    #     "python3 /home/jonfrey/git/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/ap20/ap20_validate.py"
+    # )
+
     execute_command_per_mission(
-        "python3 /home/jonfrey/git/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/ap20/ap20_python_online_matcher.py"
-    )
-    execute_command_per_mission(
-        "python3 /home/jonfrey/git/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/ap20/ap20_validate.py"
+        "python3 /home/jonfrey/git/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/calibration/update_calibration.py"
     )
 
     # execute_command_per_mission2( "python3 /home/jonfrey/git/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/camera/color_correction.py", parallel = 20, skip = 0)

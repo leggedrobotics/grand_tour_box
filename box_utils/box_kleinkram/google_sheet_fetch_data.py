@@ -1,55 +1,112 @@
-import gspread
-import pathlib
-from box_auto.utils import BOX_AUTO_DIR
-
-
-def read_sheet_data(spreadsheet_id, sheet_name):
-    gc = gspread.service_account(
-        filename=pathlib.Path(BOX_AUTO_DIR) / "../.." / ".secrets/halogen-oxide-451108-u4-67f470bcc02e.json"
-    )
-
-    # Open the Google Sheet
-    sheet = gc.open_by_key(spreadsheet_id)
-    worksheet = sheet.worksheet(sheet_name)
-
-    # Read data from A1 to G500
-    data = worksheet.get_all_values("A1:G500")
-
-    # Define the keys for the dictionary
-    keys = ["topic_name_orig", "type", "frame_id_orig", "convert", "topic_name_out", "frame_id_out", "bag_name_out"]
-
-    # Store the data in a list of dictionaries
-    data_list = []
-    for row in data:
-        data_list.append({str(k): str(v) for k, v in zip(keys, row)})
-
-    current_bag_name = None
-    data_list_raw = []
-    for _data in data_list:
-        if "Bag: " in _data["topic_name_orig"]:
-            current_bag_name = _data["topic_name_orig"].replace("Bag: 2024-11-11-12-42-47_", "")
-        if _data["topic_name_orig"] != "":
-            if _data["topic_name_orig"][0] == "/" and _data["convert"] in ["Yes", "ROSBAG"]:
-                _data["bag_name_orig"] = current_bag_name
-                data_list_raw.append(_data)
-
-    return data_list_raw
-
+from pathlib import Path
+from box_auto.utils import MISSION_DATA, get_bag, upload_bag, get_uuid_mapping, read_sheet_data
+import rosbag
+import rospy
+import subprocess
+from collections import defaultdict
 
 # Define the spreadsheet ID and sheet name
 SPREADSHEET_ID = "1mENfskg_jO_vJGFM5yonqPuf-wYUNmg26IPv3pOu3gg"
-SHEET_NAME = "topic_overview"
-
 # Read the data and print the list
-data_list_raw = read_sheet_data(SPREADSHEET_ID, SHEET_NAME)
+topic_data, mission_data = read_sheet_data(SPREADSHEET_ID)
 
-from collections import defaultdict
 
 # Create a dictionary with bag_name_out as the key and a list of missions as the value
 data_dict_by_bag_name = defaultdict(list)
-for entry in data_list_raw:
+for entry in topic_data:
     data_dict_by_bag_name[entry["bag_name_out"]].append(entry)
 
+
+import os
+
+mission_name = Path(MISSION_DATA).stem
+
+os.environ["MISSION_UUID"] = get_uuid_mapping()[mission_name]["uuid"]
+
+
+if mission_name not in mission_data:
+    print("Mission not found in sheet")
+    exit(1)
+
+if mission_data[mission_name]["GOOD_MISSION"] != "TRUE":
+    print("Skip processing mission")
+    exit(2)
+
+
+out_dir_bag = Path(MISSION_DATA) / "publish_bags"
+out_dir_bag.mkdir(exist_ok=True, parents=True)
+
+exit_code = 0
+
+error_list = {}
+secret_gnss_topics = [
+    "/gt_box/inertial_explorer/dgps/origin",
+    "/gt_box/inertial_explorer/dgps/raw",
+    "/gt_box/inertial_explorer/lc/origin",
+    "/gt_box/inertial_explorer/lc/raw",
+    "/gt_box/inertial_explorer/ppp/origin",
+    "/gt_box/inertial_explorer/ppp/raw",
+    "/gt_box/inertial_explorer/tc/origin",
+    "/gt_box/inertial_explorer/tc/raw",
+]
+
 # Do a quick sorting operation
-for k, v in data_dict_by_bag_name.items():
-    print(len(v))
+for output_bag_name, topic_configs in data_dict_by_bag_name.items():
+    bag_path_out = out_dir_bag / (mission_name + "_" + output_bag_name)
+    # open bag with fzf compression
+
+    with rosbag.Bag(bag_path_out, "w") as bag_out:
+        print(output_bag_name)
+        for topic_config in topic_configs:
+            print(
+                "   process: ",
+                topic_config["bag_name_orig"],
+                " - ",
+                topic_config["topic_name_orig"],
+                " -> ",
+                topic_config["topic_name_out"],
+            )
+            try:
+                bag_path_in = get_bag("*" + topic_config["bag_name_orig"])
+
+                with rosbag.Bag(bag_path_in, "r", compression="lz4") as bag_in:
+                    for topic, msg, t in bag_in.read_messages(
+                        topics=[topic_config["topic_name_orig"]],
+                        start_time=rospy.Time.from_sec(float(mission_data[mission_name]["mission_start_time"])),
+                        end_time=rospy.Time.from_sec(float(mission_data[mission_name]["mission_stop_time"])),
+                    ):
+                        has_header = hasattr(msg, "header")
+
+                        if has_header:
+                            t = msg.header.stamp
+                        else:
+                            if type(msg)._type == "tf2_msgs/TFMessage":
+                                t = msg.transforms[0].header.stamp
+
+                        if topic_config["frame_id_out"] != "":
+                            msg.header.frame_id = topic_config["frame_id_out"]
+
+                        if mission_data[mission_name]["publish_gnss"] == "FALSE" and topic in secret_gnss_topics:
+                            continue
+
+                        bag_out.write(topic_config["topic_name_out"], msg, t)
+
+            except Exception as e:
+                if topic_config["bag_name_out"] in error_list:
+                    error_list[topic_config["bag_name_out"]] += topic_config
+                else:
+                    error_list[topic_config["bag_name_out"]] = [topic_config]
+
+                print(f"Error processing bag {topic_config['bag_name_orig']}")
+                exit_code = 3
+                print(e)
+
+    subprocess.run(["rosbag", "reindex", str(bag_path_out)])
+    print(f"Bag {bag_path_out} created and reindexed \n \n")
+
+    os.environ["KLEINKRAM_ACTIVE"] = "ACTIVE"
+    upload_bag(bag_path_out, upload_to_pub=True)
+    os.environ["KLEINKRAM_ACTIVE"] = "FALSE"
+
+print(error_list)
+exit(exit_code)
