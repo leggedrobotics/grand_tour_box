@@ -169,12 +169,15 @@ def get_file(pattern, directory=MISSION_DATA, rglob=False):
     return str(files[0]), True
 
 
-def upload_bag(bags, upload_to_pub=True):
+def upload_bag(bags, upload="pub"):
     if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
         uuid = os.environ["MISSION_UUID"]
 
-        if upload_to_pub:
+        if upload == "pub":
             uuid_map = {v["uuid"]: v["uuid_pub"] for k, v in get_uuid_mapping().items()}
+            uuid = uuid_map[uuid]
+        elif upload == "release":
+            uuid_map = {v["uuid"]: v["uuid_release"] for k, v in get_uuid_mapping().items()}
             uuid = uuid_map[uuid]
 
         if type(bags) is not list:

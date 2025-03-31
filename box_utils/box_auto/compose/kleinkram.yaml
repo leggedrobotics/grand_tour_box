@@ -110,6 +110,12 @@ services:
       alphasense_fix_frame_id:
         condition: service_completed_successfully
 
+
+  # Input:
+  #   - _nuc_cpt7.bag
+  # Output:
+  #   - _nuc_cpt7_post_processed.bag
+  #   - _nuc_cpt7_post_processed_tf.bag
   cpt7_update_live_header_time:
     <<: *common-config
     container_name: cpt7_update_live_header_time
@@ -185,6 +191,16 @@ services:
     container_name: hesai
     command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/lidar/hesai.py"]
 
+  # Input:
+  #   - velodyne.bag
+  # Output:
+  #   - velodyne_post_processed.bag
+  velodyne:
+    <<: *common-config
+    container_name: velodyne
+    command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/lidar/velodyne.py"]
+
+
   preview_video:
     <<: *common-config
     container_name: preview_video
@@ -194,6 +210,7 @@ services:
         condition: service_completed_successfully
 
   # Input:
+  #   - velodyne_post_processed.bag
   #   - hesai_post_processed.bag
   #   - livox.bag
   # Output:
@@ -206,7 +223,29 @@ services:
     depends_on:
       hesai:
         condition: service_completed_successfully
+      velodyne:
+        condition: service_completed_successfully
   
+
+  prepare_tf_transforms_for_public: 
+    <<: *common-config
+    container_name: prepare_tf_transforms_for_public
+    command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/special/prepare_tf_transforms_for_public.py"]
+    depends_on:
+      calibration:
+        condition: service_completed_successfully
+
+
+  pointcloud_undistortion: 
+    <<: *common-config
+    container_name: pointcloud_undistortion
+    command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/lidar/pointcloud_undistortion.py"]
+    depends_on:
+      filter_pointclouds:
+        condition: service_completed_successfully
+      prepare_tf_transforms_for_public:
+        condition: service_completed_successfully
+
   # Input:
   #   - hesai_post_processed.bag
   #   - tf_static.bag
@@ -243,30 +282,30 @@ services:
   #   - tf_static.bag
   # Output:
     # - open3d_slam.bag
-  open3d_slam:
-    <<: *common-config
-    container_name: open3d_slam
-    command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/application/open3d_slam.py"]
-    depends_on:
-      calibration:
-        condition: service_completed_successfully
-      dlio_hesai:
-        condition: service_completed_successfully
+  # open3d_slam:
+  #   <<: *common-config
+  #   container_name: open3d_slam
+  #   command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/application/open3d_slam.py"]
+  #   depends_on:
+  #     calibration:
+  #       condition: service_completed_successfully
+  #     dlio_hesai:
+  #       condition: service_completed_successfully
 
   # Input:
   #   - hesai_dlio.bag
   #   - tf_static.bag
   # Output:
   #   - hesai_dlio_tf_static.bag
-  merge_dlio_tf_static:
-    <<: *common-config
-    container_name: merge_dlio_tf_static
-    command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/general/merge_dlio_tf_static.py"]
-    depends_on:
-      dlio_hesai:
-        condition: service_completed_successfully
-      calibration:
-        condition: service_completed_successfully
+  # merge_dlio_tf_static:
+  #   <<: *common-config
+  #   container_name: merge_dlio_tf_static
+  #   command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/general/merge_dlio_tf_static.py"]
+  #   depends_on:
+  #     dlio_hesai:
+  #       condition: service_completed_successfully
+  #     calibration:
+  #       condition: service_completed_successfully
 
   # Input:
   #   - tf_static.bag
@@ -274,27 +313,27 @@ services:
   #   - cpt7_ie_tc.bag
   # Output:
   #   - graph_msf.bag
-  graph_msf:
-    <<: *common-config
-    container_name: graph_msf
-    command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/application/graph_msf.py"]
-    depends_on:
-      hesai:
-        condition: service_completed_successfully
-      calibration:
-        condition: service_completed_successfully
-      ap20_validate:
-        condition: service_completed_successfully
+  # graph_msf:
+  #   <<: *common-config
+  #   container_name: graph_msf
+  #   command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/application/graph_msf.py"]
+  #   depends_on:
+  #     hesai:
+  #       condition: service_completed_successfully
+  #     calibration:
+  #       condition: service_completed_successfully
+  #     ap20_validate:
+  #       condition: service_completed_successfully
 
 
 
-  euroc:
-    <<: *common-config
-    container_name: euroc
-    command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_converter/euroc_dataset_converter.py"]
-    depends_on:
-      calibration:
-        condition: service_completed_successfully
+  # euroc:
+  #  <<: *common-config
+  # container_name: euroc
+  # command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_converter/euroc_dataset_converter.py"]
+  # depends_on:
+  #   calibration:
+  #     condition: service_completed_successfully
 
 
   # This is currently not supported by any docker container.

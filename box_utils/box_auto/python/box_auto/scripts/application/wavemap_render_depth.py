@@ -126,7 +126,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.map_file == "automatic":
-        args.map_file, suc = get_file("*.wvmp")
+        args.map_file, suc = get_file("*.wvmp", rglob=True)
         if not suc:
             exit(-1)
 
@@ -139,7 +139,7 @@ if __name__ == "__main__":
         config = yaml.safe_load(f)
 
     # Retrieve tf bag
-    tf_bag_path = get_bag("*_tf_static_hesai_dlio.bag")
+    tf_bag_path = get_bag("*_tf_static_hesai_dlio_tf.bag")
     prefix = Path(tf_bag_path).stem.split("_")[0]
 
     tf_listener = BagTfTransformer(tf_bag_path)
@@ -150,7 +150,7 @@ if __name__ == "__main__":
     # Load camera infos
     renderer = {}
     for camera in config["cameras"]:
-        bag_file = get_bag(args.mission_data, camera["bag_pattern"])
+        bag_file = get_bag(camera["bag_pattern"])
 
         with rosbag.Bag(bag_file, "r") as bag:
             for _topic, msg, _t in bag.read_messages(topics=[camera["info_topic"]]):
@@ -194,7 +194,7 @@ if __name__ == "__main__":
                     break
 
     saver = Saver(
-        Path(args.mission_data) / "wavemap", save_rosbag=config["wavemap"]["save_ros"], rosbag_prefix="prefix"
+        Path(args.mission_data) / "wavemap/depth", save_rosbag=config["wavemap"]["save_ros"], rosbag_prefix="prefix"
     )
 
     # Process cameras

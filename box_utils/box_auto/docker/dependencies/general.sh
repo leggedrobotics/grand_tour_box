@@ -21,7 +21,7 @@ apt install -y python3-pip
 pip3 install tqdm
 pip3 install --upgrade pip
 
-pip3 install kleinkram
+pip3 install kleinkram==0.43.2
 
 # For interacting with Github
 pip3 install PyGithub

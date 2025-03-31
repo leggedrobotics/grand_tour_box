@@ -105,7 +105,7 @@ for output_bag_name, topic_configs in data_dict_by_bag_name.items():
     print(f"Bag {bag_path_out} created and reindexed \n \n")
 
     os.environ["KLEINKRAM_ACTIVE"] = "ACTIVE"
-    upload_bag(bag_path_out, upload_to_pub=True)
+    upload_bag(bag_path_out)
     os.environ["KLEINKRAM_ACTIVE"] = "FALSE"
 
 print(error_list)

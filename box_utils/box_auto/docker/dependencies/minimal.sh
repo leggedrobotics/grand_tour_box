@@ -28,4 +28,4 @@ apt install -q -y ros-noetic-cv-bridge
 apt install -q -y python3-opencv
 apt install -q -y python3-pip
 pip install matplotlib
-pip install kleinkram
+pip install kleinkram==0.43.2

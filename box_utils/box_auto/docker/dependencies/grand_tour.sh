@@ -101,7 +101,7 @@ pip3 install colorlog
 pip3 install rosbags
 pip3 install matplotlib # graph_msf
 pip3 uninstall kleinkram -y
-pip3 install kleinkram
+pip3 install kleinkram==0.43.2
 pip3 install --upgrade pyOpenSSL # Kleinkram fails to run without this
 
 # Dependencies for box_auto imu_timesync
