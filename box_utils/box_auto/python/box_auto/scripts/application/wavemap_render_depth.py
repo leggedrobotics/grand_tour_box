@@ -13,6 +13,7 @@ import tf.transformations
 import matplotlib.pyplot as plt
 import cv2
 from box_auto.utils import MISSION_DATA, BOX_AUTO_DIR, get_bag, upload_bag, get_file
+from scipy.spatial.transform import Rotation as R
 
 
 class Saver:
@@ -126,7 +127,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.map_file == "automatic":
-        args.map_file, suc = get_file("*.wvmp")
+        args.map_file, suc = get_file("*.wvmp", rglob=True)
         if not suc:
             exit(-1)
 
@@ -139,7 +140,7 @@ if __name__ == "__main__":
         config = yaml.safe_load(f)
 
     # Retrieve tf bag
-    tf_bag_path = get_bag("*_tf_static_hesai_dlio.bag")
+    tf_bag_path = get_bag("*_tf_static_hesai_dlio_tf.bag")
     prefix = Path(tf_bag_path).stem.split("_")[0]
 
     tf_listener = BagTfTransformer(tf_bag_path)
@@ -150,7 +151,7 @@ if __name__ == "__main__":
     # Load camera infos
     renderer = {}
     for camera in config["cameras"]:
-        bag_file = get_bag(args.mission_data, camera["bag_pattern"])
+        bag_file = get_bag(camera["bag_pattern"])
 
         with rosbag.Bag(bag_file, "r") as bag:
             for _topic, msg, _t in bag.read_messages(topics=[camera["info_topic"]]):
@@ -193,14 +194,15 @@ if __name__ == "__main__":
                     }
                     break
 
+    key = config["wavemap"]["key"]
     saver = Saver(
-        Path(args.mission_data) / "wavemap", save_rosbag=config["wavemap"]["save_ros"], rosbag_prefix="prefix"
+        Path(args.mission_data) / f"wavemap/{key}", save_rosbag=config["wavemap"]["save_ros"], rosbag_prefix="prefix"
     )
 
     # Process cameras
     for camera in config["cameras"]:
         bag_file = get_bag(camera["bag_pattern"])
-
+        last_trans = None
         with rosbag.Bag(bag_file, "r") as bag:
 
             start_time = bag.get_start_time() + config["skip_start_seconds"]
@@ -229,7 +231,20 @@ if __name__ == "__main__":
                     print(f"Transform lookup failed: {e}")
                     continue
 
+                if last_trans is None:
+                    last_trans = trans
+
+                if np.linalg.norm(np.array(last_trans[:2]) - np.array(trans[:2])) < config["distance_threshold"]:
+                    continue
+
+                last_trans = trans
+
                 rot_so3 = tf.transformations.quaternion_matrix(quat)[:3, :3]
+
+                if config["wavemap"]["ground"]:
+                    yaw = np.arctan2(rot_so3[1, 0], rot_so3[0, 0])
+                    rot_so3 = (R.from_euler("z", yaw, degrees=True) * R.from_euler("y", -180, degrees=True)).as_matrix()
+                    trans[2] += 1.5
 
                 pose = wm.Pose(wm.Rotation(rot_so3), np.array(trans))
                 undistorted_depth_image = renderer[camera["name"]]["renderer"].render(pose).data

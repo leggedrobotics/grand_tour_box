@@ -3,7 +3,7 @@ num_images_per_topic: 1000
 skip_start_seconds: 60
 skip_end_seconds: 45
 hz: 4
-distance_threshold: -1
+distance_threshold: 1.0
 
 cameras:
 - name: front
@@ -11,16 +11,6 @@ cameras:
   info_topic: /gt_box/hdr_front/camera_info
   bag_pattern: "*_hdr_front_calib.bag"
   depth_topic_out:  /gt_box/hdr_front/depth
-- name: left
-  image_topic: /gt_box/hdr_left/image_raw/compressed
-  info_topic: /gt_box/hdr_left/camera_info
-  bag_pattern: "*_hdr_left_calib.bag"
-  depth_topic_out:  /gt_box/hdr_left/depth
-- name: right
-  image_topic: /gt_box/hdr_right/image_raw/compressed
-  info_topic: /gt_box/hdr_right/camera_info
-  bag_pattern: "*_hdr_right_calib.bag"
-  depth_topic_out:  /gt_box/hdr_right/depth
 
 nerfstudio:
   blur_threshold: 0 # 80 is pretty good
@@ -33,5 +23,5 @@ wavemap:
   default_depth_value: -1.0
   save_ros: True
   save_png: True
-  ground: False
-  key: "depth"
+  ground : True
+  key: "ground"
