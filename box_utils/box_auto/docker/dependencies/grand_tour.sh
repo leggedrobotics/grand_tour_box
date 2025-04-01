@@ -101,8 +101,9 @@ pip3 install colorlog
 pip3 install rosbags
 pip3 install matplotlib # graph_msf
 pip3 uninstall kleinkram -y
-pip3 install kleinkram==0.43.2
+pip3 install kleinkram==0.43.3
 pip3 install --upgrade pyOpenSSL # Kleinkram fails to run without this
+pip3 install gspread
 
 # Dependencies for box_auto imu_timesync
 pip3 install torch
@@ -111,6 +112,7 @@ pip3 install rerun-sdk
 # 
 pip3 install sortedcontainers
 pip3 install rosnumpy
+
 
 # anonymization script
 pip3 install ultralytics
