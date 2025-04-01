@@ -11,7 +11,7 @@ import rosbag
 from cv_bridge import CvBridge
 from tf_bag import BagTfTransformer
 from sensor_msgs.msg import CameraInfo, CompressedImage
-
+import tf.transformations
 from torchvision.io.image import read_image
 from torchvision.models.segmentation import fcn_resnet50, FCN_ResNet50_Weights
 from box_auto.utils import MISSION_DATA, get_bag
@@ -63,8 +63,11 @@ class ImageSaver:
 
         self.output_folder = Path(mission_data) / "nerf_studio"
         self.output_folder.mkdir(parents=True, exist_ok=True)
+        if self.config["wavemap"]["ground"]:
+            self.frames_json_file = self.output_folder / "transforms_ground.json"
+        else:
+            self.frames_json_file = self.output_folder / "transforms.json"
 
-        self.frames_json_file = self.output_folder / "transforms.json"
         self.images_folder = self.output_folder / "rgb"
         self.images_folder.mkdir(parents=True, exist_ok=True)
 
@@ -72,6 +75,8 @@ class ImageSaver:
         self.image_counters = {key: 0 for key in camera_keys.keys()}
         self.image_last_stored = {key: 0 for key in camera_keys.keys()}
         self.bridge = CvBridge()
+
+        self.last_trans = None
 
         if self.config["nerfstudio"]["create_mask_based_on_semantics"]:
             # Step 1: Initialize model with the best available weights
@@ -96,72 +101,99 @@ class ImageSaver:
 
         if img_msg.header.stamp.to_sec() - self.image_last_stored[topic] < (1 / self.config["hz"]) - 0.001:
             return True
-        self.image_counters[topic] += 1
-        self.image_last_stored[topic] = img_msg.header.stamp.to_sec()
+
         camera_key = self.camera_keys[topic]
-        image_filename = f"{camera_key}_{img_msg.header.seq:05d}.png"
-        image_path = self.images_folder / image_filename
-
-        # Convert and save image
-        # Convert image
-        if isinstance(img_msg, CompressedImage) or "compressed" in topic:
-            cv_image = self.bridge.compressed_imgmsg_to_cv2(img_msg)
-            # im_tensor = torch.from_numpy(cv_image).to(dtype=torch.float32) / 255.0
-            # im_tensor = torch.flip(im_tensor, [-1])
-
-        else:
-            cv_image = self.bridge.imgmsg_to_cv2(img_msg, img_msg.encoding)
-            # im_tensor = torch.from_numpy(cv_image).to(dtype=torch.float32) / 255.0
-
-        # Undistort image if needed
-        if "_rect" not in topic:
-            cv_image, self.taget_camera_infos[topic] = undistort_image(
-                cv_image, self.camera_infos[topic], self.taget_camera_infos[topic]
-            )
-            camera_info = self.taget_camera_infos[topic]
-        else:
-            camera_info = self.camera_infos[topic]
-            camera_info.D = [0, 0, 0, 0]
 
         # Get transformation
         trans, quat_xyzw = self.tf_listener.lookupTransform(
             self.config["base_frame"], img_msg.header.frame_id, img_msg.header.stamp
         )
+
         if trans is None or quat_xyzw is None:
             print(f"Warning: Could not get transform for {camera_key} at time {img_msg.header.stamp}")
             return True
 
-        # Check blur and save image
-        blur = cv2.Laplacian(cv_image, cv2.CV_64F).var()
-        if blur < self.blur_threshold:
-            print(f"Warning: Image too blurry (blur value: {blur}). Skipping.")
+        if self.last_trans is None:
+            self.last_trans = trans
+
+        if np.linalg.norm(np.array(self.last_trans[:2]) - np.array(trans[:2])) < self.config["distance_threshold"]:
             return True
+        print(img_msg.header.seq)
 
-        cv2.imwrite(str(image_path), cv_image)
+        if self.config["wavemap"]["ground"]:
+            rot_so3 = tf.transformations.quaternion_matrix(quat_xyzw)[:3, :3]
+            yaw = np.arctan2(rot_so3[1, 0], rot_so3[0, 0])
+            quat_xyzw = (R.from_euler("z", yaw, degrees=True) * R.from_euler("y", -180, degrees=True)).as_quat()
+            trans[2] += 1.5
 
-        if self.config["nerfstudio"]["create_mask_based_on_semantics"]:
-            # Pretty bad implementaion
-            img = read_image(str(image_path))
-            batch = self.preprocess(img).unsqueeze(0)
-            prediction = self.model(batch)["out"]
-            normalized_masks = prediction.softmax(dim=1)
-            class_to_idx = {cls: idx for (idx, cls) in enumerate(self.weights.meta["categories"])}
-            mask = normalized_masks[0, class_to_idx["person"]]
-            humans = mask > 0.5
-            output = humans.cpu().numpy()
+        self.image_counters[topic] += 1
+        self.image_last_stored[topic] = img_msg.header.stamp.to_sec()
 
-            # Resize the output mask to the original image size
-            _, original_height, original_width = img.shape
-            resized_output = cv2.resize(output.astype(np.float32), (original_width, original_height))
+        image_filename = f"{camera_key}_{img_msg.header.seq:05d}.png"
+        image_path = self.images_folder / image_filename
 
-            # Invert the mask: 1 where there is no human, 0 where there is a human
-            inverted_mask = 1 - resized_output
+        if (
+            self.config["nerfstudio"]["store"]
+            or ("_rect" not in topic and self.taget_camera_infos[topic] is None)
+            or ("_rect" in topic and self.camera_infos[topic] is None)
+        ):
+            # Convert and save image
+            if isinstance(img_msg, CompressedImage) or "compressed" in topic:
+                cv_image = self.bridge.compressed_imgmsg_to_cv2(img_msg)
+                # im_tensor = torch.from_numpy(cv_image).to(dtype=torch.float32) / 255.0
+                # im_tensor = torch.flip(im_tensor, [-1])
+            else:
+                cv_image = self.bridge.imgmsg_to_cv2(img_msg, img_msg.encoding)
+                # im_tensor = torch.from_numpy(cv_image).to(dtype=torch.float32) / 255.0
 
-            # Scale the mask to 0-255 range and convert to uint8
-            mask_image = (inverted_mask * 255).astype(np.uint8)
+            # Undistort image if needed
+            if "_rect" not in topic:
+                cv_image, self.taget_camera_infos[topic] = undistort_image(
+                    cv_image, self.camera_infos[topic], self.taget_camera_infos[topic]
+                )
+                camera_info = self.taget_camera_infos[topic]
+            else:
+                camera_info = self.camera_infos[topic]
+                camera_info.D = [0, 0, 0, 0]
 
-            # Save the mask image
-            cv2.imwrite(str(image_path).replace("/rgb/", "/mask/"), mask_image)
+            # Check blur and save image
+            blur = cv2.Laplacian(cv_image, cv2.CV_64F).var()
+            if blur < self.blur_threshold:
+                print(f"Warning: Image too blurry (blur value: {blur}). Skipping.")
+                return True
+
+            cv2.imwrite(str(image_path), cv_image)
+
+            if self.config["nerfstudio"]["create_mask_based_on_semantics"]:
+                # Pretty bad implementaion
+                img = read_image(str(image_path))
+                batch = self.preprocess(img).unsqueeze(0)
+                prediction = self.model(batch)["out"]
+                normalized_masks = prediction.softmax(dim=1)
+                class_to_idx = {cls: idx for (idx, cls) in enumerate(self.weights.meta["categories"])}
+                mask = normalized_masks[0, class_to_idx["person"]]
+                humans = mask > 0.5
+                output = humans.cpu().numpy()
+
+                # Resize the output mask to the original image size
+                _, original_height, original_width = img.shape
+                resized_output = cv2.resize(output.astype(np.float32), (original_width, original_height))
+
+                # Invert the mask: 1 where there is no human, 0 where there is a human
+                inverted_mask = 1 - resized_output
+
+                # Scale the mask to 0-255 range and convert to uint8
+                mask_image = (inverted_mask * 255).astype(np.uint8)
+
+                # Save the mask image
+                cv2.imwrite(str(image_path).replace("/rgb/", "/mask/"), mask_image)
+
+        else:
+            if "_rect" not in topic:
+                camera_info = self.taget_camera_infos[topic]
+            else:
+                camera_info = self.camera_infos[topic]
+                camera_info.D = [0, 0, 0, 0]
 
         # Create transformation matrix using scipy Rotation
         try:
@@ -212,15 +244,13 @@ def main():
         config = yaml.safe_load(f)
 
     input_folder = args.mission_data
-    tf_bag_path, suc = get_bag("*_tf_static_hesai_dlio_tf.bag", args.mission_data)
+    tf_bag_path = get_bag("*_tf_static_hesai_dlio_tf.bag", directory=args.mission_data)
 
     # Load camera infos
     camera_infos = {}
     camera_keys = {}
     for camera in config["cameras"]:
-        bag_file, suc = get_bag(camera["bag_pattern"], args.mission_data)
-        if not suc:
-            print("Failed to find: ", camera["bag_pattern"])
+        bag_file = get_bag(camera["bag_pattern"], directory=args.mission_data)
 
         with rosbag.Bag(bag_file, "r") as bag:
             for topic, msg, t in bag.read_messages(topics=[camera["info_topic"]]):

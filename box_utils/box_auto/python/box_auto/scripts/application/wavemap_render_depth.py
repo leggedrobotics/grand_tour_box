@@ -234,10 +234,7 @@ if __name__ == "__main__":
                 if last_trans is None:
                     last_trans = trans
 
-                if (
-                    np.linalg.norm(np.array(last_trans[:2]) - np.array(trans[:2]))
-                    < config["wavemap"]["distance_threshold"]
-                ):
+                if np.linalg.norm(np.array(last_trans[:2]) - np.array(trans[:2])) < config["distance_threshold"]:
                     continue
 
                 last_trans = trans

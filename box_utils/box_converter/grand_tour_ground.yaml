@@ -3,6 +3,7 @@ num_images_per_topic: 1000
 skip_start_seconds: 60
 skip_end_seconds: 45
 hz: 4
+distance_threshold: 1.0
 
 cameras:
 - name: front
@@ -14,6 +15,7 @@ cameras:
 nerfstudio:
   blur_threshold: 0 # 80 is pretty good
   create_mask_based_on_semantics: False
+  store: False
 
 wavemap:
   log_odds_occupancy_threshold: 0.1
@@ -22,5 +24,4 @@ wavemap:
   save_ros: True
   save_png: True
   ground : True
-  distance_threshold: 1.0
   key: "ground"
