@@ -83,7 +83,7 @@ def get_bag(
         uuid = os.environ["MISSION_UUID"]
         kleinkram.download(
             mission_ids=[uuid],
-            file_names=pattern,
+            file_names=[pattern],
             dest=directory,
             verbose=True,
         )
