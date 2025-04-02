@@ -1,4 +1,4 @@
-from box_auto.utils import get_uuid_mapping, deployments, read_sheet_data
+from box_auto.utils import get_uuid_mapping, deployments, read_sheet_data, upload_simple
 import os
 from pathlib import Path
 import time
@@ -56,13 +56,13 @@ def run_and_upload(ori_files, mission_name):
             return
 
         print(f"{mission_name}: Successfully created all files and uploading to kleinkram")
-
-        file_path_string = " ".join(upload_files)
         time.sleep(1)
 
         mission_name = "pub_" + mission_name
-        os.system(f"klein upload --project GrandTour --mission {mission_name} {file_path_string}")
-        # kleinkram.upload(mission_id=UUID_MAPPING[mission_name]["uuid_pub"], files=upload_files)
+
+        for path in upload_files:
+            upload_simple(project_name="GrandTour", mission_name=mission_name, path=path)
+
     except Exception as e:
         print(f"{mission_name}: Error: {e}")
     finally:
