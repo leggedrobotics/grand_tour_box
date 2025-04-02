@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<launch>
+
+  <!-- Give the robot description parameter a name -->
+  <arg name="description_name"           default="boxi_description"/>
+  <!-- Set robot description path -->
+  <arg name="boxi_urdf"                  default="$(find box_model)/urdf/box/boxi.urdf"/>
+  <arg name="boxi_xacro"                 default="$(find box_model)/urdf/box/box.urdf.xacro" />
+  <!-- Whether to load from urdf directly -->
+  <arg name="load_from_urdf"             default="false"/>
+
+  <!-- Load description directly from xacro -->
+  <group unless="$(arg load_from_urdf)">
+    <param name="$(arg description_name)" command="xacro $(arg boxi_xacro)" />
+  </group>
+
+  <!-- Load URDF file directly if specified -->
+  <group if="$(arg load_from_urdf)">
+    <param name="$(arg description_name)" textfile="$(arg boxi_urdf)"/>
+  </group>
+
+</launch>

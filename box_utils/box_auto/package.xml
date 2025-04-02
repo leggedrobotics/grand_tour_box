@@ -35,20 +35,22 @@
   <depend>anymal_msgs</depend>
   <depend>gnss_msgs</depend>
   <depend>any_velodyne_pointcloud</depend>
+  <depend>gtsam_catkin</depend>
+  <depend>tf_bag</depend>
+  <depend>bringup_hesai</depend>
+  <depend>hesai_ros_driver</depend>
+  <depend>novatel_oem7_driver</depend>
+  <depend>anymal_d_simple_description</depend>
+  <depend>pointcloud_undistortion</depend>  
   
   <!-- To disable 3rd party application building. Set export DEBUG_MODE=1 -->
   <depend condition="$DEBUG_MODE != 1">direct_lidar_inertial_odometry</depend>
   <depend condition="$DEBUG_MODE != 1">raw_image_pipeline_python</depend>
   <depend condition="$DEBUG_MODE != 1">raw_image_pipeline_ros</depend>
-  <depend condition="$DEBUG_MODE != 1">novatel_oem7_driver</depend>
-  <depend condition="$DEBUG_MODE != 1">hesai_ros_driver</depend>
-  <depend condition="$DEBUG_MODE != 1">bringup_hesai</depend>
   <depend condition="$DEBUG_MODE != 1">zed_wrapper</depend>
-  <depend condition="$DEBUG_MODE != 1">tf_bag</depend>
   <depend condition="$DEBUG_MODE != 1">atn_position3_fuser</depend>
   <depend condition="$DEBUG_MODE != 1">ap20_driver_ros</depend>
   <depend condition="$DEBUG_MODE != 1">open3d_slam_ros</depend>
-  <depend condition="$DEBUG_MODE != 1">any_velodyne_pointcloud</depend>
 
 
 </package>

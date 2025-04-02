@@ -13,7 +13,8 @@ if __name__ == "__main__":
         "*_jetson_zed2i_prop.bag",
         "*_jetson_zed2i_images.bag",
         "*_jetson_zed2i_depth.bag",
-        "*_tf_pure_perception.bag",
+        "*_boxi_tf_full.bag",
+        # "*_tf_pure_perception.bag",
         #
         "*_nuc_livox_ready.bag",
         "*_npc_velodyne_ready.bag",

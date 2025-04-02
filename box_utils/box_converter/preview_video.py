@@ -9,26 +9,29 @@ import ros_numpy
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
-from matplotlib.cm import get_cmap
 from matplotlib.colors import Normalize
 import cv2
+from box_auto.utils import read_sheet_data
+
 
 # --- Global Matplotlib Settings ---
-plt.rcParams.update({
-    "font.family": "sans-serif",
-    "font.sans-serif": ["Roboto"],
-    "font.size": 12,
-    "axes.titlesize": 14,
-    "axes.labelsize": 12,
-    "axes.titlepad": 10,
-    "figure.facecolor": "white",
-    "figure.edgecolor": "white",
-    "text.color": "#757575",       # Default text color for all text
-    "axes.labelcolor": "#757575",  # Axes labels
-    "axes.titlecolor": "#5e5e5e",  # Axes titles
-    "xtick.color": "#757575",      # X tick labels
-    "ytick.color": "#757575",      # Y tick labels
-})
+plt.rcParams.update(
+    {
+        "font.family": "sans-serif",
+        "font.sans-serif": ["Roboto"],
+        "font.size": 12,
+        "axes.titlesize": 14,
+        "axes.labelsize": 12,
+        "axes.titlepad": 10,
+        "figure.facecolor": "white",
+        "figure.edgecolor": "white",
+        "text.color": "#757575",  # Default text color for all text
+        "axes.labelcolor": "#757575",  # Axes labels
+        "axes.titlecolor": "#5e5e5e",  # Axes titles
+        "xtick.color": "#757575",  # X tick labels
+        "ytick.color": "#757575",  # Y tick labels
+    }
+)
 
 # Increase default whitespace (if desired)
 plt.rcParams["figure.subplot.left"] = 0.1
@@ -47,13 +50,13 @@ ROS_BAG_PATHS = [
 ]  # List of bag files
 ODOM_BAG_PATH = get_bag("*_lpc_state_estimator.bag")
 
-MISSION_NAME = Path(ROS_BAG_PATHS[0]).parent.stem
+MISSION_NAME = Path(ROS_BAG_PATHS[0]).name.replace("_jetson_hdr_front.bag", "")
 OUTPUT_VIDEO_PATH = Path(ARTIFACT_FOLDER) / "youtube" / f"{MISSION_NAME}.mp4"
 FRAME_SAVE_DIR = Path(ARTIFACT_FOLDER) / "youtube" / "frames"
 FRAME_SAVE_DIR.mkdir(parents=True, exist_ok=True)
 
 
-def find_first_movement_timestamp_and_bounds(rosbag_path, distance_threshold=1.0, video_duration_seconds=10):
+def find_first_movement_timestamp_and_bounds(rosbag_path, distance_threshold=1.0, video_duration_seconds=np.inf):
     started_moving_ts = -1
     min_x, max_x, min_y, max_y = float("inf"), -float("inf"), float("inf"), -float("inf")
     with rosbag.Bag(rosbag_path) as bag:
@@ -104,7 +107,8 @@ class VideoGenerator:
         self.hesai_queue = SortedDict()
         self.livox_queue = SortedDict()
         self.pose_queue = SortedDict()
-
+        self.ap20_queue = SortedDict()
+        self.gnss_queue = SortedDict()
         self.bridge = CvBridge()
 
     def _add_to_queue(self, topic, msg, t):
@@ -121,6 +125,10 @@ class VideoGenerator:
             self.livox_queue[timestamp] = (topic, msg, t)
         elif "/state_estimator/pose_in_odom" in topic:
             self.pose_queue[timestamp] = (topic, msg, t)
+        elif "/gt_box/ap20/position_debug" in topic:
+            self.ap20_queue[timestamp] = (topic, msg, t)
+        elif "/gt_box/inertial_explorer/tc/gt_poses_novatel" in topic:
+            self.gnss_queue[timestamp] = (topic, msg, t)
 
     def _find_closest_message_and_convert(self, target_time, queue, max_diff=0.1):
         if not queue:
@@ -151,6 +159,11 @@ class VideoGenerator:
             y = msg.pose.pose.position.y
             z = msg.pose.pose.position.z
             return x, y, z
+        elif "PointStamped" in str(type(msg)):
+            x = msg.point.x
+            y = msg.point.y
+            z = msg.point.z
+            return x, y, z
         else:
             raise ValueError("Conversion not implemented for msg type: ", str(type(msg)))
             return topic, msg, t
@@ -161,13 +174,25 @@ class VideoGenerator:
         i = 0
         FPS = 10
         H, W = 1080, 1920
-        MAX_FRAMES = 100
 
-        robot_start_moving_time_in_s, max_x, min_x, max_y, min_y, first_z = find_first_movement_timestamp_and_bounds(ODOM_BAG_PATH, distance_threshold=1.0, video_duration_seconds= MAX_FRAMES * secs_between_frames)
+        # Define the spreadsheet ID and sheet name
+        SPREADSHEET_ID = "1mENfskg_jO_vJGFM5yonqPuf-wYUNmg26IPv3pOu3gg"
+        # Read the data and print the list
+        topic_data, MISSION_DATA = read_sheet_data(SPREADSHEET_ID)
+
+        start_time = float(MISSION_DATA[MISSION_NAME]["mission_start_time"])
+        stop_time = float(MISSION_DATA[MISSION_NAME]["mission_stop_time"])
+
+        MAX_FRAMES = (stop_time - start_time) / secs_between_frames
+
+        robot_start_moving_time_in_s, max_x, min_x, max_y, min_y, first_z = find_first_movement_timestamp_and_bounds(
+            ODOM_BAG_PATH, distance_threshold=1.0, video_duration_seconds=MAX_FRAMES * secs_between_frames
+        )
+
         robot_start_moving_time_in_s += 5  # Add some buffer time
-        x_spread = (max_x - min_x)
-        y_spread = (max_y - min_y)
-        adjusted_min_x = np.floor(0 - 0.1* x_spread)
+        x_spread = max_x - min_x
+        y_spread = max_y - min_y
+        adjusted_min_x = np.floor(0 - 0.1 * x_spread)
         adjusted_max_x = np.ceil(x_spread * 1.1)
         adjusted_min_y = np.floor(0 - 0.1 * y_spread)
         adjusted_max_y = np.ceil(y_spread * 1.1)
@@ -179,8 +204,8 @@ class VideoGenerator:
         cumulative_poses = []
         try:
             for topic, message, timestamp in self.generator:
-                if timestamp.to_sec() < robot_start_moving_time_in_s:
-                    print(timestamp.to_sec(), robot_start_moving_time_in_s)
+                if timestamp.to_sec() < start_time:
+                    print(timestamp.to_sec(), start_time)
                     continue
 
                 self._add_to_queue(topic, message, timestamp)
@@ -206,14 +231,17 @@ class VideoGenerator:
                     livox = self._find_closest_message_and_convert(target_time_in_s, self.livox_queue)
                     hesai = self._find_closest_message_and_convert(target_time_in_s, self.hesai_queue)
                     pose = self._find_closest_message_and_convert(target_time_in_s, self.pose_queue)
+                    # ap20 = self._find_closest_message_and_convert(target_time_in_s, self.ap20_queue)
+                    # gnss = self._find_closest_message_and_convert(target_time_in_s, self.gnss_queue)
+
                     if pose is not None:
                         x = pose[0] - min_x
                         y = pose[1] - min_y
                         z = pose[2] - first_z
-                        cumulative_poses.append((x,y,z))
+                        cumulative_poses.append((x, y, z))
 
                     # --- Create Figure using GridSpec ---
-                    fig = plt.figure(figsize=(W/100, H/100), dpi=100)
+                    fig = plt.figure(figsize=(W / 100, H / 100), dpi=100)
                     # We'll use 3 rows:
                     #   Row 0: Top images (3 columns)
                     #   Row 1: Bottom plots (3 columns) – same height for all
@@ -222,12 +250,11 @@ class VideoGenerator:
                     gs.update(wspace=0.02, hspace=0.1)
                     plt.subplots_adjust(left=0.03, right=0.97, top=0.97, bottom=0.03)
 
-
                     # Top row: Image panels
                     top_left_ax = fig.add_subplot(gs[0, 0])
                     top_middle_ax = fig.add_subplot(gs[0, 1])
                     top_right_ax = fig.add_subplot(gs[0, 2])
-                    
+
                     for ax, title, img in zip(
                         [top_left_ax, top_middle_ax, top_right_ax],
                         ["Left Image", "Front Image", "Right Image"],
@@ -236,11 +263,11 @@ class VideoGenerator:
                         ax.imshow(img)
                         ax.set_title(title, fontsize=18)
                         ax.axis("off")
-                    
+
                     # Bottom row (row 1): Other plots
                     S = 40
                     light_blue = "#dde9eb"  # Very light blue background
-                    white = "white"        # White grid lines
+                    white = "white"  # White grid lines
 
                     bottom_gs = gridspec.GridSpecFromSubplotSpec(1, 3, subplot_spec=gs[1, :], wspace=0.25)
                     ax_traj = fig.add_subplot(bottom_gs[0])
@@ -249,8 +276,10 @@ class VideoGenerator:
                     ax_livox = fig.add_subplot(bottom_gs[1])
                     ax_hesai = fig.add_subplot(bottom_gs[2])
                     ax_hesai_pos = ax_hesai.get_position()
-                    ax_hesai.set_position([ax_hesai_pos.x0 - 0.02, ax_hesai_pos.y0, ax_hesai_pos.width, ax_hesai_pos.height])
-                    
+                    ax_hesai.set_position(
+                        [ax_hesai_pos.x0 - 0.02, ax_hesai_pos.y0, ax_hesai_pos.width, ax_hesai_pos.height]
+                    )
+
                     # Bottom Left: Trajectory / Other Information
                     # ax_traj = fig.add_subplot(gs[1, 0])
                     ax_traj.set_xlim(adjusted_min_x, adjusted_max_x)
@@ -259,7 +288,7 @@ class VideoGenerator:
                     ax_traj.set_yticks(np.arange(adjusted_min_y, adjusted_max_y, tick_spread_y))
                     ax_traj.grid(True, linestyle="-", color=white, alpha=1.0)
                     ax_traj.set_facecolor(light_blue)
-                    ax_traj.set_title("Trajectory", fontsize=18)
+                    ax_traj.set_title("Leg Odometry", fontsize=18)
                     ax_traj.set_xlabel("X (m)")
                     ax_traj.set_ylabel("Y (m)")
                     for spine in ax_traj.spines.values():
@@ -268,18 +297,18 @@ class VideoGenerator:
                         # Plot the cumulative x,y coordinates with z a color for height
                         x, y, z = zip(*cumulative_poses)
                         ax_traj.scatter(x, y, c=z, cmap="plasma", s=20.0, vmin=-5, vmax=5, zorder=3)
-                    
+
                     # Bottom Middle: Livox Pointcloud
                     # ax_livox = fig.add_subplot(gs[1, 1])
                     if livox is not None:
                         x, y, z = livox
-                        mappable_livox = ax_livox.scatter(x, y, c=z, cmap="plasma", s=0.3, vmin=-5, vmax=5, zorder=3)
+                        _ = ax_livox.scatter(x, y, c=z, cmap="plasma", s=0.3, vmin=-5, vmax=5, zorder=3)
                     else:
-                        mappable_livox = ax_livox.scatter([], [])
+                        _ = ax_livox.scatter([], [])
                     ax_livox.set_xlim(-S, S)
                     ax_livox.set_ylim(-S, S)
-                    ax_livox.set_xticks(np.arange(-S, S+1, 10))
-                    ax_livox.set_yticks(np.arange(-S, S+1, 10))
+                    ax_livox.set_xticks(np.arange(-S, S + 1, 10))
+                    ax_livox.set_yticks(np.arange(-S, S + 1, 10))
                     ax_livox.grid(True, linestyle="-", color=white, alpha=1.0)
                     ax_livox.set_facecolor(light_blue)
                     ax_livox.set_title("Livox Pointcloud", fontsize=18)
@@ -287,18 +316,18 @@ class VideoGenerator:
                     ax_livox.set_ylabel("Y (m)")
                     for spine in ax_livox.spines.values():
                         spine.set_visible(False)
-                    
+
                     # Bottom Right: Hesai Pointcloud
                     # ax_hesai = fig.add_subplot(gs[1, 2])
                     if hesai is not None:
                         x, y, z = hesai
-                        mappable_hesai = ax_hesai.scatter(x, y, c=z, cmap="plasma", s=0.3, vmin=-5, vmax=5)
+                        _ = ax_hesai.scatter(x, y, c=z, cmap="plasma", s=0.3, vmin=-5, vmax=5)
                     else:
-                        mappable_hesai = ax_hesai.scatter([], [])
+                        _ = ax_hesai.scatter([], [])
                     ax_hesai.set_xlim(-S, S)
                     ax_hesai.set_ylim(-S, S)
-                    ax_hesai.set_xticks(np.arange(-S, S+1, 10))
-                    ax_hesai.set_yticks(np.arange(-S, S+1, 10))
+                    ax_hesai.set_xticks(np.arange(-S, S + 1, 10))
+                    ax_hesai.set_yticks(np.arange(-S, S + 1, 10))
                     ax_hesai.grid(True, linestyle="-", color=white, alpha=1.0)
                     ax_hesai.set_facecolor(light_blue)
                     ax_hesai.set_title("Hesai Pointcloud", fontsize=18)
@@ -306,7 +335,7 @@ class VideoGenerator:
                     ax_hesai.set_ylabel("Y (m)")
                     for spine in ax_hesai.spines.values():
                         spine.set_visible(False)
-                    
+
                     # --- Create a common horizontal colorbar ---
                     # Use a dummy ScalarMappable with the same colormap and norm:
                     norm = Normalize(vmin=-5, vmax=5)
@@ -326,11 +355,15 @@ class VideoGenerator:
 
                     # Add a text annotation in the top right corner of the figure
                     fig.text(
-                        0.96, 0.05, f"{elapsed_time:.2f} s",  # Display time with two decimals
-                        ha='right', va='bottom',
-                        fontsize=16, color='#4a4a4a',
-                        bbox=dict(boxstyle="round,pad=0.6", edgecolor='none', facecolor=light_blue, alpha=0.7, pad=5)
-)
+                        0.96,
+                        0.05,
+                        f"{elapsed_time:.2f} s",  # Display time with two decimals
+                        ha="right",
+                        va="bottom",
+                        fontsize=16,
+                        color="#4a4a4a",
+                        bbox=dict(boxstyle="round,pad=0.6", edgecolor="none", facecolor=light_blue, alpha=0.7, pad=5),
+                    )
                     # --- Adjust Layout & Save Figure ---
                     plt.tight_layout(pad=3)
                     path = str(FRAME_SAVE_DIR / f"{i:06d}.png")

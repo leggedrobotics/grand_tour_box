@@ -2,22 +2,21 @@
   <arg name="rviz" default="false" />
   <arg name="model" default="$(find box_model)/urdf/box/box.urdf.xacro" />
   <arg name="calibration_file" default="$(find box_calibration)/calibration/tf/calibration_latest.yaml" />
-
   <arg name="use_sim_time" default="false" />
-
-  <param name="robot_description" command="xacro $(arg model)" />
-
+  <arg name="description_name" default="boxi_description" />
   <param name="/use_sim_time" value="$(arg use_sim_time)" />
 
-  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
-    <param name="capability_group" value="Visualization"/>
-  </node> 
+  <param name="$(arg description_name)" command="xacro $(arg model)" />
 
+  <node name="boxi_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
+    <param name="capability_group" value="Visualization"/>
+    <remap from="robot_description" to="$(arg description_name)"/>
+  </node> 
   
   <node name="calibration_metadata_publisher" pkg="box_model" type="publish_calibration_info.py">
     <param name="capability_group" value="Calibration"/>
     <param name="calibration_file" value="$(arg calibration_file)"/>
   </node>
 
-  <node if="$(arg rviz)" name="box_rviz" pkg="rviz" type="rviz" args="-d $(find box_model)/config/display_urdf.rviz" />
+  <node if="$(arg rviz)" name="box_rviz" pkg="rviz" type="rviz" required="true" args="-d $(find box_model)/config/display_urdf.rviz" />
 </launch>

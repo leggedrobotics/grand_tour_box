@@ -27,10 +27,15 @@ def launch_nodes(patterns, output_bag_path):
 
     merged_rosbag_path = os.path.join(MISSION_DATA, "merged_for_velodyne_replay.bag")
 
-    # Check if merged_rosbag_path already exists
+    # Check if merged_rosbag_path already exists, if yes delete
     if os.path.exists(merged_rosbag_path):
         print(f"Removing existing merged rosbag at {merged_rosbag_path}")
         os.system(f"rm {merged_rosbag_path}")
+
+    # Check if output_bag_path already exists, if yes delete
+    if os.path.exists(output_bag_path):
+        print(f"Removing existing output rosbag at {output_bag_path}")
+        os.system(f"rm {output_bag_path}")
 
     print(f"Merging bags into {merged_rosbag_path}")
     os.system(f"python3 {BOX_AUTO_SCRIPTS_DIR}/general/merge_bags.py --input={inputs} --output={merged_rosbag_path}")

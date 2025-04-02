@@ -15,17 +15,6 @@
     <parent link="base" />
     <child link="box_base" />
   </joint>
-<!-- 
-  <joint name="prism_to_prism_model" type="fixed">
-    <origin xyz=" ${calib['prism_to_prism_model']['x']}
-                  ${calib['prism_to_prism_model']['y']}
-                  ${calib['prism_to_prism_model']['z']}"
-            rpy=" ${calib['prism_to_prism_model']['roll']}
-                  ${calib['prism_to_prism_model']['pitch']}
-                  ${calib['prism_to_prism_model']['yaw']}" />
-    <parent link="prism" />
-    <child link="prism_model" />
-  </joint> -->
 
   <!-- Prism -->
   <link name="prism"/>
@@ -42,37 +31,26 @@
     <child link="prism" />
   </joint>
 
-  <!-- <joint name="box_base_to_prism" type="fixed">
-        <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
-        <parent link="box_base"/>
-        <child link="prism"/>
-  </joint> -->
-
   <!-- Wrong export origins in CAD - the coorect ones are xyz="0 0 0" -->
   <joint name="box_base_to_box_base_model" type="fixed">
-        <origin xyz="0.00 -0.0 -0.00" rpy="0.0 0.0 0.0"/>
+        <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
         <parent link="box_base"/>
         <child link="box_base_model"/>
   </joint>
 
   <!-- Wrong export origins in CAD - the coorect ones are xyz="0 0 0" -->
   <joint name="box_base_to_prism_model" type="fixed">
-        <origin xyz="0.00 -0.0 -0.00" rpy="0.0 0.0 0.0"/>
+        <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
         <parent link="box_base"/>
         <child link="prism_model"/>
   </joint>
+  
   <!-- Wrong export origins in CAD - the coorect ones are xyz="0 0 0" -->
   <joint name="base_to_cpt7_antenna_back_model" type="fixed">
-        <origin xyz="0 0 0.03 " rpy="0.0 0.0 0.0"/>
-        <parent link="base"/>
-        <child link="cpt7_antenna_back_model"/>
-  </joint>
-
-  <!-- <joint name="base_to_cpt7_antenna_back_model" type="fixed">
         <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
         <parent link="base"/>
         <child link="cpt7_antenna_back_model"/>
-  </joint> -->
+  </joint>
 
   <!-- Model base -->
   <link name="box_base_model">
@@ -83,6 +61,7 @@
     </visual>
   </link>
 
+  <!-- Back antenna -->
   <link name="cpt7_antenna_back_model">
     <visual>
       <geometry>
@@ -92,6 +71,7 @@
   </link>
    
 
+  <!-- Leica Mini prism -->
   <link name="prism_model">
     <visual>
       <geometry>
@@ -100,6 +80,7 @@
     </visual>
   </link> 
 
+  <!-- Sensors -->
   <xacro:include filename="$(find box_model)/urdf/cameras/cameras.urdf.xacro" />
   <xacro:include filename="$(find box_model)/urdf/lidars/lidars.urdf.xacro" />
   <xacro:include filename="$(find box_model)/urdf/imus/imus.urdf.xacro" />
