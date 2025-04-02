@@ -72,6 +72,10 @@ def _np_arrays_from_buffered_messages(
     for record in buffer:
         for key, value in record.items():
             data[key].append(value)
+
+    # todo: remove
+    breakpoint()
+
     array_data = {
         key: np.array(data[key], dtype=attr.dtype) for key, attr in attr_tps.items()
     }
@@ -80,6 +84,10 @@ def _np_arrays_from_buffered_messages(
         assert (
             array_data[key].shape[1:] == attr.shape
         ), f"{key}: {array_data[key].shape[1:]} != {attr.shape}"
+    
+    # ToDO: remove
+    breakpoint()
+
     return array_data
 
 
@@ -106,6 +114,9 @@ def _data_chunks_from_bag_topic(
     for idx, message in enumerate(
         messages_in_bag_with_topic(path, topic=topic_desc.topic)
     ):
+        # TODO: remove
+        breakpoint()
+
         # handle data to store in zarr format
         buffer.append(parse_deserialized_message(message, topic_desc=topic_desc))
         if image_extractor is not None:
@@ -113,6 +124,9 @@ def _data_chunks_from_bag_topic(
         if len(buffer) == chunk_size:
             yield _np_arrays_from_buffered_messages(buffer, attribute_types)
             buffer = []
+        
+        # TODO: remove
+        breakpoint()
 
     if buffer:
         yield _np_arrays_from_buffered_messages(buffer, attribute_types)
@@ -123,12 +137,13 @@ def _create_zarr_group_for_topic(zarr_root: Path, topic_alias: str) -> zarr.Grou
     create zarr group for topic in the dataset, overwrite the group if it already exists
     don't overwrite the dataset
     """
-    # create the zarr dataset root
+    # create the zarr dataset root --> /datapath
     store = zarr.storage.DirectoryStore(zarr_root)
     root = zarr.group(store, overwrite=False)
 
     # overwrite existing sub group
-    return root.create_group(topic_alias, overwrite=True)
+    group = root.create_group(topic_alias, overwrite=True)
+    return group
 
 
 APPROX_CHUNK_SIZE = 256 * (2**20)  # 256 MB
@@ -146,7 +161,8 @@ def _compute_zarr_array_chunk_size(tp: ArrayType) -> Tuple[int, ...]:
     slice_exponent = np.floor(np.log2(slice_ratio))
 
     n_slices = 2 ** max(slice_exponent, 0)
-    return (n_slices,) + tp.shape
+    size = (n_slices,) + tp.shape
+    return size 
 
 
 def _create_zarr_arrays_for_topic(
@@ -169,8 +185,15 @@ def _create_zarr_arrays_for_topic(
             overwrite=True,
             chunks=chunk_size,
         )
+        # TODO: remove
+        breakpoint()
 
-    return min(slice_sizes)
+    slice_min = min(slice_sizes)
+    
+    # TODO: remove
+    breakpoint()
+
+    return slice_min
 
 
 def _create_jpeg_topic_folder(jpeg_root: Path, topic_alias: str) -> Path:
@@ -206,6 +229,9 @@ def _generate_dataset_from_topic_description_and_attribute_types(
     topic_zarr_group = _create_zarr_group_for_topic(zarr_root_path, topic_desc.alias)
     chunk_size = _create_zarr_arrays_for_topic(attribute_types, topic_zarr_group)
 
+    # TODO: remove
+    breakpoint()
+
     # create image saving callback to save images to disk while parsing the remaining data
     image_extractor = None
     if isinstance(topic_desc, ImageTopic):
@@ -215,6 +241,8 @@ def _generate_dataset_from_topic_description_and_attribute_types(
             image_dir=topic_folder,
             cv_bridge=CvBridge(),
         )
+        # TODO: remove
+        breakpoint()
 
     for chunk in _data_chunks_from_bag_topic(
         path,
@@ -248,16 +276,25 @@ def _tar_ball_dataset(base_dataset_path: Path) -> None:
     image_files = base_dataset_path / IMAGE_PREFIX
     if image_files.exists():
         _tar_ball_dirs_in_dir(image_files)
+    
+    # TODO: remove
+    breakpoint()
 
 
 def build_data_part(
     *, bags_path: Path, dataset_base_path: Path, topic_registry: TopicRegistry
 ) -> None:
+    # progressbar
     progress = tqdm(topic_registry.values())
+
     for attribute_types, topic_desc in progress:
         progress.set_description(f"Processing {topic_desc.alias}")
 
         bag_file = bags_path / topic_desc.file
+        
+        # TODO: remove
+        breakpoint()
+
         _generate_dataset_from_topic_description_and_attribute_types(
             dataset_base_path,
             bag_file,

@@ -20,7 +20,7 @@ DATA_PATH = Path("/data")  # Path(__file__).parent.parent / "data"
 INPUT_PATH = DATA_PATH / "files" / MISSION_NAME
 DATASET_PATH = DATA_PATH / "dataset" / MISSION_NAME
 
-DOWNLOAD_FLAG = False
+DOWNLOAD_FLAG = True
 
 
 def download_mission(mission_id: UUID, input_path: Path) -> None:
