@@ -113,11 +113,6 @@ pip3 install rerun-sdk
 pip3 install sortedcontainers
 pip3 install rosnumpy
 
-
-# anonymization script
-pip3 install ultralytics
-pip3 install supervision
-
 # Dependencies: box_auto - hesai.py
 mkdir -p /home/rsl/git/grand_tour_box/box_bringup/bringup_hesai/config
 ln -s /home/catkin_ws/src/grand_tour_box/box_bringup/bringup_hesai/config/PandarXT-32_firetime_correction.csv  /home/rsl/git/grand_tour_box/box_bringup/bringup_hesai/config/PandarXT-32_firetime_correction.csv

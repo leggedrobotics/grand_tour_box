@@ -150,18 +150,6 @@ services:
         condition: service_completed_successfully
 
   # Input:
-  # - ... check in script
-  # Output:
-  # - ..._anonymized.bag
-  image_anonymizer:
-    <<: *common-config
-    container_name: image_anonymizer
-    command: ["python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/camera/ego_blur.py"]
-    depends_on:
-      calibration:
-        condition: service_completed_successfully
-
-  # Input:
   #   - ap20_aux.bag
   # Output:
   #   - ap20_synced.bag
