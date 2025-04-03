@@ -18,5 +18,7 @@ if __name__ == "__main__":
         k = "_nuc_alphasense_color.bag"
         path = get_bag(f"*{k}")
         mission_name = "pub_" + path.split("/")[-1].replace(k, "")
+
         print("Mission:", mission_name)
         upload_simple(project_name="GrandTour", mission_name=mission_name, path=path)
+    print("", flush=True)

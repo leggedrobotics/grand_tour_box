@@ -10,7 +10,7 @@ if not os.path.exists(submit_dir):
 uuid_mappings = get_uuid_mapping()
 
 for name, data in uuid_mappings.items():
-    uuid = data["uuid"]
+    uuid = data["uuid_pub"]
     for camera in ["hdr"]:
         content = f"""#!/bin/bash
 

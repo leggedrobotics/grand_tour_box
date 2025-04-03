@@ -5,13 +5,23 @@ from pathlib import Path
 def upload_simple(project_name, mission_name, path, delete=True):
     res = kleinkram.verify(project_name=project_name, mission_name=mission_name, files=[path])
 
+    print(mission_name, res)
     while res[Path(path)] != "uploaded":
         if res[Path(path)] == "missing":
             print("uploading")
         elif res[Path(path)] == "uploaded":
             print("File already uploaded - suc")
             return True
+        elif res[Path(path)] == "mismatched_hash":
+            print("mismatched_hash")
+            fileinfo = [
+                f
+                for f in kleinkram.list_files(project_names=[project_name], mission_names=[mission_name])
+                if Path(path).name in f.name
+            ]
+            kleinkram.delete_file(fileinfo[0].id)
         else:
+            print("Something is odd after verification")
             print(res[Path(path)])
             fileinfo = [
                 f
