@@ -1,9 +1,10 @@
 from pathlib import Path
-from box_auto.utils import MISSION_DATA, get_bag, upload_bag, get_uuid_mapping, read_sheet_data
+from box_auto.utils import MISSION_DATA, get_bag, get_uuid_mapping, read_sheet_data
 import rosbag
 import rospy
 import subprocess
 from collections import defaultdict
+from box_auto.utils import upload_simple
 
 # Define the spreadsheet ID and sheet name
 SPREADSHEET_ID = "1mENfskg_jO_vJGFM5yonqPuf-wYUNmg26IPv3pOu3gg"
@@ -104,9 +105,9 @@ for output_bag_name, topic_configs in data_dict_by_bag_name.items():
     subprocess.run(["rosbag", "reindex", str(bag_path_out)])
     print(f"Bag {bag_path_out} created and reindexed \n \n")
 
-    os.environ["KLEINKRAM_ACTIVE"] = "ACTIVE"
-    upload_bag(bag_path_out)
-    os.environ["KLEINKRAM_ACTIVE"] = "FALSE"
+    # os.environ["KLEINKRAM_ACTIVE"] = "ACTIVE"
+    upload_simple("GrandTour", "release_" + mission_name, bag_path_out)
+    # os.environ["KLEINKRAM_ACTIVE"] = "FALSE"
 
 print(error_list)
 exit(exit_code)

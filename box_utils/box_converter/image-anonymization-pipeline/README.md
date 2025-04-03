@@ -24,12 +24,25 @@ this folder contains the code and dependencies to run the image anonymization pi
     python anonymization.py --mission-id 344d631c-387a-4aa4-bb21-92b9659ea21f --cam hdr
   ```
 
+- singularity
+
+"""
+/home/jonfrey/git/grand_tour_box/box_utils/box_converter/image-anonymization-pipeline; docker build -t grand-tour-dataset . ; \
+cd ~/git/grand_tour_box/box_utils/box_converter/cluster/.export; rm -fr ./grand-tour-dataset.*; \
+SINGULARITY_NOHTTPS=1 singularity build --sandbox grand-tour-dataset.sif docker-daemon://grand-tour-dataset:latest; \
+sudo tar -cvf grand-tour-dataset.tar grand-tour-dataset.sif; \
+scp ./grand-tour-dataset.tar jonfrey@euler.ethz.ch:/cluster/work/rsl/jonfrey/grand_tour/containers/grand-tour-dataset.tar
+"""
+
+
+
 - debug for cluster
   ```bash
   srun --account=es_hutter --ntasks=1 --cpus-per-task=4 --gpus=1 --time=4:00:00 --mem-per-cpu=8024 --tmp=20000 --pty bash
   
+  apptainer exec --nv --writable --env KLEINKRAM_CONFIG="$(cat ~/.kleinkram.json)" --containall $TMPDIR/grand-tour-dataset.sif /bin/bash -c 'export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH; export HOME=/home; /entrypoint.sh  python /app/anonymization.py --mission-id d7525079-5564-461e-a144-e7479247d268 --cam hdr --head 100'
 
-  singularity exec --nv --writable  --containall $TMPDIR/grand-tour-dataset.sif /bin/bash -c 'export KLEINKRAM_CONFIG="$(cat ~/.kleinkram.json)"; /entrypoint.sh  python /app/anonymization.py --mission-id 344d631c-387a-4aa4-bb21-92b9659ea21f --cam hdr --head 100'
+
   ```
 
 ## Profiling

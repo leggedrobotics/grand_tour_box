@@ -17,7 +17,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--config_name",
         type=str,
-        default="boxi_tf_full",  # boxi_tf_pure_perception #boxi_tf_full
+        default="tf_minimal",  # tf_model, tf_minimal
         help="The name of the configuration file. Default is 'boxi_tf_pure_perception'.",
     )
     args = parser.parse_args()

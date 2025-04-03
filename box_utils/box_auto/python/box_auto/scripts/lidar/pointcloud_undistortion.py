@@ -121,13 +121,8 @@ def switch_tf(exists_skip=False):
 if __name__ == "__main__":
     is_unified = True
     input_trajectory_bag_path = None
-    if is_unified:
-        print("Unified undistortion is enabled. Combined tf will be used.")
-        input_trajectory_bag_path = get_bag("*_boxi_tf_pure_perception.bag")
-    else:
-        # Invert the tf
-        switch_tf(exists_skip=True)
-        input_trajectory_bag_path = get_bag("*_lpc_tf_reverse.bag")
+    print("Unified undistortion is enabled. Combined tf will be used.")
+    input_trajectory_bag_path = get_bag("*tf_minimal.bag")
 
     # TF static
     input_tf_static_path = get_bag("*_tf_static_start_end.bag")
@@ -156,7 +151,7 @@ if __name__ == "__main__":
         input_tf_static_path,
         output_hesai_bag_path,
         pcd_topic_in="/gt_box/hesai/points",
-        child_frame="base", # Used if not unified
+        child_frame="base",  # Used if not unified
         target_frame="odom",
         unified_undistortion=is_unified,
     )
@@ -170,7 +165,7 @@ if __name__ == "__main__":
         input_tf_static_path,
         output_livox_bag_path,
         pcd_topic_in="/gt_box/livox/lidar",
-        child_frame="base", # Used if not unified
+        child_frame="base",  # Used if not unified
         target_frame="odom",
         unified_undistortion=is_unified,
     )
