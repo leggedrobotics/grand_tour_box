@@ -41,7 +41,8 @@
   <depend>hesai_ros_driver</depend>
   <depend>novatel_oem7_driver</depend>
   <depend>anymal_d_simple_description</depend>
-  <depend>pointcloud_undistortion</depend>  
+  <depend>pointcloud_undistortion</depend>
+  <depend>box_model</depend>
   
   <!-- To disable 3rd party application building. Set export DEBUG_MODE=1 -->
   <depend condition="$DEBUG_MODE != 1">direct_lidar_inertial_odometry</depend>
