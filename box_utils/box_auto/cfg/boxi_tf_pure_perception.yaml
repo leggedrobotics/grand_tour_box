@@ -2,12 +2,6 @@ tfStaticRepetitionPeriod: 5 # seconds
 frameMapping:
   - new: "velodyne_lidar"
     old: "lidar"
-  - new: "zed2i_base"
-    old: "zed2i_base_link"
-    replicate: false
-  - new: "alphasense_imu"
-    old: "imu_sensor_frame"
-    replicate: false
 
 framePairs:
   - parent: "base"
