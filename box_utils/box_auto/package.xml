@@ -5,7 +5,6 @@
     <name>box_auto</name>
     <version>0.1.0</version>
     <description>Automated post-processing package for Grand Tour box.</description>
-
     <license>Proprietary</license>
     <author email="tutuna@ethz.ch">Turcan Tuna</author>
     <author email="jonfrey@ethz.ch">Jonas Frey</author>
@@ -53,6 +52,7 @@
     <depend condition="$DEBUG_MODE != 1">atn_position3_fuser</depend>
     <depend condition="$DEBUG_MODE != 1">ap20_driver_ros</depend>
     <depend condition="$DEBUG_MODE != 1">open3d_slam_ros</depend>
+
 
 
 </package>
