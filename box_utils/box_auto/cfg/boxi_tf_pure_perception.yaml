@@ -52,6 +52,10 @@ childFramesToRemove:
   - "loco_footprint"
   - "depth_camera_left_camera_parent"
   - "depth_camera_right_camera_parent"
+  - "docking_station__apriltag36_11_00000_link__visual__apriltag36_11_00000_visual"
+  - "docking_station__apriltag36_11_00000_link__visual__apriltag36_11_00001_visual"
+  - "docking_station__apriltag36_11_00000_link__visual__apriltag36_11_00002_visual"
+  - "docking_station__apriltag36_11_00000_link__visual__apriltag36_11_00003_visual"
 
 parentFramesToRemove:
   - "map"
@@ -83,17 +87,22 @@ parentFramesToRemove:
   - "depth_camera_rear_lower_infra2_frame"
   - "depth_camera_left_infra2_frame"
   - "depth_camera_right_infra2_frame"
+  - "docking_station__apriltag36_11_00000_link"
+  - "docking_station__apriltag36_11_00001_link"
+  - "docking_station__apriltag36_11_00002_link"
+  - "docking_station__apriltag36_11_00003_link"
+  - "docking_station__docking_port_link"
 
 childFramesToInverse:
   - "base"
 
 # Absolutely not the best way to do it.
-rotationOverrides:
-  - parent: "zed2i_left_camera_optical_frame"
-    child: "zed2i_right_camera_optical_frame"
-    axis: "x" # Ros convention is YAW, PITCH, ROLL hence (z, y, x)
-    angle_deg: 0.0
-  - parent: "zed2i_left_camera_frame"
-    child: "zed2i_left_camera_optical_frame"
-    axis: "x" # Ros convention is YAW, PITCH, ROLL hence (z, y, x)
-    angle_deg: 180.0
+# rotationOverrides:
+#   - parent: "zed2i_left_camera_optical_frame"
+#     child: "zed2i_right_camera_optical_frame"
+#     axis: "x" # Ros convention is YAW, PITCH, ROLL hence (z, y, x)
+#     angle_deg: 0.0
+#   - parent: "zed2i_left_camera_frame"
+#     child: "zed2i_left_camera_optical_frame"
+#     axis: "x" # Ros convention is YAW, PITCH, ROLL hence (z, y, x)
+#     angle_deg: 180.0

@@ -657,38 +657,47 @@ bool BoxTFProcessor::processRosbags(std::vector<std::string>& tfContainingBags) 
     }
   }
 
-  // --- Update the Frame Names ---
-  updateFrameNames(tfStaticVector_, params.frameMapping);
+  if (!params.frameMapping.empty()) {
+    // --- Update the Frame Names ---
+    updateFrameNames(tfStaticVector_, params.frameMapping);
+    updateFrameNames(tfVector_, params.frameMapping);
+  } else {
+    ROS_INFO_STREAM("No frame mapping provided.");
+  }
 
-  // Apply pre-defined rotations
-  applyRotationOverrides(tfStaticVector_);
+  if (!params.rotationOverrides.empty()) {
+    // --- Apply Rotation Overrides ---
+    // Apply pre-defined rotations
+    applyRotationOverrides(tfStaticVector_);
 
-  // Special case: Find transforms with parent "Y" and child "X" and negate translation
-  {
-    bool foundSpecialTransform = false;
-    for (auto& tfStaticMsg : tfStaticVector_) {
-      for (auto& transform : tfStaticMsg.transforms) {
-        if (transform.header.frame_id == "zed2i_left_camera_optical_frame" &&
-            transform.child_frame_id == "zed2i_right_camera_optical_frame") {
-          // Multiply translation components by -1
-          transform.transform.translation.x *= -1;
-          transform.transform.translation.y *= -1;
-          transform.transform.translation.z *= -1;
+    // Special case: Find transforms with parent "Y" and child "X" and negate translation
+    {
+      bool foundSpecialTransform = false;
+      for (auto& tfStaticMsg : tfStaticVector_) {
+        for (auto& transform : tfStaticMsg.transforms) {
+          if (transform.header.frame_id == "zed2i_left_camera_optical_frame" &&
+              transform.child_frame_id == "zed2i_right_camera_optical_frame") {
+            // Multiply translation components by -1
+            transform.transform.translation.x *= -1;
+            transform.transform.translation.y *= -1;
+            transform.transform.translation.z *= -1;
 
-          foundSpecialTransform = true;
-          ROS_INFO_STREAM("Negated translation for transform from zed2i_left_camera_optical_frame to zed2i_right_camera_optical_frame");
+            foundSpecialTransform = true;
+            ROS_INFO_STREAM("Negated translation for transform from zed2i_left_camera_optical_frame to zed2i_right_camera_optical_frame");
+          }
         }
       }
-    }
 
-    if (!foundSpecialTransform) {
-      ROS_WARN_STREAM("No transforms found with parent 'zed2i_left_camera_optical_frame' and child 'zed2i_right_camera_optical_frame'");
+      if (!foundSpecialTransform) {
+        ROS_WARN_STREAM("No transforms found with parent 'zed2i_left_camera_optical_frame' and child 'zed2i_right_camera_optical_frame'");
+      }
     }
+  } else {
+    ROS_INFO_STREAM("No rotation overrides provided.");
   }
 
   {
     // Find transforms from stim320_imu to box_base_model and set them to identity with frame_id = box_base
-    bool foundStimToBoxTransform = false;
     for (auto& tfStaticMsg : tfStaticVector_) {
       for (auto& transform : tfStaticMsg.transforms) {
         if (transform.header.frame_id == "stim320_imu" && transform.child_frame_id == "box_base_model") {
@@ -700,14 +709,11 @@ bool BoxTFProcessor::processRosbags(std::vector<std::string>& tfContainingBags) 
           identity.setIdentity();
           transform.transform = tf2::toMsg(identity);
 
-          foundStimToBoxTransform = true;
-          ROS_INFO_STREAM("Changed transform: stim320_imu -> box_base_model to identity transform from box_base -> box_base_model");
+          ROS_WARN_STREAM_THROTTLE(0.5,"####### OLD TF IS GETTING MERGED #######");
+          ROS_WARN_STREAM_THROTTLE(0.5,"Changed transform: stim320_imu -> box_base_model to identity transform from box_base -> box_base_model");
+          ROS_WARN_STREAM_THROTTLE(0.5,"####### OLD TF IS GETTING MERGED #######");
         }
       }
-    }
-
-    if (!foundStimToBoxTransform) {
-      ROS_WARN_STREAM("No transforms found with parent 'stim320_imu' and child 'box_base_model'");
     }
   }
 

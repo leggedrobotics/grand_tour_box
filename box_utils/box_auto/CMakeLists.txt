@@ -49,6 +49,7 @@ set(CATKIN_PACKAGE_DEPENDENCIES
   anymal_msgs
   gnss_msgs
   any_velodyne_pointcloud
+  box_model
   )
 
 # We pass the path of the `FindXYZ.cmake` files to `CMAKE_MODULE_PATH`

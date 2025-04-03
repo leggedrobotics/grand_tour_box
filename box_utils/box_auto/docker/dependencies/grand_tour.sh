@@ -46,6 +46,7 @@ apt install python3-catkin-tools libc++-dev libc++abi-dev -y
 apt install libxinerama-dev -y
 apt install libxcursor-dev -y
 apt install ros-noetic-tf-conversions -y
+apt install ros-noetic-xacro -y
 # Use: install_deps_ubuntu.sh [ assume-yes ]
 set -ev
 
