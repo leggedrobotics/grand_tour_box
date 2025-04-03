@@ -2,6 +2,7 @@ tfStaticRepetitionPeriod: 5 # seconds
 frameMapping:
   - new: "velodyne_lidar"
     old: "lidar"
+    replicate: true
 
 framePairs:
   - parent: ""
