@@ -123,6 +123,8 @@ services:
   # Input:
   #   - tf_static_start_end.bag
   #   - lpc_tf.bag
+  #   - dlio_hesai.bag
+  #   - ie_tc.bag
   # Output:
   #   - tf_minimal.bag
   tf_static_minimal:
@@ -135,10 +137,14 @@ services:
     depends_on:
       calibration:
         condition: service_completed_successfully
+      dlio_hesai:
+        condition: service_completed_successfully
 
   # Input:
   #   - tf_static_start_end.bag
   #   - lpc_tf.bag
+  #   - dlio_hesai.bag
+  #   - ie_tc.bag
   # Output:
   #   - tf_model.bag
   tf_static_model:
@@ -150,6 +156,8 @@ services:
       ]
     depends_on:
       calibration:
+        condition: service_completed_successfully
+      dlio_hesai:
         condition: service_completed_successfully
 
   # Input:
