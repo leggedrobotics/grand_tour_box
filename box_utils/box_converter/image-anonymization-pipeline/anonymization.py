@@ -411,7 +411,7 @@ FULL_CONFIG: Dict[str, AnonymizerConfig] = {
                 "/boxi/zed2i/left/image_raw/compressed",
                 "/boxi/zed2i/right/image_raw/compressed",
             ],
-            True,
+            False,
             "{}_jetson_zed2i_images_anon.bag",
         ),
     },
