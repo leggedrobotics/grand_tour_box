@@ -11,7 +11,7 @@ from dataset_builder.build_metadata import build_metadata_part
 from dataset_builder.dataset_config import load_config
 
 #TODO: make this configurable
-MISSION_NAME = "2024-11-11-12-42-47"
+MISSION_NAME = "release_2024-11-11-12-42-47"
 # MISSION_NAME = "2024-10-01-12-00-49"
 
 DEFAULT_CONFIG_PATH = Path(__file__).parent.parent / "configs" / f"{MISSION_NAME}.yaml"
@@ -26,18 +26,14 @@ DOWNLOAD_FLAG = True
 def download_mission(mission_id: UUID, input_path: Path) -> None:
     input_path.mkdir(parents=True, exist_ok=True)
     kleinkram.download(
-        mission_ids=[mission_id], file_names=["*.bag"], dest=input_path, verbose=True
-    )
+            mission_ids=[mission_id], file_names=["*.bag"], dest=input_path, verbose=True
+        )
 
 
 def run_converter(
     input_path: Path, output_path: Path, *, config_path: Path, mission_prefix: str
 ) -> None:
     
-    #TODO: check if this makes sense --> otherwise download needs to be called first
-    # if not input_path.is_dir():
-    #     input_path.mkdir(parents=True, exist_ok=True)
-
     output_path.mkdir(parents=True, exist_ok=True)
     assert input_path.is_dir()
     topic_registry, metadata_config = load_config(config_path, mission_prefix)
@@ -72,13 +68,16 @@ def main() -> int:
 
     args = parser.parse_args()
 
-    missions = kleinkram.list_missions(mission_names=[args.mission_name])
+    # TODO: delete this
+    breakpoint()
+
+    #TODO: delete this line
+    # if DOWNLOAD_FLAG:
+    missions = kleinkram.list_missions(mission_names=[args.mission_name])      
     assert len(missions) == 1
     mission = missions[0]
 
-    #TODO: delete this line
-    if DOWNLOAD_FLAG:
-        download_mission(mission_id=mission.id, input_path=INPUT_PATH)
+    download_mission(mission_id=mission.id, input_path=INPUT_PATH)
 
     run_converter(
         input_path=INPUT_PATH,
