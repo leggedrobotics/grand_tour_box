@@ -148,7 +148,7 @@ if __name__ == "__main__":
     # Resolve IMU information based on command line argument
     if args.imu == "stim320":
         imu_pattern = "*_jetson_stim.bag"
-        imu_topic = "/gt_box/stim320/imu"
+        imu_topic = "/boxi/stim320/imu"
     elif args.imu == "cpt7":
         imu_pattern = "*_cpt7_raw_imu.bag"
         imu_topic = "/gt_box/cpt7/offline_from_novatel_logs/imu"
