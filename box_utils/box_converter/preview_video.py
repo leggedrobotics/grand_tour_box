@@ -12,7 +12,8 @@ import matplotlib.gridspec as gridspec
 from matplotlib.colors import Normalize
 import cv2
 from box_auto.utils import read_sheet_data
-
+from tf_bag import BagTfTransformer
+from scipy.spatial.transform import Rotation as R
 
 # --- Global Matplotlib Settings ---
 plt.rcParams.update(
@@ -41,14 +42,24 @@ plt.rcParams["figure.subplot.bottom"] = 0.1
 
 # --- Constants ---
 ROS_BAG_PATHS = [
-    get_bag("*_jetson_hdr_front.bag"),
-    get_bag("*_jetson_hdr_right.bag"),
-    get_bag("*_jetson_hdr_left.bag"),
-    get_bag("*_nuc_livox.bag"),
-    get_bag("*_hesai_post_processed.bag"),
+    get_bag("*_jetson_hdr_front_anon.bag"),
+    get_bag("*_jetson_hdr_right_anon.bag"),
+    get_bag("*_jetson_hdr_left_anon.bag"),
+    get_bag("*_nuc_livox_read.bag"),
+    get_bag("*_hesai_ready.bag"),
     get_bag("*_lpc_state_estimator.bag"),
 ]  # List of bag files
 ODOM_BAG_PATH = get_bag("*_lpc_state_estimator.bag")
+
+
+tf_listener = BagTfTransformer(get_bag("*_tf_static.bag"))
+try:
+    trans, quat = tf_listener.lookupTransform("livox_lidar", "hesai_lidar", None, latest=True)
+except Exception as e:
+    print(f"Transform lookup failed: {e}")
+    exit(-1)
+
+rotation = R.from_quat(quat)  # Create rotation object from quaternion
 
 MISSION_NAME = Path(ROS_BAG_PATHS[0]).name.replace("_jetson_hdr_front.bag", "")
 OUTPUT_VIDEO_PATH = Path(ARTIFACT_FOLDER) / "youtube" / f"{MISSION_NAME}.mp4"
@@ -130,7 +141,7 @@ class VideoGenerator:
         elif "/gt_box/inertial_explorer/tc/gt_poses_novatel" in topic:
             self.gnss_queue[timestamp] = (topic, msg, t)
 
-    def _find_closest_message_and_convert(self, target_time, queue, max_diff=0.1):
+    def _find_closest_message_and_convert(self, target_time, queue, max_diff=0.1, convert=False):
         if not queue:
             return None
 
@@ -139,6 +150,13 @@ class VideoGenerator:
             for time in list(queue.keys()):
                 if time < closest_time:
                     del queue[time]
+
+            if convert:
+                res = self.convert(queue.pop(closest_time))  # returns x,y,z tuple
+                point = np.array(res)  # Convert to numpy array
+                transformed_point = (rotation.apply(point.T) + trans).T  # Apply rotation and translation
+                return transformed_point  # Convert back to list
+
             return self.convert(queue.pop(closest_time))
         return None
 
@@ -189,7 +207,7 @@ class VideoGenerator:
             ODOM_BAG_PATH, distance_threshold=1.0, video_duration_seconds=MAX_FRAMES * secs_between_frames
         )
 
-        robot_start_moving_time_in_s += 5  # Add some buffer time
+        robot_start_moving_time_in_s = start_time  # Add some buffer time
         x_spread = max_x - min_x
         y_spread = max_y - min_y
         adjusted_min_x = np.floor(0 - 0.1 * x_spread)
@@ -228,7 +246,7 @@ class VideoGenerator:
                     front_image = self.convert(v)
                     left_image = self._find_closest_message_and_convert(target_time_in_s, self.hdr_left_queue)
                     right_image = self._find_closest_message_and_convert(target_time_in_s, self.hdr_right_queue)
-                    livox = self._find_closest_message_and_convert(target_time_in_s, self.livox_queue)
+                    livox = self._find_closest_message_and_convert(target_time_in_s, self.livox_queue, convert=True)
                     hesai = self._find_closest_message_and_convert(target_time_in_s, self.hesai_queue)
                     pose = self._find_closest_message_and_convert(target_time_in_s, self.pose_queue)
                     # ap20 = self._find_closest_message_and_convert(target_time_in_s, self.ap20_queue)
