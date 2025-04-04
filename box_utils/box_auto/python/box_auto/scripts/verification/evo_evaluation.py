@@ -100,16 +100,16 @@ def load_config(config_path):
 import argparse
 
 if __name__ == "__main__":
-  # For Time offset evaluation on DLIO and CPT7 -> evo_evaluations_time_offset
-  # For Time offset evaluation on DLIO and STIM320 -> evo_evaluations_time_offset_STIM
-  # For General Evaluation -> evo_evaluations
-  # For Ground Truth comparison -> evo_evaluations_gt_truth_comparison
-  # For IMU comparisons on DLIO -> evo_evaluations_imu_comparison
-  # For IMU comparisons on GMSF -> evo_evaluations_GMSF_IMU_comparison
-  # For translation offset -> evo_evaluations_translation_offset
-  # For rotational offset -> evo_evaluations_rotation_offset
+    # For Time offset evaluation on DLIO and CPT7 -> evo_evaluations_time_offset
+    # For Time offset evaluation on DLIO and STIM320 -> evo_evaluations_time_offset_STIM
+    # For General Evaluation -> evo_evaluations
+    # For Ground Truth comparison -> evo_evaluations_gt_truth_comparison
+    # For IMU comparisons on DLIO -> evo_evaluations_imu_comparison
+    # For IMU comparisons on GMSF -> evo_evaluations_GMSF_IMU_comparison
+    # For translation offset -> evo_evaluations_translation_offset
+    # For rotational offset -> evo_evaluations_rotation_offset
 
-  parser = argparse.ArgumentParser(description="Script configuration")
+    parser = argparse.ArgumentParser(description="Script configuration")
     parser.add_argument(
         "--config_name",
         type=str,
