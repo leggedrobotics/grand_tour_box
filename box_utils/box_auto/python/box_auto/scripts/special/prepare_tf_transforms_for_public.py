@@ -24,11 +24,7 @@ if __name__ == "__main__":
     print(f"Using configuration: {args.config_name}")
 
     # The first pattern is used to infer the date tag of the output bag.
-    patterns = [
-        "*_lpc_tf.bag",
-        "*_tf_static.bag",
-        "*_cpt7_ie_tc.bag",
-    ]
+    patterns = ["*_lpc_tf.bag", "*_tf_static.bag", "*_cpt7_ie_tc.bag", "*_hesai_dlio.bag"]
 
     # Patterns for optional applications.
     # "*_hesai_dlio.bag",
