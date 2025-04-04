@@ -83,7 +83,7 @@ def get_bag(
         uuid = os.environ["MISSION_UUID"]
         kleinkram.download(
             mission_ids=[uuid],
-            file_names=pattern,
+            file_names=[pattern],
             dest=directory,
             verbose=True,
         )
@@ -145,7 +145,7 @@ def find_and_extract_non_matching(directory, pattern):
     return non_matching
 
 
-def get_file(pattern, directory=MISSION_DATA, rglob=False):
+def get_file(pattern, directory=MISSION_DATA, rglob=False, return_list=False):
     """
     Find a single file matching the given pattern in the specified directory.
 
@@ -162,19 +162,30 @@ def get_file(pattern, directory=MISSION_DATA, rglob=False):
     else:
         files = list(Path(directory).glob(pattern))
 
-    if len(files) != 1:
+    if len(files) == 0:
         print(f"Error: Found {len(files)} matching files for pattern {pattern} in directory {directory}")
         return None, False
+    
+    if len(files) > 1:
+        if return_list:
+            return files
+
+        raise ValueError(
+            f"Error: More than 1 matching bag files found. If you want list of these files set return_list=True. Bags : {pattern} in directory {directory}: \n" + str(files)
+        )
 
     return str(files[0]), True
 
 
-def upload_bag(bags, upload_to_pub=True):
+def upload_bag(bags, upload="pub"):
     if os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE":
         uuid = os.environ["MISSION_UUID"]
 
-        if upload_to_pub:
+        if upload == "pub":
             uuid_map = {v["uuid"]: v["uuid_pub"] for k, v in get_uuid_mapping().items()}
+            uuid = uuid_map[uuid]
+        elif upload == "release":
+            uuid_map = {v["uuid"]: v["uuid_release"] for k, v in get_uuid_mapping().items()}
             uuid = uuid_map[uuid]
 
         if type(bags) is not list:

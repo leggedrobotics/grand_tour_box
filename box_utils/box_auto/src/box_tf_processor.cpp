@@ -82,20 +82,45 @@ bool BoxTFProcessor::combineTransforms(tf2_ros::Buffer& tfBuffer, std::vector<tf
 }
 
 void BoxTFProcessor::updateFrameNames(std::vector<tf2_msgs::TFMessage>& tfMsgs,
-                                      const std::vector<std::pair<std::string, std::string>>& frameMapping) {
+                                      const std::vector<std::tuple<std::string, std::string, bool>>& frameMapping) {
   for (auto& msg : tfMsgs) {
+    std::vector<geometry_msgs::TransformStamped> newTransforms;
+
     for (auto& t : msg.transforms) {
+      bool needsReplication = false;
+      geometry_msgs::TransformStamped replicatedTransform = t;
+
       for (const auto& mapping : frameMapping) {
-        const std::string& newName = mapping.first;
-        const std::string& oldName = mapping.second;
+        const std::string& newName = std::get<0>(mapping);
+        const std::string& oldName = std::get<1>(mapping);
+        const bool replicate = std::get<2>(mapping);
+
         if (t.header.frame_id == oldName) {
-          t.header.frame_id = newName;
+          if (replicate) {
+            needsReplication = true;
+            replicatedTransform.header.frame_id = newName;
+          } else {
+            t.header.frame_id = newName;
+          }
         }
+
         if (t.child_frame_id == oldName) {
-          t.child_frame_id = newName;
+          if (replicate) {
+            needsReplication = true;
+            replicatedTransform.child_frame_id = newName;
+          } else {
+            t.child_frame_id = newName;
+          }
         }
       }
+
+      if (needsReplication) {
+        newTransforms.push_back(replicatedTransform);
+      }
     }
+
+    // Add all replicated transforms to the message
+    msg.transforms.insert(msg.transforms.end(), newTransforms.begin(), newTransforms.end());
   }
 }
 
@@ -138,7 +163,12 @@ bool BoxTFProcessor::loadBoxTfParameters(ros::NodeHandle& nh, BoxTfParams& param
         if (xmlMapping[i].hasMember("new") && xmlMapping[i].hasMember("old")) {
           std::string new_frame = static_cast<std::string>(xmlMapping[i]["new"]);
           std::string old_frame = static_cast<std::string>(xmlMapping[i]["old"]);
-          params.frameMapping.push_back(std::make_pair(new_frame, old_frame));
+          bool replicate = static_cast<bool>(xmlMapping[i]["replicate"]);
+          if (new_frame.empty() || old_frame.empty()) {
+            ROS_WARN("framePairs entry %d has empty 'new_frame' or 'old_frame' value. Skipping.", i);
+            continue;
+          }
+          params.frameMapping.push_back(std::make_tuple(new_frame, old_frame, replicate));
         } else {
           ROS_WARN("frameMapping entry %d is missing 'new' or 'old' keys.", i);
         }
@@ -160,6 +190,11 @@ bool BoxTFProcessor::loadBoxTfParameters(ros::NodeHandle& nh, BoxTfParams& param
         if (xmlPairs[i].hasMember("parent") && xmlPairs[i].hasMember("child")) {
           std::string parent = static_cast<std::string>(xmlPairs[i]["parent"]);
           std::string child = static_cast<std::string>(xmlPairs[i]["child"]);
+          // Skip entries with empty parent or child frames
+          if (parent.empty() || child.empty()) {
+            ROS_WARN("framePairs entry %d has empty 'parent' or 'child' value. Skipping.", i);
+            continue;
+          }
           params.framePairs.push_back(std::make_pair(parent, child));
         } else {
           ROS_WARN("framePairs entry %d is missing 'parent' or 'child' keys.", i);
@@ -494,7 +529,31 @@ bool BoxTFProcessor::processRosbags(std::vector<std::string>& tfContainingBags) 
   ROS_INFO_STREAM("First TF timestamp: " << firstTFTime);
   ROS_INFO_STREAM("Last TF timestamp: " << lastTFTime);
 
-  tf2_ros::Buffer tfBuffer_(ros::Duration(lastTFTime.toSec() - firstTFTime.toSec() + 5.0));
+  // Find earliest tf_static timestamp
+  ros::Time earliestTfStaticTime;
+  if (!tfStaticVector_.empty() && !tfStaticVector_.front().transforms.empty()) {
+    earliestTfStaticTime = tfStaticVector_.front().transforms.front().header.stamp;
+    ROS_INFO_STREAM("Earliest TF static timestamp: " << earliestTfStaticTime);
+
+    // Check if difference is more than 10 seconds
+    double timeDiff = std::abs((earliestTfStaticTime - firstTFTime).toSec());
+    if (timeDiff > 10.0) {
+      ROS_WARN_STREAM("Time difference between earliest tf_static and tf is "
+                      << timeDiff << " seconds (>10s). Adjusting tf_static timestamps to match earliest tf time.");
+
+      // Adjust all tf_static timestamps to match earliest tf time
+      for (auto& msg : tfStaticVector_) {
+        for (auto& transform : msg.transforms) {
+          transform.header.stamp = firstTFTime;
+        }
+      }
+      ROS_INFO_STREAM("All tf_static timestamps adjusted to: " << firstTFTime);
+    }
+  } else {
+    ROS_INFO_STREAM("No tf_static transforms found.");
+  }
+
+  tf2_ros::Buffer tfBuffer_(ros::Duration(lastTFTime.toSec() - firstTFTime.toSec() + 500.0));
   for (const auto& staticMsg : tfStaticVector_) {
     for (const auto& transform : staticMsg.transforms) {
       tfBuffer_.setTransform(transform, "default_authority", true);
@@ -506,47 +565,6 @@ bool BoxTFProcessor::processRosbags(std::vector<std::string>& tfContainingBags) 
       tfBuffer_.setTransform(transform, "default_authority", false);
     }
   }
-
-  // {
-  //   // Merge all tfStatic messages into one message while avoiding duplicates
-  //   if (!tfStaticVector_.empty()) {
-  //     // Use a set to track parent-child pairs we've already seen
-  //     std::set<std::pair<std::string, std::string>> seenPairs;
-  //     tf2_msgs::TFMessage mergedStaticMsg;
-
-  //     for (const auto& msg : tfStaticVector_) {
-  //       for (const auto& transform : msg.transforms) {
-  //         // Create a pair representing this parent-child relationship
-  //         std::pair<std::string, std::string> framePair(transform.header.frame_id, transform.child_frame_id);
-
-  //         // Only add this transform if we haven't seen this parent-child pair before
-  //         if (seenPairs.find(framePair) == seenPairs.end()) {
-  //           mergedStaticMsg.transforms.push_back(transform);
-  //           seenPairs.insert(framePair);
-  //           ROS_INFO_STREAM("Adding unique transform: " << transform.header.frame_id << " -> " << transform.child_frame_id);
-  //         } else {
-  //           ROS_DEBUG_STREAM("Skipping duplicate transform: " << transform.header.frame_id << " -> " << transform.child_frame_id);
-  //         }
-  //       }
-  //     }
-
-  //     // Replace the original vector with our deduplicated version
-  //     tfStaticVector_.clear();
-  //     tfStaticVector_.push_back(mergedStaticMsg);
-  //     ROS_INFO_STREAM("Merged static transforms: found " << mergedStaticMsg.transforms.size() << " unique transforms");
-  //   }
-  // }
-
-  // if (!tfVector_.empty() && !tfVector_[0].transforms.empty()) {
-  //   for (auto& tfStaticMsg : tfStaticVector_) {
-  //     for (auto& transform : tfStaticMsg.transforms) {
-  //       transform.header.stamp = firstTFTime;
-  //     }
-  //   }
-  // } else {
-  //   ROS_ERROR_STREAM("tfVector_ is empty or has no valid transforms to extract time.");
-  //   return false;
-  // }
 
   // List of child frame ids to remove
   if (params.childFramesToInverse.empty()) {
@@ -576,31 +594,6 @@ bool BoxTFProcessor::processRosbags(std::vector<std::string>& tfContainingBags) 
       inverseTransforms(tfStaticVector_);
     }
   }
-
-  // We'll store each combined transform along with its chain for later removal.
-  // We'll store each combined transform along with its (empty) chain for later removal.
-  // std::vector<std::pair<geometry_msgs::TransformStamped, std::vector<const geometry_msgs::TransformStamped*>>> combinedResults;
-
-  // // Now, remove all individual transforms that are part of any chain.
-  // std::unordered_set<const geometry_msgs::TransformStamped*> removalSet;
-  // for (const auto& entry : combinedResults) {
-  //   for (const auto* ptr : entry.second) {
-  //     removalSet.insert(ptr);
-  //   }
-  // }
-  // for (auto& msg : tfStaticVector_) {
-  //   msg.transforms.erase(
-  //       std::remove_if(msg.transforms.begin(), msg.transforms.end(),
-  //                      [&removalSet](const geometry_msgs::TransformStamped& t) { return removalSet.find(&t) != removalSet.end(); }),
-  //       msg.transforms.end());
-  // }
-
-  // Add all combined transforms as new tf2_msgs::TFMessage entries.
-  // for (const auto& entry : combinedResults) {
-  //   tf2_msgs::TFMessage newMsg;
-  //   newMsg.transforms.push_back(entry.first);
-  //   tfStaticVector_.push_back(newMsg);
-  // }
 
   // Add all child frames from framePairs to childFramesToRemove
   for (const auto& pair : params.framePairs) {
@@ -664,65 +657,70 @@ bool BoxTFProcessor::processRosbags(std::vector<std::string>& tfContainingBags) 
     }
   }
 
-  // --- Update the Frame Names ---
-  updateFrameNames(tfStaticVector_, params.frameMapping);
+  if (!params.frameMapping.empty()) {
+    // --- Update the Frame Names ---
+    updateFrameNames(tfStaticVector_, params.frameMapping);
+    updateFrameNames(tfVector_, params.frameMapping);
+  } else {
+    ROS_INFO_STREAM("No frame mapping provided.");
+  }
 
-  // Apply pre-defined rotations
-  applyRotationOverrides(tfStaticVector_);
+  if (!params.rotationOverrides.empty()) {
+    // --- Apply Rotation Overrides ---
+    // Apply pre-defined rotations
+    applyRotationOverrides(tfStaticVector_);
 
-  // Special case: Find transforms with parent "Y" and child "X" and negate translation
+    // Special case: Find transforms with parent "Y" and child "X" and negate translation
+    {
+      bool foundSpecialTransform = false;
+      for (auto& tfStaticMsg : tfStaticVector_) {
+        for (auto& transform : tfStaticMsg.transforms) {
+          if (transform.header.frame_id == "zed2i_left_camera_optical_frame" &&
+              transform.child_frame_id == "zed2i_right_camera_optical_frame") {
+            // Multiply translation components by -1
+            transform.transform.translation.x *= -1;
+            transform.transform.translation.y *= -1;
+            transform.transform.translation.z *= -1;
+
+            foundSpecialTransform = true;
+            ROS_INFO_STREAM("Negated translation for transform from zed2i_left_camera_optical_frame to zed2i_right_camera_optical_frame");
+          }
+        }
+      }
+
+      if (!foundSpecialTransform) {
+        ROS_WARN_STREAM("No transforms found with parent 'zed2i_left_camera_optical_frame' and child 'zed2i_right_camera_optical_frame'");
+      }
+    }
+  } else {
+    ROS_INFO_STREAM("No rotation overrides provided.");
+  }
+
   {
-    bool foundSpecialTransform = false;
+    // Find transforms from stim320_imu to box_base_model and set them to identity with frame_id = box_base
     for (auto& tfStaticMsg : tfStaticVector_) {
       for (auto& transform : tfStaticMsg.transforms) {
-        if (transform.header.frame_id == "zed2i_left_camera_optical_frame" &&
-            transform.child_frame_id == "zed2i_right_camera_optical_frame") {
-          // Multiply translation components by -1
-          transform.transform.translation.x *= -1;
-          transform.transform.translation.y *= -1;
-          transform.transform.translation.z *= -1;
+        if (transform.header.frame_id == "stim320_imu" && transform.child_frame_id == "box_base_model") {
+          // Change the frame_id to box_base
+          transform.header.frame_id = "box_base";
 
-          foundSpecialTransform = true;
-          ROS_INFO_STREAM("Negated translation for transform from zed2i_left_camera_optical_frame to zed2i_right_camera_optical_frame");
+          // Set transform to identity
+          tf2::Transform identity;
+          identity.setIdentity();
+          transform.transform = tf2::toMsg(identity);
+
+          ROS_WARN_STREAM_THROTTLE(0.5,"####### OLD TF IS GETTING MERGED #######");
+          ROS_WARN_STREAM_THROTTLE(0.5,"Changed transform: stim320_imu -> box_base_model to identity transform from box_base -> box_base_model");
+          ROS_WARN_STREAM_THROTTLE(0.5,"####### OLD TF IS GETTING MERGED #######");
         }
       }
     }
-
-    if (!foundSpecialTransform) {
-      ROS_WARN_STREAM("No transforms found with parent 'zed2i_left_camera_optical_frame' and child 'zed2i_right_camera_optical_frame'");
-    }
   }
-
-  // {
-  //   ROS_INFO_STREAM("Repeating tf_static transforms every " << tfStaticRepetitionPeriod_ << " second(s) from " << firstTFTime << " to "
-  //                                                           << lastTFTime);
-
-  //   // Repeat the tf_static transforms every "tfStaticRepetitionPeriod_" seconds between first and last times.
-  //   for (ros::Time t = firstTFTime; t <= lastTFTime; t += ros::Duration(tfStaticRepetitionPeriod_)) {
-  //     for (const auto& tfStaticMsg : tfStaticVector_) {
-  //       // Create a modified copy with updated header times.
-  //       tf2_msgs::TFMessage repeatedMsg = tfStaticMsg;
-  //       for (auto& transform : repeatedMsg.transforms) {
-  //         transform.header.stamp = t;
-  //       }
-  //       outBag.write("/tf_static", t, repeatedMsg);
-  //     }
-  //   }
-  // }
 
   {
     // Find the earliest timestamp in tfStaticVector_
     ros::Time earliestStaticTime = firstTFTime;  // Default to firstTFTime
     bool foundValidTime = false;
-
-    // for (const auto& tfStaticMsg : tfStaticVector_) {
-    //   for (const auto& transform : tfStaticMsg.transforms) {
-    //     if (transform.header.stamp != ros::Time(0) && (!foundValidTime || transform.header.stamp < earliestStaticTime)) {
-    //       earliestStaticTime = transform.header.stamp;
-    //       foundValidTime = true;
-    //     }
-    //   }
-    // }
 
     ROS_INFO_STREAM("Writing tf_static transforms with timestamp: " << earliestStaticTime);
 
@@ -746,15 +744,6 @@ bool BoxTFProcessor::processRosbags(std::vector<std::string>& tfContainingBags) 
         }
       }
     }
-
-    // // Write the single combined message to the bag
-    // if (!combinedStaticMsg.transforms.empty()) {
-    //   ROS_INFO_STREAM("Writing combined tf_static message with " << combinedStaticMsg.transforms.size()
-    //                                                              << " unique transforms at timestamp " << earliestStaticTime);
-    //   outBag.write("/tf_static", earliestStaticTime, combinedStaticMsg);
-    // } else {
-    //   ROS_WARN_STREAM("No static transforms found to write");
-    // }
 
     // Write the combined static message periodically
     if (!combinedStaticMsg.transforms.empty()) {

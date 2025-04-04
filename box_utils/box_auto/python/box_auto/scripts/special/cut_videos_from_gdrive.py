@@ -135,6 +135,8 @@ def process_video_list(video_list: List[Tuple[str, str, str, str]], output_dir: 
 
 if __name__ == "__main__":
     # Example usage
+
+    # https://drive.google.com/file/d/1Bbd_JSAJlaz51b4Q01PMWef4tvBluQTh/view?usp=sharing  # to be added
     video_list = [
         (
             "00:00:00",

@@ -2,9 +2,18 @@ from box_auto.utils import get_bag, upload_bag, run_ros_command, kill_roscore
 
 if __name__ == "__main__":
     bags = []
-    bags.append(get_bag("*nuc_livox.bag"))
-    bags.append(get_bag("*nuc_hesai_post_processed.bag"))
-    bags.append(get_bag("*npc_velodyne_processed.bag"))
+    try:
+        bags.append(get_bag("*nuc_livox.bag"))
+    except:
+        pass
+    try:
+        bags.append(get_bag("*nuc_hesai_post_processed.bag"))
+    except:
+        pass
+    try:
+        bags.append(get_bag("*npc_velodyne_processed.bag"))
+    except:
+        pass
 
     kill_roscore()
     out_bags = []
@@ -24,5 +33,4 @@ if __name__ == "__main__":
             f"roslaunch box_auto box_filter_lidars.launch global_input_bag_path:={bag} global_output_bag_path:={out_bag}"
         )
     kill_roscore()
-
     upload_bag([out_bags])

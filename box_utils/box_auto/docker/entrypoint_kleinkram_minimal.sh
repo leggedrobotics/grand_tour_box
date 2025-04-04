@@ -8,7 +8,7 @@ cd $HOME
 
 echo  $APIKEY
 
-klein endpoint set $ENDPOINT
+klein endpoint server $KLEINKRAM_API_ENDPOINT $KLEINKRAM_S3_ENDPOINT
 klein login --key $APIKEY
 
 export KLEINKRAM_ACTIVE=ACTIVE

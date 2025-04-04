@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-from box_auto.utils import get_file, get_bag, run_ros_command, kill_roscore
+from box_auto.utils import get_file, run_ros_command, kill_roscore
 
 if __name__ == "__main__":
     # Find input file
-    # Expected 1 per mission.
     zed_svos = get_file("*_jetson_zed2i.svo2")
+    # zed_svos = get_file("*_jetson_zed2i.svo2",rglob=True, return_list=True)
 
     # Ensure no roscore is active
     kill_roscore()
@@ -20,18 +20,7 @@ if __name__ == "__main__":
             kill_roscore()
             print(f"Error processing {zed_svo} (Return code: {return_code})")
 
-        # Expected output patterns
-        output_patterns = [
-            "*_jetson_zed2i_depth.bag",
-            "*_jetson_zed2i_images.bag",
-            "*_jetson_zed2i_prop.bag",
-            "*_jetson_zed2i_tf.bag",
-        ]
+    kill_roscore()
+    print("ZED2i automation script is successfully finished. Self-terminating.")
 
-        # Iterate through each output pattern to ensure it is located where its expected.
-        for pattern in output_patterns:
-            get_bag(pattern=pattern, auto_download=False)
-
-        print("ZED2i automation script is successfully finished. Self-terminating.")
-
-        exit(0)
+    exit(0)

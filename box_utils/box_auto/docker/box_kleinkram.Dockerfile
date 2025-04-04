@@ -1,7 +1,7 @@
 
 
-FROM nvidia/cuda:12.2.2-cudnn8-devel-ubuntu20.04 AS builder
-# FROM nvidia/cuda:12.4.1-cudnn-devel-ubuntu20.04 AS builder 
+# FROM nvidia/cuda:12.2.2-cudnn8-devel-ubuntu20.04 AS builder
+FROM nvidia/cuda:12.4.1-cudnn-devel-ubuntu20.04 AS builder 
 
 # To avoid tzdata asking for geographic location...
 ARG DEBIAN_FRONTEND=noninteractive
@@ -11,11 +11,11 @@ ENV DEBIAN_frontend=noninteractive
 ENV NVIDIA_VISIBLE_DEVICES=${NVIDIA_VISIBLE_DEVICES:-all}
 ENV NVIDIA_DRIVER_CAPABILITIES=${NVIDIA_DRIVER_CAPABILITIES:+$NVIDIA_DRIVER_CAPABILITIES,}graphics,compute,video,utility
 
-RUN echo "Europe/Zurich" > /etc/localtime ; echo "CUDA Version 12.2.2" > /usr/local/cuda/version.txt
+RUN echo "Europe/Zurich" > /etc/localtime ; echo "CUDA Version 12.4.1" > /usr/local/cuda/version.txt
 
 COPY dependencies/zed.sh /zed.sh
 RUN sh -c "chmod +x /zed.sh"
-RUN /bin/bash -c '/zed.sh 12 2'
+RUN /bin/bash -c '/zed.sh 12 4'
 
 COPY dependencies/general.sh /general.sh
 RUN sh -c "chmod +x /general.sh"
@@ -43,5 +43,8 @@ RUN chmod +x /entrypoint.sh
 RUN apt-get update && apt-get install -y fonts-roboto && rm -rf /var/lib/apt/lists/*
 RUN fc-cache -f -v
 
+RUN mkdir /home/catkin_ws/src/grand_tour_box/.secrets
+
+COPY .secrets/halogen-oxide-451108-u4-67f470bcc02e.json /home/catkin_ws/src/grand_tour_box/.secrets/halogen-oxide-451108-u4-67f470bcc02e.json
 
 ENTRYPOINT ["/entrypoint_kleinkram.sh"]

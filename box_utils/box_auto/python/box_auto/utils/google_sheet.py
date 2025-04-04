@@ -3,14 +3,14 @@ import pathlib
 from box_auto.utils import BOX_AUTO_DIR
 
 
-def read_sheet_data(spreadsheet_id, sheet_name):
+def read_sheet_data(spreadsheet_id, sheet_name_topic="topic_overview", sheet_name_mission="mission_overview"):
     gc = gspread.service_account(
         filename=pathlib.Path(BOX_AUTO_DIR) / "../.." / ".secrets/halogen-oxide-451108-u4-67f470bcc02e.json"
     )
 
     # Open the Google Sheet
     sheet = gc.open_by_key(spreadsheet_id)
-    worksheet = sheet.worksheet(sheet_name)
+    worksheet = sheet.worksheet(sheet_name_topic)
 
     # Read data from A1 to G500
     data = worksheet.get_all_values("A1:G500")
@@ -24,32 +24,23 @@ def read_sheet_data(spreadsheet_id, sheet_name):
         data_list.append({str(k): str(v) for k, v in zip(keys, row)})
 
     current_bag_name = None
-    data_list_raw = []
+    topic_data = []
     for _data in data_list:
         if "Bag: " in _data["topic_name_orig"]:
             current_bag_name = _data["topic_name_orig"].replace("Bag: 2024-11-11-12-42-47_", "")
         if _data["topic_name_orig"] != "":
             if _data["topic_name_orig"][0] == "/" and _data["convert"] in ["Yes", "ROSBAG"]:
                 _data["bag_name_orig"] = current_bag_name
-                data_list_raw.append(_data)
+                topic_data.append(_data)
 
-    return data_list_raw
+    worksheet = sheet.worksheet(sheet_name_mission)
+    data = worksheet.get_all_values("A1:Y71")
 
+    data_list = []
 
-# Define the spreadsheet ID and sheet name
-SPREADSHEET_ID = "1mENfskg_jO_vJGFM5yonqPuf-wYUNmg26IPv3pOu3gg"
-SHEET_NAME = "bag_overview"
+    keys = data[0][1:]
+    mission_data = {}
+    for row in data[1:]:
+        mission_data[row[0]] = {str(k): str(v) for k, v in zip(keys, row[1:])}
 
-# Read the data and print the list
-data_list_raw = read_sheet_data(SPREADSHEET_ID, SHEET_NAME)
-
-from collections import defaultdict
-
-# Create a dictionary with bag_name_out as the key and a list of missions as the value
-data_dict_by_bag_name = defaultdict(list)
-for entry in data_list_raw:
-    data_dict_by_bag_name[entry["bag_name_out"]].append(entry)
-
-# Do a quick sorting operation
-for k, v in data_dict_by_bag_name.items():
-    print(len(v))
+    return topic_data, mission_data

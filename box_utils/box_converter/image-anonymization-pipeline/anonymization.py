@@ -383,21 +383,21 @@ FULL_CONFIG: Dict[str, AnonymizerConfig] = {
         )
     },
     "hdr": {
-        "{}_jetson_hdr_left_updated.bag": (
+        "{}_jetson_hdr_left_encoding.bag": (
             [
                 "/gt_box/hdr_left/image_raw/compressed",
             ],
             False,
             "{}_jetson_hdr_left_anon.bag",
         ),
-        "{}_jetson_hdr_front_updated.bag": (
+        "{}_jetson_hdr_front_encoding.bag": (
             [
                 "/gt_box/hdr_front/image_raw/compressed",
             ],
             False,
             "{}_jetson_hdr_front_anon.bag",
         ),
-        "{}_jetson_hdr_right_updated.bag": (
+        "{}_jetson_hdr_right_encoding.bag": (
             [
                 "/gt_box/hdr_right/image_raw/compressed",
             ],
@@ -408,10 +408,10 @@ FULL_CONFIG: Dict[str, AnonymizerConfig] = {
     "zed2i": {
         "{}_jetson_zed2i_images.bag": (
             [
-                "/gt_box/zed2i/zed_node/left/image_rect_color/compressed",
-                "/gt_box/zed2i/zed_node/right/image_rect_color/compressed",
+                "/boxi/zed2i/left/image_raw/compressed",
+                "/boxi/zed2i/right/image_raw/compressed",
             ],
-            True,
+            False,
             "{}_jetson_zed2i_images_anon.bag",
         ),
     },
@@ -458,7 +458,7 @@ def main() -> int:
     mission = get_mission(args.mission_id)
 
     # get anonymizer config
-    config = get_anonymizer_config(prefix=mission.name, camera=args.cam)
+    config = get_anonymizer_config(prefix=mission.name.replace("pub_", ""), camera=args.cam)
 
     # download the files that need to be anonymized
     download_files(config=config, mission_id=mission.id, input_path=INPUT_PATH)

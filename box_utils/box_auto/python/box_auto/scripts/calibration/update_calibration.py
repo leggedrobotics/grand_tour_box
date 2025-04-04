@@ -6,7 +6,7 @@ from pathlib import Path
 import rospy
 from sensor_msgs.msg import CameraInfo
 from tqdm import tqdm
-
+import numpy as np
 from box_auto.utils import WS, get_bag, upload_bag
 
 CALIBRATION_DATA_PATH = Path(WS) / "src/grand_tour_box/box_calibration/box_calibration/calibration"
@@ -20,14 +20,13 @@ CAMERA_INFO_PATTERNS = [
 
 
 def load_calibration_data() -> Dict[str, Dict[str, Any]]:
-    bag_paths = [str(s) for s in Path(CALIBRATION_DATA_PATH).rglob("*tf_static_with_metadata.bag")]
-
+    bag_paths = [str(s) for s in Path(CALIBRATION_DATA_PATH).glob("*tf_static_metadata_new_*.bag")]
     calibration_data = {}
     # Iterate through all bag files
     for bag_path in bag_paths:
         # Open the bag file
         calibration_dict = {}
-
+        print(bag_path)
         with rosbag.Bag(bag_path, "r") as bag:
             # Iterate through all messages in the bag
             for topic, msg, _t in bag.read_messages():
@@ -134,8 +133,7 @@ def update_camera_info(calibration):
 
                         new_msg.header = msg.header
                         outbag.write(topic, new_msg, t)
-                    else:
-                        outbag.write(topic, msg, t)
+
                     pbar.update(1)
 
         upload_bag(out_bag)
@@ -150,26 +148,23 @@ if __name__ == "__main__":
     reference_date = reference_bag_path.split("/")[-1].split("_")[0]
     reference_date = datetime.strptime(reference_date, "%Y-%m-%d-%H-%M-%S")
 
-    closest_date = None
     calibration = None
+    best_date = None
+    best_s = np.inf
     for date, v in calibration_data.items():
-
-        print("CURRENTLY NOT MATCHING IS PERFORMED!!!! ")
         calibration = v
-
         current_date = datetime.strptime(date, "%Y-%m-%d-%H-%M-%S")
-        if (current_date - reference_date).total_seconds() > 0 and (
-            closest_date is None
-            or (reference_date - current_date).total_seconds() < (reference_date - closest_date).total_seconds()
-        ):
-            closest_date = current_date
+
+        delta_s = (reference_date - current_date).total_seconds()
+        if delta_s > 0 and (delta_s < best_s):
+            best_s = delta_s
             calibration = v
-    print(f"Closest date: {closest_date} to reference date: {reference_date}")
+            best_date = date
+    print(f"Closest date: {best_date} to reference date: {reference_date}")
 
     # Step 2: Update tf_static
     update_tf_static(calibration["tf_static"])
 
     # Step 3: Update camera intrinsics
     update_camera_info(calibration)
-
     exit(0)

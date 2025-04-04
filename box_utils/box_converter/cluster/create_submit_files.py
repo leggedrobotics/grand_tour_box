@@ -1,17 +1,23 @@
 from box_auto.utils import get_uuid_mapping
 import os
 
-SCHEDULE = False
-submit_dir = os.path.expanduser("~/git/grand_tour_box/box_utils/box_converter/cluster/.submit")
+SCHEDULE = True
+cameras = ["hdr", "alphasense", "zed2i"]
+host = "euler.ethz.ch"
+info_scratch = {"hdr": 80000, "alphasense": 80000, "zed2i": 200000}
+nr_of_missions = 1
 
+submit_dir = os.path.expanduser("~/git/grand_tour_box/box_utils/box_converter/cluster/.submit")
 if not os.path.exists(submit_dir):
     os.makedirs(submit_dir)
 
 uuid_mappings = get_uuid_mapping()
 
 for name, data in uuid_mappings.items():
-    uuid = data["uuid"]
-    for camera in ["hdr"]:
+    uuid = data["uuid_pub"]
+    for camera in cameras:
+        scratch = info_scratch[camera]
+
         content = f"""#!/bin/bash
 
 #SBATCH --account=es_hutter
@@ -20,7 +26,7 @@ for name, data in uuid_mappings.items():
 #SBATCH --gpus=1
 #SBATCH --time=4:00:00
 #SBATCH --mem-per-cpu=4048
-#SBATCH --tmp=20000
+#SBATCH --tmp={scratch}
 #SBATCH --output="/cluster/home/jonfrey/grand_tour_box/box_utils/box_converter/cluster/.out/{name}_out.log"
 #SBATCH --error="/cluster/home/jonfrey/grand_tour_box/box_utils/box_converter/cluster/.out/{name}_err.log"
 #SBATCH --open-mode=truncate
@@ -39,5 +45,12 @@ exit 0
         with open(script_path, "w") as file:
             file.write(content)
 
-        if SCHEDULE:
-            os.system(f"sbatch {script_path}")
+
+if SCHEDULE:
+    os.system(f"scp -r {submit_dir} {host}:/cluster/scratch/jonfrey/")
+    for j, name in enumerate(uuid_mappings.keys()):
+        if j >= nr_of_missions:
+            break
+
+        for camera in cameras:
+            os.system(f"ssh {host} sbatch /cluster/scratch/jonfrey/.submit/{name}_{camera}.sh")
