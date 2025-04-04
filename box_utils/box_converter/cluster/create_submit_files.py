@@ -27,8 +27,8 @@ for name, data in uuid_mappings.items():
 #SBATCH --time=4:00:00
 #SBATCH --mem-per-cpu=4048
 #SBATCH --tmp={scratch}
-#SBATCH --output="/cluster/home/jonfrey/grand_tour_box/box_utils/box_converter/cluster/.out/{name}_out.log"
-#SBATCH --error="/cluster/home/jonfrey/grand_tour_box/box_utils/box_converter/cluster/.out/{name}_err.log"
+#SBATCH --output="/cluster/scratch/jonfrey/.submit/{name}_{camera}_out.log"
+#SBATCH --error="/cluster/scratch/jonfrey/.submit/{name}_{camera}_err.log"
 #SBATCH --open-mode=truncate
 
 
