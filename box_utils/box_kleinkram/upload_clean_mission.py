@@ -2,7 +2,6 @@ from pathlib import Path
 from box_auto.utils import MISSION_DATA, get_bag, get_uuid_mapping, read_sheet_data
 import rosbag
 import rospy
-import subprocess
 from collections import defaultdict
 from box_auto.utils import upload_simple
 
@@ -71,9 +70,16 @@ for output_bag_name, topic_configs in data_dict_by_bag_name.items():
                 bag_path_in = get_bag("*" + topic_config["bag_name_orig"])
 
                 with rosbag.Bag(bag_path_in, "r", compression="lz4") as bag_in:
+                    desired_start_time = rospy.Time.from_sec(float(mission_data[mission_name]["mission_start_time"]))
+
+                    if topic_config["topic_name_orig"] == "/tf_static":
+                        start_time = None
+                    else:
+                        start_time = desired_start_time
+
                     for topic, msg, t in bag_in.read_messages(
                         topics=[topic_config["topic_name_orig"]],
-                        start_time=rospy.Time.from_sec(float(mission_data[mission_name]["mission_start_time"])),
+                        start_time=start_time,
                         end_time=rospy.Time.from_sec(float(mission_data[mission_name]["mission_stop_time"])),
                     ):
                         has_header = hasattr(msg, "header")
@@ -90,7 +96,17 @@ for output_bag_name, topic_configs in data_dict_by_bag_name.items():
                         if mission_data[mission_name]["publish_gnss"] == "FALSE" and topic in secret_gnss_topics:
                             continue
 
+                        if topic_config["topic_name_orig"] == "/tf_static" and t < desired_start_time:
+                            t = desired_start_time
+                            for transform in msg.transforms:
+                                transform.header.stamp = t
+
                         bag_out.write(topic_config["topic_name_out"], msg, t)
+
+                # subprocess.run(["rosbag", "reindex", str(bag_path_out)])
+                # print(f"Bag {bag_path_out} created and reindexed \n \n")
+
+                upload_simple("GrandTour", "release_" + mission_name, bag_path_out)
 
             except Exception as e:
                 if topic_config["bag_name_out"] in error_list:
@@ -102,12 +118,6 @@ for output_bag_name, topic_configs in data_dict_by_bag_name.items():
                 exit_code = 3
                 print(e)
 
-    subprocess.run(["rosbag", "reindex", str(bag_path_out)])
-    print(f"Bag {bag_path_out} created and reindexed \n \n")
-
-    # os.environ["KLEINKRAM_ACTIVE"] = "ACTIVE"
-    upload_simple("GrandTour", "release_" + mission_name, bag_path_out)
-    # os.environ["KLEINKRAM_ACTIVE"] = "FALSE"
 
 print(error_list)
 exit(exit_code)
