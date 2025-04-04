@@ -1,0 +1,361 @@
+# listed bag files --> klein list files -m "release_2024-10-01-11-29-55"
+#  ━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━┓
+# ┃ project   ┃ mission                     ┃ name                                            ┃ id                                   ┃ state ┃ size       ┃ categories ┃
+# ┡━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━┩
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_adis.bag                    │ be105a6e-8e18-4a10-a81d-5c6f1bffff91 │ OK    │ 24.48 MB   │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_alphasense.bag              │ 684a31da-9bd8-4390-a4c0-d0f20a31cf7a │ OK    │ 4.02 KB    │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_alphasense_imu.bag          │ 722fcedb-de60-4757-b23c-64f116065bee │ OK    │ 25.57 MB   │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_anymal_command.bag          │ 8bc6661c-46a5-4773-85ce-9294205bbf85 │ OK    │ 625.90 KB  │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_anymal_depth_cameras.bag    │ 7016e621-4417-4471-86bd-2e7eda11a6db │ OK    │ 15.94 GB   │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_anymal_elevation.bag        │ d6b925f9-a726-49a3-9974-36b48ccdf886 │ OK    │ 1.55 GB    │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_anymal_imu.bag              │ ccb5d1a5-abf9-416b-b47a-a36f3953ce2a │ OK    │ 50.68 MB   │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_anymal_locomotion.bag       │ 5233eee0-bf24-4964-aacd-7b9d8b8114e9 │ OK    │ 25.46 MB   │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_anymal_state.bag            │ b6eba2f1-1d13-4461-8b14-a705e9aa7da1 │ OK    │ 975.18 MB  │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_anymal_tf.bag               │ 4b66f14b-0397-4c1f-bd76-32199f34b7b9 │ OK    │ 60.26 MB   │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_anymal_velodyne.bag         │ 198750e8-ca3c-4113-aee9-fee3e2dd852a │ OK    │ 4.02 KB    │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_anymal_velodyne_packets.bag │ b6ffb086-6fa7-4669-83f2-ea2dd40f2218 │ OK    │ 4.02 KB    │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_anymal_velodyne_undist.bag  │ 1c8eaf1b-a43b-46f4-a844-b2c6d6b97484 │ OK    │ 4.02 KB    │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_ap20_imu.bag                │ 81489bcd-186c-43c8-a60b-94e0028829e7 │ OK    │ 23.78 MB   │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_ap20_prism_position.bag     │ 05fbff03-6e4a-4ca7-8ab2-cd225789f88e │ OK    │ 526.00 KB  │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_cpt7.bag                    │ 7f659251-9d9e-4078-bbbb-8db7ba9e1d5b │ OK    │ 24.99 MB   │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_cpt7_ie_dgps.bag            │ cfc45eda-b8a4-400d-a76d-7896bf2a1e22 │ OK    │ 276.18 KB  │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_cpt7_ie_lc.bag              │ 8e741712-dcbf-4049-b73a-74c56facbe61 │ OK    │ 25.38 MB   │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_cpt7_ie_ppp.bag             │ c030d8b1-3165-4d98-a8a8-7cd3c2cc6607 │ OK    │ 276.17 KB  │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_cpt7_ie_tc.bag              │ d8c56979-595b-466d-94e2-280a5b4345f2 │ OK    │ 25.38 MB   │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_cpt7_imu.bag                │ 3f86b567-13f0-42f9-829e-1c8887b9f02e │ OK    │ 12.57 MB   │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_dlio.bag                    │ b1c17ec6-0d59-4f83-a542-e2f8c2d96186 │ OK    │ 4.54 GB    │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_gmsf.bag                    │ c8df5163-5a08-4677-9274-122292c450f1 │ OK    │ 4.02 KB    │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_hdr_front.bag               │ 457447fc-4666-4ac4-9b52-ee1cbce0f37e │ OK    │ 4.02 KB    │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_hdr_left.bag                │ c578ccfc-feac-41f1-9abc-ee33aca20add │ OK    │ 4.02 KB    │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_hdr_right.bag               │ 4fe67e05-9348-4b5f-84a5-9eb9e3e21e42 │ OK    │ 4.02 KB    │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_hesai.bag                   │ 7335e226-99ae-4b2a-8c99-9e74efd1a45b │ OK    │ 4.73 GB    │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_hesai_packets.bag           │ 6346896b-4d60-4a83-8dd7-f04f36a4ae6a │ OK    │ 905.68 MB  │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_hesai_undist.bag            │ 061bde17-6149-41db-9ad2-0f129d0e9158 │ OK    │ 4.02 KB    │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_livox.bag                   │ 86028ee8-14e7-444b-a2f9-87e00efeb82d │ OK    │ 1015.06 MB │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_livox_imu.bag               │ f61642cf-3ccd-491b-9171-1cf0cbecb01f │ OK    │ 25.09 MB   │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_livox_undist.bag            │ 1941d837-5d77-41b1-9af5-4c9ab44c8eb2 │ OK    │ 4.02 KB    │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_stim320_imu.bag             │ 84d6033f-64be-4df4-8617-9e6a92a7f389 │ OK    │ 92.77 MB   │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_zed2i_prop.bag              │ b8275290-f8f0-4728-92cd-c6acc4b592bd │ OK    │ 4.02 KB    │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_zed2i_vio.bag               │ 70507634-59ac-42b6-bc50-7f6fcd56f0be │ OK    │ 6.96 MB    │            │
+# └───────────┴─────────────────────────────┴─────────────────────────────────────────────────┴──────────────────────────────────────┴───────┴────────────┴────────────┘
+
+metadata:
+  # TODO: check with Jonas --> Not yet implemented!  
+    # - alias: anymal_depth_camera_front_lower_info
+    #   file: 2024-10-01-11-29-55_anymal_depth_cameras.bag
+    #   topic: "/anymal/depth_camera_front_lower/depth/image_rect_raw"
+
+  camera_intrinsics:
+    - alias: zed2i_depth_caminfo
+      file: 2024-10-01-11-29-55_jetson_zed2i_depth.bag
+      topic: /gt_box/zed2i/zed_node/depth/camera_info
+
+    - alias: zed2i_left_caminfo
+      file: 2024-10-01-11-29-55_jetson_zed2i_images.bag
+      topic: "/gt_box/zed2i/zed_node/left/camera_info"
+    - alias: zed2i_right_caminfo
+      file: 2024-10-01-11-29-55_jetson_zed2i_images.bag
+      topic: "/gt_box/zed2i/zed_node/right/camera_info"
+
+    # TODO: used, doublecheck with Jonas
+    - alias: alphasense_front_center_caminfo
+      file: 2024-10-01-11-29-55_alphasense.bag
+      topic: "/boxi/alphasense/front_center/camera_info"
+    - alias: alphasense_cam2_caminfo
+      file: 2024-10-01-11-29-55__alphasense.bag
+      topic: "/boxi/alphasense/front_right/camera_info"
+    - alias: alphasense_cam3_caminfo
+      file: 2024-10-01-11-29-55__alphasense.bag
+      topic: "/boxi/alphasense/front_left/camera_info"
+    - alias: alphasense_cam4_caminfo
+      file: 2024-10-01-11-29-55_alphasense.bag
+      topic: "/boxi/alphasense/left/camera_info"
+    - alias: alphasense_cam5_caminfo
+      file: 2024-10-01-11-29-55_alphasense.bag
+      topic: "/boxi/alphasense/right/camera_info"
+
+    - alias: hdr_left_caminfo
+      file: 2024-10-01-11-29-55_jetson_hdr_left_updated.bag
+      topic: "/gt_box/hdr_left/camera_info"
+    - alias: hdr_front_caminfo
+      file: 2024-10-01-11-29-55_jetson_hdr_front_updated.bag
+      topic: "/gt_box/hdr_front/camera_info"
+    - alias: hdr_right_caminfo
+      file: 2024-10-01-11-29-55_jetson_hdr_right_updated.bag
+      topic: "/gt_box/hdr_right/camera_info"
+  frame_transforms:
+    base_frame: base
+    file: 2024-10-01-11-29-55_tf_static.bag
+    topic: /tf_static
+
+data:
+  image_topics:
+  # TODO: check with Jonas --> Not yet implemented!  
+    # - alias: anymal_depth_camera_front_lower
+    #   file: 2024-10-01-11-29-55_anymal_depth_cameras.bag
+    #   topic: "/anymal/depth_camera_front_lower/depth/camera_info"
+    #   compressed: true
+    #   format: png
+
+
+    - alias: zed2i_depth
+      file: 2024-10-01-11-29-55_jetson_zed2i_depth.bag
+      topic: "/gt_box/zed2i/zed_node/depth_mono/depth_registered/compressed"
+      compressed: true
+      format: png
+    - alias: zed2i_confidence
+      file: 2024-10-01-11-29-55_jetson_zed2i_depth.bag
+      topic: "/gt_box/zed2i/zed_node/confidence_mono/confidence_map/compressed"
+      format: png
+      compressed: true
+
+    - alias: zed2i_left
+      file: 2024-10-01-11-29-55_jetson_zed2i_images.bag
+      topic: "/gt_box/zed2i/zed_node/left/image_rect_color/compressed"
+      format: jpeg
+      compressed: true
+    - alias: zed2i_right
+      file: 2024-10-01-11-29-55_jetson_zed2i_images.bag
+      topic: "/gt_box/zed2i/zed_node/right/image_rect_color/compressed"
+      format: jpeg
+      compressed: true
+
+    # not used
+    # - alias: alphasense_cam1
+    #   file: 2024-10-01-11-29-55_nuc_alphasense_cor.bag
+    #   topic: "/gt_box/alphasense_driver_node/cam1/color_corrected/image/compressed"
+    #   format: jpeg
+    #   compressed: true
+    # - alias: alphasense_cam2
+    #   file: 2024-10-01-11-29-55_nuc_alphasense_cor.bag
+    #   topic: "/gt_box/alphasense_driver_node/cam2/color_corrected/image/compressed"
+    #   format: jpeg
+    #   compressed: true
+    # - alias: alphasense_cam3
+    #   file: 2024-10-01-11-29-55_nuc_alphasense_cor.bag
+    #   topic: "/gt_box/alphasense_driver_node/cam3/color_corrected/image/compressed"
+    #   format: jpeg
+    #   compressed: true
+    # - alias: alphasense_cam4
+    #   file: 2024-10-01-11-29-55_nuc_alphasense_cor.bag
+    #   topic: "/gt_box/alphasense_driver_node/cam4/color_corrected/image/compressed"
+    #   format: jpeg
+    #   compressed: true
+    # - alias: alphasense_cam5
+    #   file: 2024-10-01-11-29-55_nuc_alphasense_cor.bag
+    #   topic: "/gt_box/alphasense_driver_node/cam5/color_corrected/image/compressed"
+    #   format: jpeg
+    #   compressed: true
+
+    - alias: hdr_left
+      file: 2024-10-01-11-29-55_jetson_hdr_left_updated.bag
+      topic: "/gt_box/hdr_left/image_raw/compressed"
+      format: jpeg
+      compressed: true
+    - alias: hdr_front
+      file: 2024-10-01-11-29-55_jetson_hdr_front_updated.bag
+      topic: "/gt_box/hdr_front/image_raw/compressed"
+      format: jpeg
+      compressed: true
+    - alias: hdr_right
+      file: 2024-10-01-11-29-55_jetson_hdr_right_updated.bag
+      topic: "/gt_box/hdr_right/image_raw/compressed"
+      format: jpeg
+      compressed: true
+
+  lidar_topics:
+    - alias: hesai
+      file: 2024-10-01-11-29-55_nuc_hesai_post_processed.bag
+      topic: "/gt_box/hesai/points"
+      max_points: 64000
+      attributes:
+        - intensity
+        - ring
+        - timestamp
+    - alias: hesai_last # what is this one?
+      file: 2024-10-01-11-29-55_nuc_hesai_post_processed.bag
+      topic: "/gt_box/hesai/points_last"
+      max_points: 64000
+      attributes:
+        - intensity
+        - ring
+        - timestamp
+    - alias: livox
+      file: 2024-10-01-11-29-55_nuc_livox.bag
+      topic: "/gt_box/livox/lidar"
+      max_points: 64000
+      attributes:
+        - intensity
+        - tag
+        - line
+        - timestamp
+    - alias: dlio
+      file: 2024-10-01-11-29-55_dlio.bag
+      topic: "/dlio/deskewed_point_cloud"
+      max_points: 64000
+      attributes:
+        - intensity
+        - timestamp
+
+  pose_topics:
+    # do we want both? is the 2nd a superset of the 1st?
+    - alias: ground_truth
+      file: 2024-10-01-11-29-55_gt_pose.bag
+      topic: "/gt_box/ground_truth/pose_stamped"
+      covariance: false
+    - alias: ground_truth_with_cov
+      file: 2024-10-01-11-29-55_gt_pose.bag
+      topic: "/gt_box/ground_truth/pose_with_covariance"
+      covariance: true
+
+    - alias: dlio_pose
+      file: 2024-10-01-11-29-55_dlio.bag
+      topic: "/dlio/lidar_odometry_as_posestamped"
+      covariance: false
+
+    # novatel, do we want all 4?
+    - alias: novatel
+      file: 2024-10-01-11-29-55_cpt7_gps_ie.bag
+      topic: "/gt_box/inertial_explorer/gt_poses_novatel"
+      covariance: true
+    - alias: novatel_dgps
+      file: 2024-10-01-11-29-55_cpt7_ie_dgps.bag
+      topic: "/gt_box/inertial_explorer/dgps/gt_poses_novatel"
+      covariance: true
+    - alias: novatel_tc
+      file: 2024-10-01-11-29-55_cpt7_ie_tc.bag
+      topic: "/gt_box/inertial_explorer/tc/gt_poses_novatel"
+      covariance: true
+    - alias: novatel_lc
+      file: 2024-10-01-11-29-55_cpt7_ie_lc.bag
+      topic: "/gt_box/inertial_explorer/lc/gt_poses_novatel"
+      covariance: true
+    - alias: novatel_ppp
+      file: 2024-10-01-11-29-55_cpt7_ie_ppp.bag
+      topic: "/gt_box/inertial_explorer/ppp/gt_poses_novatel"
+      covariance: true
+
+
+  imu_topics:
+
+    # TODO: NOT implemented, doublecheck with Jonas!
+    # - alias: alphasense_imu
+    #   file: 2024-10-01-11-29-55_alphasense_imu.bag
+    #   topic: "/boxi/alphasense/imu"
+
+
+    - alias: adis_imu
+      file: 2024-10-01-11-29-55_adis.bag
+      topic: "/boxi/adis/imu"
+
+    - alias: ap20_imu
+      file: 2024-10-01-11-29-55_jetson_ap20_synced.bag
+      topic: "/gt_box/ap20/imu"
+    - alias: stim_imu
+      file: 2024-10-01-11-29-55_jetson_stim.bag
+      topic: "/gt_box/stim320/imu"
+
+    # do we want both?
+    - alias: livox_imu
+      file: 2024-10-01-11-29-55_nuc_livox.bag
+      topic: "/gt_box/livox/imu"
+    - alias: livox_imu_si_compliant
+      file: 2024-10-01-11-29-55_nuc_livox.bag
+      topic: "/gt_box/livox/imu_si_compliant"
+
+    - alias: zed2i_imu
+      file: 2024-10-01-11-29-55_jetson_zed2i_proprioceptive.bag
+      topic: "/gt_box/zed2i/zed_node/imu/data"
+
+    # do we want both?
+    - alias: cpt7_imu
+      file: 2024-10-01-11-29-55_nuc_cpt7_post_processed.bag
+      topic: "/gt_box/cpt7/gps/imu"
+    - alias: cpt7_imu_offline_from_novatel
+      file: 2024-10-01-11-29-55_cpt7_raw_imu.bag
+      topic: "/gt_box/cpt7/offline_from_novatel_logs/imu"
+
+  # we should use better aliases that are conistent with the corresponding point clouds / poses
+  odometry_topics:
+    # do we want all of these?
+    - alias: novatel_odometry
+      file: 2024-10-01-11-29-55_cpt7_gps_ie.bag
+      topic: "/gt_box/inertial_explorer/odometry"
+    - alias: novatel_tc_odometry
+      file: 2024-10-01-11-29-55_cpt7_ie_tc.bag
+      topic: "/gt_box/inertial_explorer/tc/odometry"
+    - alias: novatel_ppp_odometry
+      file: 2024-10-01-11-29-55_cpt7_ie_ppp.bag
+      topic: "/gt_box/inertial_explorer/ppp/odometry"
+    - alias: novatel_lc_odometry
+      file: 2024-10-01-11-29-55_cpt7_ie_lc.bag
+      topic: "/gt_box/inertial_explorer/lc/odometry"
+    - alias: novatel_dgps_odometry
+      file: 2024-10-01-11-29-55_cpt7_ie_dgps.bag
+      topic: "/gt_box/inertial_explorer/dgps/odometry"
+
+    # do we want both?
+    - alias: dlio_odometry
+      file: 2024-10-01-11-29-55_dlio.bag
+      topic: "/dlio/lidar_odometry"
+    - alias: dlio_map_odometry
+      file: 2024-10-01-11-29-55_dlio.bag
+      topic: "/dlio/lidar_map_odometry"
+
+    - alias: cpt7_odometry
+      file: 2024-10-01-11-29-55_nuc_cpt7_post_processed.bag
+      topic: "/gt_box/cpt7/odom"
+    - alias: zed2i_odometry
+      file: 2024-10-01-11-29-55_jetson_zed2i_proprioceptive.bag
+      topic: "/gt_box/zed2i/zed_node/odom"
+
+  nav_sat_fix_topics:
+    - alias: cpt7_gps
+      file: 2024-10-01-11-29-55_nuc_cpt7_post_processed.bag
+      topic: "/gt_box/cpt7/gps/fix"
+
+  magnetic_field_topics:
+    - alias: zed2i_magnetic_field
+      file: 2024-10-01-11-29-55_jetson_zed2i_proprioceptive.bag
+      topic: "/gt_box/zed2i/zed_node/imu/mag"
+
+  # is this a duplicate of the "ground_truth" stuff?
+  point_topics:
+    - alias: prism
+      file: 2024-10-01-11-29-55_jetson_ap20_synced.bag
+      topic: "/gt_box/ap20/prism_position"
+
+  singleton_transform_topics:
+    # im pretty sure this is a duplicate of cpt7_gps
+    - alias: cpt7_gps_tf
+      file: 2024-10-01-11-29-55_cpt7_gps_ie.bag
+      topic: "/tf"
+    - alias: cpt7_dgps_tf
+      file: 2024-10-01-11-29-55_cpt7_ie_dgps.bag
+      topic: "/tf"
+    - alias: cpt7_lc_tf
+      file: 2024-10-01-11-29-55_cpt7_ie_lc.bag
+      topic: "/tf"
+    - alias: cpt7_tc_tf
+      file: 2024-10-01-11-29-55_cpt7_ie_tc.bag
+      topic: "/tf"
+    - alias: cpt7_ppp_tf
+      file: 2024-10-01-11-29-55_cpt7_ie_ppp.bag
+      topic: "/tf"
+    - alias: cpt7_post_processed_tf
+      file: 2024-10-01-11-29-55_nuc_cpt7_post_processed_tf.bag
+      topic: "/tf"
+    - alias: zed2i_tf
+      file: 2024-10-01-11-29-55_jetson_zed2i_tf.bag
+      topic: "/tf"
+
+# TODO: check with Jonas --> Not yet implemented!
+  # anymal_topics:
+  #   - alias: anymal_command
+  #     file: 2024-10-01-11-29-55_anymal_command.bag
+  #     topic: "/anymal/twist_command"
+     
+# GENERAL NOTES:
+# are odometry messages in general supersets of position messages?, do we really need all of these
+# in general i think that there is a massive hierarchy of dupliate information store, we should propably dedupe this
+# i have no way of knowing for sure which are duplicates of which...
