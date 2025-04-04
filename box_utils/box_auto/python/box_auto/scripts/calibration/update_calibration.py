@@ -15,7 +15,7 @@ CAMERA_INFO_PATTERNS = [
     "*_jetson_hdr_left_updated.bag",
     "*_jetson_hdr_front_updated.bag",
     "*_nuc_alphasense_updated.bag",
-    # "*_jetson_zed2i_images.bag",
+    "*_jetson_zed2i_images.bag",
 ]
 
 
@@ -133,8 +133,7 @@ def update_camera_info(calibration):
 
                         new_msg.header = msg.header
                         outbag.write(topic, new_msg, t)
-                    else:
-                        outbag.write(topic, msg, t)
+
                     pbar.update(1)
 
         upload_bag(out_bag)
