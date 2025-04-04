@@ -27,9 +27,7 @@ if __name__ == "__main__":
     patterns = [
         "*_lpc_tf.bag",
         "*_tf_static.bag",
-        # "*tf_static_urdf.bag",
-        # "*_nuc_tf.bag",
-        "*_jetson_zed2i_tf.bag",
+        "*_cpt7_ie_tc.bag",
     ]
 
     # Patterns for optional applications.
@@ -45,8 +43,11 @@ if __name__ == "__main__":
     inputs = []
     # Iterate through each output pattern to ensure it is located where its expected.
     for pattern in patterns:
-        f = get_bag(pattern=pattern, auto_download=False, rglob=False)
-        inputs.append(f)
+        try:
+            f = get_bag(pattern=pattern, auto_download=False, rglob=False)
+            inputs.append(f)
+        except Exception as e:
+            print(e)
 
     tf_bag_paths = ",".join(inputs)
     tf_bag_paths = "[" + tf_bag_paths + "]"

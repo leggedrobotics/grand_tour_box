@@ -43,7 +43,7 @@ CONFIG = {
         "frequency": 100,
     },
     "alphasense": {
-        "pattern": "_nuc_alphasense_calib.bag",
+        "pattern": "_nuc_alphasense.bag",
         "topics": ["/gt_box/alphasense_driver_node/imu"],
         "out_pattern": "_nuc_alphasense_intrinsics.bag",
         "frequency": 200,
