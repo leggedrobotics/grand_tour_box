@@ -111,6 +111,17 @@ def ecef_velocity_to_enu(vx, vy, vz, lat_rad, lon_rad):
     return v_enu
 
 
+def map_ambiguity_status(status_str):
+    # Map "Fixed" to 2, "Float" to 1, others to 0.
+    s = status_str.lower()
+    if s == "fixed":
+        return 2
+    elif s == "float":
+        return 1
+    else:
+        return 0
+
+
 def ecef_to_enu_covariance(cov_ecef, lat_rad, lon_rad):
     """
     Convert a 3x3 ECEF covariance matrix (in m^2) to an ENU covariance matrix (in m^2).
@@ -270,6 +281,11 @@ def main():
 
         R_enu__ned = np.array([[0, 1, 0], [1, 0, 0], [0, 0, -1]])
 
+        quality_times = []
+        quality_values = []
+        satellites_values = []
+        ambiguity_values = []
+
         with rosbag.Bag(bag_path, "w", compression="lz4") as bag:
             for i, (
                 time,
@@ -313,7 +329,7 @@ def main():
 
                 if num_satellites < 1:
                     print("\033[31mError: Number of satellites is less than 1\033[0m")
-                    continue
+                #     continue
 
                 # Create Vector3Stamped messages for acceleration bias and gyro drift
                 acc_bias_msg = Vector3Stamped()
@@ -355,7 +371,10 @@ def main():
                 # TODO here we are rounding the PDOP value to an integer, but it should be a float
                 pdop = round(float(stat[3]))
                 quality = int(stat[4])
-
+                quality_times.append(timestamp.to_sec())
+                quality_values.append(quality)
+                satellites_values.append(num_satellites)
+                ambiguity_values.append(map_ambiguity_status(ambiguity_status))
                 # PDOP is a unitless number which indicates how favorable the satellite geometry is to 3D
                 # positioning accuracy. A strong satellite geometry, where the PDOP is low, occurs when
                 # satellites are well distributed in each direction (north, south, east and west) as well as
@@ -695,6 +714,45 @@ def main():
                 # tf_message.transforms.append(cog_transform)
 
                 # bag.write(topic="/tf", msg=tf_message, t=timestamp)
+
+        import matplotlib.pyplot as plt
+
+        times = np.array(quality_times) - quality_times[0]
+        plt.figure("Quality vs Time")
+        plt.plot(times, quality_values, marker="o", linestyle="-")
+        plt.xlabel("Time (s)")
+        plt.ylabel("Quality Metric")
+        plt.title(f"Quality Metric vs Time for {post_proc_mode}")
+        plt.grid(True)
+        # Save the figure in the same directory as the bag file
+        output_fig = Path(bag_path).parent / "ie" / post_proc_mode / f"quality_vs_time_{post_proc_mode}.png"
+        plt.savefig(str(output_fig))
+        plt.close()
+        print(f"Saved quality vs time figure to: {output_fig}")
+
+        # Number of Satellites vs Time
+        plt.figure("Satellites vs Time")
+        plt.plot(times, satellites_values, marker="o", linestyle="-")
+        plt.xlabel("Time (s)")
+        plt.ylabel("Number of Satellites")
+        plt.title(f"Number of Satellites vs Time for {post_proc_mode}")
+        plt.grid(True)
+        output_fig = Path(bag_path).parent / "ie" / post_proc_mode / f"satellites_vs_time_{post_proc_mode}.png"
+        plt.savefig(str(output_fig))
+        plt.close()
+        print(f"Saved satellites vs time figure to: {output_fig}")
+
+        # Ambiguity Status vs Time
+        plt.figure("Ambiguity vs Time")
+        plt.plot(times, ambiguity_values, marker="o", linestyle="-")
+        plt.xlabel("Time (s)")
+        plt.ylabel("Ambiguity Status (Numeric)")
+        plt.title(f"Ambiguity Status vs Time for {post_proc_mode}")
+        plt.grid(True)
+        output_fig = Path(bag_path).parent / "ie" / post_proc_mode / f"ambiguity_vs_time_{post_proc_mode}.png"
+        plt.savefig(str(output_fig))
+        plt.close()
+        print(f"Saved ambiguity vs time figure to: {output_fig}")
 
 
 if __name__ == "__main__":
