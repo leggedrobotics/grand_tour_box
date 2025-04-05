@@ -584,32 +584,32 @@ def main():
                 output_msg.pose.pose.position = Point(x=position_enu[1], y=position_enu[0], z=-position_enu[2])
                 output_msg.pose.covariance = covariance.astype(np.float32).flatten().tolist()
                 ###########################
-                # output_msg.pose.pose.orientation = Quaternion(
-                #     x=quaternion_xyzw[0], y=quaternion_xyzw[1], z=quaternion_xyzw[2], w=quaternion_xyzw[3]
-                # )
-
-                orig_quat = [quaternion_xyzw[0], quaternion_xyzw[1], quaternion_xyzw[2], quaternion_xyzw[3]]
-
-                # Convert the original quaternion into a Rotation object.
-                orig_rotation = Rotation.from_quat(orig_quat)
-
-                cog_rad = math.radians(cog_value)
-
-                # Create a rotation about the z-axis by the azimuth angle.
-                azimuth_rotation = Rotation.from_euler("z", cog_rad)
-
-                # Compose the rotations.
-                # The order here means: apply the original rotation, then apply the azimuth rotation.
-                # This results in a new rotation that includes the azimuth correction.
-                new_rotation = azimuth_rotation * orig_rotation
-
-                # Convert the composed rotation back to a quaternion (in [x, y, z, w] order).
-                new_quat = new_rotation.as_quat()
-
-                # Now update your PoseWithCovarianceStamped message with the new orientation.
                 output_msg.pose.pose.orientation = Quaternion(
-                    x=new_quat[0], y=new_quat[1], z=new_quat[2], w=new_quat[3]
+                    x=quaternion_xyzw[0], y=quaternion_xyzw[1], z=quaternion_xyzw[2], w=quaternion_xyzw[3]
                 )
+
+                # orig_quat = [quaternion_xyzw[0], quaternion_xyzw[1], quaternion_xyzw[2], quaternion_xyzw[3]]
+
+                # # Convert the original quaternion into a Rotation object.
+                # orig_rotation = Rotation.from_quat(orig_quat)
+
+                # cog_rad = math.radians(cog_value)
+
+                # # Create a rotation about the z-axis by the azimuth angle.
+                # azimuth_rotation = Rotation.from_euler("z", cog_rad)
+
+                # # Compose the rotations.
+                # # The order here means: apply the original rotation, then apply the azimuth rotation.
+                # # This results in a new rotation that includes the azimuth correction.
+                # new_rotation = azimuth_rotation * orig_rotation
+
+                # # Convert the composed rotation back to a quaternion (in [x, y, z, w] order).
+                # new_quat = new_rotation.as_quat()
+
+                # # Now update your PoseWithCovarianceStamped message with the new orientation.
+                # output_msg.pose.pose.orientation = Quaternion(
+                #     x=new_quat[0], y=new_quat[1], z=new_quat[2], w=new_quat[3]
+                # )
 
                 # Create a TwistWithCovariance message for velocity
                 velocity_msg = TwistWithCovariance()
@@ -668,7 +668,33 @@ def main():
                 box_transform.transform.translation = Vector3(x=SE3[0, 3], y=SE3[1, 3], z=SE3[2, 3])
 
                 tf_message.transforms.append(box_transform)
-                bag.write(topic="/tf", msg=tf_message, t=timestamp)
+
+                # cog_transform = TransformStamped()
+                # # Use the same header as your odometry message, or create a new one as needed.
+                # cog_transform.header = odometry_msg.header
+                # cog_transform.header.frame_id = "cpt7_imu"      # Parent frame
+                # cog_transform.child_frame_id = "cpt7_imu_aligned"     # Child frame
+
+                # # No translation: pure rotation (set translation to zero)
+                # cog_transform.transform.translation.x = 0.0
+                # cog_transform.transform.translation.y = 0.0
+                # cog_transform.transform.translation.z = 0.0
+
+                # # Compute the rotation quaternion from the COG angle.
+                # # Assume cog_value is given in degrees.
+                # cog_rad = math.radians(cog_value)
+                # cog_quat = Rotation.from_euler('z', cog_rad).as_quat()  # returns [x, y, z, w]
+
+                # cog_transform.transform.rotation = Quaternion(
+                #     x=cog_quat[0],
+                #     y=cog_quat[1],
+                #     z=cog_quat[2],
+                #     w=cog_quat[3]
+                # )
+
+                # tf_message.transforms.append(cog_transform)
+
+                # bag.write(topic="/tf", msg=tf_message, t=timestamp)
 
 
 if __name__ == "__main__":
