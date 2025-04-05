@@ -111,14 +111,14 @@ def main():
             cmd += "-snserver ch-xpos.nrtk.eu "  # https://ch.nrtk.eu/sbc/ -> This needs to be inferred
             cmd += "-procdatum WGS84 "
             cmd += "-procint 0.05 "
-            # cmd += "-procdata L1L2 "
+            cmd += "-procdata L1L2 "
             cmd += "-snusername RSL_02 "
             cmd += f"-snpassword {IE_API_KEY} "
             cmd += f"-expprofile1 {EXP_PROFILE} "
             cmd += "-expsrc1 epochs "  # Print the processed output in the epcoch rate.
             cmd += "-expkml on "  # export GPS measurements to KML file
             if PROCMODE == "tc":
-                # cmd += '-procdir "multi" '
+                cmd += '-procdir "multi" '
                 cmd += "-expsbet on "  # Export the SBET file which contains IMU exchange data.
                 # https://gis.stackexchange.com/questions/175026/open-a-sbet-file-format-in-gis-software
                 cmd += "-expsbetimuframe on "  # Export sbet data in IMU frame.
