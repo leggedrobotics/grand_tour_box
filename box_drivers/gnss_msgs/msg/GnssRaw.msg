@@ -3,3 +3,10 @@ geometry_msgs/Vector3 position_ecef
 geometry_msgs/Vector3 position_ecef_std
 geometry_msgs/Vector3 orientation_hrp
 geometry_msgs/Vector3 orientation_hrp_std
+geometry_msgs/Vector3 velocity_ecef
+geometry_msgs/Vector3 velocity_ecef_std
+std_msgs/Int8 number_of_satellites
+std_msgs/Int8 quality_indicator
+std_msgs/Float32 position_dilution_of_precision
+std_msgs/Float32 course_over_ground
+std_msgs/String ambiguity_status
