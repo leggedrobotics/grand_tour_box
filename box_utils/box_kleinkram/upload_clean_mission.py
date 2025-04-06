@@ -4,6 +4,7 @@ import rosbag
 import rospy
 from collections import defaultdict
 from box_auto.utils import upload_simple
+import subprocess
 
 # Define the spreadsheet ID and sheet name
 SPREADSHEET_ID = "1mENfskg_jO_vJGFM5yonqPuf-wYUNmg26IPv3pOu3gg"
@@ -68,7 +69,6 @@ for output_bag_name, topic_configs in data_dict_by_bag_name.items():
             )
             try:
                 bag_path_in = get_bag("*" + topic_config["bag_name_orig"])
-
                 with rosbag.Bag(bag_path_in, "r", compression="lz4") as bag_in:
                     desired_start_time = rospy.Time.from_sec(float(mission_data[mission_name]["mission_start_time"]))
 
@@ -103,11 +103,6 @@ for output_bag_name, topic_configs in data_dict_by_bag_name.items():
 
                         bag_out.write(topic_config["topic_name_out"], msg, t)
 
-                # subprocess.run(["rosbag", "reindex", str(bag_path_out)])
-                # print(f"Bag {bag_path_out} created and reindexed \n \n")
-
-                upload_simple("GrandTour", "release_" + mission_name, bag_path_out)
-
             except Exception as e:
                 if topic_config["bag_name_out"] in error_list:
                     error_list[topic_config["bag_name_out"]] += topic_config
@@ -117,6 +112,9 @@ for output_bag_name, topic_configs in data_dict_by_bag_name.items():
                 print(f"Error processing bag {topic_config['bag_name_orig']}")
                 exit_code = 3
                 print(e)
+
+    subprocess.run(["rosbag", "reindex", str(bag_path_out)])
+    upload_simple("GrandTour", "release_" + mission_name, str(bag_path_out))
 
 
 print(error_list)

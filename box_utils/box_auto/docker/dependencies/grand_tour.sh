@@ -11,7 +11,7 @@ catkin config --extend /home/opencv_gtsam_ws/devel
 catkin config --cmake-args -DCMAKE_BUILD_TYPE=Release
 
 # grand_tour_box repository
-cd /home/catkin_ws/src; git clone --recurse-submodules --shallow-submodules git@github.com:leggedrobotics/grand_tour_box.git --depth 1
+cd /home/catkin_ws/src; git clone --recurse-submodules --shallow-submodules git@github.com:leggedrobotics/grand_tour_box.git --depth 1 --branch main
 
 # Dependencies: raw_image_pipeline
 cd /home/catkin_ws/src; git clone https://github.com/leggedrobotics/pybind11_catkin.git --depth 1
@@ -33,14 +33,14 @@ cp /home/catkin_ws/src/grand_tour_box/box_configuration/general/.tmux.conf ~/
 apt install libpcap-dev -y
 apt install ros-noetic-angles -y
 
-# Dependencies: open3d_slam_private - Upgrade cmake version to 3.19.2
+# Dependencies: open3d_slam_private - Upgrade cmake version to 3.26.4
 apt update -y
 apt install wget software-properties-common -y
 wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null
 apt-add-repository "deb https://apt.kitware.com/ubuntu/ $(lsb_release -cs) main"
 apt update -y
 apt install kitware-archive-keyring -y
-apt install cmake=3.19.2-0kitware1ubuntu20.04.1 cmake-data=3.19.2-0kitware1ubuntu20.04.1 -y
+apt install cmake=3.26.4-0kitware1ubuntu20.04.1 cmake-data=3.26.4-0kitware1ubuntu20.04.1 -y
 apt install libgoogle-glog-dev libglfw3-dev liblua5.2-dev -y
 apt install python3-catkin-tools libc++-dev libc++abi-dev -y 
 apt install libxinerama-dev -y
@@ -102,7 +102,7 @@ pip3 install colorlog
 pip3 install rosbags
 pip3 install matplotlib # graph_msf
 pip3 uninstall kleinkram -y
-pip3 install kleinkram==0.43.3
+pip3 install kleinkram
 pip3 install --upgrade pyOpenSSL # Kleinkram fails to run without this
 pip3 install gspread
 

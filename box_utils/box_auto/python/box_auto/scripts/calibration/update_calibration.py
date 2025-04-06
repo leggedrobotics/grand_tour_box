@@ -11,11 +11,11 @@ from box_auto.utils import WS, get_bag, upload_bag
 
 CALIBRATION_DATA_PATH = Path(WS) / "src/grand_tour_box/box_calibration/box_calibration/calibration"
 CAMERA_INFO_PATTERNS = [
+    "*_jetson_zed2i_images.bag",
     "*_jetson_hdr_right_updated.bag",
     "*_jetson_hdr_left_updated.bag",
     "*_jetson_hdr_front_updated.bag",
     "*_nuc_alphasense_updated.bag",
-    "*_jetson_zed2i_images.bag",
 ]
 
 
@@ -111,8 +111,15 @@ def update_camera_info(calibration):
             with tqdm(total=total_messages, desc=f"Processing {Path(bag_path).name}", unit="msgs") as pbar:
                 for topic, msg, t in rosbag.Bag(bag_path).read_messages():
                     if str(type(msg)).find("CameraInfo") != -1:
-                        key = topic.replace("/camera_info", "").replace("/color", "")
+                        if topic == "/boxi/zed2i/left/camera_info":
+                            key = "/gt_box/zed2i_driver_node/left_raw/image_raw_color"
+                        elif topic == "/boxi/zed2i/right/camera_info":
+                            key = "/gt_box/zed2i_driver_node/right_raw/image_raw_color"
+                        else:
+                            key = topic.replace("/camera_info", "").replace("/color", "")
+
                         found = False
+
                         for k in calibration.keys():
                             if key in k:
                                 new_msg = calibration[k]
