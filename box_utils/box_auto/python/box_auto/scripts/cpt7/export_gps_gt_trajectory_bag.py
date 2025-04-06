@@ -652,7 +652,7 @@ def main():
                 odometry_msg.pose.pose = output_msg.pose.pose
                 odometry_msg.twist = velocity_msg
                 odometry_msg.child_frame_id = "cpt7_imu"
-                bag.write(topic=f"/gt_box/inertial_explorer/{post_proc_mode}/boxi_pose", msg=odometry_msg, t=timestamp)
+                bag.write(topic=f"/gt_box/inertial_explorer/{post_proc_mode}/odometry", msg=odometry_msg, t=timestamp)
 
                 path_pose = PoseStamped()
                 path_pose.header = output_msg.header
@@ -660,7 +660,7 @@ def main():
                 gps_path_msg.poses.append(path_pose)
                 if i % 200 == 0:
                     bag.write(
-                        topic=f"/gt_box/inertial_explorer/{post_proc_mode}/boxi_path", msg=gps_path_msg, t=timestamp
+                        topic=f"/gt_box/inertial_explorer/{post_proc_mode}/gps_path", msg=gps_path_msg, t=timestamp
                     )
 
                 # --- Create TF message ---
