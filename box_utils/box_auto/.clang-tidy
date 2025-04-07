@@ -10,7 +10,7 @@ Checks: >
   misc-*,
 
 WarningsAsErrors: '*'
-HeaderFilterRegex: '^/home/tutuna/box_ws/src/grand_tour_box/box_utils/box_auto/.*'
+HeaderFilterRegex: '^(?!/opt/ros/|/usr/include/|/usr/local/include/).*'
 FormatStyle: file
 
 CheckOptions:
