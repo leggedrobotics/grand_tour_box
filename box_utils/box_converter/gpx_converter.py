@@ -100,7 +100,7 @@ def basemap_lyrs():
 
 if __name__ == "__main__":
 
-    mode = "dgps"
+    mode = "ppptc"
     # valid_topics = f"/gt_box/inertial_explorer/{mode}/raw/position_ecef"
     valid_topics = f"/gt_box/inertial_explorer/{mode}/navsatfix"
 

@@ -327,9 +327,9 @@ def main():
 
                 num_satellites = int(stat[2])
 
-                if num_satellites < 1:
-                    print("\033[31mError: Number of satellites is less than 1\033[0m")
-                #     continue
+                # if num_satellites < 1:
+                #     # print("\033[31mError: Number of satellites is less than 1\033[0m")
+                # #     continue
 
                 # Create Vector3Stamped messages for acceleration bias and gyro drift
                 acc_bias_msg = Vector3Stamped()
