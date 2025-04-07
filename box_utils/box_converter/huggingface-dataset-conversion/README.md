@@ -110,6 +110,20 @@ The `data` section supports the following keys:
 
   #TODO: add missing topics according to mission
 
+
+
+#### `dataset upload` section
+
+# Install the Hugging Face CLI
+pip install -U "huggingface_hub[cli]"
+
+# Login with your Hugging Face credentials
+huggingface-cli login
+
+# Push your dataset files
+huggingface-cli upload leggedrobotics/GT-Testing-MLI . --repo-type=dataset
+
+
 ## Profiling the Converter
 
 ```bash
