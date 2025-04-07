@@ -671,51 +671,52 @@ bool BoxTFProcessor::processRosbags(std::vector<std::string>& tfContainingBags) 
     applyRotationOverrides(tfStaticVector_);
 
     // Special case: Find transforms with parent "Y" and child "X" and negate translation
-    {
-      bool foundSpecialTransform = false;
-      for (auto& tfStaticMsg : tfStaticVector_) {
-        for (auto& transform : tfStaticMsg.transforms) {
-          if (transform.header.frame_id == "zed2i_left_camera_optical_frame" &&
-              transform.child_frame_id == "zed2i_right_camera_optical_frame") {
-            // Multiply translation components by -1
-            transform.transform.translation.x *= -1;
-            transform.transform.translation.y *= -1;
-            transform.transform.translation.z *= -1;
+    // {
+    //   bool foundSpecialTransform = false;
+    //   for (auto& tfStaticMsg : tfStaticVector_) {
+    //     for (auto& transform : tfStaticMsg.transforms) {
+    //       if (transform.header.frame_id == "zed2i_left_camera_optical_frame" &&
+    //           transform.child_frame_id == "zed2i_right_camera_optical_frame") {
+    //         // Multiply translation components by -1
+    //         transform.transform.translation.x *= -1;
+    //         transform.transform.translation.y *= -1;
+    //         transform.transform.translation.z *= -1;
 
-            foundSpecialTransform = true;
-            ROS_INFO_STREAM("Negated translation for transform from zed2i_left_camera_optical_frame to zed2i_right_camera_optical_frame");
-          }
-        }
-      }
+    //         foundSpecialTransform = true;
+    //         ROS_INFO_STREAM("Negated translation for transform from zed2i_left_camera_optical_frame to zed2i_right_camera_optical_frame");
+    //       }
+    //     }
+    //   }
 
-      if (!foundSpecialTransform) {
-        ROS_WARN_STREAM("No transforms found with parent 'zed2i_left_camera_optical_frame' and child 'zed2i_right_camera_optical_frame'");
-      }
-    }
+    //   if (!foundSpecialTransform) {
+    //     ROS_WARN_STREAM("No transforms found with parent 'zed2i_left_camera_optical_frame' and child 'zed2i_right_camera_optical_frame'");
+    //   }
+    // }
   } else {
     ROS_INFO_STREAM("No rotation overrides provided.");
   }
 
-  {
-    // Find transforms from stim320_imu to box_base_model and set them to identity with frame_id = box_base
-    for (auto& tfStaticMsg : tfStaticVector_) {
-      for (auto& transform : tfStaticMsg.transforms) {
-        if (transform.header.frame_id == "stim320_imu" && transform.child_frame_id == "box_base_model") {
-          // Change the frame_id to box_base
-          transform.header.frame_id = "box_base";
+  // {
+  //   // Find transforms from stim320_imu to box_base_model and set them to identity with frame_id = box_base
+  //   for (auto& tfStaticMsg : tfStaticVector_) {
+  //     for (auto& transform : tfStaticMsg.transforms) {
+  //       if (transform.header.frame_id == "stim320_imu" && transform.child_frame_id == "box_base_model") {
+  //         // Change the frame_id to box_base
+  //         transform.header.frame_id = "box_base";
 
-          // Set transform to identity
-          tf2::Transform identity;
-          identity.setIdentity();
-          transform.transform = tf2::toMsg(identity);
+  //         // Set transform to identity
+  //         tf2::Transform identity;
+  //         identity.setIdentity();
+  //         transform.transform = tf2::toMsg(identity);
 
-          ROS_WARN_STREAM_THROTTLE(0.5,"####### OLD TF IS GETTING MERGED #######");
-          ROS_WARN_STREAM_THROTTLE(0.5,"Changed transform: stim320_imu -> box_base_model to identity transform from box_base -> box_base_model");
-          ROS_WARN_STREAM_THROTTLE(0.5,"####### OLD TF IS GETTING MERGED #######");
-        }
-      }
-    }
-  }
+  //         ROS_WARN_STREAM_THROTTLE(0.5, "####### OLD TF IS GETTING MERGED #######");
+  //         ROS_WARN_STREAM_THROTTLE(
+  //             0.5, "Changed transform: stim320_imu -> box_base_model to identity transform from box_base -> box_base_model");
+  //         ROS_WARN_STREAM_THROTTLE(0.5, "####### OLD TF IS GETTING MERGED #######");
+  //       }
+  //     }
+  //   }
+  // }
 
   {
     // Find the earliest timestamp in tfStaticVector_
