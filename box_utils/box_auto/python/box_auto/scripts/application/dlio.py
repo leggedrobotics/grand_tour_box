@@ -77,7 +77,7 @@ def launch_nodes(
         gps_bag_path = get_bag(gps_pattern)
 
         with rosbag.Bag(gps_bag_path, "r") as bag:
-            for topic, msg, t in bag.read_messages(topics=["/gt_box/inertial_explorer/tc/navsatfix_origin"]):
+            for _, msg, _ in bag.read_messages(topics=["/gt_box/inertial_explorer/tc/navsatfix_origin"]):
                 if msg._type == "sensor_msgs/NavSatFix":
                     lat = msg.latitude
                     lon = msg.longitude
@@ -131,7 +131,7 @@ def launch_nodes(
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Configure LiDAR and IMU options.")
     parser.add_argument(
-        "--lidar", choices=["hesai", "livox"], default="hesai", help="Select the LiDAR configuration (default: hesai)."
+        "--lidar", choices=["hesai", "livox", "velodyne"], default="hesai", help="Select the LiDAR configuration (default: hesai)."
     )
     parser.add_argument(
         "--imu",
@@ -174,14 +174,19 @@ if __name__ == "__main__":
     # Resolve LiDAR information prefer filtered pointclouds
     if args.lidar == "hesai":
         get_bag("*_nuc_hesai_ready.bag")
-        patterns = [imu_pattern, "*_tf_static.bag", "*_nuc_hesai_ready.bag"]
+        patterns = [imu_pattern, "*_tf_static_start_end.bag", "*_nuc_hesai_ready.bag"]
         lidar_topic = "/gt_box/hesai/points"
         tag = "hesai_"
     elif args.lidar == "livox":
         get_bag("*_nuc_livox_ready.bag")
-        patterns = [imu_pattern, "*_tf_static.bag", "*_nuc_livox_ready.bag"]
+        patterns = [imu_pattern, "*_tf_static_start_end.bag", "*_nuc_livox_ready.bag"]
         lidar_topic = "/gt_box/livox/lidar"
         tag = "livox_"
+    elif args.lidar == "velodyne":
+        get_bag("*_npc_velodyne_ready.bag")
+        patterns = [imu_pattern, "*_tf_minimal.bag", "*_npc_velodyne_ready.bag"]
+        lidar_topic = "/anymal/velodyne/points"
+        tag = "velodyne_"
     else:
         print(f"LiDAR not supported: {args.lidar}")
         exit(2)
