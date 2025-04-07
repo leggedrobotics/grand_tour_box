@@ -1,12 +1,14 @@
 <?xml version="1.0"?>
 <launch>
-  <arg name="urdf_file"                default="$(find box_model)/urdf/box/boxi.urdf"/>
-  <arg name="xacro_file"               default="$(find box_model)/urdf/box/box.urdf.xacro"/>
+  <arg name="urdf_file"                  default="$(find box_model)/urdf/box/box.urdf"/>
+  <arg name="xacro_file"                 default="$(find box_model)/urdf/box/box.urdf.xacro"/>
+  <arg name="enable_visualizable_model" default="true" doc="If true, disabled the redundant frames in the URDF model"/>
 
   <!-- Generate URDF from xacro and save to disk -->
   <node name="urdf_generator" pkg="box_model" type="generate_urdf.py" output="screen">
     <param name="xacro_file" value="$(arg xacro_file)"/>
     <param name="urdf_file" value="$(arg urdf_file)"/>
+    <param name="enable_visualizable_model" value="$(arg enable_visualizable_model)"/>
   </node>
 
 </launch>

@@ -10,19 +10,17 @@ from box_auto.utils import (
 if __name__ == "__main__":
 
     patterns = [
-        "*_jetson_zed2i_prop.bag",
-        "*_jetson_zed2i_images.bag",
-        "*_jetson_zed2i_depth.bag",
-        "*_boxi_tf_full.bag",
-        # "*_tf_pure_perception.bag",
-        #
+        # "*_jetson_zed2i_prop.bag",
+        # "*_jetson_zed2i_images.bag",
+        # "*_jetson_zed2i_depth.bag",
+        "*_tf_model.bag",
         "*_nuc_livox_ready.bag",
         "*_npc_velodyne_ready.bag",
         "*_nuc_hesai_ready.bag",
         #
-        "*_jetson_hdr_front.bag",
-        "*_jetson_hdr_left.bag",
-        "*_jetson_hdr_right.bag",
+        "*_jetson_hdr_front_updated.bag",
+        "*_jetson_hdr_left_updated.bag",
+        "*_jetson_hdr_right_updated.bag",
     ]
 
     inputs = []

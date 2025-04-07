@@ -5,14 +5,15 @@
   <!-- Give the robot description parameter a name -->
   <arg name="description_name"           default="boxi_description"/>
   <!-- Set robot description path -->
-  <arg name="boxi_urdf"                  default="$(find box_model)/urdf/box/boxi.urdf"/>
+  <arg name="boxi_urdf"                  default="$(find box_model)/urdf/box/box.urdf"/>
+  <arg name="load_from_urdf"             default="false" doc="Whether to load from urdf directly"/>
+
   <arg name="boxi_xacro"                 default="$(find box_model)/urdf/box/box.urdf.xacro" />
-  <!-- Whether to load from urdf directly -->
-  <arg name="load_from_urdf"             default="false"/>
+  <arg name="enable_visualizable_model"  default="true" doc="If true, disabled the redundant frames in the URDF model"/>
 
   <!-- Load description directly from xacro -->
   <group unless="$(arg load_from_urdf)">
-    <param name="$(arg description_name)" command="xacro $(arg boxi_xacro)" />
+    <param name="$(arg description_name)" command="xacro $(arg boxi_xacro) enable_visualizable_model:=$(arg enable_visualizable_model)" />
   </group>
 
   <!-- Load URDF file directly if specified -->
