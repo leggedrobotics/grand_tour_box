@@ -16,7 +16,7 @@ from geometry_msgs.msg import (
     PoseStamped,
 )
 from gnss_msgs.msg import GnssRaw
-from sensor_msgs.msg import NavSatFix, NavSatStatus
+from sensor_msgs.msg import NavSatFix
 from tf2_msgs.msg import TFMessage
 from scipy.spatial.transform import Rotation
 from pathlib import Path
@@ -175,7 +175,7 @@ def main():
     except:
         date = [(str(s.name)).split("_")[0] for s in Path(MISSION_DATA).glob("*_nuc_hesai.bag")][0]
 
-    gps_files = [str(s) for s in (Path(MISSION_DATA) / "ie").rglob("*tc_GrandTour-LocalFrame-extended.txt")]
+    gps_files = [str(s) for s in (Path(MISSION_DATA) / "ie").rglob("*_GrandTour-LocalFrame-extended.txt")]
     post_proc_modes = [s.split("/")[-1].split("_")[1] for s in gps_files]
     print(post_proc_modes, MISSION_DATA)
     bag_paths = [
@@ -468,7 +468,11 @@ def main():
                 msg.quality_indicator.data = quality
                 msg.position_dilution_of_precision.data = float(stat[3])
                 msg.course_over_ground.data = float(cog_value)
-                msg.ambiguity_status.data = str(ambiguity_status)
+
+                if ambiguity_status == "Fixed":
+                    msg.ambiguity_status.data = GnssRaw.FIXED
+                elif ambiguity_status == "Float":
+                    msg.ambiguity_status.data = GnssRaw.FLOAT
 
                 # --- Create NavSatFix message ---
                 # Convert current ECEF position to geodetic (lat, lon, alt) using WGS84
@@ -500,20 +504,22 @@ def main():
                 navsat_msg.header.seq = i
                 navsat_msg.header.stamp = timestamp
                 navsat_msg.header.frame_id = frame_id
+                navsat_msg.status.status = -50  # Unknown status
+                navsat_msg.status.service = 50  # Unknown service
 
                 # Create a custom NavSatFix message with PDOP and quality in its status field
                 # Assign geodetic coordinates (latitude and longitude in degrees, altitude in meters)
-                navsat_msg.status.service = quality  # Using quality as service
+                # navsat_msg.status.service = quality  # Using quality as service
                 navsat_msg.latitude = lat_deg
                 navsat_msg.longitude = lon_deg
                 navsat_msg.altitude = alt
 
-                if ambiguity_status == "Fixed":
-                    navsat_msg.status.status = NavSatStatus.STATUS_GBAS_FIX
-                elif ambiguity_status == "Float":
-                    navsat_msg.status.status = NavSatStatus.STATUS_SBAS_FIX
+                # if ambiguity_status == "Fixed":
+                #     navsat_msg.status.status = NavSatStatus.STATUS_GBAS_FIX
+                # elif ambiguity_status == "Float":
+                #     navsat_msg.status.status = NavSatStatus.STATUS_SBAS_FIX
 
-                navsat_msg.position_covariance_type = pdop
+                navsat_msg.position_covariance_type = 0  # COVARIANCE_TYPE_UNKNOWN
 
                 # Initialize covariance matrix as 3x3 identity matrix
                 cov_ecef = np.eye(3)
