@@ -10,7 +10,7 @@ from pathlib import Path
 
 if __name__ == "__main__":
 
-    expected_urdf_path = Path(WS) / "src/grand_tour_box/box_model/box_model/urdf/box/boxi.urdf"
+    expected_urdf_path = Path(WS) / "src/grand_tour_box/box_model/box_model/urdf/box/box.urdf"
     xacro_path = Path(WS) / "src/grand_tour_box/box_model/box_model/urdf/box/box.urdf.xacro"
 
     kill_roscore()
