@@ -683,13 +683,15 @@ bool BoxTFProcessor::processRosbags(std::vector<std::string>& tfContainingBags) 
     //         transform.transform.translation.z *= -1;
 
     //         foundSpecialTransform = true;
-    //         ROS_INFO_STREAM("Negated translation for transform from zed2i_left_camera_optical_frame to zed2i_right_camera_optical_frame");
+    //         ROS_INFO_STREAM("Negated translation for transform from zed2i_left_camera_optical_frame to
+    //         zed2i_right_camera_optical_frame");
     //       }
     //     }
     //   }
 
     //   if (!foundSpecialTransform) {
-    //     ROS_WARN_STREAM("No transforms found with parent 'zed2i_left_camera_optical_frame' and child 'zed2i_right_camera_optical_frame'");
+    //     ROS_WARN_STREAM("No transforms found with parent 'zed2i_left_camera_optical_frame' and child
+    //     'zed2i_right_camera_optical_frame'");
     //   }
     // }
   } else {
