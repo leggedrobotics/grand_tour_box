@@ -114,14 +114,19 @@ The `data` section supports the following keys:
 # Upload datasets to Hugging-Face
 
 #### `Install the Hugging Face CLI` section
+```bash
 pip install -U "huggingface_hub[cli]"
+```
 
 #### `Login with your Hugging Face credentials` section
+```bash
 huggingface-cli login
+```
 
 #### `Push your dataset files` section
+```bash
 huggingface-cli upload leggedrobotics/GT-Testing-MLI . --repo-type=dataset
-
+```
 
 ## Profiling the Converter
 
