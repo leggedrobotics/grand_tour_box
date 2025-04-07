@@ -709,9 +709,10 @@ bool BoxTFProcessor::processRosbags(std::vector<std::string>& tfContainingBags) 
           identity.setIdentity();
           transform.transform = tf2::toMsg(identity);
 
-          ROS_WARN_STREAM_THROTTLE(0.5,"####### OLD TF IS GETTING MERGED #######");
-          ROS_WARN_STREAM_THROTTLE(0.5,"Changed transform: stim320_imu -> box_base_model to identity transform from box_base -> box_base_model");
-          ROS_WARN_STREAM_THROTTLE(0.5,"####### OLD TF IS GETTING MERGED #######");
+          ROS_WARN_STREAM_THROTTLE(0.5, "####### OLD TF IS GETTING MERGED #######");
+          ROS_WARN_STREAM_THROTTLE(
+              0.5, "Changed transform: stim320_imu -> box_base_model to identity transform from box_base -> box_base_model");
+          ROS_WARN_STREAM_THROTTLE(0.5, "####### OLD TF IS GETTING MERGED #######");
         }
       }
     }

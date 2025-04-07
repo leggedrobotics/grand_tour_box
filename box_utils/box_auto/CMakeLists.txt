@@ -6,13 +6,10 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
 
 ## Source: https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
-#add_compile_options(-Wall -Wextra -Wpedantic -O3)
-
 set(CMAKE_BUILD_TYPE "Release")
 #add_compile_options(-Wall -Wextra -Wpedantic)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-add_compile_options(-Wno-dev -O3 -std=c++17 -fconcepts )
-set(CMAKE_COMPILER_IS_GNUCXX 1)
+add_compile_options(-Wno-dev -O3 -std=c++17)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -163,17 +160,19 @@ target_link_libraries(zed2i_decompression_and_saving ${catkin_LIBRARIES} ${OpenC
 target_link_libraries(evo_conversion_node ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${PROJECT_NAME})
 
 
-find_package(cmake_clang_tools QUIET)
-if(cmake_clang_tools_FOUND)
-  message(STATUS "Run clang tooling for target " post_processor_node filter_lidar_node tf_processor_node zed2i_decompression_and_saving evo_conversion_node merge)
-  add_clang_tooling(
-    TARGETS post_processor_node
-    SOURCE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/include
-    CT_HEADER_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include
-    CF_FIX
-    #CT_ATTACH_TO_ALL # Uncomment to attach to all targets during build, takes time
-  )
-endif(cmake_clang_tools_FOUND)
+find_package(cmake_clang_tools REQUIRED)
+
+# Force clang-tidy as the checker
+set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-checks=*,performance-*,cppcoreguidelines-*,bugprone-*")
+
+message(STATUS "Running clang tooling attached to all targets")
+
+add_clang_tooling(
+  SOURCE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/include
+  CT_HEADER_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include
+  CF_FIX
+  CT_ATTACH_TO_ALL
+)
 
 
 install(TARGETS post_processor_node
