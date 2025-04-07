@@ -7,7 +7,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
 
 ## Source: https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
 set(CMAKE_BUILD_TYPE "Release")
-#add_compile_options(-Wall -Wextra -Wpedantic)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_compile_options(-Wno-dev -O3 -std=c++17)
 
@@ -66,7 +65,6 @@ find_package(catkin REQUIRED COMPONENTS
   ${CATKIN_PACKAGE_DEPENDENCIES}
   )
 
-
 catkin_python_setup()
 
 catkin_package(
@@ -79,10 +77,6 @@ catkin_package(
   ${CATKIN_PACKAGE_DEPENDENCIES}
   DEPENDS
 )
-
-## Link libraries
-# link_directories(${PCL_LIBRARY_DIRS})
-# add_definitions(${PCL_DEFINITIONS})
 
 
 #Include directory#
@@ -162,23 +156,24 @@ target_link_libraries(evo_conversion_node ${catkin_LIBRARIES} ${OpenCV_LIBRARIES
 
 find_package(cmake_clang_tools REQUIRED)
 
-# Force clang-tidy as the checker
-set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-checks=*,performance-*,cppcoreguidelines-*,bugprone-*")
+# Use your .clang-tidy file — no redundant config
+set(CMAKE_CXX_CLANG_TIDY "clang-tidy")
 
-message(STATUS "Running clang tooling attached to all targets")
+# Optional: Use your .clang-format file for auto-formatting
+set(CLANG_FORMAT_EXECUTABLE "clang-format")
 
+# Automatically apply clang-format and clang-tidy to all targets
 add_clang_tooling(
-  SOURCE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/include
-  CT_HEADER_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include
-  CF_FIX
-  CT_ATTACH_TO_ALL
+  SOURCE_DIRS      ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/include
+  CT_HEADER_DIRS   ${CMAKE_CURRENT_SOURCE_DIR}/include
+  CT_ATTACH_TO_ALL # Auto-attaches to all targets
+  CF_FIX           # Enables clang-format automatic fixing
 )
 
-
 install(TARGETS post_processor_node
-        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
+RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
 
 install(TARGETS tf_processor_node
 RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
