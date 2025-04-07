@@ -18,7 +18,7 @@ if __name__ == "__main__":
         "--config_name",
         type=str,
         default="tf_minimal",  # tf_model, tf_minimal
-        help="The name of the configuration file. Default is 'boxi_tf_pure_perception'.",
+        help="The name of the configuration file. Default is 'tf_minimal'.",
     )
     args = parser.parse_args()
     print(f"Using configuration: {args.config_name}")
