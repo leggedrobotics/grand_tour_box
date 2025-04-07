@@ -111,23 +111,6 @@ The `data` section supports the following keys:
   #TODO: add missing topics according to mission
 
 
-# Upload datasets to Hugging-Face
-
-#### `Install the Hugging Face CLI` section
-```bash
-pip install -U "huggingface_hub[cli]"
-```
-
-#### `Login with your Hugging Face credentials` section
-```bash
-huggingface-cli login
-```
-
-#### `Push your dataset files` section
-```bash
-huggingface-cli upload leggedrobotics/GT-Testing-MLI . --repo-type=dataset
-```
-
 ## Profiling the Converter
 
 ```bash
@@ -143,3 +126,22 @@ But overall most time is still spent inside ros packages.
 - 60-70% of the time is spent reading and writing images (we can't really improve this)
 - 20% of time is spent inside the bag message iterator function (we can't really improve this)
 - 10-15% of the time is spent inside our code (not worth improving)
+
+
+## Upload datasets to Hugging-Face
+
+#### `Install the Hugging Face CLI`
+```bash
+pip install -U "huggingface_hub[cli]"
+```
+
+#### `Login with your Hugging Face credentials`
+```bash
+huggingface-cli login
+```
+
+#### `Push your dataset files`
+```bash
+huggingface-cli upload leggedrobotics/GT-Testing-MLI . --repo-type=dataset
+```
+
