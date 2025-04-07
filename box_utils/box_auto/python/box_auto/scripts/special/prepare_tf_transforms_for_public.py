@@ -27,9 +27,9 @@ if __name__ == "__main__":
     patterns = ["*_lpc_tf.bag", "*_tf_static.bag", "*_cpt7_ie_tc.bag", "*_hesai_dlio.bag"]
 
     # Patterns for optional applications.
-    # "*_hesai_dlio.bag",
-    # "*_gt_tf.bag",
-    # "*_open3d_slam.bag"
+    # ,"*_hesai_dlio.bag"
+    # ,"*_gt_tf.bag"
+    # ,"*_open3d_slam.bag"
 
     path = Path(WS) / "src/grand_tour_box/box_utils/box_auto/cfg" / (args.config_name + ".yaml")
 
