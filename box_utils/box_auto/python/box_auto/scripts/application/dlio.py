@@ -174,12 +174,12 @@ if __name__ == "__main__":
     # Resolve LiDAR information prefer filtered pointclouds
     if args.lidar == "hesai":
         get_bag("*_nuc_hesai_ready.bag")
-        patterns = [imu_pattern, "*_tf_static_start_end.bag", "*_nuc_hesai_ready.bag"]
+        patterns = [imu_pattern, "*_tf_static.bag", "*_nuc_hesai_ready.bag"]
         lidar_topic = "/gt_box/hesai/points"
         tag = "hesai_"
     elif args.lidar == "livox":
         get_bag("*_nuc_livox_ready.bag")
-        patterns = [imu_pattern, "*_tf_static_start_end.bag", "*_nuc_livox_ready.bag"]
+        patterns = [imu_pattern, "*_tf_static.bag", "*_nuc_livox_ready.bag"]
         lidar_topic = "/gt_box/livox/lidar"
         tag = "livox_"
     elif args.lidar == "velodyne":
