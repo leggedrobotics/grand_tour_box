@@ -687,6 +687,7 @@ def main():
                 box_transform.transform.translation = Vector3(x=SE3[0, 3], y=SE3[1, 3], z=SE3[2, 3])
 
                 tf_message.transforms.append(box_transform)
+                bag.write(topic="/tf", msg=tf_message, t=timestamp)
 
                 # cog_transform = TransformStamped()
                 # # Use the same header as your odometry message, or create a new one as needed.
