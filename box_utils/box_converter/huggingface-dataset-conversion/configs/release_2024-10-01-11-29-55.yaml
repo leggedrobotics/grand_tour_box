@@ -46,6 +46,7 @@ metadata:
     #   topic: "/anymal/depth_camera_front_lower/depth/image_rect_raw"
 
   camera_intrinsics:
+<<<<<<< Updated upstream
     - alias: zed2i_depth_caminfo
       file: 2024-10-01-11-29-55_jetson_zed2i_depth.bag
       topic: /gt_box/zed2i/zed_node/depth/camera_info
@@ -58,6 +59,8 @@ metadata:
       file: 2024-10-01-11-29-55_jetson_zed2i_images.bag
       topic: "/gt_box/zed2i/zed_node/right/camera_info"
 
+=======
+>>>>>>> Stashed changes
     # TODO: used, doublecheck with Jonas
     - alias: alphasense_front_center_caminfo
       file: 2024-10-01-11-29-55_alphasense.bag
@@ -91,6 +94,22 @@ metadata:
       topic: "/boxi/hdr_right/camera_info"
 
 # not used
+<<<<<<< Updated upstream
+=======
+
+    # - alias: zed2i_depth_caminfo
+    #   file: 2024-10-01-11-29-55_jetson_zed2i_depth.bag
+    #   topic: /gt_box/zed2i/zed_node/depth/camera_info
+
+    # - alias: zed2i_left_caminfo
+    #   file: 2024-10-01-11-29-55_jetson_zed2i_images.bag
+    #   topic: "/gt_box/zed2i/zed_node/left/camera_info"
+
+    # - alias: zed2i_right_caminfo
+    #   file: 2024-10-01-11-29-55_jetson_zed2i_images.bag
+    #   topic: "/gt_box/zed2i/zed_node/right/camera_info"
+
+>>>>>>> Stashed changes
   # frame_transforms:
   #   base_frame: base
   #   file: 2024-10-01-11-29-55_tf_static.bag
@@ -240,8 +259,44 @@ data:
         - intensity
         - timestamp
 
+<<<<<<< Updated upstream
     # TODO: used, doublecheck with Jonas
     - alias: dlio_map_odometry
+=======
+    # TODO: used, doublecheck with Jonasd
+    - alias: dlio_map_odometry
+      file: 2024-10-01-11-29-55_dlio.bag
+      topic: "/boxi/dlio/lidar_map_odometry"
+
+    # TODO: used, doublecheck with Jonas
+    - alias: dlio_tf
+      file: 2024-10-01-11-29-55_dlio.bag
+      topic: "/tf"
+
+# not used
+    # - alias: hesai_last # what is this one?
+    #   file: 2024-10-01-11-29-55_nuc_hesai_post_processed.bag
+    #   topic: "/gt_box/hesai/points_last"
+    #   max_points: 64000
+    #   attributes:
+    #     - intensity
+    #     - ring
+    #     - timestamp
+
+
+  pose_topics:
+    # do we want both? is the 2nd a superset of the 1st?
+    - alias: ground_truth
+      file: 2024-10-01-11-29-55_gt_pose.bag
+      topic: "/gt_box/ground_truth/pose_stamped"
+      covariance: false
+    - alias: ground_truth_with_cov
+      file: 2024-10-01-11-29-55_gt_pose.bag
+      topic: "/gt_box/ground_truth/pose_with_covariance"
+      covariance: true
+
+    - alias: dlio_pose
+>>>>>>> Stashed changes
       file: 2024-10-01-11-29-55_dlio.bag
       topic: "/boxi/dlio/lidar_map_odometry"
 

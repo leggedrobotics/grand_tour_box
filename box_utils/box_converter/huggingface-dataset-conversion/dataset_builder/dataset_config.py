@@ -592,3 +592,4 @@ def load_config(
         _load_topic_registry_from_config(data_config_object, mission_name),
         _load_metadata_config(metadata_config_object, mission_name),
     )
+

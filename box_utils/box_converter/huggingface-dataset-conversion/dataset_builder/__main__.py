@@ -20,7 +20,7 @@ DATA_PATH = Path("/data")  # Path(__file__).parent.parent / "data"
 INPUT_PATH = DATA_PATH / "files" / MISSION_NAME
 DATASET_PATH = DATA_PATH / "dataset" / MISSION_NAME
 
-DOWNLOAD_FLAG = True
+DOWNLOAD_FLAG = False
 
 
 def download_mission(mission_id: UUID, input_path: Path) -> None:
@@ -87,3 +87,7 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
+
+
+
