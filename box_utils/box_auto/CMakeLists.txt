@@ -154,21 +154,24 @@ target_link_libraries(zed2i_decompression_and_saving ${catkin_LIBRARIES} ${OpenC
 target_link_libraries(evo_conversion_node ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${PROJECT_NAME})
 
 
-find_package(cmake_clang_tools REQUIRED)
+# find_package(cmake_clang_tools QUIET)
+# if(cmake_clang_tools_FOUND)
+#   include(cmake_clang_tools)
 
-# Use your .clang-tidy file — no redundant config
-set(CMAKE_CXX_CLANG_TIDY "clang-tidy")
+#   # Use your .clang-tidy file — no redundant config
+#   set(CMAKE_CXX_CLANG_TIDY "clang-tidy")
 
-# Optional: Use your .clang-format file for auto-formatting
-set(CLANG_FORMAT_EXECUTABLE "clang-format")
+#   # Optional: Use your .clang-format file for auto-formatting
+#   set(CLANG_FORMAT_EXECUTABLE "clang-format")
 
-# Automatically apply clang-format and clang-tidy to all targets
-add_clang_tooling(
-  SOURCE_DIRS      ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/include
-  CT_HEADER_DIRS   ${CMAKE_CURRENT_SOURCE_DIR}/include
-  CT_ATTACH_TO_ALL # Auto-attaches to all targets
-  CF_FIX           # Enables clang-format automatic fixing
-)
+#   # Automatically apply clang-format and clang-tidy to all targets
+#   add_clang_tooling(
+#     SOURCE_DIRS      ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/include
+#     CT_HEADER_DIRS   ${CMAKE_CURRENT_SOURCE_DIR}/include
+#     CT_ATTACH_TO_ALL # Auto-attaches to all targets
+#     CF_FIX           # Enables clang-format automatic fixing
+#   )
+# endif()
 
 install(TARGETS post_processor_node
 RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
