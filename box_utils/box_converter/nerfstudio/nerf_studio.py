@@ -5,7 +5,6 @@ import json
 import cv2
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-
 import rospy
 import rosbag
 from cv_bridge import CvBridge
@@ -14,7 +13,7 @@ from sensor_msgs.msg import CameraInfo, CompressedImage
 import tf.transformations
 from torchvision.io.image import read_image
 from torchvision.models.segmentation import fcn_resnet50, FCN_ResNet50_Weights
-from box_auto.utils import MISSION_DATA, get_bag
+from box_auto.utils import MISSION_DATA, get_bag, WS
 
 
 def undistort_image(image, camera_info, new_camera_info=None):
@@ -88,6 +87,9 @@ class ImageSaver:
             self.mask_folder = self.output_folder / "mask"
             self.mask_folder.mkdir(parents=True, exist_ok=True)
 
+    def reset(self):
+        self.last_trans = None
+
     def ros_to_gl_transform(self, transform_ros):
         cv_to_gl = np.eye(4)
         cv_to_gl[1:3, 1:3] = np.array([[-1, 0], [0, -1]])
@@ -95,11 +97,11 @@ class ImageSaver:
         return transform_gl
 
     def store_frame(self, img_msg, topic):
-
         if self.image_counters[topic] > self.config["num_images_per_topic"]:
             return False
 
         if img_msg.header.stamp.to_sec() - self.image_last_stored[topic] < (1 / self.config["hz"]) - 0.001:
+            print(img_msg.header.seq, "freq")
             return True
 
         camera_key = self.camera_keys[topic]
@@ -117,14 +119,18 @@ class ImageSaver:
             self.last_trans = trans
 
         if np.linalg.norm(np.array(self.last_trans[:2]) - np.array(trans[:2])) < self.config["distance_threshold"]:
+            print(img_msg.header.seq, "distance")
             return True
+
+        self.last_trans = trans
+
         print(img_msg.header.seq)
 
         if self.config["wavemap"]["ground"]:
             rot_so3 = tf.transformations.quaternion_matrix(quat_xyzw)[:3, :3]
             yaw = np.arctan2(rot_so3[1, 0], rot_so3[0, 0])
-            quat_xyzw = (R.from_euler("z", yaw, degrees=True) * R.from_euler("y", -180, degrees=True)).as_quat()
-            trans[2] += 1.5
+            quat_xyzw = (R.from_euler("z", yaw, degrees=True) * R.from_euler("y", -160, degrees=True)).as_quat()
+            trans[2] += 1.2
 
         self.image_counters[topic] += 1
         self.image_last_stored[topic] = img_msg.header.stamp.to_sec()
@@ -235,7 +241,7 @@ class ImageSaver:
 def main():
     parser = argparse.ArgumentParser(description="Process ROS bags and extract camera images and transformations.")
 
-    PATH = "/home/jonfrey/git/grand_tour_box/box_utils/box_converter/grand_tour_offline.yaml"
+    PATH = Path(WS) / "src/grand_tour_box/box_utils/box_converter/grand_tour_offline.yaml"
     parser.add_argument("--mission_data", type=str, default=MISSION_DATA, help="Mission Folder")
     parser.add_argument("--config_file", type=str, default=PATH, help="Path to the configuration YAML file")
     args = parser.parse_args()
@@ -250,7 +256,7 @@ def main():
     camera_infos = {}
     camera_keys = {}
     for camera in config["cameras"]:
-        bag_file = get_bag(camera["bag_pattern"], directory=args.mission_data)
+        bag_file = get_bag(camera["bag_pattern_info"], directory=args.mission_data)
 
         with rosbag.Bag(bag_file, "r") as bag:
             for topic, msg, t in bag.read_messages(topics=[camera["info_topic"]]):
@@ -265,8 +271,8 @@ def main():
     image_saver = ImageSaver(camera_infos, camera_keys, tf_listener, config, args.mission_data)
 
     # Process image messages
-    for camera in config["cameras"]:
-        bag_file = next(Path(input_folder).glob(camera["bag_pattern"]))
+    for _, camera in enumerate(config["cameras"]):
+        bag_file = next(Path(input_folder).glob(camera["bag_pattern_image"]))
         with rosbag.Bag(bag_file, "r") as bag:
             start = bag.get_start_time() + config["skip_start_seconds"]
             end = bag.get_end_time() - config["skip_end_seconds"]
@@ -277,6 +283,7 @@ def main():
                 if not suc:
                     print(f"Finished processing {camera['name']}")
                     break
+            image_saver.reset()
 
     # Save JSON file
     image_saver.save_json()

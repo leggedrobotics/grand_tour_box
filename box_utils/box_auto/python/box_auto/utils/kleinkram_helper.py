@@ -7,51 +7,56 @@ def upload_simple(project_name, mission_name, path, delete=True):
 
     print(mission_name, res)
     while res[Path(path)] != "uploaded":
-        if res[Path(path)] == "missing":
-            print("uploading")
-        elif res[Path(path)] == "uploaded":
-            print("File already uploaded - suc")
-            return True
-        elif res[Path(path)] == "mismatched_hash":
-            print("mismatched_hash")
-            fileinfo = [
-                f
-                for f in kleinkram.list_files(project_names=[project_name], mission_names=[mission_name])
-                if Path(path).name in f.name
-            ]
-            kleinkram.delete_file(fileinfo[0].id)
-        else:
-            print("Something is odd after verification")
-            print(res[Path(path)])
-            fileinfo = [
-                f
-                for f in kleinkram.list_files(project_names=[project_name], mission_names=[mission_name])
-                if Path(path).name in f.name
-            ]
+        try:
+            if res[Path(path)] == "missing":
+                print("uploading")
+            elif res[Path(path)] == "uploaded":
+                print("File already uploaded - suc")
+                return True
+            elif res[Path(path)] == "hash mismatch":
+                print("hash mismatch")
+                fileinfo = [
+                    f
+                    for f in kleinkram.list_files(project_names=[project_name], mission_names=[mission_name])
+                    if Path(path).name in f.name
+                ]
+                kleinkram.delete_file(fileinfo[0].id)
+            else:
+                print("Something is odd after verification")
+                print(res[Path(path)])
+                fileinfo = [
+                    f
+                    for f in kleinkram.list_files(project_names=[project_name], mission_names=[mission_name])
+                    if Path(path).name in f.name
+                ]
 
-            if len(fileinfo) == 1:
-                if fileinfo[0].state == "ERROR" or fileinfo[0].state == "UPLOADING":
-                    if delete:
-                        print("File already exists - deleting")
-                        kleinkram.delete_file(fileinfo[0].id)
+                if len(fileinfo) == 1:
+                    if fileinfo[0].state == "ERROR" or fileinfo[0].state == "UPLOADING":
+                        if delete:
+                            print("File already exists - deleting")
+                            kleinkram.delete_file(fileinfo[0].id)
+                        else:
+                            print("File already exists - aboarding - fail")
+                            return False
                     else:
-                        print("File already exists - aboarding - fail")
+                        print("File may have other error - aboarding - fail", fileinfo[0])
                         return False
+
                 else:
-                    print("File may have other error - aboarding - fail", fileinfo[0])
+                    print("Too many files to verify aboarding - fail number files: ", len(fileinfo))
                     return False
 
-            else:
-                print("Too many files to verify aboarding - fail number files: ", len(fileinfo))
-                return False
+            res = kleinkram.upload(
+                mission_name=mission_name,
+                project_name="GrandTour",
+                files=[path],
+                create=False,
+            )
+            res = kleinkram.verify(project_name=project_name, mission_name=mission_name, files=[path])
 
-        kleinkram.upload(
-            mission_name=mission_name,
-            project_name="GrandTour",
-            files=[path],
-            create=False,
-        )
-        res = kleinkram.verify(project_name=project_name, mission_name=mission_name, files=[path])
+            break
+            print("File uploaded - (suc ?)")
+        except Exception as e:
+            print("Something went wrong - ", e)
 
-        print("File uploaded - (suc ?)")
     return True

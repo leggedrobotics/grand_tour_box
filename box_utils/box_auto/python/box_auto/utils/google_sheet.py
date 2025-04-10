@@ -34,7 +34,7 @@ def read_sheet_data(spreadsheet_id, sheet_name_topic="topic_overview", sheet_nam
                 topic_data.append(_data)
 
     worksheet = sheet.worksheet(sheet_name_mission)
-    data = worksheet.get_all_values("A1:Y71")
+    data = worksheet.get_all_values("A1:Z72")
 
     data_list = []
 
