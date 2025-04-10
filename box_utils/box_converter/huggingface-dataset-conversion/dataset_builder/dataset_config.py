@@ -535,6 +535,8 @@ def _load_topic_registry_from_config(
             topic_obj.file = topic_obj.file.format(mission_name)
 
     except Exception as e:
+        # TODO: remove this breakpoint
+        breakpoint()
         raise ValueError(f"error parsing data part of config file: {e}") from e
     
     return _add_universal_attributes(registry)
@@ -561,6 +563,10 @@ def _load_metadata_config(
         frame_transforms_object = metadata_config_object.get(FRAME_TRANSFORMS_KEY, {})
         frame_transforms = FrameTransformConfig(**frame_transforms_object)
     except Exception as e:
+
+        # TODO: remove this breakpoint
+        breakpoint()
+
         raise ValueError(
             f"error parsing {FRAME_TRANSFORMS_KEY!r} part of config file: {e}"
         ) from e
@@ -580,10 +586,17 @@ def load_config(
     with open(config_path, "r") as f:
         config_object = yaml.safe_load(f)
 
+    # TODO: remove this breakpoint
+    breakpoint()
+
     try:
         data_config_object = config_object[DATA_KEY]
         metadata_config_object = config_object[METADATA_KEY]
     except KeyError as e:
+        
+        # TODO: remove this breakpoint
+        breakpoint()
+
         raise ValueError(
             f"config {config_path!r} does not contain keys {DATA_KEY!r} or {METADATA_KEY!r}"
         ) from e

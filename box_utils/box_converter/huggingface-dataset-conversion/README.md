@@ -28,32 +28,6 @@ run the converter inside the container
 python -m dataset_builder
 ```
 
-## Degbugging dataset_builder in VS code
-
-### Configure Python Path
-To ensure proper functionality, add the required ROS packages and `anymal_msgs`, `gnss_msgs`, `gps_common`to your Python path. Run the following commands:
-
-#### Add ROS Packages:
-
-
-<!-- 
-VENV_SITE_PACKAGES=/opt/venv/lib/python3.8/site-packages
-
-ln -s /opt/ros/noetic/lib/python3/dist-packages/sensor_msgs $VENV_SITE_PACKAGES/ ln -s /opt/ros/noetic/lib/python3/dist-packages/std_msgs $VENV_SITE_PACKAGES/ ln -s /opt/ros/noetic/lib/python3/dist-packages/genpy $VENV_SITE_PACKAGES/ ln -s /opt/ros/noetic/lib/python3/dist-packages/rospy $VENV_SITE_PACKAGES/ ln -s /opt/ros/noetic/lib/python3/dist-packages/roslib $VENV_SITE_PACKAGES/
-
-
-#### Add `anymal_msgs`:
-
-ln -s /catkin_ws/devel/lib/python3/dist-packages/anymal_msgs /opt/venv/lib/python3.8/site-packages/
-
-#### Add `gnss_msgs`:
-ln -s /catkin_ws/devel/lib/python3/dist-packages/gnss_msgs /opt/venv/lib/python3.8/site-packages/
-
-#### Add `gps_common`:
-ln -s /catkin_ws/devel/lib/python3/dist-packages/gps_common /opt/venv/lib/python3.8/site-packages/ -->
-
-
-
 ## Configuring the Converter
 
 Currently the converter can be configured by editing the [`dataset_builder/configs/full.yaml`](dataset_builder/configs/full.yaml) file.

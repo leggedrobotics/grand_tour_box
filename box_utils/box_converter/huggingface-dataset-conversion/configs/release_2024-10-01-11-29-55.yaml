@@ -46,21 +46,6 @@ metadata:
     #   topic: "/anymal/depth_camera_front_lower/depth/image_rect_raw"
 
   camera_intrinsics:
-<<<<<<< Updated upstream
-    - alias: zed2i_depth_caminfo
-      file: 2024-10-01-11-29-55_jetson_zed2i_depth.bag
-      topic: /gt_box/zed2i/zed_node/depth/camera_info
-
-    - alias: zed2i_left_caminfo
-      file: 2024-10-01-11-29-55_jetson_zed2i_images.bag
-      topic: "/gt_box/zed2i/zed_node/left/camera_info"
-
-    - alias: zed2i_right_caminfo
-      file: 2024-10-01-11-29-55_jetson_zed2i_images.bag
-      topic: "/gt_box/zed2i/zed_node/right/camera_info"
-
-=======
->>>>>>> Stashed changes
     # TODO: used, doublecheck with Jonas
     - alias: alphasense_front_center_caminfo
       file: 2024-10-01-11-29-55_alphasense.bag
@@ -94,8 +79,6 @@ metadata:
       topic: "/boxi/hdr_right/camera_info"
 
 # not used
-<<<<<<< Updated upstream
-=======
 
     # - alias: zed2i_depth_caminfo
     #   file: 2024-10-01-11-29-55_jetson_zed2i_depth.bag
@@ -109,7 +92,6 @@ metadata:
     #   file: 2024-10-01-11-29-55_jetson_zed2i_images.bag
     #   topic: "/gt_box/zed2i/zed_node/right/camera_info"
 
->>>>>>> Stashed changes
   # frame_transforms:
   #   base_frame: base
   #   file: 2024-10-01-11-29-55_tf_static.bag
@@ -259,10 +241,6 @@ data:
         - intensity
         - timestamp
 
-<<<<<<< Updated upstream
-    # TODO: used, doublecheck with Jonas
-    - alias: dlio_map_odometry
-=======
     # TODO: used, doublecheck with Jonasd
     - alias: dlio_map_odometry
       file: 2024-10-01-11-29-55_dlio.bag
@@ -296,7 +274,6 @@ data:
       covariance: true
 
     - alias: dlio_pose
->>>>>>> Stashed changes
       file: 2024-10-01-11-29-55_dlio.bag
       topic: "/boxi/dlio/lidar_map_odometry"
 
@@ -455,12 +432,12 @@ data:
       file: 2024-10-01-11-29-55_stim320_imu.bag
       topic: "/boxi/stim320/imu"
 
-    # TODO: not yet implemented, doublecheck with Jonas
+    # TODO: not yet implemented, doublecheck with Jonas --> category?
     - alias: stim320_acceletometer_temperature
       file: 2024-10-01-11-29-55_stim320_imu.bag
       topic: "/boxi/stim320/acceletometer_temperature"
 
-    # TODO: not yet implemented, doublecheck with Jonas
+    # TODO: not yet implemented, doublecheck with Jonas --> category?
     - alias: stim320_gyroscope_temperature
       file: 2024-10-01-11-29-55_jetson_stim.bag
       topic: "/boxi/stim320/gyroscope_temperature"
@@ -475,25 +452,20 @@ data:
       file: 2024-10-01-11-29-55_zed2i_prop.bag
       topic: "/boxi/zed2i/imu"
 
-    # TODO: not yet implemented, doublecheck with Jonas
+    # TODO: not yet implemented, doublecheck with Jonas --> category?
     - alias: zed2i_pressure
       file: 2024-10-01-11-29-55_zed2i_prop.bag
       topic: "/boxi/zed2i/baro/pressure"
 
-    # TODO: not yet implemented, doublecheck with Jonas
+    # TODO: not yet implemented, doublecheck with Jonas --> category?
     - alias: zed2i_magnetic_filed
       file: 2024-10-01-11-29-55_zed2i_prop.bag
       topic: "/boxi/zed2i/magnetic_field"
 
-    # TODO: not yet implemented, doublecheck with Jonas
+    # TODO: not yet implemented, doublecheck with Jonas --> category?
     - alias: zed2i_vio_map
       file: 2024-10-01-11-29-55_zed2i_vio.bag
       topic: "/boxi/zed2i_vio/map"
-
-    # TODO: not yet implemented, doublecheck with Jonas
-    - alias: zed2i_vio_odom
-      file: 2024-10-01-11-29-55_zed2i_vio.bag
-      topic: "/boxi/zed2i_vio/odom"
 
     # TODO: not yet implemented, doublecheck with Jonas
     - alias: zed2i_vio_tf
@@ -523,6 +495,11 @@ data:
 # not used
   # we should use better aliases that are conistent with the corresponding point clouds / poses
   odometry_topics:
+
+    # TODO: not yet implemented, doublecheck with Jonas
+    - alias: zed2i_vio_odom
+      file: 2024-10-01-11-29-55_zed2i_vio.bag
+      topic: "/boxi/zed2i_vio/odom"
 
     # # do we want all of these?
     # - alias: novatel_odometry
@@ -577,27 +554,29 @@ data:
 
   singleton_transform_topics:
     # im pretty sure this is a duplicate of cpt7_gps
-    - alias: cpt7_gps_tf
-      file: 2024-10-01-11-29-55_cpt7_gps_ie.bag
-      topic: "/tf"
-    - alias: cpt7_dgps_tf
-      file: 2024-10-01-11-29-55_cpt7_ie_dgps.bag
-      topic: "/tf"
-    - alias: cpt7_lc_tf
-      file: 2024-10-01-11-29-55_cpt7_ie_lc.bag
-      topic: "/tf"
-    - alias: cpt7_tc_tf
-      file: 2024-10-01-11-29-55_cpt7_ie_tc.bag
-      topic: "/tf"
-    - alias: cpt7_ppp_tf
-      file: 2024-10-01-11-29-55_cpt7_ie_ppp.bag
-      topic: "/tf"
-    - alias: cpt7_post_processed_tf
-      file: 2024-10-01-11-29-55_nuc_cpt7_post_processed_tf.bag
-      topic: "/tf"
-    - alias: zed2i_tf
-      file: 2024-10-01-11-29-55_jetson_zed2i_tf.bag
-      topic: "/tf"
+
+    # TODO: check with jonas if /tf should be in here
+    # - alias: cpt7_gps_tf
+    #   file: 2024-10-01-11-29-55_cpt7_gps_ie.bag
+    #   topic: "/tf"
+    # - alias: cpt7_dgps_tf
+    #   file: 2024-10-01-11-29-55_cpt7_ie_dgps.bag
+    #   topic: "/tf"
+    # - alias: cpt7_lc_tf
+    #   file: 2024-10-01-11-29-55_cpt7_ie_lc.bag
+    #   topic: "/tf"
+    # - alias: cpt7_tc_tf
+    #   file: 2024-10-01-11-29-55_cpt7_ie_tc.bag
+    #   topic: "/tf"
+    # - alias: cpt7_ppp_tf
+    #   file: 2024-10-01-11-29-55_cpt7_ie_ppp.bag
+    #   topic: "/tf"
+    # - alias: cpt7_post_processed_tf
+    #   file: 2024-10-01-11-29-55_nuc_cpt7_post_processed_tf.bag
+    #   topic: "/tf"
+    # - alias: zed2i_tf
+    #   file: 2024-10-01-11-29-55_jetson_zed2i_tf.bag
+    #   topic: "/tf"
 
 
 

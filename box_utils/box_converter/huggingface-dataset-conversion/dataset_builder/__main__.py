@@ -20,7 +20,7 @@ DATA_PATH = Path("/data")  # Path(__file__).parent.parent / "data"
 INPUT_PATH = DATA_PATH / "files" / MISSION_NAME
 DATASET_PATH = DATA_PATH / "dataset" / MISSION_NAME
 
-DOWNLOAD_FLAG = False
+DOWNLOAD_FLAG = True
 
 
 def download_mission(mission_id: UUID, input_path: Path) -> None:
@@ -52,6 +52,7 @@ def run_converter(
 
 
 def main() -> int:
+
     parser = ArgumentParser()
     parser.add_argument(
         "--config",
@@ -74,7 +75,11 @@ def main() -> int:
     assert len(missions) == 1
     mission = missions[0]
 
-    download_mission(mission_id=mission.id, input_path=INPUT_PATH)
+    # TODO: delete this line
+    breakpoint()
+    
+    if DOWNLOAD_FLAG:
+        download_mission(mission_id=mission.id, input_path=INPUT_PATH)
 
     run_converter(
         input_path=INPUT_PATH,
