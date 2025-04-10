@@ -27,3 +27,4 @@ box_utils/box_auto/cfg/mission_metadata.yaml
 box_utils/box_converter/cluster/.submit/*
 box_utils/box_converter/cluster/.export/*
 box_utils/box_auto/docker/.secrets/*
+box_utils/box_converter/cluster/.out/*
