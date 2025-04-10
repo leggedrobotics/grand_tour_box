@@ -3,9 +3,9 @@
   <!-- Arguments -->
   <arg name="description_name"         default="boxi_description"/>
   <arg name="files_dir"                default="$(find box_model)/urdf/box"/>
-  <arg name="urdf_file"                default="$(arg files_dir)/boxi.urdf"/>
+  <arg name="urdf_file"                default="$(arg files_dir)/box.urdf"/>
   <arg name="xacro_file"               default="$(arg files_dir)/box.urdf.xacro"/>
-  <arg name="load_from_urdf"           default="true"/>
+  <arg name="load_from_urdf"           default="false"/>
   <arg name="calibration_file"         default="$(find box_calibration)/calibration/tf/calibration_latest.yaml" />
 
   <!-- Load robot description -->
@@ -37,5 +37,8 @@
   <!-- Record 1 tf_static message -->
   <node name="record_tf_static" pkg="rosbag" type="record" output="screen"
         args="-O $(arg files_dir)/tf_static_urdf.bag --chunksize=2048 -l 1 /tf_static"/>
+
+  <!-- Dump the description to yaml file. -->
+  <node pkg="box_model" type="dump_params.sh" name="dump_params" output="screen" />
 
 </launch>

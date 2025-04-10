@@ -505,8 +505,8 @@ def launch_nodes():
         # Read in the full paths
         gps_ie = np.array(
             [
-                t.pose.pose
-                for _, t, _ in Bag(ap20_gps_bag).read_messages(topics="/gt_box/inertial_explorer/tc/gt_poses_novatel")
+                odom_msg.pose.pose  # Extract pose from odometry message
+                for _, odom_msg, _ in Bag(ap20_gps_bag).read_messages(topics="/gt_box/inertial_explorer/tc/odometry")
             ]
         )
 
