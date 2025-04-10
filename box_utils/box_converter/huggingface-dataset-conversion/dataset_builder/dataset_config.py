@@ -555,6 +555,9 @@ def _load_metadata_config(
             CameraInfoTopic(**topic_obj) for topic_obj in camera_intrinsics_object
         ]
     except Exception as e:
+        
+        # TODO: remove this breakpoint
+        breakpoint()
         raise ValueError(
             f"error parsing {CAMERA_INTRISICS_KEY!r} part of config file: {e}"
         ) from e
@@ -585,9 +588,6 @@ def load_config(
     # load config --> data and metadata shapes
     with open(config_path, "r") as f:
         config_object = yaml.safe_load(f)
-
-    # TODO: remove this breakpoint
-    breakpoint()
 
     try:
         data_config_object = config_object[DATA_KEY]

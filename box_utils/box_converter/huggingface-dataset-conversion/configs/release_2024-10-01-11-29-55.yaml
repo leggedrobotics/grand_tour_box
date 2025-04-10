@@ -50,15 +50,19 @@ metadata:
     - alias: alphasense_front_center_caminfo
       file: 2024-10-01-11-29-55_alphasense.bag
       topic: "/boxi/alphasense/front_center/camera_info"
+
     - alias: alphasense_cam2_caminfo
       file: 2024-10-01-11-29-55__alphasense.bag
       topic: "/boxi/alphasense/front_right/camera_info"
+
     - alias: alphasense_cam3_caminfo
       file: 2024-10-01-11-29-55__alphasense.bag
       topic: "/boxi/alphasense/front_left/camera_info"
+
     - alias: alphasense_cam4_caminfo
       file: 2024-10-01-11-29-55_alphasense.bag
       topic: "/boxi/alphasense/left/camera_info"
+
     - alias: alphasense_cam5_caminfo
       file: 2024-10-01-11-29-55_alphasense.bag
       topic: "/boxi/alphasense/right/camera_info"
@@ -92,10 +96,12 @@ metadata:
     #   file: 2024-10-01-11-29-55_jetson_zed2i_images.bag
     #   topic: "/gt_box/zed2i/zed_node/right/camera_info"
 
-  # frame_transforms:
-  #   base_frame: base
-  #   file: 2024-10-01-11-29-55_tf_static.bag
-  #   topic: /tf_static
+  frame_transforms:
+
+  # TODO: which of the transforms belong here? Are thee any?
+    # base_frame: base
+    # file: 2024-10-01-11-29-55_tf_static.bag
+    # topic: /tf_static
 
 data:
   image_topics:
@@ -204,11 +210,13 @@ data:
     - alias: hesai_packets
       file: 2024-10-01-11-29-55_hesai_packets.bag
       topic: "/boxi/hesai/packets"
+      max_points: 64000
 
     # TODO: not yet implemented --> doublecheck with Jonas
     - alias: hesai_undistorted
       file: 2024-10-01-11-29-55_hesai_undist.bag
       topic: "/boxi/hesai/points_undistorted"
+      max_points: 64000
 
     # TODO: used, doubleck with Jonas
     - alias: livox_points
@@ -245,11 +253,7 @@ data:
     - alias: dlio_map_odometry
       file: 2024-10-01-11-29-55_dlio.bag
       topic: "/boxi/dlio/lidar_map_odometry"
-
-    # TODO: used, doublecheck with Jonas
-    - alias: dlio_tf
-      file: 2024-10-01-11-29-55_dlio.bag
-      topic: "/tf"
+      max_points: 64000
 
 # not used
     # - alias: hesai_last # what is this one?
@@ -262,25 +266,22 @@ data:
     #     - timestamp
 
 
-  pose_topics:
-    # do we want both? is the 2nd a superset of the 1st?
-    - alias: ground_truth
-      file: 2024-10-01-11-29-55_gt_pose.bag
-      topic: "/gt_box/ground_truth/pose_stamped"
-      covariance: false
-    - alias: ground_truth_with_cov
-      file: 2024-10-01-11-29-55_gt_pose.bag
-      topic: "/gt_box/ground_truth/pose_with_covariance"
-      covariance: true
+  # pose_topics:
+  #   # do we want both? is the 2nd a superset of the 1st?
+  #   - alias: ground_truth
+  #     file: 2024-10-01-11-29-55_gt_pose.bag
+  #     topic: "/gt_box/ground_truth/pose_stamped"
+  #     covariance: false
 
-    - alias: dlio_pose
-      file: 2024-10-01-11-29-55_dlio.bag
-      topic: "/boxi/dlio/lidar_map_odometry"
+  #   - alias: ground_truth_with_cov
+  #     file: 2024-10-01-11-29-55_gt_pose.bag
+  #     topic: "/gt_box/ground_truth/pose_with_covariance"
+  #     covariance: true
 
-    # TODO: used, doublecheck with Jonas
-    - alias: dlio_tf
-      file: 2024-10-01-11-29-55_dlio.bag
-      topic: "/tf"
+  #   - alias: dlio_pose
+  #     file: 2024-10-01-11-29-55_dlio.bag
+  #     topic: "/boxi/dlio/lidar_map_odometry"
+  #     covariance: false
 
 # not used
     # - alias: hesai_last # what is this one?
@@ -299,105 +300,79 @@ data:
     - alias: gmsf_pose
       file: 2024-10-01-11-29-55_gmsf.bag
       topic: "/boxi/gmsf/pose_with_covariance"
-
-    # TODO: not yet implemented, doublecheck with Jonas
-    - alias: gmsf_tf
-      file: 2024-10-01-11-29-55_gmsf.bag
-      topic: "/tf"
-
+      covariance: true
 
     # TODO: not used according to topiclist, doublecheck with Jonas
-    - alias: cpt7
-      file: 2024-10-01-11-29-55_cpt7.bag
+    # - alias: cpt7
+    #   file: 2024-10-01-11-29-55_cpt7.bag
+      
 
     # TODO: used, doublecheck with Jonas
     - alias: ie_dgps_pose
       file: 2024-10-01-11-29-55_cpt7_ie_dgps.bag
       topic: "/boxi/inertial_explorer/dgps/pose"
-      covariance: true
+      covariance: false
 
-    # TODO: not yet implemented, doublecheck with Jonas
+    # TODO: not yet implemented, doublecheck with Jonas if this is a pose
     - alias: ie_dgps_origin
       file: 2024-10-01-11-29-55_cpt7_ie_dgps.bag
       topic: "/boxi/inertial_explorer/dgps/origin"
-
-    # TODO: not yet implemented, doublecheck with Jonas
-    - alias: ie_dgps_tf
-      file: 2024-10-01-11-29-55_cpt7_ie_dgps.bag
-      topic: "/tf"
+      covariance: false
 
 
     # TODO: not yet implemented, doublecheck with Jonas
     - alias: ie_lc_pose
       file: 2024-10-01-11-29-55_cpt7_ie_lc.bag
       topic: "/boxi/inertial_explorer/lc/pose"
-      covariance: true
+      covariance: false
 
     # TODO: not yet implemented, doublecheck with Jonas
     - alias: ie_lc_origin
       file: 2024-10-01-11-29-55_cpt7_ie_tc.bag
       topic: "/boxi/inertial_explorer/lc/origin"
-      covariance: true
+      covariance: false
 
     # TODO: not yet implemented, doublecheck with Jonas
     - alias: ie_lc_raw
       file: 2024-10-01-11-29-55_cpt7_ie_lc.bag
       topic: "/boxi/inertial_explorer/lc/raw"
-      covariance: true
-
-    # TODO: not yet implemented, doublecheck with Jonas
-    - alias: ie_lc_tf
-      file: 2024-10-01-11-29-55_cpt7_ie_lc.bag
-      topic: "/tf
-      covariance: true
+      covariance: false
 
     # TODO: not yet implemented, doublecheck with Jonas
     - alias: ie_ppp_pose
       file: 2024-10-01-11-29-55_cpt7_ie_ppp.bag
       topic: "/boxi/inertial_explorer/ppp/pose"
-      covariance: true
+      covariance: false
 
     # TODO: not yet implemented, doublecheck with Jonas
     - alias: ie_ppp_origin
       file: 2024-10-01-11-29-55_cpt7_ie_ppp.bag
       topic: "/boxi/inertial_explorer/ppp/origin"
-      covariance: true
+      covariance: false
 
     # TODO: not yet implemented, doublecheck with Jonas
     - alias: ie_ppp_raw
       file: 2024-10-01-11-29-55_cpt7_ie_ppp.bag
       topic: "/boxi/inertial_explorer/ppp/raw"
-      covariance: true
-
-    # TODO: not yet implemented, doublecheck with Jonas
-    - alias: ie_ppp_tf
-      file: 2024-10-01-11-29-55_cpt7_ie_ppp.bag
-      topic: "/tf
-      covariance: true
+      covariance: false
 
     # TODO: not yet implemented, doublecheck with Jonas
     - alias: ie_tc_pose
       file: 2024-10-01-11-29-55_cpt7_ie_tc.bag
       topic: "/boxi/inertial_explorer/tc/pose"
-      covariance: true
+      covariance: false
 
     # TODO: not yet implemented, doublecheck with Jonas
     - alias: ie_tc_origin
       file: 2024-10-01-11-29-55_cpt7_ie_tc.bag
       topic: "/boxi/inertial_explorer/tc/origin"
-      covariance: true
+      covariance: false
 
     # TODO: not yet implemented, doublecheck with Jonas
     - alias: ie_tc_raw
       file: 2024-10-01-11-29-55_cpt7_ie_tc.bag
       topic: "/boxi/inertial_explorer/tc/raw"
-      covariance: true
-
-    # TODO: not yet implemented, doublecheck with Jonas
-    - alias: ie_tc_tf
-      file: 2024-10-01-11-29-55_cpt7_ie_tc.bag
-      topic: "/tf
-      covariance: true
+      covariance: false
 
 # not used
     # # do we want both? is the 2nd a superset of the 1st?
@@ -467,11 +442,6 @@ data:
       file: 2024-10-01-11-29-55_zed2i_vio.bag
       topic: "/boxi/zed2i_vio/map"
 
-    # TODO: not yet implemented, doublecheck with Jonas
-    - alias: zed2i_vio_tf
-      file: 2024-10-01-11-29-55_zed2i_vio.bag
-      topic: "/tf"
-
     # TODO: used, doublecheck with Jonas
     - alias: cpt7_imu
       file: 2024-10-01-11-29-55_cpt7_imu.bag
@@ -534,25 +504,64 @@ data:
     #   topic: "/gt_box/zed2i/zed_node/odom"
 
 # not used
-  nav_sat_fix_topics:
+  # nav_sat_fix_topics:
     # - alias: cpt7_gps
     #   file: 2024-10-01-11-29-55_nuc_cpt7_post_processed.bag
     #   topic: "/gt_box/cpt7/gps/fix"
 
-  magnetic_field_topics:
-    - alias: zed2i_magnetic_field
-      file: 2024-10-01-11-29-55_jetson_zed2i_proprioceptive.bag
-      topic: "/gt_box/zed2i/zed_node/imu/mag"
+  # magnetic_field_topics:
+  #   - alias: zed2i_magnetic_field
+  #     file: 2024-10-01-11-29-55_jetson_zed2i_proprioceptive.bag
+  #     topic: "/gt_box/zed2i/zed_node/imu/mag"
 
-  # is this a duplicate of the "ground_truth" stuff?
+
   # TODO: used, doublecheck with Jonas
   point_topics:
     - alias: prism_position
       file: 2024-10-01-11-29-55_ap20_prism_position.bag 
       topic: "/boxi/ap20/prism_position"
 
-
   singleton_transform_topics:
+      # TODO: not yet implemented, doublecheck with Jonas
+    - alias: gmsf_tf
+      file: 2024-10-01-11-29-55_gmsf.bag
+      topic: "/tf"
+
+    # TODO: used, doublecheck with Jonas
+    - alias: dlio_tf
+      file: 2024-10-01-11-29-55_dlio.bag
+      topic: "/tf"
+
+    # TODO: used, doublecheck with Jonas
+    - alias: dlio_tf
+      file: 2024-10-01-11-29-55_dlio.bag
+      topic: "/tf"
+
+    # TODO: not yet implemented, doublecheck with Jonas
+    - alias: ie_tc_tf
+      file: 2024-10-01-11-29-55_cpt7_ie_tc.bag
+      topic: "/tf"
+
+    # TODO: not yet implemented, doublecheck with Jonas
+    - alias: ie_ppp_tf
+      file: 2024-10-01-11-29-55_cpt7_ie_ppp.bag
+      topic: "/tf"
+
+    # TODO: not yet implemented, doublecheck with Jonas
+    - alias: zed2i_vio_tf
+      file: 2024-10-01-11-29-55_zed2i_vio.bag
+      topic: "/tf"
+
+    # TODO: not yet implemented, doublecheck with Jonas
+    - alias: ie_lc_tf
+      file: 2024-10-01-11-29-55_cpt7_ie_lc.bag
+      topic: "/tf"
+
+    # TODO: not yet implemented, doublecheck with Jonas
+    - alias: ie_dgps_tf
+      file: 2024-10-01-11-29-55_cpt7_ie_dgps.bag
+      topic: "/tf"
+
     # im pretty sure this is a duplicate of cpt7_gps
 
     # TODO: check with jonas if /tf should be in here

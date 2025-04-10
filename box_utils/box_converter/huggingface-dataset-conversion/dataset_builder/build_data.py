@@ -34,13 +34,10 @@ from dataset_builder.utils import messages_in_bag_with_topic
 
 DATA_PREFIX = "data"
 IMAGE_PREFIX = "images"
-DELETE_FOLDER = False
-
 
 ImageExtractorCallback = Callable[
     [Union[CompressedImage, Image], int, ImageTopic], None
 ]
-
 
 def _extract_and_save_image_from_message(
     msg: Union[CompressedImage, Image],
@@ -241,9 +238,7 @@ def _tar_ball_dirs_in_dir(dir: Path) -> None:
             continue
         with tarfile.open(dir / f"{folder}.tar", "w") as tar:
             tar.add(dir / folder, arcname=os.path.basename(folder))
-        # TODO: uncomment this line to remove the original folder
-        if DELETE_FOLDER:
-            shutil.rmtree(dir / folder)
+        shutil.rmtree(dir / folder)
 
 
 def _tar_ball_dataset(base_dataset_path: Path) -> None:

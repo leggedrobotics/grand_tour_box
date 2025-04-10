@@ -69,14 +69,9 @@ def main() -> int:
 
     args = parser.parse_args()
 
-    #TODO: delete this line
-    # if DOWNLOAD_FLAG:
     missions = kleinkram.list_missions(mission_names=[args.mission_name])      
     assert len(missions) == 1
     mission = missions[0]
-
-    # TODO: delete this line
-    breakpoint()
     
     if DOWNLOAD_FLAG:
         download_mission(mission_id=mission.id, input_path=INPUT_PATH)
