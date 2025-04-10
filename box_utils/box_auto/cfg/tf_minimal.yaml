@@ -5,20 +5,28 @@ frameMapping:
     replicate: false
   - new: "zed2i_base"
     old: "zed2i_base_link"
+    replicate: false
   - new: "anymal_imu"
     old: "imu_link"
+    replicate: false
   - new: "depth_camera_front_lower"
     old: "depth_camera_front_lower_depth_optical_frame"
+    replicate: false
   - new: "depth_camera_front_upper"
     old: "depth_camera_front_upper_depth_optical_frame"
+    replicate: false
   - new: "depth_camera_rear_lower"
     old: "depth_camera_rear_lower_depth_optical_frame"
+    replicate: false
   - new: "depth_camera_rear_upper"
     old: "depth_camera_rear_upper_depth_optical_frame"
+    replicate: false
   - new: "depth_camera_right"
     old: "depth_camera_right_depth_optical_frame"
+    replicate: false
   - new: "depth_camera_left"
     old: "depth_camera_left_depth_optical_frame"
+    replicate: false
   - new: "alphasense_imu"
     old: "imu_sensor_frame"
     replicate: false
@@ -51,7 +59,6 @@ framePairs:
 childFramesToRemove:
   - "cpt7_antenna_back"
   - "cpt7_antenna_front"
-  - "cam2_sensor_frame"
   - "cam1_sensor_frame"
   - "cam2_sensor_frame"
   - "cam3_sensor_frame"
@@ -72,11 +79,10 @@ childFramesToRemove:
   - "face_shell_front"
   - "hesai_model"
   - "prism_model"
-  - "hesai_model"
   - "livox_model"
   - "box_base_model"
   - "face_shell_rear"
-  - lidar_parent
+  - "lidar_parent"
   - "zed2i_right_camera_frame"
   - "depth_camera_front_lower_camera_parent"
   - "depth_camera_front_upper_camera_parent"
@@ -139,7 +145,7 @@ parentFramesToRemove:
 
 childFramesToInverse:
   - "base"
-# Absolutely not the best way to do it.
+
 # rotationOverrides:
 #   - parent: "zed2i_left_camera_optical_frame"
 #     child: "zed2i_right_camera_optical_frame"

@@ -98,4 +98,4 @@
 [submodule "box_applications/gtsam_catkin"]
 	path = box_applications/gtsam_catkin
 	url = git@github.com:leggedrobotics/gtsam_catkin.git
-	branch = main
+	branch = grandtour

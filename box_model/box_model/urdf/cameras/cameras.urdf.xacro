@@ -1,8 +1,13 @@
 <?xml version="1.0" ?>
 
 <robot name="cameras" xmlns:xacro="http://www.ros.org/wiki/xacro">
-    <!-- ////////// Alphasense ////////// -->
+    
+  <xacro:macro name="viz_param_cameras" params="enable_visualizable_model"/>
+  <xacro:property name="enable_visualizable_model_prop" value="$(arg enable_visualizable_model)" />
 
+
+
+    <!-- ////////// Alphasense ////////// -->
     <!-- Alphasense base (coincides with alphasense Cam1/ front center) -->
     <link name="alphasense_base"/>
     <joint name="box_base_to_alphasense_base" type="fixed">
@@ -15,6 +20,9 @@
         <parent link="box_base"/>
         <child link="alphasense_base"/>
     </joint>
+
+    <xacro:unless value="${enable_visualizable_model_prop}">
+    <!-- We disable, as these frames are renamed in the URDF after calibration. -->
 
     <link name="alphasense_front_center"/>
     <joint name="alphasense_front_center_identity" type="fixed">
@@ -140,6 +148,9 @@
         <parent link="alphasense_base"/>
         <child link="cam5_sensor_frame"/>
     </joint>
+    </xacro:unless>
+
+
 
     <!-- ////////// HDR ////////// -->
 
@@ -197,101 +208,107 @@
 
     <!-- ////////// ZED2i ////////// -->
 
-    <!-- ZED Base -->
-    <link name="zed_base_link"/>
-    <joint name="box_base_to_zed_base" type="fixed">
-        <origin xyz=" ${calib['box_base_to_zed_base']['x']}
-                  ${calib['box_base_to_zed_base']['y']}
-                  ${calib['box_base_to_zed_base']['z']}"
-                rpy=" ${calib['box_base_to_zed_base']['roll']}
-                  ${calib['box_base_to_zed_base']['pitch']}
-                  ${calib['box_base_to_zed_base']['yaw']}"/>
-        <parent link="box_base"/>
-        <child link="zed_base_link"/>
-    </joint>
+    <!-- when enable_visualizable_model_prop is true, it results to. -->
+    <!-- Visualization suppoted model enabled. zed2i_base->zed2i_left, zed2i_right, zed2i_imu -->
 
-    <link name="zed2i_base_link"/>
-    <joint name="zed2i_base_helper_joint" type="fixed">
-        <origin xyz=" ${calib['zed2i_base_helper_joint']['x']}
-                  ${calib['zed2i_base_helper_joint']['y']}
-                  ${calib['zed2i_base_helper_joint']['z']}"
-                rpy=" ${calib['zed2i_base_helper_joint']['roll']}
-                  ${calib['zed2i_base_helper_joint']['pitch']}
-                  ${calib['zed2i_base_helper_joint']['yaw']}"/>
-        <parent link="zed_base_link"/>
-        <child link="zed2i_base_link"/>
-    </joint>
+    <xacro:unless value="${enable_visualizable_model_prop}">
 
-    <link name="zed2i_camera_center"/>
-    <joint name="zed2i_base_to_camera_center" type="fixed">
-        <origin xyz=" ${calib['zed2i_base_to_camera_center']['x']}
-                  ${calib['zed2i_base_to_camera_center']['y']}
-                  ${calib['zed2i_base_to_camera_center']['z']}"
-                rpy=" ${calib['zed2i_base_to_camera_center']['roll']}
-                  ${calib['zed2i_base_to_camera_center']['pitch']}
-                  ${calib['zed2i_base_to_camera_center']['yaw']}"/>
-        <parent link="zed2i_base_link"/>
-        <child link="zed2i_camera_center"/>
-    </joint>
+      <!-- ZED Base -->
+      <link name="zed_base_link"/>
+      <joint name="box_base_to_zed_base" type="fixed">
+          <origin xyz=" ${calib['box_base_to_zed_base']['x']}
+                    ${calib['box_base_to_zed_base']['y']}
+                    ${calib['box_base_to_zed_base']['z']}"
+                  rpy=" ${calib['box_base_to_zed_base']['roll']}
+                    ${calib['box_base_to_zed_base']['pitch']}
+                    ${calib['box_base_to_zed_base']['yaw']}"/>
+          <parent link="box_base"/>
+          <child link="zed_base_link"/>
+      </joint>
 
-    <link name="zed2i_left_camera_frame"/>
-    <joint name="zed_camera_center_to_zed_left" type="fixed">
-        <origin xyz=" ${calib['zed_camera_center_to_zed_left']['x']}
-                  ${calib['zed_camera_center_to_zed_left']['y']}
-                  ${calib['zed_camera_center_to_zed_left']['z']}"
-                rpy=" ${calib['zed_camera_center_to_zed_left']['roll']}
-                  ${calib['zed_camera_center_to_zed_left']['pitch']}
-                  ${calib['zed_camera_center_to_zed_left']['yaw']}"/>
-        <parent link="zed2i_camera_center"/>
-        <child link="zed2i_left_camera_frame"/>
-    </joint>
+      <link name="zed2i_base_link"/>
+      <joint name="zed2i_base_helper_joint" type="fixed">
+          <origin xyz=" ${calib['zed2i_base_helper_joint']['x']}
+                    ${calib['zed2i_base_helper_joint']['y']}
+                    ${calib['zed2i_base_helper_joint']['z']}"
+                  rpy=" ${calib['zed2i_base_helper_joint']['roll']}
+                    ${calib['zed2i_base_helper_joint']['pitch']}
+                    ${calib['zed2i_base_helper_joint']['yaw']}"/>
+          <parent link="zed_base_link"/>
+          <child link="zed2i_base_link"/>
+      </joint>
 
-    <link name="zed2i_left_camera_optical_frame"/>
-    <joint name="zed_left_to_optical" type="fixed">
-        <origin xyz=" ${calib['zed_left_to_left_optical']['x']}
-                  ${calib['zed_left_to_left_optical']['y']}
-                  ${calib['zed_left_to_left_optical']['z']}"
-                rpy=" ${calib['zed_left_to_left_optical']['roll']}
-                  ${calib['zed_left_to_left_optical']['pitch']}
-                  ${calib['zed_left_to_left_optical']['yaw']}"/>
-        <parent link="zed2i_left_camera_frame"/>
-        <child link="zed2i_left_camera_optical_frame"/>
-    </joint>
+      <link name="zed2i_camera_center"/>
+      <joint name="zed2i_base_to_camera_center" type="fixed">
+          <origin xyz=" ${calib['zed2i_base_to_camera_center']['x']}
+                    ${calib['zed2i_base_to_camera_center']['y']}
+                    ${calib['zed2i_base_to_camera_center']['z']}"
+                  rpy=" ${calib['zed2i_base_to_camera_center']['roll']}
+                    ${calib['zed2i_base_to_camera_center']['pitch']}
+                    ${calib['zed2i_base_to_camera_center']['yaw']}"/>
+          <parent link="zed2i_base_link"/>
+          <child link="zed2i_camera_center"/>
+      </joint>
 
-    <link name="zed2i_imu_link"/>
-    <joint name="zed_left_camera_frame_to_zed_imu_joint" type="fixed">
-        <origin xyz=" ${calib['zed_left_camera_frame_to_zed_imu']['x']}
-                  ${calib['zed_left_camera_frame_to_zed_imu']['y']}
-                  ${calib['zed_left_camera_frame_to_zed_imu']['z']}"
-                rpy=" ${calib['zed_left_camera_frame_to_zed_imu']['roll']}
-                  ${calib['zed_left_camera_frame_to_zed_imu']['pitch']}
-                  ${calib['zed_left_camera_frame_to_zed_imu']['yaw']}"/>
-        <parent link="zed2i_left_camera_frame"/>
-        <child link="zed2i_imu_link"/>
-    </joint>
+      <link name="zed2i_left_camera_frame"/>
+      <joint name="zed_camera_center_to_zed_left" type="fixed">
+          <origin xyz=" ${calib['zed_camera_center_to_zed_left']['x']}
+                    ${calib['zed_camera_center_to_zed_left']['y']}
+                    ${calib['zed_camera_center_to_zed_left']['z']}"
+                  rpy=" ${calib['zed_camera_center_to_zed_left']['roll']}
+                    ${calib['zed_camera_center_to_zed_left']['pitch']}
+                    ${calib['zed_camera_center_to_zed_left']['yaw']}"/>
+          <parent link="zed2i_camera_center"/>
+          <child link="zed2i_left_camera_frame"/>
+      </joint>
 
-    <link name="zed2i_right_camera_optical_frame"/>
-    <joint name="zed_left_optical_to_zed_right_optical" type="fixed">
-        <origin xyz=" ${calib['zed_left_optical_to_zed_right_optical']['x']}
-                  ${calib['zed_left_optical_to_zed_right_optical']['y']}
-                  ${calib['zed_left_optical_to_zed_right_optical']['z']}"
-                rpy=" ${calib['zed_left_optical_to_zed_right_optical']['roll']}
-                  ${calib['zed_left_optical_to_zed_right_optical']['pitch']}
-                  ${calib['zed_left_optical_to_zed_right_optical']['yaw']}"/>
-        <parent link="zed2i_left_camera_optical_frame"/>
-        <child link="zed2i_right_camera_optical_frame"/>
-    </joint>
+      <link name="zed2i_left_camera_optical_frame"/>
+      <joint name="zed_left_to_optical" type="fixed">
+          <origin xyz=" ${calib['zed_left_to_left_optical']['x']}
+                    ${calib['zed_left_to_left_optical']['y']}
+                    ${calib['zed_left_to_left_optical']['z']}"
+                  rpy=" ${calib['zed_left_to_left_optical']['roll']}
+                    ${calib['zed_left_to_left_optical']['pitch']}
+                    ${calib['zed_left_to_left_optical']['yaw']}"/>
+          <parent link="zed2i_left_camera_frame"/>
+          <child link="zed2i_left_camera_optical_frame"/>
+      </joint>
 
-    <link name="zed2i_right_camera_frame"/>
-    <joint name="zed_camera_center_to_zed_right" type="fixed">
-        <origin xyz=" ${calib['zed_right_to_right_optical']['x']}
-                  ${calib['zed_right_to_right_optical']['y']}
-                  ${calib['zed_right_to_right_optical']['z']}"
-                rpy=" ${calib['zed_right_to_right_optical']['roll']}
-                  ${calib['zed_right_to_right_optical']['pitch']}
-                  ${calib['zed_right_to_right_optical']['yaw']}"/>
-        <parent link="zed2i_right_camera_optical_frame"/>
-        <child link="zed2i_right_camera_frame"/>
-    </joint>
+      <link name="zed2i_imu_link"/>
+      <joint name="zed_left_camera_frame_to_zed_imu_joint" type="fixed">
+          <origin xyz=" ${calib['zed_left_camera_frame_to_zed_imu']['x']}
+                    ${calib['zed_left_camera_frame_to_zed_imu']['y']}
+                    ${calib['zed_left_camera_frame_to_zed_imu']['z']}"
+                  rpy=" ${calib['zed_left_camera_frame_to_zed_imu']['roll']}
+                    ${calib['zed_left_camera_frame_to_zed_imu']['pitch']}
+                    ${calib['zed_left_camera_frame_to_zed_imu']['yaw']}"/>
+          <parent link="zed2i_left_camera_frame"/>
+          <child link="zed2i_imu_link"/>
+      </joint>
+
+      <link name="zed2i_right_camera_optical_frame"/>
+      <joint name="zed_left_optical_to_zed_right_optical" type="fixed">
+          <origin xyz=" ${calib['zed_left_optical_to_zed_right_optical']['x']}
+                    ${calib['zed_left_optical_to_zed_right_optical']['y']}
+                    ${calib['zed_left_optical_to_zed_right_optical']['z']}"
+                  rpy=" ${calib['zed_left_optical_to_zed_right_optical']['roll']}
+                    ${calib['zed_left_optical_to_zed_right_optical']['pitch']}
+                    ${calib['zed_left_optical_to_zed_right_optical']['yaw']}"/>
+          <parent link="zed2i_left_camera_optical_frame"/>
+          <child link="zed2i_right_camera_optical_frame"/>
+      </joint>
+
+      <link name="zed2i_right_camera_frame"/>
+      <joint name="zed_camera_center_to_zed_right" type="fixed">
+          <origin xyz=" ${calib['zed_right_to_right_optical']['x']}
+                    ${calib['zed_right_to_right_optical']['y']}
+                    ${calib['zed_right_to_right_optical']['z']}"
+                  rpy=" ${calib['zed_right_to_right_optical']['roll']}
+                    ${calib['zed_right_to_right_optical']['pitch']}
+                    ${calib['zed_right_to_right_optical']['yaw']}"/>
+          <parent link="zed2i_right_camera_optical_frame"/>
+          <child link="zed2i_right_camera_frame"/>
+      </joint>
+    </xacro:unless>
 
 </robot>

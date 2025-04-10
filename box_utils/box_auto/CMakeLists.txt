@@ -6,13 +6,9 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
 
 ## Source: https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
-#add_compile_options(-Wall -Wextra -Wpedantic -O3)
-
 set(CMAKE_BUILD_TYPE "Release")
-#add_compile_options(-Wall -Wextra -Wpedantic)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-add_compile_options(-Wno-dev -O3 -std=c++17 -fconcepts )
-set(CMAKE_COMPILER_IS_GNUCXX 1)
+add_compile_options(-Wno-dev -O3 -std=c++17)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -69,7 +65,6 @@ find_package(catkin REQUIRED COMPONENTS
   ${CATKIN_PACKAGE_DEPENDENCIES}
   )
 
-
 catkin_python_setup()
 
 catkin_package(
@@ -82,10 +77,6 @@ catkin_package(
   ${CATKIN_PACKAGE_DEPENDENCIES}
   DEPENDS
 )
-
-## Link libraries
-# link_directories(${PCL_LIBRARY_DIRS})
-# add_definitions(${PCL_DEFINITIONS})
 
 
 #Include directory#
@@ -163,23 +154,29 @@ target_link_libraries(zed2i_decompression_and_saving ${catkin_LIBRARIES} ${OpenC
 target_link_libraries(evo_conversion_node ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${PROJECT_NAME})
 
 
-find_package(cmake_clang_tools QUIET)
-if(cmake_clang_tools_FOUND)
-  message(STATUS "Run clang tooling for target " post_processor_node filter_lidar_node tf_processor_node zed2i_decompression_and_saving evo_conversion_node merge)
-  add_clang_tooling(
-    TARGETS post_processor_node
-    SOURCE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/include
-    CT_HEADER_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include
-    CF_FIX
-    #CT_ATTACH_TO_ALL # Uncomment to attach to all targets during build, takes time
-  )
-endif(cmake_clang_tools_FOUND)
+# find_package(cmake_clang_tools QUIET)
+# if(cmake_clang_tools_FOUND)
+#   include(cmake_clang_tools)
 
+#   # Use your .clang-tidy file — no redundant config
+#   set(CMAKE_CXX_CLANG_TIDY "clang-tidy")
+
+#   # Optional: Use your .clang-format file for auto-formatting
+#   set(CLANG_FORMAT_EXECUTABLE "clang-format")
+
+#   # Automatically apply clang-format and clang-tidy to all targets
+#   add_clang_tooling(
+#     SOURCE_DIRS      ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/include
+#     CT_HEADER_DIRS   ${CMAKE_CURRENT_SOURCE_DIR}/include
+#     CT_ATTACH_TO_ALL # Auto-attaches to all targets
+#     CF_FIX           # Enables clang-format automatic fixing
+#   )
+# endif()
 
 install(TARGETS post_processor_node
-        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
+RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
 
 install(TARGETS tf_processor_node
 RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

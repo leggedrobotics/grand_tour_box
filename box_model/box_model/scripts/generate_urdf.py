@@ -36,19 +36,21 @@ def generate_urdf():
     default_pkg = "box_model"
     rospack = rospkg.RosPack()
     default_xacro = os.path.join(rospack.get_path(default_pkg), "urdf", "box", "box.urdf.xacro")
-    default_urdf = os.path.join(rospack.get_path(default_pkg), "urdf", "box", "boxi.urdf")
+    default_urdf = os.path.join(rospack.get_path(default_pkg), "urdf", "box", "box.urdf")
 
     # Get parameters (if set on the parameter server) or use defaults
     xacro_file = rospy.get_param("~xacro_file", default_xacro)
     urdf_file = rospy.get_param("~urdf_file", default_urdf)
+    enable_visualizable_model = rospy.get_param("~enable_visualizable_model", False)
 
     rospy.loginfo("Generating URDF with the following settings:")
     rospy.loginfo("  xacro file: %s", xacro_file)
     rospy.loginfo("  output file: %s", urdf_file)
+    rospy.loginfo("  enable_visualizable_model: %s", enable_visualizable_model)
 
     # Execute the xacro command to generate the URDF
     try:
-        cmd = ["xacro", xacro_file]
+        cmd = ["xacro", xacro_file, f"enable_visualizable_model:={'true' if enable_visualizable_model else 'false'}"]
         output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as e:
         rospy.logerr("Error generating URDF from xacro:\n%s", e.output.decode())

@@ -14,9 +14,6 @@ if __name__ == "__main__":
     out.mkdir(exist_ok=True, parents=True)
     print(f"Plotting GNSS Data to : {out}")
 
-    # Topic to read
-    topic_name = "/gt_box/inertial_explorer/tc/gt_poses_novatel"
-
     # Initialize lists to store data
     timestamps = []
     positions = {"x": [], "y": [], "z": []}
@@ -24,30 +21,42 @@ if __name__ == "__main__":
     orientations = {"roll": [], "pitch": [], "yaw": []}
     orientation_covariances = []
 
+    desired_type = "nav_msgs/Odometry"
+
+    with rosbag.Bag(rosbag_path, "r") as bag:
+        topic_info = bag.get_type_and_topic_info().topics
+
+        # Find all topics with the desired message type
+        matching_topics = [topic for topic, info in topic_info.items() if info.msg_type == desired_type]
+
+        print(f"Topics with type {desired_type}:")
+        for topic in matching_topics:
+            print(f"  {topic}")
+
     # Read the rosbag
     with rosbag.Bag(rosbag_path, "r") as bag:
-        for topic, msg, t in bag.read_messages(topics=[topic_name]):
+        for topic, msg, t in bag.read_messages(topics=matching_topics):
             # Extract timestamp
             timestamps.append(t.to_sec())
 
-            # Extract position
-            positions["x"].append(msg.pose.pose.position.x)
-            positions["y"].append(msg.pose.pose.position.y)
-            positions["z"].append(msg.pose.pose.position.z)
+            # Position
+            pos = msg.pose.pose.position
+            positions["x"].append(pos.x)
+            positions["y"].append(pos.y)
+            positions["z"].append(pos.z)
 
+            # Covariance matrix
             cov = np.array(msg.pose.covariance).reshape(6, 6)
-
-            # Extract position covariance (diagonal elements)
             position_covariances.append([cov[0, 0], cov[1, 1], cov[2, 2]])
 
-            # Extract orientation
+            # Orientation
             quat = msg.pose.pose.orientation
             roll, pitch, yaw = euler_from_quaternion([quat.x, quat.y, quat.z, quat.w])
             orientations["roll"].append(roll)
             orientations["pitch"].append(pitch)
             orientations["yaw"].append(yaw)
 
-            # Extract orientation covariance (diagonal elements for roll, pitch, yaw)
+            # Orientation covariance
             orientation_covariances.append([cov[3, 3], cov[4, 4], cov[5, 5]])
 
     # PLOT CONVERTED DATA (Output of export_gps_gt_trajectory_bag.py)
@@ -100,48 +109,48 @@ if __name__ == "__main__":
     # PLOT RAW DATA
 
     # Path to the rosbag file
-    rosbag_path = "/media/jonfrey/BoxiS4-2TB/deployment_day_1/2024-10-01-11-29-55/2024-10-01-11-29-55_cpt7_ie_tc.bag"
+rosbag_path = get_bag(pattern="*_cpt7_ie_tc.bag", auto_download=False, rglob=False)
 
-    # Topics to read
-    topics = {
-        "position": "/gt_box/inertial_explorer/tc/raw/position_ecef",
-        "position_std": "/gt_box/inertial_explorer/tc/raw/position_ecef_std",
-        "orientation": "/gt_box/inertial_explorer/tc/raw/orientation_hrp",
-        "orientation_std": "/gt_box/inertial_explorer/tc/raw/orientation_hrp_std",
-    }
+topic_name = "/gt_box/inertial_explorer/tc/raw"
 
-    # Initialize lists to store data
-    timestamps = {"position": [], "position_std": [], "orientation": [], "orientation_std": []}
-    data = {
-        "position": {"x": [], "y": [], "z": []},
-        "position_std": {"x": [], "y": [], "z": []},
-        "orientation": {"roll": [], "pitch": [], "yaw": []},
-        "orientation_std": {"roll": [], "pitch": [], "yaw": []},
-    }
+# Initialize storage
+timestamps = {"position": [], "position_std": [], "orientation": [], "orientation_std": []}
+data = {
+    "position": {"x": [], "y": [], "z": []},
+    "position_std": {"x": [], "y": [], "z": []},
+    "orientation": {"roll": [], "pitch": [], "yaw": []},
+    "orientation_std": {"roll": [], "pitch": [], "yaw": []},
+}
 
-    # Read the rosbag
-    with rosbag.Bag(rosbag_path, "r") as bag:
-        for topic, msg, t in bag.read_messages(topics=topics.values()):
-            if topic == topics["position"]:
-                timestamps["position"].append(t.to_sec())
-                data["position"]["x"].append(msg.x)
-                data["position"]["y"].append(msg.y)
-                data["position"]["z"].append(msg.z)
-            elif topic == topics["position_std"]:
-                timestamps["position_std"].append(t.to_sec())
-                data["position_std"]["x"].append(msg.x)
-                data["position_std"]["y"].append(msg.y)
-                data["position_std"]["z"].append(msg.z)
-            elif topic == topics["orientation"]:
-                timestamps["orientation"].append(t.to_sec())
-                data["orientation"]["roll"].append(msg.y)
-                data["orientation"]["pitch"].append(msg.z)
-                data["orientation"]["yaw"].append(msg.x)
-            elif topic == topics["orientation_std"]:
-                timestamps["orientation_std"].append(t.to_sec())
-                data["orientation_std"]["roll"].append(msg.y)
-                data["orientation_std"]["pitch"].append(msg.z)
-                data["orientation_std"]["yaw"].append(msg.x)
+# Read rosbag
+with rosbag.Bag(rosbag_path, "r") as bag:
+    for _, msg, t in bag.read_messages(topics=[topic_name]):
+        # Timestamps
+        ts = t.to_sec()
+        timestamps["position"].append(ts)
+        timestamps["position_std"].append(ts)
+        timestamps["orientation"].append(ts)
+        timestamps["orientation_std"].append(ts)
+
+        # Position (ECEF)
+        data["position"]["x"].append(msg.position_ecef.x)
+        data["position"]["y"].append(msg.position_ecef.y)
+        data["position"]["z"].append(msg.position_ecef.z)
+
+        # Position Std Dev
+        data["position_std"]["x"].append(msg.position_ecef_std.x)
+        data["position_std"]["y"].append(msg.position_ecef_std.y)
+        data["position_std"]["z"].append(msg.position_ecef_std.z)
+
+        # Orientation (HRP)
+        data["orientation"]["roll"].append(msg.orientation_hrp.x)
+        data["orientation"]["pitch"].append(msg.orientation_hrp.y)
+        data["orientation"]["yaw"].append(msg.orientation_hrp.z)
+
+        # Orientation Std Dev
+        data["orientation_std"]["roll"].append(msg.orientation_hrp_std.x)
+        data["orientation_std"]["pitch"].append(msg.orientation_hrp_std.y)
+        data["orientation_std"]["yaw"].append(msg.orientation_hrp_std.z)
 
     # Convert lists to numpy arrays
     for key in timestamps:
