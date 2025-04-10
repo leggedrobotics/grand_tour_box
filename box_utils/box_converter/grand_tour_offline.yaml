@@ -1,37 +1,40 @@
 base_frame: dlio_map
-num_images_per_topic: 1000
-skip_start_seconds: 60
-skip_end_seconds: 45
+num_images_per_topic: 20000
+skip_start_seconds: 0
+skip_end_seconds: 0
 hz: 4
-distance_threshold: -1
+distance_threshold: 0.25 # -1
 
 cameras:
-- name: front
-  image_topic: /gt_box/hdr_front/image_raw/compressed
-  info_topic: /gt_box/hdr_front/camera_info
-  bag_pattern: "*_hdr_front_calib.bag"
-  depth_topic_out:  /gt_box/hdr_front/depth
-- name: left
-  image_topic: /gt_box/hdr_left/image_raw/compressed
-  info_topic: /gt_box/hdr_left/camera_info
-  bag_pattern: "*_hdr_left_calib.bag"
-  depth_topic_out:  /gt_box/hdr_left/depth
-- name: right
-  image_topic: /gt_box/hdr_right/image_raw/compressed
-  info_topic: /gt_box/hdr_right/camera_info
-  bag_pattern: "*_hdr_right_calib.bag"
-  depth_topic_out:  /gt_box/hdr_right/depth
+  - name: front
+    image_topic: /gt_box/hdr_front/image_raw/compressed
+    info_topic: /gt_box/hdr_front/camera_info
+    bag_pattern_image: "*_hdr_front_updated.bag"
+    bag_pattern_info: "*_hdr_front_calib.bag"
+    depth_topic_out: /gt_box/hdr_front/depth
+  - name: left
+    image_topic: /gt_box/hdr_left/image_raw/compressed
+    info_topic: /gt_box/hdr_left/camera_info
+    bag_pattern_image: "*_hdr_left_updated.bag"
+    bag_pattern_info: "*_hdr_left_calib.bag"
+    depth_topic_out: /gt_box/hdr_left/depth
+  - name: right
+    image_topic: /gt_box/hdr_right/image_raw/compressed
+    info_topic: /gt_box/hdr_right/camera_info
+    bag_pattern_image: "*_hdr_right_updated.bag"
+    bag_pattern_info: "*_hdr_right_calib.bag"
+    depth_topic_out: /gt_box/hdr_right/depth
 
 nerfstudio:
   blur_threshold: 0 # 80 is pretty good
   create_mask_based_on_semantics: False
-  store: False
+  store: True
 
 wavemap:
   log_odds_occupancy_threshold: 0.1
   max_range: 150
   default_depth_value: -1.0
-  save_ros: True
+  save_ros: False
   save_png: True
   ground: False
   key: "depth"

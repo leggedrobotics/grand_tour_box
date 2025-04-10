@@ -4,8 +4,8 @@ from box_auto.utils import get_bag, upload_bag
 
 if __name__ == "__main__":
     # Path to your rosbag file
-    input_file_path = get_bag("*_nuc_alphasense.bag")
-    output_file_path = input_file_path.replace("_nuc_alphasense.bag", "_nuc_alphasense_updated.bag")
+    input_file_path = get_bag("*_nuc_alphasense_tmp.bag")
+    output_file_path = input_file_path.replace("_nuc_alphasense_tmp.bag", "_nuc_alphasense_color.bag")
 
     # Topics of interest
     frame_id_map = {

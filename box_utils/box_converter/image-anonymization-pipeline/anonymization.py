@@ -25,6 +25,8 @@ import tqdm
 from cv_bridge import CvBridge
 from kleinkram.models import Mission
 from std_msgs.msg import Int32
+import os
+
 
 logger = getLogger(__name__)
 warnings.filterwarnings("ignore", category=UserWarning)
@@ -441,9 +443,80 @@ def download_files(*, config: AnonymizerConfig, mission_id: UUID, input_path: Pa
     )
 
 
+def upload_simple(mission_id, path, delete=True):
+    info = kleinkram.list_missions(mission_ids=[mission_id])[0]
+    project_name = info.project_name
+    mission_name = info.name
+
+    res = kleinkram.verify(project_name=project_name, mission_name=mission_name, files=[path])
+
+    print(mission_name, res)
+    while res[Path(path)] != "uploaded":
+        try:
+            if res[Path(path)] == "missing":
+                print("uploading")
+            elif res[Path(path)] == "uploaded":
+                print("File already uploaded - suc")
+                return True
+            elif res[Path(path)] == "hash mismatch":
+                print("hash mismatch")
+                fileinfo = [
+                    f
+                    for f in kleinkram.list_files(project_names=[project_name], mission_names=[mission_name])
+                    if Path(path).name in f.name
+                ]
+                kleinkram.delete_file(fileinfo[0].id)
+            else:
+                print("Something is odd after verification")
+                print(res[Path(path)])
+                fileinfo = [
+                    f
+                    for f in kleinkram.list_files(project_names=[project_name], mission_names=[mission_name])
+                    if Path(path).name in f.name
+                ]
+
+                if len(fileinfo) == 1:
+                    if fileinfo[0].state == "ERROR" or fileinfo[0].state == "UPLOADING":
+                        if delete:
+                            print("File already exists - deleting")
+                            kleinkram.delete_file(fileinfo[0].id)
+                        else:
+                            print("File already exists - aboarding - fail")
+                            return False
+                    else:
+                        print("File may have other error - aboarding - fail", fileinfo[0])
+                        return False
+
+                else:
+                    print("Too many files to verify aboarding - fail number files: ", len(fileinfo))
+                    return False
+
+            res = kleinkram.upload(
+                mission_name=mission_name,
+                project_name="GrandTour",
+                files=[path],
+                create=False,
+            )
+            res = kleinkram.verify(project_name=project_name, mission_name=mission_name, files=[path])
+
+            break
+            print("File uploaded - (suc ?)")
+        except Exception as e:
+            print("Something went wrong - ", e)
+
+    return True
+
+
 def upload_files(*, config: AnonymizerConfig, mission_id: UUID, output_path: Path) -> None:
     file_paths = [output_path / out_name for _, _, out_name in config.values()]
-    kleinkram.upload(mission_id=mission_id, files=file_paths, verbose=True)
+
+    for file_path in file_paths:
+        try:
+            os.system(f"cp {file_path} /scratch/")
+        except Exception as e:
+            print("Something went wrong while copying - ", e)
+
+        upload_simple(mission_id, str(file_path), delete=True)
 
 
 def main() -> int:

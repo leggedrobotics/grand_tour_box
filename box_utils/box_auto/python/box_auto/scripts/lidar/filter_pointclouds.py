@@ -18,7 +18,6 @@ if __name__ == "__main__":
     kill_roscore()
     out_bags = []
     for bag in bags:
-
         if "velodyne" in bag:
             out_bag = bag.replace("npc_velodyne_processed.bag", "npc_velodyne_ready.bag")
         elif "hesai" in bag:
