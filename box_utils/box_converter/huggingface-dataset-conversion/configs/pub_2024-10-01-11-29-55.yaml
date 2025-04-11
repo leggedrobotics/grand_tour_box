@@ -1,43 +1,46 @@
-# listed bag files --> klein list files -m "release_2024-10-01-11-29-55"
-#  ━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━┓
-# ┃ project   ┃ mission                     ┃ name                                            ┃ id                                   ┃ state ┃ size       ┃ categories ┃
-# ┡━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━┩
-# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_adis.bag                    │ be105a6e-8e18-4a10-a81d-5c6f1bffff91 │ OK    │ 24.48 MB   │            │
-# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_alphasense.bag              │ 684a31da-9bd8-4390-a4c0-d0f20a31cf7a │ OK    │ 4.02 KB    │            │
-# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_alphasense_imu.bag          │ 722fcedb-de60-4757-b23c-64f116065bee │ OK    │ 25.57 MB   │            │
-# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_anymal_command.bag          │ 8bc6661c-46a5-4773-85ce-9294205bbf85 │ OK    │ 625.90 KB  │            │
-# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_anymal_depth_cameras.bag    │ 7016e621-4417-4471-86bd-2e7eda11a6db │ OK    │ 15.94 GB   │            │
-# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_anymal_elevation.bag        │ d6b925f9-a726-49a3-9974-36b48ccdf886 │ OK    │ 1.55 GB    │            │
-# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_anymal_imu.bag              │ ccb5d1a5-abf9-416b-b47a-a36f3953ce2a │ OK    │ 50.68 MB   │            │
-# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_anymal_locomotion.bag       │ 5233eee0-bf24-4964-aacd-7b9d8b8114e9 │ OK    │ 25.46 MB   │            │
-# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_anymal_state.bag            │ b6eba2f1-1d13-4461-8b14-a705e9aa7da1 │ OK    │ 975.18 MB  │            │
-# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_anymal_tf.bag               │ 4b66f14b-0397-4c1f-bd76-32199f34b7b9 │ OK    │ 60.26 MB   │            │
-# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_anymal_velodyne.bag         │ 198750e8-ca3c-4113-aee9-fee3e2dd852a │ OK    │ 4.02 KB    │            │
-# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_anymal_velodyne_packets.bag │ b6ffb086-6fa7-4669-83f2-ea2dd40f2218 │ OK    │ 4.02 KB    │            │
-# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_anymal_velodyne_undist.bag  │ 1c8eaf1b-a43b-46f4-a844-b2c6d6b97484 │ OK    │ 4.02 KB    │            │
-# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_ap20_imu.bag                │ 81489bcd-186c-43c8-a60b-94e0028829e7 │ OK    │ 23.78 MB   │            │
-# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_ap20_prism_position.bag     │ 05fbff03-6e4a-4ca7-8ab2-cd225789f88e │ OK    │ 526.00 KB  │            │
-# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_cpt7.bag                    │ 7f659251-9d9e-4078-bbbb-8db7ba9e1d5b │ OK    │ 24.99 MB   │            │
-# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_cpt7_ie_dgps.bag            │ cfc45eda-b8a4-400d-a76d-7896bf2a1e22 │ OK    │ 276.18 KB  │            │
-# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_cpt7_ie_lc.bag              │ 8e741712-dcbf-4049-b73a-74c56facbe61 │ OK    │ 25.38 MB   │            │
-# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_cpt7_ie_ppp.bag             │ c030d8b1-3165-4d98-a8a8-7cd3c2cc6607 │ OK    │ 276.17 KB  │            │
-# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_cpt7_ie_tc.bag              │ d8c56979-595b-466d-94e2-280a5b4345f2 │ OK    │ 25.38 MB   │            │
-# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_cpt7_imu.bag                │ 3f86b567-13f0-42f9-829e-1c8887b9f02e │ OK    │ 12.57 MB   │            │
-# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_dlio.bag                    │ b1c17ec6-0d59-4f83-a542-e2f8c2d96186 │ OK    │ 4.54 GB    │            │
-# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_gmsf.bag                    │ c8df5163-5a08-4677-9274-122292c450f1 │ OK    │ 4.02 KB    │            │
-# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_hdr_front.bag               │ 457447fc-4666-4ac4-9b52-ee1cbce0f37e │ OK    │ 4.02 KB    │            │
-# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_hdr_left.bag                │ c578ccfc-feac-41f1-9abc-ee33aca20add │ OK    │ 4.02 KB    │            │
-# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_hdr_right.bag               │ 4fe67e05-9348-4b5f-84a5-9eb9e3e21e42 │ OK    │ 4.02 KB    │            │
-# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_hesai.bag                   │ 7335e226-99ae-4b2a-8c99-9e74efd1a45b │ OK    │ 4.73 GB    │            │
-# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_hesai_packets.bag           │ 6346896b-4d60-4a83-8dd7-f04f36a4ae6a │ OK    │ 905.68 MB  │            │
-# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_hesai_undist.bag            │ 061bde17-6149-41db-9ad2-0f129d0e9158 │ OK    │ 4.02 KB    │            │
-# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_livox.bag                   │ 86028ee8-14e7-444b-a2f9-87e00efeb82d │ OK    │ 1015.06 MB │            │
-# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_livox_imu.bag               │ f61642cf-3ccd-491b-9171-1cf0cbecb01f │ OK    │ 25.09 MB   │            │
-# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_livox_undist.bag            │ 1941d837-5d77-41b1-9af5-4c9ab44c8eb2 │ OK    │ 4.02 KB    │            │
-# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_stim320_imu.bag             │ 84d6033f-64be-4df4-8617-9e6a92a7f389 │ OK    │ 92.77 MB   │            │
-# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_zed2i_prop.bag              │ b8275290-f8f0-4728-92cd-c6acc4b592bd │ OK    │ 4.02 KB    │            │
-# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_zed2i_vio.bag               │ 70507634-59ac-42b6-bc50-7f6fcd56f0be │ OK    │ 6.96 MB    │            │
-# └───────────┴─────────────────────────────┴─────────────────────────────────────────────────┴──────────────────────────────────────┴───────┴────────────┴────────────┘
+# listed bag files --> klein list files -m "pub_2024-10-01-11-29-55"
+# ┏━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━━┓
+# ┃ project   ┃ mission                 ┃ name                                              ┃ id                                   ┃ state ┃ size      ┃ categories ┃
+# ┡━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━┩
+# │ GrandTour │ pub_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_cpt7_raw_imu.bag              │ de6cdbaf-712d-45a0-8c90-71ea9ed5aa0b │ OK    │ 2.40 MB   │            │  --> not used
+# │ GrandTour │ pub_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_hesai_dlio.bag                │ e627fdb7-f85b-49ed-a88c-caa6f6706580 │ OK    │ 3.14 GB   │            │  --> used but wrong name!
+# │ GrandTour │ pub_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_jetson_adis.bag               │ 8aa3e3ca-63fa-47f5-bcb5-c186921f7601 │ OK    │ 5.65 MB   │            │
+# │ GrandTour │ pub_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_jetson_ap20_robot.bag         │ ef597615-8451-40be-b51a-15dafda5cd28 │ OK    │ 227.83 KB │            │
+# │ GrandTour │ pub_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_jetson_ap20_synced.bag        │ 96993d27-ee3b-4535-ae7c-791b39a5feb3 │ OK    │ 29.86 MB  │            │
+# │ GrandTour │ pub_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_jetson_hdr_front_anon.bag     │ fa0bb5bd-6731-45c3-a595-a87da2991018 │ OK    │ 2.40 GB   │            │
+# │ GrandTour │ pub_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_jetson_hdr_front_calib.bag    │ 3663f20b-0b99-4a69-a790-d530cb12cc21 │ OK    │ 129.21 KB │            │
+# │ GrandTour │ pub_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_jetson_hdr_front_encoding.bag │ e7b322d0-d92d-405a-a20f-79c00d62f4d1 │ OK    │ 2.40 GB   │            │
+# │ GrandTour │ pub_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_jetson_hdr_left_anon.bag      │ 45ecbd38-1915-4d19-a508-42cc65a4a39d │ OK    │ 2.65 GB   │            │
+# │ GrandTour │ pub_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_jetson_hdr_left_calib.bag     │ c53d65e5-6116-451d-bf17-294fd13a9df5 │ OK    │ 129.03 KB │            │
+# │ GrandTour │ pub_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_jetson_hdr_left_encoding.bag  │ 87f55399-1946-4d71-8fa6-336e3412934f │ OK    │ 2.64 GB   │            │
+# │ GrandTour │ pub_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_jetson_hdr_right_anon.bag     │ a380ebbc-1efb-4ba6-9e58-0f22034f2923 │ OK    │ 2.66 GB   │            │
+# │ GrandTour │ pub_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_jetson_hdr_right_calib.bag    │ 10c77792-ba17-4d60-bf1b-cfde37a44562 │ OK    │ 129.38 KB │            │
+# │ GrandTour │ pub_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_jetson_hdr_right_encoding.bag │ e1c53c6e-6b6c-426a-bda2-7a29e77986d4 │ OK    │ 2.66 GB   │            │
+# │ GrandTour │ pub_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_jetson_stim.bag               │ b7a9bbd0-ba2e-4f86-8a8b-697bd5a871bc │ OK    │ 43.63 MB  │            │
+# │ GrandTour │ pub_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_jetson_zed2i_depth.bag        │ 78e307f5-42ae-40d5-8a77-1a217168a068 │ OK    │ 24.83 GB  │            │
+# │ GrandTour │ pub_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_jetson_zed2i_images.bag       │ a9c28476-ae4f-4dc2-80c6-fe6e7aa6f4e4 │ OK    │ 38.42 GB  │            │
+# │ GrandTour │ pub_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_jetson_zed2i_images_anon.bag  │ dc6b8c11-f1fe-4856-862e-9290311af1eb │ OK    │ 6.76 GB   │            │
+# │ GrandTour │ pub_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_jetson_zed2i_prop.bag         │ 06447b6f-a0e5-4f6b-83e2-05a8e7e8917d │ OK    │ 4.62 MB   │            │
+# │ GrandTour │ pub_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_jetson_zed2i_tf.bag           │ fd217a45-5fc4-477f-91c9-d157f9d0fff8 │ OK    │ 768.00 KB │            │
+# │ GrandTour │ pub_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_lpc_anymal_imu.bag            │ a1713d35-8fa3-4b17-b3da-9b7101d635e1 │ OK    │ 11.39 MB  │            │
+# │ GrandTour │ pub_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_lpc_depth_cameras.bag         │ 3576f719-39c0-4c9b-aaa2-cc864a8bde71 │ OK    │ 2.06 GB   │            │
+# │ GrandTour │ pub_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_lpc_general.bag               │ eb47a76f-7f7d-4d4c-9102-22cdb72358d9 │ OK    │ 145.87 MB │            │
+# │ GrandTour │ pub_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_lpc_locomotion.bag            │ a873f54f-4dc6-427c-9613-31603a2e88fc │ OK    │ 22.47 MB  │            │
+# │ GrandTour │ pub_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_lpc_state_estimator.bag       │ cda5aa04-9e6b-40ee-89a0-a37f1e34d943 │ OK    │ 148.16 MB │            │
+# │ GrandTour │ pub_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_lpc_tf.bag                    │ f43a2c3d-080a-45e6-9591-40c9892f3686 │ OK    │ 18.68 MB  │            │
+# │ GrandTour │ pub_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_npc_depth_cameras.bag         │ 183e76f5-108b-4102-bb80-44994fb89582 │ OK    │ 1.90 GB   │            │
+# │ GrandTour │ pub_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_npc_elevation_mapping.bag     │ c8a5d005-756c-4c20-9d1b-c135df5f2cde │ OK    │ 353.47 MB │            │
+# │ GrandTour │ pub_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_npc_velodyne.bag              │ 7e104788-3062-400f-b5a7-d9b575ed7b9a │ OK    │ 162.48 KB │            │
+# │ GrandTour │ pub_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_nuc_alphasense_anon.bag       │ 1d811a43-4a50-4fcf-b5a0-90f67b4945cd │ OK    │ 6.18 GB   │            │
+# │ GrandTour │ pub_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_nuc_alphasense_calib.bag      │ 82c3d2f5-f365-4661-b748-4043418095a3 │ OK    │ 623.92 KB │            │
+# │ GrandTour │ pub_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_nuc_alphasense_color.bag      │ 5a005627-543c-4074-8b4e-675194e99e19 │ OK    │ 6.21 GB   │            │
+# │ GrandTour │ pub_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_nuc_hesai.bag                 │ 0b38834e-a63d-49ae-aeda-9fa561b9623f │ OK    │ 613.31 MB │            │
+# │ GrandTour │ pub_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_nuc_hesai_post_processed.bag  │ c28393bf-34e1-4fd2-826e-ebfb2e8ca61d │ OK    │ 3.28 GB   │            │
+# │ GrandTour │ pub_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_nuc_hesai_ready.bag           │ d9e5d36c-588c-4f41-a866-8d6e1f8dd8c2 │ OK    │ 2.86 GB   │            │
+# │ GrandTour │ pub_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_nuc_livox.bag                 │ 90d52a86-6a78-4787-ad57-18331682aaeb │ OK    │ 972.82 MB │            │
+# │ GrandTour │ pub_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_nuc_livox_ready.bag           │ 2c6448d8-4756-4319-bb1f-58a39b0615eb │ OK    │ 710.48 MB │            │
+# │ GrandTour │ pub_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_tf_static_start_end.bag       │ 447efc04-d65e-4aca-83da-f0e696f1c07f │ OK    │ 10.03 KB  │            │
+# └───────────┴─────────────────────────┴───────────────────────────────────────────────────┴──────────────────────────────────────┴───────┴───────────┴────────────┘
 
 metadata:
   # TODO: check with Jonas --> Not yet implemented!  
@@ -46,7 +49,6 @@ metadata:
     #   topic: "/anymal/depth_camera_front_lower/depth/image_rect_raw"
 
   camera_intrinsics:
-    # TODO: used, doublecheck with Jonas
     - alias: alphasense_front_center_caminfo
       file: 2024-10-01-11-29-55_alphasense.bag
       topic: "/boxi/alphasense/front_center/camera_info"
@@ -67,17 +69,14 @@ metadata:
       file: 2024-10-01-11-29-55_alphasense.bag
       topic: "/boxi/alphasense/right/camera_info"
 
-    # TODO: used, doublecheck with Jonas
     - alias: hdr_left_caminfo
       file: 2024-10-01-11-29-55_hdr_left.bag
       topic: "/boxi/hdr_left/camera_info"
 
-    # TODO: used, doublecheck with Jonas
     - alias: hdr_right_caminfo
       file: 2024-10-01-11-29-55_hdr_front.bag
       topic: "/boxi/hdr_right/camera_info"
 
-    # TODO: used, doublecheck with Jonas
     - alias: hdr_right_caminfo
       file: 2024-10-01-11-29-55_hdr_right.bag
       topic: "/boxi/hdr_right/camera_info"
@@ -193,7 +192,7 @@ data:
 
     # TODO: used, doublecheck with Jonas
     - alias: dlio_hesai_deskewed
-      file: 2024-10-01-11-29-55_dlio.bag
+      file: 2024-10-01-11-29-55_hesai_dlio.bag
       topic: "/boxi/dlio/hesai_deskewed"
       max_points: 64000
       attributes:
@@ -202,7 +201,7 @@ data:
 
     # TODO: used, doublecheck with Jonasd
     - alias: dlio_map_odometry
-      file: 2024-10-01-11-29-55_dlio.bag
+      file: 2024-10-01-11-29-55_hesai_dlio.bag
       topic: "/boxi/dlio/lidar_map_odometry"
       max_points: 64000
 
@@ -371,10 +370,10 @@ data:
 
     # # do we want both?
     # - alias: dlio_odometry
-    #   file: 2024-10-01-11-29-55_dlio.bag
+    #   file: 2024-10-01-11-29-55_hesai_dlio.bag
     #   topic: "/dlio/lidar_odometry"
     # - alias: dlio_map_odometry
-    #   file: 2024-10-01-11-29-55_dlio.bag
+    #   file: 2024-10-01-11-29-55_hesai_dlio.bag
     #   topic: "/dlio/lidar_map_odometry"
 
     # - alias: cpt7_odometry
@@ -398,12 +397,12 @@ data:
 
     # TODO: used, doublecheck with Jonas
     - alias: dlio_tf
-      file: 2024-10-01-11-29-55_dlio.bag
+      file: 2024-10-01-11-29-55_hesai_dlio.bag
       topic: "/tf"
 
     # TODO: used, doublecheck with Jonas
     - alias: dlio_tf
-      file: 2024-10-01-11-29-55_dlio.bag
+      file: 2024-10-01-11-29-55_hesai_dlio.bag
       topic: "/tf"
 
     # TODO: not yet implemented, doublecheck with Jonas

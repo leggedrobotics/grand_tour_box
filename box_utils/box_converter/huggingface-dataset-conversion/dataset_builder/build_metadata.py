@@ -158,10 +158,15 @@ def _get_frame_ids(bags_path: Path, topic_reg: TopicRegistry) -> Dict[str, Any]:
         Dict[str, Any]: i.e. {'zed2i_depth': {'frame_id': 'zed2i_left_camera_optical_frame'}, 
                               'cpt7_odometry': {'frame_id': 'cpt7_odom'}, ...}
     """
+
     ret = {}
-    for _, topic_desc in topic_reg.values():
-        ret[topic_desc.alias] = _get_frame_id_from_topic(bags_path, topic_desc)
-    return ret
+    try:
+        for _, topic_desc in topic_reg.values():
+            ret[topic_desc.alias] = _get_frame_id_from_topic(bags_path, topic_desc)
+        return ret
+    except ValueError as e:
+        # TODO: remove this
+        breakpoint()
 
 
 def _get_camera_infos(
@@ -190,11 +195,16 @@ def _get_camera_infos(
                                      'distortion_model': 'plumb_bob', 
                                     ...}}
     """
-    ret = {}
-    for cam_info_topic_desc in metadata_config.camera_intrinsics:
-        cam_info = _get_camera_info_from_topic(bags_path, cam_info_topic_desc)
-        ret[cam_info_topic_desc.alias] = cam_info
-    return ret
+    try:
+        ret = {}
+        for cam_info_topic_desc in metadata_config.camera_intrinsics:
+            cam_info = _get_camera_info_from_topic(bags_path, cam_info_topic_desc)
+            ret[cam_info_topic_desc.alias] = cam_info
+        return ret
+
+    except ValueError as e:
+        # TODO: remove this
+        breakpoint()
 
 
 def _get_frame_transform_metadata(
