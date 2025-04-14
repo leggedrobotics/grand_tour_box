@@ -105,6 +105,7 @@ pip3 uninstall kleinkram -y
 pip3 install kleinkram
 pip3 install --upgrade pyOpenSSL # Kleinkram fails to run without this
 pip3 install gspread
+pip3 install google-api-python-client
 
 # Dependencies for box_auto imu_timesync
 pip3 install torch

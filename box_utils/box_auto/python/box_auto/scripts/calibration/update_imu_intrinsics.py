@@ -3,26 +3,28 @@
 import rosbag
 from tqdm import tqdm
 from pathlib import Path
-from box_auto.utils import get_bag, upload_bag, WS
+from box_auto.utils import get_bag, upload_bag, WS, BOX_AUTO_DIR
 import yaml
+import gspread
+import rospy
 
 CALIB_PATH = Path(WS) / "src/grand_tour_box/box_calibration/box_calibration/calibration/allan_variances"
 CONFIG = {
-    "ap20": {
-        "pattern": "_jetson_ap20_synced.bag",
-        "topics": ["/gt_box/ap20/imu"],
-        "out_pattern": "_jetson_ap20_intrinsics.bag",
-        "frequency": 100,
-    },
     "stim320": {
         "pattern": "_jetson_stim.bag",
         "topics": ["/gt_box/stim320/imu"],
         "out_pattern": "_jetson_stim_intrinsics.bag",
         "frequency": 500,
     },
+    "ap20": {
+        "pattern": "_jetson_ap20_synced.bag",
+        "topics": ["/gt_box/ap20/imu"],
+        "out_pattern": "_jetson_ap20_intrinsics.bag",
+        "frequency": 100,
+    },
     "livox": {
         "pattern": "_nuc_livox.bag",
-        "topics": ["/gt_box/livox/imu", "/gt_box/livox/imu_si_compliant"],
+        "topics": ["/gt_box/livox/imu_si_compliant"],
         "out_pattern": "_nuc_livox_intrinsics.bag",
         "frequency": 200,
     },
@@ -33,17 +35,15 @@ CONFIG = {
         "frequency": 200,
     },
     "cpt7": {
-        "pattern": ["_nuc_cpt7_post_processed.bag", "_cpt7_raw_imu.bag"],
+        "pattern": "_cpt7_raw_imu.bag",
         "topics": [
             "/gt_box/cpt7/imu/data_raw",
-            "/gt_box/cpt7/gps/imu",
-            "/gt_box/cpt7/offline_from_novatel_logs/imu",
         ],
-        "out_pattern": ["_nuc_cpt7_intrinsics.bag", "_cpt7_raw_intrinsics.bag"],
+        "out_pattern": "_cpt7_raw_intrinsics.bag",
         "frequency": 100,
     },
     "alphasense": {
-        "pattern": "_nuc_alphasense.bag",
+        "pattern": "_nuc_alphasense_color.bag",
         "topics": ["/gt_box/alphasense_driver_node/imu"],
         "out_pattern": "_nuc_alphasense_intrinsics.bag",
         "frequency": 200,
@@ -57,6 +57,37 @@ CONFIG = {
 }
 
 
+def read_stim_time_offset(date_str):
+    gc = gspread.service_account(
+        filename=Path(BOX_AUTO_DIR) / "../.." / ".secrets/halogen-oxide-451108-u4-67f470bcc02e.json"
+    )
+
+    # Open the Google Sheet
+    sheet = gc.open_by_key("1mENfskg_jO_vJGFM5yonqPuf-wYUNmg26IPv3pOu3gg")
+    worksheet = sheet.worksheet("mission_overview")
+
+    # Read data from A1 to Z500 (all data)
+    data = worksheet.get_all_values("A1:Z500")
+
+    # Find the row where the first column entry matches date_str
+    target_row = None
+    for _, row in enumerate(data):
+        if row[0] == date_str:
+            target_row = row
+            break
+
+    if target_row is None:
+        raise ValueError(f"No row found with date_str: {date_str}")
+
+    header_row = data[0]
+    try:
+        column_index = header_row.index("stim320-imu_mean")
+    except ValueError:
+        raise ValueError("Column 'stim320-imu_mean' not found in header row")
+
+    return float(target_row[column_index])
+
+
 def process_bags(calibrations) -> None:
     for k, v in CONFIG.items():
         calib = calibrations[k]
@@ -67,7 +98,7 @@ def process_bags(calibrations) -> None:
 
         # Angular velocity covariance
         angular_velocity_covariance = [gyro_variance, 0.0, 0.0, 0.0, gyro_variance, 0.0, 0.0, 0.0, gyro_variance]
-
+        STIM320_TIME_OFFSET = None
         if not type(v["pattern"]) is list:
             v["pattern"] = [v["pattern"]]
             v["out_pattern"] = [v["out_pattern"]]
@@ -83,6 +114,16 @@ def process_bags(calibrations) -> None:
                     for topic, msg, t in input_bag.read_messages(topics=v["topics"]):
                         msg.linear_acceleration_covariance = linear_acceleration_covariance
                         msg.angular_velocity_covariance = angular_velocity_covariance
+
+                        if "stim320" in topic:
+                            if STIM320_TIME_OFFSET is None:
+                                mission_name = Path(input_bag_path).stem.replace(v["pattern"][0][:-4], "")
+                                STIM320_TIME_OFFSET = read_stim_time_offset(mission_name)
+
+                                STIM320_TIME_OFFSET = rospy.Duration.from_sec(STIM320_TIME_OFFSET / 1000.0)
+                                print(f"STIM320_TIME_OFFSET: {STIM320_TIME_OFFSET}")
+                            msg.header.stamp += STIM320_TIME_OFFSET
+
                         output_bag.write(topic, msg, t)
                         pbar.update(1)
 

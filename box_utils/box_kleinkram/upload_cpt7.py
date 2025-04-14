@@ -15,7 +15,13 @@ if __name__ == "__main__":
 
     else:
         # Upload the data
-        file_keys = ["_cpt7_raw_imu.bag", "_cpt7_ie_dgps.bag", "_cpt7_ie_ppp.bag", "_cpt7_ie_tc.bag"]
+        file_keys = [
+            "_cpt7_ie_ppptc.bag",
+            "_cpt7_ie_dgps.bag",
+            "_cpt7_ie_ppp.bag",
+            "_cpt7_ie_tc.bag",
+            "_cpt7_ie_lc.bag",
+        ]  # "_cpt7_raw_imu.bag",
         file_paths = []
         for file_key in file_keys:
             try:
@@ -36,4 +42,7 @@ if __name__ == "__main__":
             exit(2)
         if len(file_paths) == 3:
             exit(3)
+        if len(file_paths) == 4:
+            exit(4)
+
         exit(0)
