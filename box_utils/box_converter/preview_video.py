@@ -45,14 +45,14 @@ ROS_BAG_PATHS = [
     get_bag("*_jetson_hdr_front_anon.bag"),
     get_bag("*_jetson_hdr_right_anon.bag"),
     get_bag("*_jetson_hdr_left_anon.bag"),
-    get_bag("*_nuc_livox_read.bag"),
-    get_bag("*_hesai_ready.bag"),
+    get_bag("*_nuc_livox_ready.bag"),
+    get_bag("*_nuc_hesai_ready.bag"),
     get_bag("*_lpc_state_estimator.bag"),
 ]  # List of bag files
 ODOM_BAG_PATH = get_bag("*_lpc_state_estimator.bag")
 
 
-tf_listener = BagTfTransformer(get_bag("*_tf_static.bag"))
+tf_listener = BagTfTransformer(get_bag("*_tf_static_start_end.bag"))
 try:
     trans, quat = tf_listener.lookupTransform("livox_lidar", "hesai_lidar", None, latest=True)
 except Exception as e:
@@ -61,7 +61,9 @@ except Exception as e:
 
 rotation = R.from_quat(quat)  # Create rotation object from quaternion
 
-MISSION_NAME = Path(ROS_BAG_PATHS[0]).name.replace("_jetson_hdr_front.bag", "")
+n = Path(ROS_BAG_PATHS[0]).stem
+
+MISSION_NAME = n[: n.find("_")]
 OUTPUT_VIDEO_PATH = Path(ARTIFACT_FOLDER) / "youtube" / f"{MISSION_NAME}.mp4"
 FRAME_SAVE_DIR = Path(ARTIFACT_FOLDER) / "youtube" / "frames"
 FRAME_SAVE_DIR.mkdir(parents=True, exist_ok=True)
@@ -119,27 +121,24 @@ class VideoGenerator:
         self.livox_queue = SortedDict()
         self.pose_queue = SortedDict()
         self.ap20_queue = SortedDict()
-        self.gnss_queue = SortedDict()
         self.bridge = CvBridge()
 
     def _add_to_queue(self, topic, msg, t):
         timestamp = t.to_sec()
-        if "/gt_box/hdr_front/image_raw" in topic:
+        if "/gt_box/hdr_front/image_raw/compressed" == topic:
             self.hdr_front_queue[timestamp] = (topic, msg, t)
-        elif "/gt_box/hdr_left/image_raw" in topic:
+        elif "/gt_box/hdr_left/image_raw/compressed" == topic:
             self.hdr_left_queue[timestamp] = (topic, msg, t)
-        elif "/gt_box/hdr_right/image_raw" in topic:
+        elif "/gt_box/hdr_right/image_raw/compressed" == topic:
             self.hdr_right_queue[timestamp] = (topic, msg, t)
-        elif "/gt_box/hesai/points" in topic:
+        elif "/gt_box/hesai/points" == topic:
             self.hesai_queue[timestamp] = (topic, msg, t)
-        elif "/gt_box/livox/lidar" in topic:
+        elif "/gt_box/livox/lidar" == topic:
             self.livox_queue[timestamp] = (topic, msg, t)
-        elif "/state_estimator/pose_in_odom" in topic:
+        elif "/state_estimator/pose_in_odom" == topic:
             self.pose_queue[timestamp] = (topic, msg, t)
-        elif "/gt_box/ap20/position_debug" in topic:
+        elif "/gt_box/ap20/position_debug" == topic:
             self.ap20_queue[timestamp] = (topic, msg, t)
-        elif "/gt_box/inertial_explorer/tc/gt_poses_novatel" in topic:
-            self.gnss_queue[timestamp] = (topic, msg, t)
 
     def _find_closest_message_and_convert(self, target_time, queue, max_diff=0.1, convert=False):
         if not queue:
@@ -183,7 +182,7 @@ class VideoGenerator:
             z = msg.point.z
             return x, y, z
         else:
-            raise ValueError("Conversion not implemented for msg type: ", str(type(msg)))
+            # raise ValueError("Conversion not implemented for msg type: ", str(type(msg)))
             return topic, msg, t
 
     def process(self):
@@ -200,7 +199,7 @@ class VideoGenerator:
 
         start_time = float(MISSION_DATA[MISSION_NAME]["mission_start_time"])
         stop_time = float(MISSION_DATA[MISSION_NAME]["mission_stop_time"])
-
+        print(f"Start time: {start_time}, Stop time: {stop_time}")
         MAX_FRAMES = (stop_time - start_time) / secs_between_frames
 
         robot_start_moving_time_in_s, max_x, min_x, max_y, min_y, first_z = find_first_movement_timestamp_and_bounds(
@@ -239,7 +238,7 @@ class VideoGenerator:
 
                     i += 1
                     if i == MAX_FRAMES:
-                        print("Exit max frames")
+                        print("Exit max frames", flush=True)
                         break
                     print(f"{i}/{MAX_FRAMES}")
 
@@ -249,8 +248,6 @@ class VideoGenerator:
                     livox = self._find_closest_message_and_convert(target_time_in_s, self.livox_queue, convert=True)
                     hesai = self._find_closest_message_and_convert(target_time_in_s, self.hesai_queue)
                     pose = self._find_closest_message_and_convert(target_time_in_s, self.pose_queue)
-                    # ap20 = self._find_closest_message_and_convert(target_time_in_s, self.ap20_queue)
-                    # gnss = self._find_closest_message_and_convert(target_time_in_s, self.gnss_queue)
 
                     if pose is not None:
                         x = pose[0] - min_x

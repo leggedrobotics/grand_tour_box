@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from box_auto.utils import MISSION_DATA, get_file, WS
+from box_auto.utils import MISSION_DATA, get_file
 import time
 import subprocess
 import shlex
@@ -13,6 +13,7 @@ logging.basicConfig(filename="process_output.log", level=logging.INFO)
 
 def main():
     print("CLI REFERENCE: https://docs.novatel.com/Waypoint/Content/Appendix/WPGCMD.htm")
+
     execution_results = []
 
     for PROCMODE in ["ppptc", "tc", "lc", "ppp", "dgps"]:
@@ -89,8 +90,9 @@ def main():
 
                 print(f"\033[32m[{PROCMODE}] Attempt {attempt} | procint = {procInterval:.5f}\033[0m")
 
-                waypoint_dir = Path(WS) / "src/grand_tour_box/box_applications/waypoint_ie_10_00_1206/bin"
-                os.chdir(waypoint_dir)
+                # os.chdir(Path(WS) / "src/grand_tour_box/box_applications/waypoint_ie_10_00_1206/bin")
+                os.chdir("/home/jonfrey/ie_turcan/waypoint_ie_10_00_1206/bin")
+                print(cmd)
                 results = subprocess.run(
                     shlex.split(cmd),
                     input="y\n",

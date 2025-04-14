@@ -183,7 +183,6 @@ def main():
     ]
 
     for gps_file_path, bag_path, post_proc_mode in zip(gps_files, bag_paths, post_proc_modes):
-
         # Export the IMU SBET data.
         sbet_data_path = Path(MISSION_DATA) / "ie" / post_proc_mode / f"SBET_{post_proc_mode}.OUT"
 
@@ -191,7 +190,6 @@ def main():
         if not sbet_data_path.exists() or not sbet_data_path.is_file() or sbet_data_path.stat().st_size == 0:
             print(f"Warning: No SBET data found for {post_proc_mode}")
         else:
-
             sbet_data = read_sbet(Path(MISSION_DATA) / "ie" / post_proc_mode / f"SBET_{post_proc_mode}.OUT")
             SMRMSG_data = read_sbet(Path(MISSION_DATA) / "ie" / post_proc_mode / f"SMRMSG_{post_proc_mode}.OUT")
             write_sbet_to_txt(
@@ -722,44 +720,44 @@ def main():
 
                 # bag.write(topic="/tf", msg=tf_message, t=timestamp)
 
-        import matplotlib.pyplot as plt
+        # import matplotlib.pyplot as plt
 
-        times = np.array(quality_times) - quality_times[0]
-        plt.figure("Quality vs Time")
-        plt.plot(times, quality_values, marker="o", linestyle="-")
-        plt.xlabel("Time (s)")
-        plt.ylabel("Quality Metric")
-        plt.title(f"Quality Metric vs Time for {post_proc_mode}")
-        plt.grid(True)
-        # Save the figure in the same directory as the bag file
-        output_fig = Path(bag_path).parent / "ie" / post_proc_mode / f"quality_vs_time_{post_proc_mode}.png"
-        plt.savefig(str(output_fig))
-        plt.close()
-        print(f"Saved quality vs time figure to: {output_fig}")
+        # times = np.array(quality_times) - quality_times[0]
+        # plt.figure("Quality vs Time")
+        # plt.plot(times, quality_values, marker="o", linestyle="-")
+        # plt.xlabel("Time (s)")
+        # plt.ylabel("Quality Metric")
+        # plt.title(f"Quality Metric vs Time for {post_proc_mode}")
+        # plt.grid(True)
+        # # Save the figure in the same directory as the bag file
+        # output_fig = Path(bag_path).parent / "ie" / post_proc_mode / f"quality_vs_time_{post_proc_mode}.png"
+        # plt.savefig(str(output_fig))
+        # plt.close()
+        # print(f"Saved quality vs time figure to: {output_fig}")
 
-        # Number of Satellites vs Time
-        plt.figure("Satellites vs Time")
-        plt.plot(times, satellites_values, marker="o", linestyle="-")
-        plt.xlabel("Time (s)")
-        plt.ylabel("Number of Satellites")
-        plt.title(f"Number of Satellites vs Time for {post_proc_mode}")
-        plt.grid(True)
-        output_fig = Path(bag_path).parent / "ie" / post_proc_mode / f"satellites_vs_time_{post_proc_mode}.png"
-        plt.savefig(str(output_fig))
-        plt.close()
-        print(f"Saved satellites vs time figure to: {output_fig}")
+        # # Number of Satellites vs Time
+        # plt.figure("Satellites vs Time")
+        # plt.plot(times, satellites_values, marker="o", linestyle="-")
+        # plt.xlabel("Time (s)")
+        # plt.ylabel("Number of Satellites")
+        # plt.title(f"Number of Satellites vs Time for {post_proc_mode}")
+        # plt.grid(True)
+        # output_fig = Path(bag_path).parent / "ie" / post_proc_mode / f"satellites_vs_time_{post_proc_mode}.png"
+        # plt.savefig(str(output_fig))
+        # plt.close()
+        # print(f"Saved satellites vs time figure to: {output_fig}")
 
-        # Ambiguity Status vs Time
-        plt.figure("Ambiguity vs Time")
-        plt.plot(times, ambiguity_values, marker="o", linestyle="-")
-        plt.xlabel("Time (s)")
-        plt.ylabel("Ambiguity Status (Numeric)")
-        plt.title(f"Ambiguity Status vs Time for {post_proc_mode}")
-        plt.grid(True)
-        output_fig = Path(bag_path).parent / "ie" / post_proc_mode / f"ambiguity_vs_time_{post_proc_mode}.png"
-        plt.savefig(str(output_fig))
-        plt.close()
-        print(f"Saved ambiguity vs time figure to: {output_fig}")
+        # # Ambiguity Status vs Time
+        # plt.figure("Ambiguity vs Time")
+        # plt.plot(times, ambiguity_values, marker="o", linestyle="-")
+        # plt.xlabel("Time (s)")
+        # plt.ylabel("Ambiguity Status (Numeric)")
+        # plt.title(f"Ambiguity Status vs Time for {post_proc_mode}")
+        # plt.grid(True)
+        # output_fig = Path(bag_path).parent / "ie" / post_proc_mode / f"ambiguity_vs_time_{post_proc_mode}.png"
+        # plt.savefig(str(output_fig))
+        # plt.close()
+        # print(f"Saved ambiguity vs time figure to: {output_fig}")
 
 
 if __name__ == "__main__":

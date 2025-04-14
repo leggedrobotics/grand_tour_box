@@ -24,7 +24,7 @@ CONFIG = {
     },
     "livox": {
         "pattern": "_nuc_livox.bag",
-        "topics": ["/gt_box/livox/imu", "/gt_box/livox/imu_si_compliant"],
+        "topics": ["/gt_box/livox/imu_si_compliant"],
         "out_pattern": "_nuc_livox_intrinsics.bag",
         "frequency": 200,
     },
@@ -35,17 +35,15 @@ CONFIG = {
         "frequency": 200,
     },
     "cpt7": {
-        "pattern": ["_nuc_cpt7_post_processed.bag", "_cpt7_raw_imu.bag"],
+        "pattern": "_cpt7_raw_imu.bag",
         "topics": [
             "/gt_box/cpt7/imu/data_raw",
-            "/gt_box/cpt7/gps/imu",
-            "/gt_box/cpt7/offline_from_novatel_logs/imu",
         ],
-        "out_pattern": ["_nuc_cpt7_intrinsics.bag", "_cpt7_raw_intrinsics.bag"],
+        "out_pattern": "_cpt7_raw_intrinsics.bag",
         "frequency": 100,
     },
     "alphasense": {
-        "pattern": "_nuc_alphasense.bag",
+        "pattern": "_nuc_alphasense_color.bag",
         "topics": ["/gt_box/alphasense_driver_node/imu"],
         "out_pattern": "_nuc_alphasense_intrinsics.bag",
         "frequency": 200,
@@ -123,7 +121,8 @@ def process_bags(calibrations) -> None:
                                 STIM320_TIME_OFFSET = read_stim_time_offset(mission_name)
 
                                 STIM320_TIME_OFFSET = rospy.Duration.from_sec(STIM320_TIME_OFFSET / 1000.0)
-                            msg.header.stamp -= STIM320_TIME_OFFSET
+                                print(f"STIM320_TIME_OFFSET: {STIM320_TIME_OFFSET}")
+                            msg.header.stamp += STIM320_TIME_OFFSET
 
                         output_bag.write(topic, msg, t)
                         pbar.update(1)

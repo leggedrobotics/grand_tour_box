@@ -22,6 +22,7 @@ from .okviz_trajectory_to_bag import okviz_trajectory_to_bag
 from .run_local import execute_command_per_mission, deployments
 from .google_sheet import read_sheet_data
 from .kleinkram_helper import upload_simple
+from .youtube import upload_video
 
 __all__ = [
     "WS",
@@ -47,4 +48,5 @@ __all__ = [
     "deployments",
     "read_sheet_data",
     "upload_simple",
+    "upload_video",
 ]

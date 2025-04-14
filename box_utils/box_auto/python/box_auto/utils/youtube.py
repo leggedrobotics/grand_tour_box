@@ -1,63 +1,67 @@
-import os
-import random
-import sys
-import time
-import pathlib
-import http.client
+try:
+    import os
+    import random
+    import sys
+    import time
+    import pathlib
+    import http.client
 
-import httplib2
-from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
-from googleapiclient.http import MediaFileUpload
-from oauth2client.client import flow_from_clientsecrets
-from oauth2client.file import Storage
-from oauth2client.tools import run_flow
-from box_auto.utils import BOX_AUTO_DIR
+    import httplib2
+    from googleapiclient.discovery import build
+    from googleapiclient.errors import HttpError
+    from googleapiclient.http import MediaFileUpload
+    from oauth2client.client import flow_from_clientsecrets
+    from oauth2client.file import Storage
+    from oauth2client.tools import run_flow
+    from box_auto.utils import BOX_AUTO_DIR
 
-# Constants
-httplib2.RETRIES = 1
-MAX_RETRIES = 10
+    # Constants
+    httplib2.RETRIES = 1
+    MAX_RETRIES = 10
 
-RETRIABLE_EXCEPTIONS = (
-    httplib2.HttpLib2Error,
-    IOError,
-    http.client.NotConnected,
-    http.client.IncompleteRead,
-    http.client.ImproperConnectionState,
-    http.client.CannotSendRequest,
-    http.client.CannotSendHeader,
-    http.client.ResponseNotReady,
-    http.client.BadStatusLine,
-)
+    RETRIABLE_EXCEPTIONS = (
+        httplib2.HttpLib2Error,
+        IOError,
+        http.client.NotConnected,
+        http.client.IncompleteRead,
+        http.client.ImproperConnectionState,
+        http.client.CannotSendRequest,
+        http.client.CannotSendHeader,
+        http.client.ResponseNotReady,
+        http.client.BadStatusLine,
+    )
 
-RETRIABLE_STATUS_CODES = [500, 502, 503, 504]
+    RETRIABLE_STATUS_CODES = [500, 502, 503, 504]
 
-# AIzaSyD920NjrL7E4aCqEkVKNfLXV_KjMaUTpFM
+    # AIzaSyD920NjrL7E4aCqEkVKNfLXV_KjMaUTpFM
 
-CLIENT_SECRETS_FILE = pathlib.Path(BOX_AUTO_DIR) / "../.." / ".secrets/client_secret_jonfrey.json"
-CLIENT_SECRETS_FILE = CLIENT_SECRETS_FILE.resolve()
+    CLIENT_SECRETS_FILE = pathlib.Path(BOX_AUTO_DIR) / "../.." / ".secrets/client_secret_leggedrobotics_youtube.json"
+    CLIENT_SECRETS_FILE = CLIENT_SECRETS_FILE.resolve()
 
-YOUTUBE_UPLOAD_SCOPE = "https://www.googleapis.com/auth/youtube.upload"
-YOUTUBE_API_SERVICE_NAME = "youtube"
-YOUTUBE_API_VERSION = "v3"
+    YOUTUBE_UPLOAD_SCOPE = "https://www.googleapis.com/auth/youtube.upload"
+    YOUTUBE_API_SERVICE_NAME = "youtube"
+    YOUTUBE_API_VERSION = "v3"
 
-MISSING_CLIENT_SECRETS_MESSAGE = f"""
-WARNING: Please configure OAuth 2.0
+    MISSING_CLIENT_SECRETS_MESSAGE = f"""
+    WARNING: Please configure OAuth 2.0
 
-To make this sample run you will need to populate the client_secrets.json file
-found at:
+    To make this sample run you will need to populate the client_secrets.json file
+    found at:
 
-   {CLIENT_SECRETS_FILE}
+    {CLIENT_SECRETS_FILE}
 
-with information from the API Console:
-https://console.cloud.google.com/
+    with information from the API Console:
+    https://console.cloud.google.com/
 
-For more information, see:
-https://developers.google.com/api-client-library/python/guide/aaa_client_secrets
-"""
+    For more information, see:
+    https://developers.google.com/api-client-library/python/guide/aaa_client_secrets
+    """
 
-VALID_PRIVACY_STATUSES = ("public", "private", "unlisted")
-DESCRIPTION = """More Information about the GrandTour: https://grand-tour.leggedrobotics.com/\r\nVideo uploaded by Jonas Frey, ETH Zurich, RSL."""
+    VALID_PRIVACY_STATUSES = ("public", "private", "unlisted")
+except:
+    pass
+
+DESCRIPTION = """More Information about the GrandTour: https://grand-tour.leggedrobotics.com/\r\nVideo uploaded by Jonas Frey, ETH Zurich."""
 
 
 def get_authenticated_service():
