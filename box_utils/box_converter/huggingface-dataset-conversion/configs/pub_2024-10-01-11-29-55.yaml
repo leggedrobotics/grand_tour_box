@@ -285,7 +285,6 @@ data:
       topic: "/boxi/inertial_explorer/tc/raw"
       covariance: false
 
-
   imu_topics:
 
     # TODO: not yet implemented, doublecheck with Jonas
@@ -342,7 +341,6 @@ data:
     - alias: cpt7_imu
       file: 2024-10-01-11-29-55_cpt7_imu.bag
       topic: "/boxi/cpt7/imu"
-
 
   odometry_topics:
 
@@ -455,10 +453,8 @@ data:
     #   file: 2024-10-01-11-29-55_jetson_zed2i_tf.bag
     #   topic: "/tf"
 
-
-
 # TODO: check with Jonas --> Not yet implemented!
-  anymal_topics:
+  anymal_control_topics:
     - alias: anymal_command
       file: 2024-10-01-11-29-55_anymal_command.bag
       topic: "/anymal/twist_command"

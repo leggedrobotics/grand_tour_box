@@ -68,6 +68,10 @@ class AnymalStateTopic(Topic):
 
 
 @dataclass
+class AnymalControlTopic(Topic): ...
+
+
+@dataclass
 class NavSatFixTopic(Topic): ...
 
 
@@ -349,6 +353,17 @@ def _build_anymal_state_topics_attributes(
     }
 
 
+def _build_anymal_control_topics_attributes(
+    anymal_control_topics: Sequence[AnymalControlTopic],
+) -> TopicRegistry:
+    topic_tp = {
+        "twist_lin": ArrayType((3,), np.float64),
+        "twist_ang": ArrayType((3,), np.float64),
+    }
+
+    return {topic.alias: (topic_tp.copy(), topic) for topic in anymal_control_topics}
+
+
 def _build_odometry_topics_attributes(
     odometry_topics: Sequence[OdometryTopic],
 ) -> TopicRegistry:
@@ -480,6 +495,7 @@ TOPIC_TYPES = {
     "imu_topics": (ImuTopic, _build_imu_topics_attributes),
     "odometry_topics": (OdometryTopic, _build_odometry_topics_attributes),
     "anymal_state_topics": (AnymalStateTopic, _build_anymal_state_topics_attributes),
+    "anymal_control_topics": (AnymalControlTopic, _build_anymal_control_topics_attributes),
     "nav_sat_fix_topics": (NavSatFixTopic, _build_nav_sat_fix_topics_attributes),
     "magnetic_field_topics": (
         MagneticFieldTopic,
