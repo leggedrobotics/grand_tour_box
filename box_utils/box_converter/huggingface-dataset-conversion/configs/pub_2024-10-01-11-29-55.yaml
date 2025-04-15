@@ -39,7 +39,7 @@
 # │ GrandTour │ pub_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_nuc_hesai_ready.bag           │ d9e5d36c-588c-4f41-a866-8d6e1f8dd8c2 │ OK    │ 2.86 GB   │            │
 # │ GrandTour │ pub_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_nuc_livox.bag                 │ 90d52a86-6a78-4787-ad57-18331682aaeb │ OK    │ 972.82 MB │            │
 # │ GrandTour │ pub_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_nuc_livox_ready.bag           │ 2c6448d8-4756-4319-bb1f-58a39b0615eb │ OK    │ 710.48 MB │            │
-# │ GrandTour │ pub_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_tf_static_start_end.bag       │ 447efc04-d65e-4aca-83da-f0e696f1c07f │ OK    │ 10.03 KB  │            │
+# │ GrandTour │ pub_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_tf_staatic_start_end.bag       │ 447efc04-d65e-4aca-83da-f0e696f1c07f │ OK    │ 10.03 KB  │            │
 # └───────────┴─────────────────────────┴───────────────────────────────────────────────────┴──────────────────────────────────────┴───────┴───────────┴────────────┘
 
 metadata:
@@ -454,7 +454,7 @@ data:
     #   topic: "/tf"
 
 # TODO: check with Jonas --> Not yet implemented!
-  anymal_control_topics:
+  twist_topics:
     - alias: anymal_command
       file: 2024-10-01-11-29-55_anymal_command.bag
       topic: "/anymal/twist_command"

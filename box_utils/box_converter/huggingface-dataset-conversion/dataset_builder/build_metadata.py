@@ -250,11 +250,19 @@ def build_metadata_part(
     )
 
     # add frame metadata to dict and split by topic
-    metadata = {}
-    for alias, frame_id in frame_id_metadata.items():
-        metadata[alias] = {**frame_id, "topic": alias}
-        # i.e. {'zed2i_depth': {'frame_id': 'zed2i_left_camera_optical_frame', 
-        #                       'topic': 'zed2i_depth'}}
+    try:
+        metadata = {}
+        for alias, frame_id in frame_id_metadata.items():
+            metadata[alias] = {**frame_id, "topic": alias}
+            # i.e. {'zed2i_depth': {'frame_id': 'zed2i_left_camera_optical_frame', 
+            #                       'topic': 'zed2i_depth'}}
+    except ValueError as e:
+        print(
+            f"no messages found in topic {frame_id_metadata[alias].get('topic')}"
+        )
+        
+        # TODO: remove this
+        breakpoint()
       
     # add camera specific metadata to dict and split by topic
     for alias, cam_info in cam_info_metadata.items():

@@ -18,12 +18,15 @@ HomTransform = NewType("HomTransform", np.ndarray)
 
 
 def _get_source_dest_frame_ids(tf: TransformStamped) -> tuple[str, str]:
+    # Extract the names of the parent and child coordinate frames from 
+    # a TransformStamped message.
     return tf.header.frame_id, tf.child_frame_id
 
 
 def _extract_transform_from_transform_msg(
     tf: Transform,
 ) -> Tuple[Translation, Rotation]:
+    # Convert a Transform object (position + rotation) into usable data types.
     position = np.array([tf.translation.x, tf.translation.y, tf.translation.z])
     quaternion = np.array([tf.rotation.x, tf.rotation.y, tf.rotation.z, tf.rotation.w])
     return Translation(position), Rotation.from_quat(quaternion)
@@ -32,6 +35,8 @@ def _extract_transform_from_transform_msg(
 def _get_source_dest_transforms_from_tf_msg(
     tf: TFMessage,
 ) -> Dict[Tuple[str, str], Tuple[Translation, Rotation]]:
+    # Take a full TFMessage (a list of TransformStamped messages) 
+    # and turn it into a dictionary.
     return {
         _get_source_dest_frame_ids(tf): _extract_transform_from_transform_msg(
             tf.transform
@@ -43,6 +48,8 @@ def _get_source_dest_transforms_from_tf_msg(
 def _convert_to_homogeneous_transform(
     trans: Translation, rot: Rotation
 ) -> HomTransform:
+    # | R (3x3)   t (3x1) |
+    # | 0  0  0     1     |
     ret = np.eye(4)
     ret[:3, :3] = rot.as_matrix()
     ret[:3, 3] = trans
@@ -52,6 +59,7 @@ def _convert_to_homogeneous_transform(
 def _convert_from_homogeneous_transform(
     hom: HomTransform,
 ) -> Tuple[Translation, Rotation]:
+    # inverse  of _convert_to_homogeneous_transform()
     return Translation(hom[:3, 3]), Rotation.from_matrix(hom[:3, :3])
 
 
