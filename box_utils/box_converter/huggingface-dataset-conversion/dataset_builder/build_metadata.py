@@ -8,6 +8,7 @@ from typing import Dict
 import yaml
 from sensor_msgs.msg import CameraInfo
 from tf2_msgs.msg import TFMessage
+from tf_bag import BagTfTransformer
 
 from dataset_builder.dataset_config import CameraInfoTopic
 from dataset_builder.dataset_config import FrameTransformConfig
@@ -44,6 +45,7 @@ def _load_metadata_from_bag_file_and_topic(
         return extract_header_metadata_from_deserialized_message(message, topic_desc)
     
     raise ValueError(f"no messages found in topic {topic_desc.topic}")
+
 
 def _load_camera_info_metadata_from_bag_file_and_topic(
     bag_path: Path,
@@ -103,6 +105,19 @@ def _load_tf_metadata_from_bag_file_and_topic(
         assert isinstance(
             message, TFMessage
         ), f"topic {frame_transform_config.topic} does not contain TFMessage messages"
+        
+        # TODO: remove this
+        tf_listener = BagTfTransformer(
+            bag = get_bag(bag_path, filename_suffix="_tf_minimal.bag"),
+            tree_root=frame_transform_config.base_frame)
+
+        try:
+            trans, quat = tf_listener.lookupTransform("livox_lidar", "hesai_lidar", None, latest=True)
+        except Exception as e:
+            print(f"Transform lookup failed: {e}")
+            exit(-1)
+
+        
         metadata = get_metadata_from_tf_msg(message, frame_transform_config.base_frame)
         
         return metadata
@@ -165,8 +180,7 @@ def _get_frame_ids(bags_path: Path, topic_reg: TopicRegistry) -> Dict[str, Any]:
             ret[topic_desc.alias] = _get_frame_id_from_topic(bags_path, topic_desc)
         return ret
     except ValueError as e:
-        # TODO: remove this
-        breakpoint()
+        print(f"no messages found in topic {topic_desc.topic}")
 
 
 def _get_camera_infos(
@@ -195,17 +209,11 @@ def _get_camera_infos(
                                      'distortion_model': 'plumb_bob', 
                                     ...}}
     """
-    try:
-        ret = {}
-        for cam_info_topic_desc in metadata_config.camera_intrinsics:
-            cam_info = _get_camera_info_from_topic(bags_path, cam_info_topic_desc)
-            ret[cam_info_topic_desc.alias] = cam_info
-        return ret
-
-    except ValueError as e:
-        # TODO: remove this
-        breakpoint()
-
+    ret = {}
+    for cam_info_topic_desc in metadata_config.camera_intrinsics:
+        cam_info = _get_camera_info_from_topic(bags_path, cam_info_topic_desc)
+        ret[cam_info_topic_desc.alias] = cam_info
+    return ret
 
 def _get_frame_transform_metadata(
     bags_path: Path, frame_transform_config: FrameTransformConfig
@@ -260,10 +268,7 @@ def build_metadata_part(
         print(
             f"no messages found in topic {frame_id_metadata[alias].get('topic')}"
         )
-        
-        # TODO: remove this
-        breakpoint()
-      
+     
     # add camera specific metadata to dict and split by topic
     for alias, cam_info in cam_info_metadata.items():
         assert (

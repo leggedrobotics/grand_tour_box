@@ -67,122 +67,181 @@ metadata:
 
     - alias: hdr_left_caminfo
       file: 2024-10-01-11-29-55_hdr_left.bag
-      topic: "/boxi/hdr_left/camera_info"
+      topic: "/boxi/hdr/left/camera_info"
 
-    - alias: hdr_right_caminfo
+    - alias: hdr_front_caminfo
       file: 2024-10-01-11-29-55_hdr_front.bag
-      topic: "/boxi/hdr_right/camera_info"
+      topic: "/boxi/hdr/front/camera_info"
 
     - alias: hdr_right_caminfo
       file: 2024-10-01-11-29-55_hdr_right.bag
-      topic: "/boxi/hdr_right/camera_info"
+      topic: "/boxi/hdr/right/camera_info"
 
-    - alias: zed2i_depth_caminfo
-      file: 2024-10-01-11-29-55_zed2i_depth.bag
-      topic: "/boxi/zed2i/depth/camera_info"
+    # TODO: not yet ready on the part of jonas
+    # - alias: zed2i_depth_caminfo
+    #   file: 2024-10-01-11-29-55_zed2i_depth.bag
+    #   topic: "/boxi/zed2i/depth/camera_info"
 
-    - alias: zed2i_left_caminfo
-      file: 2024-10-01-11-29-55_zed2i_images.bag
-      topic: "/boxi/zed2i/left/camera_info"
+    # TODO: not yet ready on the part of jonas
+    # - alias: zed2i_left_caminfo
+    #   file: 2024-10-01-11-29-55_zed2i_images.bag
+    #   topic: "/boxi/zed2i/left/camera_info"
 
-    - alias: zed2i_right_caminfo
-      file: 2024-10-01-11-29-55_zed2i_images.bag
-      topic: "/boxi/zed2i/right/camera_info"
+    # TODO: not yet ready on the part of jonas
+    # - alias: zed2i_right_caminfo
+    #   file: 2024-10-01-11-29-55_zed2i_images.bag
+    #   topic: "/boxi/zed2i/right/camera_info"
 
     # TODO: check with Jonas --> Not yet implemented! 
     # --> /anymal/depth_camera_left/depth/camera_info
     - alias: anymal_depth_camera_front_lower
       file: 2024-10-01-11-29-55_anymal_depth_cameras.bag
-      topic: "/anymal/depth_camera_front_lower/depth/camera_info"
+      topic: "/anymal/depth_camera/front_lower/depth/camera_info"
 
-    # TODO: check with Jonas --> Not yet implemented! 
-    # --> /anymal/depth_camera_left/depth/camera_info
     - alias: anymal_depth_camera_front_upper
       file: 2024-10-01-11-29-55_anymal_depth_cameras.bag
-      topic: "/anymal/depth_camera_front_upper/depth/camera_info"
+      topic: "/anymal/depth_camera/front_upper/depth/camera_info"
 
-    # TODO: check with Jonas --> Not yet implemented! 
-    # --> /anymal/depth_camera_left/depth/camera_info
     - alias: anymal_depth_camera_rear_lower
       file: 2024-10-01-11-29-55_anymal_depth_cameras.bag
-      topic: "/anymal/depth_camera_rear_lower/depth/camera_info"
+      topic: "/anymal/depth_camera/rear_lower/depth/camera_info"
 
-    # TODO: check with Jonas --> Not yet implemented! 
-    # --> /anymal/depth_camera_left/depth/camera_info
     - alias: anymal_depth_camera_rear_upper
       file: 2024-10-01-11-29-55_anymal_depth_cameras.bag
-      topic: "/anymal/depth_camera_rear_upper/depth/camera_info"
+      topic: "/anymal/depth_camera/rear_upper/depth/camera_info"
+
+    - alias: depth_camera_left
+      file: 2024-10-01-11-29-55_anymal_depth_cameras.bag
+      topic: "/anymal/depth_camera/left/depth/camera_info"
+
+    - alias: depth_camera_right
+      file: 2024-10-01-11-29-55_anymal_depth_cameras.bag
+      topic: "/anymal/depth_camera/right/depth/camera_info"
 
 
   # TODO: which of the transforms belong here? Are there any?
   # TODO: comment this
   frame_transforms:
-    base_frame: base
+    base_frame: tf_static_minimal
     file: 2024-10-01-11-29-55_tf_minimal.bag
     topic: /tf_static
 
-    # TODO: check with Jonas --> what is this?
-    # base_frame: base
+    base_frame: tf_minimal
+    file: 2024-10-01-11-29-55_tf_minimal.bag
+    topic: /tf
+
+    # NOT USED since not relevant according to Jonas
+    # base_frame: tf_static_model
     # file: 2024-10-01-11-29-55_tf_model.bag
-    # topic: /tf_model
+    # topic: /tf_static
+
+    # NOT USED since not relevant according to Jonas
+    # base_frame: tf_model
+    # file: 2024-10-01-11-29-55_tf_model.bag
+    # topic: /tf
 
 data:
   image_topics:
-    # TODO: check with Jonas --> Not yet implemented! 
-    - alias: hesai_range_image
-      file: 2024-10-01-11-29-55_hesai.bag
-      topic: "/boxi/hesai/range_image"
 
-    # TODO: check with Jonas --> Not yet implemented! 
-    - alias: hesai_intensity_image
-      file: 2024-10-01-11-29-55_hesai.bag
-      topic: "/boxi/hesai/intensity_image"
+    #   No need for conversion since raw bag files are used
+    # - alias: hesai_range_image
+    #   file: 2024-10-01-11-29-55_hesai.bag
+    #   topic: "/boxi/hesai/range_image"
+
+    #   No need for conversion since raw bag files are used 
+    # - alias: hesai_intensity_image
+    #   file: 2024-10-01-11-29-55_hesai.bag
+    #   topic: "/boxi/hesai/intensity_image"
+
+    - alias: depth_camera_front_lower
+      file: 2024-10-01-11-29-55_anymal_depth_cameras.bag
+      topic: "/anymal/depth_camera/front_lower/depth/image_rect_raw"
+      format: jpeg
+      compressed: false
+
+    - alias: depth_camera_front_upper
+      file: 2024-10-01-11-29-55_anymal_depth_cameras.bag
+      topic: "/anymal/depth_camera/front_upper/depth/image_rect_raw"
+      format: jpeg
+      compressed: false
+
+    - alias: depth_camera_rear_lower
+      file: 2024-10-01-11-29-55_anymal_depth_cameras.bag
+      topic: "/anymal/depth_camera/rear_lower/depth/image_rect_raw"
+      format: jpeg
+      compressed: false
+
+    - alias: depth_camera_rear_upper
+      file: 2024-10-01-11-29-55_anymal_depth_cameras.bag
+      topic: "/anymal/depth_camera/rear_upper/depth/image_rect_raw"
+      format: jpeg
+      compressed: false
+
+    - alias: depth_camera_left
+      file: 2024-10-01-11-29-55_anymal_depth_cameras.bag
+      topic: "/anymal/depth_camera/left/depth/image_rect_raw"
+      format: jpeg
+      compressed: false
+
+    - alias: depth_camera_right
+      file: 2024-10-01-11-29-55_anymal_depth_cameras.bag
+      topic: "/anymal/depth_camera/right/depth/image_rect_raw"
+      format: jpeg
+      compressed: false
 
     # TODO: used, doublecheck with Jonas
     - alias: hdr_left
       file: 2024-10-01-11-29-55_hdr_left.bag
-      topic: "/boxi/hdr_left/image_raw/compressed"
+      topic: "/boxi/hdr/left/image_raw/compressed"
       format: jpeg
       compressed: true
 
     # TODO: used, doubleck with Jonas
     - alias: hdr_front
       file: 2024-10-01-11-29-55_hdr_front.bag
-      topic: "/boxi/hdr_front/image_raw/compressed"
+      topic: "/boxi/hdr/front/image_raw/compressed"
       format: jpeg
       compressed: true
 
     # TODO: used, doublecheck with Jonas
     - alias: hdr_right
       file: 2024-10-01-11-29-55_hdr_right.bag
-      topic: "/boxi/hdr_right/image_raw/compressed"
+      topic: "/boxi/hdr/right/image_raw/compressed"
       format: jpeg
       compressed: true
 
-    # TODO: used, doublecheck with Jonas
-    - alias: zed2i_depth_confidence_image
-      file: 2024-10-01-11-29-55_zed2i_depth.bag
-      topic: "/boxi/zed2i/confidence/image_raw/compressedDepth"
-      format: jpeg
-      compressed: true
+    # TODO: Not ready on the part of Jonas
+    # - alias: zed2i_depth_confidence_image
+    #   file: 2024-10-01-11-29-55_zed2i_depth.bag
+    #   topic: "/boxi/zed2i/confidence/image_raw/compressedDepth"
+    #   format: jpeg
+    #   compressed: true
 
-    - alias: zed2i_depth_image
-      file: 2024-10-01-11-29-55_zed2i_depth.bag
-      topic: "/boxi/zed2i/depth/image_raw/compressedDepth"
-      format: jpeg
-      compressed: true
+    # TODO: Not ready on the part of Jonas
+    # - alias: zed2i_depth_image
+    #   file: 2024-10-01-11-29-55_zed2i_depth.bag
+    #   topic: "/boxi/zed2i/depth/image_raw/compressedDepth"
+    #   format: jpeg
+    #   compressed: true
 
-    - alias: zed2i_left_images
-      file: 2024-10-01-11-29-55_zed2i_images.bag
-      topic: "/boxi/zed2i/left/image_raw/compressed"
-      format: jpeg
-      compressed: true
+    # TODO: Not ready on the part of Jonas
+    # - alias: zed2i_left_images
+    #   file: 2024-10-01-11-29-55_zed2i_images.bag
+    #   topic: "/boxi/zed2i/left/image_raw/compressed"
+    #   format: jpeg
+    #   compressed: true
 
-    - alias: zed2i_right_images
-      file: 2024-10-01-11-29-55_zed2i_images.bag
-      topic: "/boxi/zed2i/right/image_raw/compressed"
-      format: jpeg
-      compressed: true
+    # TODO: Not ready on the part of Jonas
+    # - alias: zed2i_right_images
+    #   file: 2024-10-01-11-29-55_zed2i_images.bag
+    #   topic: "/boxi/zed2i/right/image_raw/compressed"
+    #   format: jpeg
+    #   compressed: true
+
+    # No need for conversion since raw bag files are used
+    # - alias: hesai_packets
+    #   file: 2024-10-01-11-29-55_hesai_packets.bag
+    #   topic: "/boxi/hesai/packets"
 
   lidar_topics:
     # TODO: used, doublecheck with Jonas
@@ -195,17 +254,15 @@ data:
         - ring
         - timestamp
 
-    # TODO: not yet implemented --> doublecheck with Jonas
-    - alias: hesai_packets
-      file: 2024-10-01-11-29-55_hesai_packets.bag
-      topic: "/boxi/hesai/packets"
-      max_points: 64000
-
-    # TODO: not yet implemented --> doublecheck with Jonas
-    - alias: hesai_undistorted
-      file: 2024-10-01-11-29-55_hesai_undist.bag
-      topic: "/boxi/hesai/points_undistorted"
-      max_points: 64000
+    # TODO: Not ready on the part of Jonas
+    # - alias: hesai_undistorted
+    #   file: 2024-10-01-11-29-55_hesai_undist.bag
+    #   topic: "/boxi/hesai/points_undistorted"
+    #   max_points: 64000
+        # attributes:
+        # - intensity
+        # - ring
+        # - timestamp
 
     # TODO: used, doubleck with Jonas
     - alias: livox_points
@@ -218,25 +275,22 @@ data:
         - line
         - timestamp
 
-    # TODO: not yet implemented, doubleck with Jonas
-    - alias: livox_points_undistorted
-      file: 2024-10-01-11-29-55_livox_undist.bag
-      topic: "/boxi/livox/points_undistorted"
-      max_points: 64000
-      attributes:
-        - intensity
-        - tag
-        - line
-        - timestamp
+    # TODO: Not ready on the part of Jonas
+    # - alias: livox_points_undistorted
+    #   file: 2024-10-01-11-29-55_livox_undist.bag
+    #   topic: "/boxi/livox/points_undistorted"
+    #   max_points: 64000
+    #   attributes:
+    #     - intensity
+    #     - tag
+    #     - line
+    #     - timestamp
 
     # TODO: used, doublecheck with Jonas
     - alias: dlio_hesai_deskewed
       file: 2024-10-01-11-29-55_dlio.bag
       topic: "/boxi/dlio/hesai_deskewed"
       max_points: 64000
-      attributes:
-        - intensity
-        - timestamp
 
     # TODO: used, doublecheck with Jonasd
     - alias: dlio_map_odometry
@@ -245,49 +299,6 @@ data:
       max_points: 64000
 
   pose_topics:
-
-    # TODO: not yet implemented, doublecheck with Jonas
-    - alias: gmsf_pose
-      file: 2024-10-01-11-29-55_gmsf.bag
-      topic: "/boxi/gmsf/pose_with_covariance"
-      covariance: true
-
-    # TODO: not used according to topiclist, doublecheck with Jonas
-    # - alias: cpt7
-    #   file: 2024-10-01-11-29-55_cpt7.bag
-      
-
-    # TODO: used, doublecheck with Jonas
-    - alias: ie_dgps_pose
-      file: 2024-10-01-11-29-55_cpt7_ie_dgps.bag
-      topic: "/boxi/inertial_explorer/dgps/pose"
-      covariance: false
-
-    # TODO: not yet implemented, doublecheck with Jonas if this is a pose
-    - alias: ie_dgps_origin
-      file: 2024-10-01-11-29-55_cpt7_ie_dgps.bag
-      topic: "/boxi/inertial_explorer/dgps/origin"
-      covariance: false
-
-
-    # TODO: not yet implemented, doublecheck with Jonas
-    - alias: ie_lc_pose
-      file: 2024-10-01-11-29-55_cpt7_ie_lc.bag
-      topic: "/boxi/inertial_explorer/lc/pose"
-      covariance: false
-
-    # TODO: not yet implemented, doublecheck with Jonas
-    - alias: ie_lc_origin
-      file: 2024-10-01-11-29-55_cpt7_ie_tc.bag
-      topic: "/boxi/inertial_explorer/lc/origin"
-      covariance: false
-
-    # TODO: not yet implemented, doublecheck with Jonas
-    - alias: ie_lc_raw
-      file: 2024-10-01-11-29-55_cpt7_ie_lc.bag
-      topic: "/boxi/inertial_explorer/lc/raw"
-      covariance: false
-
     # TODO: not yet implemented, doublecheck with Jonas
     - alias: ie_ppp_pose
       file: 2024-10-01-11-29-55_cpt7_ie_ppp.bag
@@ -306,136 +317,112 @@ data:
       topic: "/boxi/inertial_explorer/ppp/raw"
       covariance: false
 
-    # TODO: not yet implemented, doublecheck with Jonas
-    - alias: ie_tc_pose
-      file: 2024-10-01-11-29-55_cpt7_ie_tc.bag
-      topic: "/boxi/inertial_explorer/tc/pose"
-      covariance: false
-
-    # TODO: not yet implemented, doublecheck with Jonas
-    - alias: ie_tc_origin
-      file: 2024-10-01-11-29-55_cpt7_ie_tc.bag
-      topic: "/boxi/inertial_explorer/tc/origin"
-      covariance: false
-
-    # TODO: not yet implemented, doublecheck with Jonas
-    - alias: ie_tc_raw
-      file: 2024-10-01-11-29-55_cpt7_ie_tc.bag
-      topic: "/boxi/inertial_explorer/tc/raw"
-      covariance: false
+    # TODO: not yet ready on the part of jonas    
+    # - alias: zed2i_vio_map
+    #   file: 2024-10-01-11-29-55_zed2i_vio.bag
+    #   topic: "/boxi/zed2i_vio/map"
 
 
   imu_topics:
+    - alias: adis_imu
+      file: 2024-10-01-11-29-55_adis.bag
+      topic: "/boxi/adis/imu"
 
-    # TODO: not yet implemented, doublecheck with Jonas
-    - alias: alphasense_imu
-      file: 2024-10-01-11-29-55_alphasense_imu.bag
-      topic: "/boxi/alphasense/imu"
+    # TODO: not yet ready on the part of jonas
+    # - alias: alphasense_imu
+    #   file: 2024-10-01-11-29-55_alphasense_imu.bag
+    #   topic: "/boxi/alphasense/imu"
 
-    # TODO: used, doublecheck with Jonas
     - alias: ap20_imu
       file: 2024-10-01-11-29-55_ap20_imu.bag
       topic: "/boxi/ap20/imu"
 
-    # TODO: used, doublecheck with Jonas
     - alias: stim320_imu
       file: 2024-10-01-11-29-55_stim320_imu.bag
       topic: "/boxi/stim320/imu"
 
-    # TODO: not yet implemented, doublecheck with Jonas --> category?
-    - alias: stim320_acceletometer_temperature
-      file: 2024-10-01-11-29-55_stim320_imu.bag
-      topic: "/boxi/stim320/acceletometer_temperature"
+    # # TODO: not yet implemented, doublecheck with Jonas --> category?
+    # message type: sensor_msgs/Temperature
+    # - alias: stim320_acceletometer_temperature
+    #   file: 2024-10-01-11-29-55_stim320_imu.bag
+    #   topic: "/boxi/stim320/acceletometer_temperature"
 
     # TODO: not yet implemented, doublecheck with Jonas --> category?
-    - alias: stim320_gyroscope_temperature
-      file: 2024-10-01-11-29-55_jetson_stim.bag
-      topic: "/boxi/stim320/gyroscope_temperature"
+    # message type: sensor_msgs/Temperature
+    # - alias: stim320_gyroscope_temperature
+    #   file: 2024-10-01-11-29-55_stim320_imu.bag
+    #   topic: "/boxi/stim320/gyroscope_temperature"
 
     # TODO: used, doublecheck with Jonas
     - alias: livox_imu_si_compliant
       file: 2024-10-01-11-29-55_livox_imu.bag
       topic: "/boxi/livox/imu"
 
-    # TODO: used, doublecheck with Jonas
-    - alias: zed2i_imu
-      file: 2024-10-01-11-29-55_zed2i_prop.bag
-      topic: "/boxi/zed2i/imu"
+    # not used according to Jonas
+    # - alias: zed2i_imu
+    #   file: 2024-10-01-11-29-55_zed2i_prop.bag
+    #   topic: "/boxi/zed2i/imu"
 
-    # TODO: not yet implemented, doublecheck with Jonas --> category?
-    - alias: zed2i_pressure
-      file: 2024-10-01-11-29-55_zed2i_prop.bag
-      topic: "/boxi/zed2i/baro/pressure"
+    # TODO: not yet ready on the part of jonas
+    # - alias: cpt7_imu
+    #   file: 2024-10-01-11-29-55_cpt7_imu.bag
+    #   topic: "/boxi/cpt7/imu"
 
-    # TODO: not yet implemented, doublecheck with Jonas --> category?
-    - alias: zed2i_magnetic_filed
-      file: 2024-10-01-11-29-55_zed2i_prop.bag
-      topic: "/boxi/zed2i/magnetic_field"
-
-    # TODO: not yet implemented, doublecheck with Jonas --> category?
-    - alias: zed2i_vio_map
-      file: 2024-10-01-11-29-55_zed2i_vio.bag
-      topic: "/boxi/zed2i_vio/map"
-
-    # TODO: used, doublecheck with Jonas
-    - alias: cpt7_imu
-      file: 2024-10-01-11-29-55_cpt7_imu.bag
-      topic: "/boxi/cpt7/imu"
-
-
-    # TODO: not yet implemented, doublecheck with Jonas
     - alias: cpt7_imu_acc_bias
       file: 2024-10-01-11-29-55_cpt7_ie_rt.bag
       topic: "/boxi/inertial_explorer/rt/cpt7_imu_acc_bias"
 
-    # TODO: not yet implemented, doublecheck with Jonas
-    - alias: cpt7_imu_acc_bias
+    - alias: cpt7_imu_gyro_drift
       file: 2024-10-01-11-29-55_cpt7_ie_rt.bag
-      topic: "/boxi/inertial_explorer/rt/cpt7_imu_acc_bias"
+      topic: "/boxi/inertial_explorer/rt/cpt7_imu_gyro_drift"
+
+    - alias: cpt7_tc_imu_acc_bias
+      file: 2024-10-01-11-29-55_cpt7_ie_tc.bag
+      topic: "/boxi/inertial_explorer/tc/cpt7_imu_acc_bias"
+
+    - alias: cpt7_tc_imu_gyro_drift
+      file: 2024-10-01-11-29-55_cpt7_ie_tc.bag
+      topic: "/boxi/inertial_explorer/tc/cpt7_imu_gyro_drift
+
+    - alias: anymal_imu
+      file: 2024-10-01-11-29-55_anymal_imu.bag
+      topic: "/anymal/imu"
+
+  # TODO: not yet ready on the part of jonas
+  # unknown message type --> probably points
+  #   - alias: anymal_velodyne_undist
+  #     file: 2024-10-01-11-29-55_anymal_velodyne_undist.bag
+  #     topic: "/anymal/velodyne/points_undistorted"
+
+  # TODO: not yet ready on the part of jonas
+  # fluid_pressure_topics:
+  #   - alias: zed2i_pressure
+  #     file: 2024-10-01-11-29-55_zed2i_prop.bag
+  #     topic: "/boxi/zed2i/baro/pressure"
+
+  # TODO: not yet ready on the part of jonas
+  # magnetic_field_topics:
+  #   - alias: zed2i_magnetic_filed
+  #     file: 2024-10-01-11-29-55_zed2i_prop.bag
+  #     topic: "/boxi/zed2i/magnetic_field"
 
   odometry_topics:
+  # TODO: not yet ready on the part of jonas
+    # - alias: zed2i_vio_odometry
+    #   file: 2024-10-01-11-29-55_zed2i_vio.bag
+    #   topic: "/boxi/zed2i_vio/odom"
 
-    # TODO: not yet implemented, doublecheck with Jonas
-    - alias: zed2i_vio_odom
-      file: 2024-10-01-11-29-55_zed2i_vio.bag
-      topic: "/boxi/zed2i_vio/odom"
-
-    # TODO: not yet implemented, doublecheck with Jonas
-    - alias: zed2i_vio_odom
+    - alias: cpt7_ie_rt_odometry
       file: 2024-10-01-11-29-55_cpt7_ie_rt.bag
       topic: "/boxi/inertial_explorer/rt/odometry"
 
-    # # do we want all of these?
-    # - alias: novatel_odometry
-    #   file: 2024-10-01-11-29-55_cpt7_gps_ie.bag
-    #   topic: "/gt_box/inertial_explorer/odometry"
-    # - alias: novatel_tc_odometry
-    #   file: 2024-10-01-11-29-55_cpt7_ie_tc.bag
-    #   topic: "/gt_box/inertial_explorer/tc/odometry"
-    # - alias: novatel_ppp_odometry
-    #   file: 2024-10-01-11-29-55_cpt7_ie_ppp.bag
-    #   topic: "/gt_box/inertial_explorer/ppp/odometry"
-    # - alias: novatel_lc_odometry
-    #   file: 2024-10-01-11-29-55_cpt7_ie_lc.bag
-    #   topic: "/gt_box/inertial_explorer/lc/odometry"
-    # - alias: novatel_dgps_odometry
-    #   file: 2024-10-01-11-29-55_cpt7_ie_dgps.bag
-    #   topic: "/gt_box/inertial_explorer/dgps/odometry"
+    - alias: cpt7_ie_tc_odometry
+      file: 2024-10-01-11-29-55_cpt7_ie_tc.bag
+      topic: "//boxi/inertial_explorer/tc/odometry"
 
-    # # do we want both?
-    # - alias: dlio_odometry
-    #   file: 2024-10-01-11-29-55_dlio.bag
-    #   topic: "/dlio/lidar_odometry"
-    # - alias: dlio_map_odometry
-    #   file: 2024-10-01-11-29-55_dlio.bag
-    #   topic: "/dlio/lidar_map_odometry"
-
-    # - alias: cpt7_odometry
-    #   file: 2024-10-01-11-29-55_nuc_cpt7_post_processed.bag
-    #   topic: "/gt_box/cpt7/odom"
-    # - alias: zed2i_odometry
-    #   file: 2024-10-01-11-29-55_jetson_zed2i_proprioceptive.bag
-    #   topic: "/gt_box/zed2i/zed_node/odom"
+    - alias: anymal_state_odometry
+      file: 2024-10-01-11-29-55_anymal_state.bag
+      topic: "/anymal/state_estimator/odometry"
 
   # TODO: used, doublecheck with Jonas
   point_topics:
@@ -443,24 +430,18 @@ data:
       file: 2024-10-01-11-29-55_ap20_prism_position.bag 
       topic: "/boxi/ap20/prism_position"
 
-    - alias: livox_points
-      file: 2024-10-01-11-29-55_livox.bag
-      topic: "/boxi/livox/points"
+  # TODO: not yet ready on the part of jonas
+  # unknown message type --> probably points
+  #   - alias: anymal_velodyne
+  #     file: 2024-10-01-11-29-55_anymal_velodyne.bag
+  #     topic: "/anymal/velodyne/points"
 
   singleton_transform_topics:
-    - alias: gmsf_tf
-      file: 2024-10-01-11-29-55_gmsf.bag
-      topic: "/tf"
-
     - alias: dlio_tf
       file: 2024-10-01-11-29-55_dlio.bag
       topic: "/tf"
 
-    - alias: dlio_tf
-      file: 2024-10-01-11-29-55_dlio.bag
-      topic: "/tf"
-
-    - alias: ie_tc_tf
+    - alias: cpt7_ie_tc_tf
       file: 2024-10-01-11-29-55_cpt7_ie_tc.bag
       topic: "/tf"
 
@@ -468,46 +449,14 @@ data:
       file: 2024-10-01-11-29-55_cpt7_ie_ppp.bag
       topic: "/tf"
 
-    - alias: zed2i_vio_tf
-      file: 2024-10-01-11-29-55_zed2i_vio.bag
-      topic: "/tf"
-
-    - alias: ie_lc_tf
-      file: 2024-10-01-11-29-55_cpt7_ie_lc.bag
-      topic: "/tf"
-
-    - alias: ie_dgps_tf
-      file: 2024-10-01-11-29-55_cpt7_ie_dgps.bag
-      topic: "/tf"
+    # TODO: not yet ready on the part of jonas
+    # - alias: zed2i_vio_tf
+    #   file: 2024-10-01-11-29-55_zed2i_vio.bag
+    #   topic: "/tf"
 
     - alias: cpt7_ie_rt_tf
       file: 2024-10-01-11-29-55_cpt7_ie_rt.bag
       topic: "/tf"
-
-    # im pretty sure this is a duplicate of cpt7_gps
-
-    # TODO: check with jonas if /tf should be in here
-    # - alias: cpt7_gps_tf
-    #   file: 2024-10-01-11-29-55_cpt7_gps_ie.bag
-    #   topic: "/tf"
-    # - alias: cpt7_dgps_tf
-    #   file: 2024-10-01-11-29-55_cpt7_ie_dgps.bag
-    #   topic: "/tf"
-    # - alias: cpt7_lc_tf
-    #   file: 2024-10-01-11-29-55_cpt7_ie_lc.bag
-    #   topic: "/tf"
-    # - alias: cpt7_tc_tf
-    #   file: 2024-10-01-11-29-55_cpt7_ie_tc.bag
-    #   topic: "/tf"
-    # - alias: cpt7_ppp_tf
-    #   file: 2024-10-01-11-29-55_cpt7_ie_ppp.bag
-    #   topic: "/tf"
-    # - alias: cpt7_post_processed_tf
-    #   file: 2024-10-01-11-29-55_nuc_cpt7_post_processed_tf.bag
-    #   topic: "/tf"
-    # - alias: zed2i_tf
-    #   file: 2024-10-01-11-29-55_jetson_zed2i_tf.bag
-    #   topic: "/tf"
 
   nav_sat_fix_topics:
     - alias: navsatfix_cpt7_ie_rt
@@ -518,10 +467,30 @@ data:
       file: 2024-10-01-11-29-55_cpt7_ie_rt.bag
       topic: "/boxi/inertial_explorer/rt/navsatfix_origin"
 
+    - alias: navsatfix_cpt7_ie_tc
+      file: 2024-10-01-11-29-55_cpt7_ie_tc.bag
+      topic: "/boxi/inertial_explorer/tc/navsatfix"
+
+    - alias: navsatfix_origin_cpt7_ie_tc
+      file: 2024-10-01-11-29-55_cpt7_ie_tc.bag
+      topic: "/boxi/inertial_explorer/tc/navsatfix_origin"
+
   gnss_raw_topics:
+    - alias: gnss_origin_cpt7_ie_rt
+      file: 2024-10-01-11-29-55_cpt7_ie_rt.bag
+      topic: "/boxi/inertial_explorer/rt/origin"
+
     - alias: gnss_raw_cpt7_ie_rt
       file: 2024-10-01-11-29-55_cpt7_ie_rt.bag
       topic: "/boxi/inertial_explorer/rt/raw"
+
+    - alias: gnss_origin_cpt7_ie_tc
+      file: 2024-10-01-11-29-55_cpt7_ie_tc.bag
+      topic: "/boxi/inertial_explorer/tc/origin"
+
+    - alias: gnss_raw_cpt7_ie_tc
+      file: 2024-10-01-11-29-55_cpt7_ie_tc.bag
+      topic: "/boxi/inertial_explorer/tc/raw"
 
 
 # TODO: check with Jonas --> Not yet implemented!
@@ -530,55 +499,42 @@ data:
       file: 2024-10-01-11-29-55_anymal_command.bag
       topic: "/anymal/twist_command"
 
+# TODO: implement topic of type any_velodyne_msgs/VelodyneScan
+# only generate the topic_name and frame_id no conversion needed
+  #   - alias: anymal_velodyne_packets
+  #     file: 2024-10-01-11-29-55_anymal_velodyne_packets.bag
+  #     topic: "/anymal/velodyne/packets"
 
-# TODO: check with Jonas --> Not yet implemented!
+# TODO: check with Jonas --> No conversion needed
 #     - alias: anymal_elevation
 #       file: 2024-10-01-11-29-55_anymal_elevation.bag
 #       topic: "/anymal/elevation_mapping/elevation_map_raw"
 
+# TODO: implement conversion from series_elastic_actuator_msgs/SeActuatorReadings
 #     - alias: anymal_state_actuator
 #       file: 2024-10-01-11-29-55_anymal_state.bag
 #       topic: "/anymal/actuator_readings"
 
+# TODO: implement conversion from pdb_msgs/BatteryState
 #     - alias: anymal_state_battery
 #       file: 2024-10-01-11-29-55_anymal_state.bag
 #       topic: "/anymal/battery_state"
 
+# TODO: implement conversion from anymal_msgs/AnymalState
 #     - alias: anymal_state_state_estimator
 #       file: 2024-10-01-11-29-55_anymal_state.bag
 #       topic: "/anymal/state_estimator/anymal_state"
-
-#     - alias: anymal_state_odometry
-#       file: 2024-10-01-11-29-55_anymal_state.bag
-#       topic: "/anymal/state_estimator/odometry"
-
-#     - alias: anymal_imu
-#       file: 2024-10-01-11-29-55_anymal_imu.bag
-#       topic: "/anymal/imu"
-
-#     - alias: anymal_locomotion
-#       file: 2024-10-01-11-29-55_anymal_locomotion.bag
-#       topic: "/anymal/locomotion_policy/debug_info"
 
 # TODO: check with Jonas --> Not in list and not yet implemented!
   #   - alias: anymal_tf
   #     file: 2024-10-01-11-29-55_anymal_tf.bag
   #     topic: "/tf"
 
-# TODO: check with Jonas --> Not yet implemented!
-  #   - alias: anymal_velodyne
-  #     file: 2024-10-01-11-29-55_anymal_velodyne.bag
-  #     topic: "/anymal/velodyne/points"
 
-  #   - alias: anymal_velodyne_packets
-  #     file: 2024-10-01-11-29-55_anymal_velodyne_packets.bag
-  #     topic: "/anymal/velodyne/packets"
-
-  #   - alias: anymal_velodyne_undist
-  #     file: 2024-10-01-11-29-55_anymal_velodyne_undist.bag
-  #     topic: "/anymal/velodyne/points_undistorted"
-   
-
+# TODO: implement conversion from signal_logger_msgs/Float32MultiArrayStamped
+#     - alias: anymal_locomotion
+#       file: 2024-10-01-11-29-55_anymal_locomotion.bag
+#       topic: "/anymal/locomotion_policy/debug_info"
      
 # GENERAL NOTES:
 # are odometry messages in general supersets of position messages?, do we really need all of these

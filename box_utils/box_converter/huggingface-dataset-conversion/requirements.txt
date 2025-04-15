@@ -1,2 +1,2 @@
 huggingface-hub
-kleinkram==0.44.1.dev20250409111712
+kleinkram==0.44.1

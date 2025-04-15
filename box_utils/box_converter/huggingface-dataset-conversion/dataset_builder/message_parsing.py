@@ -482,6 +482,7 @@ def extract_header_metadata_from_deserialized_message(
     msg: Any, topic_desc: Topic
 ) -> Dict[str, Any]:
     header = _extract_header(msg, topic_desc)
+    
     return {
         "frame_id": header.frame_id,
     }

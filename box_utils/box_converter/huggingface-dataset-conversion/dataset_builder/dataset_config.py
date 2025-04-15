@@ -120,7 +120,7 @@ class CameraInfoTopic(Topic): ...
 class FrameTransformConfig:
     topic: str
     file: str
-    base_frame: str = "base"
+    base_frame: str = "base" #TODO rename to child_frame_id
 
 
 @dataclass
@@ -593,9 +593,6 @@ def load_config(
         data_config_object = config_object[DATA_KEY]
         metadata_config_object = config_object[METADATA_KEY]
     except KeyError as e:
-        
-        # TODO: remove this breakpoint
-        breakpoint()
 
         raise ValueError(
             f"config {config_path!r} does not contain keys {DATA_KEY!r} or {METADATA_KEY!r}"

@@ -16,8 +16,7 @@ MISSION_NAME = "release_2024-10-01-11-29-55"
 # MISSION_NAME = "2024-10-01-12-00-49"
 
 DEFAULT_CONFIG_PATH = Path(__file__).parent.parent / "configs" / f"{MISSION_NAME}.yaml"
-
-DATA_PATH = Path("/data")  # Path(__file__).parent.parent / "data"
+DATA_PATH =  Path(__file__).parent.parent / "data"
 INPUT_PATH = DATA_PATH / "files" / MISSION_NAME
 DATASET_PATH = DATA_PATH / "dataset" / MISSION_NAME
 
@@ -27,7 +26,10 @@ DOWNLOAD_FLAG = True
 def download_mission(mission_id: UUID, input_path: Path) -> None:
     input_path.mkdir(parents=True, exist_ok=True)
     kleinkram.download(
-            mission_ids=[mission_id], file_names=["*.bag"], dest=input_path, verbose=True
+            mission_ids=[mission_id], 
+            file_names=["*.bag"], 
+            dest=input_path, 
+            verbose=True
         )
 
 
