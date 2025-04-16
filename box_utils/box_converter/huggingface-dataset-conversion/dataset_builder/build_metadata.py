@@ -9,6 +9,7 @@ import yaml
 from sensor_msgs.msg import CameraInfo
 from tf2_msgs.msg import TFMessage
 from tf_bag import BagTfTransformer
+import rosbag
 
 from dataset_builder.dataset_config import CameraInfoTopic
 from dataset_builder.dataset_config import FrameTransformConfig
@@ -23,6 +24,7 @@ from dataset_builder.message_parsing import (
 )
 from dataset_builder.transforms import get_metadata_from_tf_msg
 from dataset_builder.utils import messages_in_bag_with_topic
+from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
 
@@ -96,33 +98,42 @@ def _load_tf_metadata_from_bag_file_and_topic(
                                                'rotation': {...}},...}
 
     """
+    with rosbag.Bag(bag_path) as bag:
+        tf_transformer = BagTfTransformer(bag)
+    
+    metadata_dict = {
+        message.child_frame_id: {
+            "child_frame_id": message.child_frame_id,
+            "frame_id": message.header.frame_id,
+            "transform": {
+                "rotation": {
+                    axis: getattr(message.transform.rotation, axis)
+                    for axis in ("x", "y", "z", "w")
+                },
+                "translation": {
+                    axis: getattr(message.transform.translation, axis)
+                    for axis in ("x", "y", "z")
+                },
+            },
+        }
+        for message in tqdm(tf_transformer.tf_messages, desc="Processing TF messages")
+    }
 
-    for message in messages_in_bag_with_topic(
-        bag_path, frame_transform_config.topic, progress_bar=False
-    ):
-        # frame_transform_config.topic      i.e /tf_static
-        # frame_transform_config.base_frame i.e. base
-        assert isinstance(
-            message, TFMessage
-        ), f"topic {frame_transform_config.topic} does not contain TFMessage messages"
+    # old code
+    # for message in messages_in_bag_with_topic(
+    #     bag_path, frame_transform_config.topic, progress_bar=False
+    # ):
+    #     # frame_transform_config.topic      i.e /tf_static
+    #     # frame_transform_config.base_frame i.e. base
+    #     assert isinstance(
+    #         message, TFMessage
+    #     ), f"topic {frame_transform_config.topic} does not contain TFMessage messages"
+              
+    #     metadata = get_metadata_from_tf_msg(message, frame_transform_config.base_frame)
         
-        # TODO: remove this
-        tf_listener = BagTfTransformer(
-            bag = get_bag(bag_path, filename_suffix="_tf_minimal.bag"),
-            tree_root=frame_transform_config.base_frame)
+    return metadata_dict
 
-        try:
-            trans, quat = tf_listener.lookupTransform("livox_lidar", "hesai_lidar", None, latest=True)
-        except Exception as e:
-            print(f"Transform lookup failed: {e}")
-            exit(-1)
-
-        
-        metadata = get_metadata_from_tf_msg(message, frame_transform_config.base_frame)
-        
-        return metadata
-
-    raise ValueError(f"no messages of type tf2_msgs.msg found in topic {frame_transform_config.topic}")
+    # raise ValueError(f"no messages of type tf2_msgs.msg found in topic {frame_transform_config.topic}")
 
 
 def _get_frame_id_from_topic(bags_path: Path, topic_desc: Topic) -> Dict[str, str]:
@@ -176,7 +187,7 @@ def _get_frame_ids(bags_path: Path, topic_reg: TopicRegistry) -> Dict[str, Any]:
 
     ret = {}
     try:
-        for _, topic_desc in topic_reg.values():
+        for _, topic_desc in tqdm(topic_reg.values(), desc="Processing topics"):
             ret[topic_desc.alias] = _get_frame_id_from_topic(bags_path, topic_desc)
         return ret
     except ValueError as e:
@@ -210,7 +221,7 @@ def _get_camera_infos(
                                     ...}}
     """
     ret = {}
-    for cam_info_topic_desc in metadata_config.camera_intrinsics:
+    for cam_info_topic_desc in tqdm(metadata_config.camera_intrinsics, desc="Processing camera intrinsics"):
         cam_info = _get_camera_info_from_topic(bags_path, cam_info_topic_desc)
         ret[cam_info_topic_desc.alias] = cam_info
     return ret
@@ -260,7 +271,7 @@ def build_metadata_part(
     # add frame metadata to dict and split by topic
     try:
         metadata = {}
-        for alias, frame_id in frame_id_metadata.items():
+        for alias, frame_id in tqdm(frame_id_metadata.items(), desc="Processing frame IDs"):
             metadata[alias] = {**frame_id, "topic": alias}
             # i.e. {'zed2i_depth': {'frame_id': 'zed2i_left_camera_optical_frame', 
             #                       'topic': 'zed2i_depth'}}
@@ -270,7 +281,7 @@ def build_metadata_part(
         )
      
     # add camera specific metadata to dict and split by topic
-    for alias, cam_info in cam_info_metadata.items():
+    for alias, cam_info in tqdm(cam_info_metadata.items(), desc="Processing camera infos"):
         assert (
             alias not in metadata
         ), f"alias {alias} for camera_info topic is not unique"
@@ -278,7 +289,7 @@ def build_metadata_part(
         # add the camera metadata (i.e. camera intrinsics) with alias i.e. zed2i_left_caminfo
 
     # try to get transform for each frame_id and add it to the metadata
-    for alias, alias_metadata in metadata.items():
+    for alias, alias_metadata in tqdm(metadata.items(), desc="Processing transforms"):
         frame_id = alias_metadata.get("frame_id")
         if frame_id is None:
             continue

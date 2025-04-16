@@ -120,7 +120,8 @@ class CameraInfoTopic(Topic): ...
 class FrameTransformConfig:
     topic: str
     file: str
-    base_frame: str = "base" #TODO rename to child_frame_id
+    frame_id: str = "" # Parent (base) frame
+    child_frame_id: str = "child" # Child frame
 
 
 @dataclass

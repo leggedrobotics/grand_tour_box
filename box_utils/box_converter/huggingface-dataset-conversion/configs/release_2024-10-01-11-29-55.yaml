@@ -122,13 +122,14 @@ metadata:
   # TODO: which of the transforms belong here? Are there any?
   # TODO: comment this
   frame_transforms:
-    base_frame: tf_static_minimal
+    frame_id: tf_static_minimal
     file: 2024-10-01-11-29-55_tf_minimal.bag
     topic: /tf_static
 
-    base_frame: tf_minimal
-    file: 2024-10-01-11-29-55_tf_minimal.bag
-    topic: /tf
+    # doesn't have much information in it --> probably not needed
+    # frame_id: tf_minimal
+    # file: 2024-10-01-11-29-55_tf_minimal.bag
+    # topic: /tf
 
     # NOT USED since not relevant according to Jonas
     # base_frame: tf_static_model
@@ -179,13 +180,13 @@ data:
       format: jpeg
       compressed: false
 
-    - alias: depth_camera_left
+    - alias: depth_camera_left_image_rect_raw
       file: 2024-10-01-11-29-55_anymal_depth_cameras.bag
       topic: "/anymal/depth_camera/left/depth/image_rect_raw"
       format: jpeg
       compressed: false
 
-    - alias: depth_camera_right
+    - alias: depth_camera_right_image_rect_raw
       file: 2024-10-01-11-29-55_anymal_depth_cameras.bag
       topic: "/anymal/depth_camera/right/depth/image_rect_raw"
       format: jpeg
