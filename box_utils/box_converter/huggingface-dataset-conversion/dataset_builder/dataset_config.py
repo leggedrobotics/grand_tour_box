@@ -535,8 +535,6 @@ def _load_topic_registry_from_config(
             topic_obj.file = topic_obj.file.format(mission_name)
 
     except Exception as e:
-        # TODO: remove this breakpoint
-        breakpoint()
         raise ValueError(f"error parsing data part of config file: {e}") from e
     
     return _add_universal_attributes(registry)
@@ -555,9 +553,7 @@ def _load_metadata_config(
             CameraInfoTopic(**topic_obj) for topic_obj in camera_intrinsics_object
         ]
     except Exception as e:
-        
-        # TODO: remove this breakpoint
-        breakpoint()
+
         raise ValueError(
             f"error parsing {CAMERA_INTRISICS_KEY!r} part of config file: {e}"
         ) from e
@@ -566,9 +562,6 @@ def _load_metadata_config(
         frame_transforms_object = metadata_config_object.get(FRAME_TRANSFORMS_KEY, {})
         frame_transforms = FrameTransformConfig(**frame_transforms_object)
     except Exception as e:
-
-        # TODO: remove this breakpoint
-        breakpoint()
 
         raise ValueError(
             f"error parsing {FRAME_TRANSFORMS_KEY!r} part of config file: {e}"

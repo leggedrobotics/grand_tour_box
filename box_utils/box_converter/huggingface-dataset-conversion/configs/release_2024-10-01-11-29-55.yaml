@@ -92,19 +92,19 @@ metadata:
     #   file: 2024-10-01-11-29-55_zed2i_images.bag
     #   topic: "/boxi/zed2i/right/camera_info"
 
-    # TODO: check with Jonas --> Not yet implemented! 
-    # --> /anymal/depth_camera_left/depth/camera_info
-    - alias: anymal_depth_camera_front_lower
-      file: 2024-10-01-11-29-55_anymal_depth_cameras.bag
-      topic: "/anymal/depth_camera/front_lower/depth/camera_info"
+    # TODO: not apparent in the bag file
+    # - alias: anymal_depth_camera_front_lower
+    #   file: 2024-10-01-11-29-55_anymal_depth_cameras.bag
+    #   topic: "/anymal/depth_camera/front_lower/depth/camera_info"
 
     - alias: anymal_depth_camera_front_upper
       file: 2024-10-01-11-29-55_anymal_depth_cameras.bag
       topic: "/anymal/depth_camera/front_upper/depth/camera_info"
 
-    - alias: anymal_depth_camera_rear_lower
-      file: 2024-10-01-11-29-55_anymal_depth_cameras.bag
-      topic: "/anymal/depth_camera/rear_lower/depth/camera_info"
+    # TODO: not apparent in the bag file
+    # - alias: anymal_depth_camera_rear_lower
+    #   file: 2024-10-01-11-29-55_anymal_depth_cameras.bag
+    #   topic: "/anymal/depth_camera/rear_lower/depth/camera_info"
 
     - alias: anymal_depth_camera_rear_upper
       file: 2024-10-01-11-29-55_anymal_depth_cameras.bag
@@ -153,11 +153,12 @@ data:
     #   file: 2024-10-01-11-29-55_hesai.bag
     #   topic: "/boxi/hesai/intensity_image"
 
-    - alias: depth_camera_front_lower
-      file: 2024-10-01-11-29-55_anymal_depth_cameras.bag
-      topic: "/anymal/depth_camera/front_lower/depth/image_rect_raw"
-      format: jpeg
-      compressed: false
+    # TODO: Not appearant in the bag file
+    # - alias: depth_camera_front_lower
+    #   file: 2024-10-01-11-29-55_anymal_depth_cameras.bag
+    #   topic: "/anymal/depth_camera/front_lower/depth/image_rect_raw"
+    #   format: jpeg
+    #   compressed: false
 
     - alias: depth_camera_front_upper
       file: 2024-10-01-11-29-55_anymal_depth_cameras.bag
@@ -165,11 +166,12 @@ data:
       format: jpeg
       compressed: false
 
-    - alias: depth_camera_rear_lower
-      file: 2024-10-01-11-29-55_anymal_depth_cameras.bag
-      topic: "/anymal/depth_camera/rear_lower/depth/image_rect_raw"
-      format: jpeg
-      compressed: false
+    # TODO: Not appearant in the bag file
+    # - alias: depth_camera_rear_lower
+    #   file: 2024-10-01-11-29-55_anymal_depth_cameras.bag
+    #   topic: "/anymal/depth_camera/rear_lower/depth/image_rect_raw"
+    #   format: jpeg
+    #   compressed: false
 
     - alias: depth_camera_rear_upper
       file: 2024-10-01-11-29-55_anymal_depth_cameras.bag
@@ -298,25 +300,7 @@ data:
       topic: "/boxi/dlio/lidar_map_odometry"
       max_points: 64000
 
-  pose_topics:
-    # TODO: not yet implemented, doublecheck with Jonas
-    - alias: ie_ppp_pose
-      file: 2024-10-01-11-29-55_cpt7_ie_ppp.bag
-      topic: "/boxi/inertial_explorer/ppp/pose"
-      covariance: false
-
-    # TODO: not yet implemented, doublecheck with Jonas
-    - alias: ie_ppp_origin
-      file: 2024-10-01-11-29-55_cpt7_ie_ppp.bag
-      topic: "/boxi/inertial_explorer/ppp/origin"
-      covariance: false
-
-    # TODO: not yet implemented, doublecheck with Jonas
-    - alias: ie_ppp_raw
-      file: 2024-10-01-11-29-55_cpt7_ie_ppp.bag
-      topic: "/boxi/inertial_explorer/ppp/raw"
-      covariance: false
-
+  # pose_topics:
     # TODO: not yet ready on the part of jonas    
     # - alias: zed2i_vio_map
     #   file: 2024-10-01-11-29-55_zed2i_vio.bag
@@ -368,13 +352,15 @@ data:
     #   file: 2024-10-01-11-29-55_cpt7_imu.bag
     #   topic: "/boxi/cpt7/imu"
 
-    - alias: cpt7_imu_acc_bias
-      file: 2024-10-01-11-29-55_cpt7_ie_rt.bag
-      topic: "/boxi/inertial_explorer/rt/cpt7_imu_acc_bias"
+    # TODO: not yet ready on the part of jonas
+    # - alias: cpt7_imu_acc_bias
+    #   file: 2024-10-01-11-29-55_cpt7_ie_rt.bag
+    #   topic: "/boxi/inertial_explorer/rt/cpt7_imu_acc_bias"
 
-    - alias: cpt7_imu_gyro_drift
-      file: 2024-10-01-11-29-55_cpt7_ie_rt.bag
-      topic: "/boxi/inertial_explorer/rt/cpt7_imu_gyro_drift"
+    # TODO: not yet ready on the part of jonas
+    # - alias: cpt7_imu_gyro_drift
+    #   file: 2024-10-01-11-29-55_cpt7_ie_rt.bag
+    #   topic: "/boxi/inertial_explorer/rt/cpt7_imu_gyro_drift"
 
     - alias: cpt7_tc_imu_acc_bias
       file: 2024-10-01-11-29-55_cpt7_ie_tc.bag
@@ -382,7 +368,7 @@ data:
 
     - alias: cpt7_tc_imu_gyro_drift
       file: 2024-10-01-11-29-55_cpt7_ie_tc.bag
-      topic: "/boxi/inertial_explorer/tc/cpt7_imu_gyro_drift
+      topic: "/boxi/inertial_explorer/tc/cpt7_imu_gyro_drift"
 
     - alias: anymal_imu
       file: 2024-10-01-11-29-55_anymal_imu.bag
@@ -412,9 +398,10 @@ data:
     #   file: 2024-10-01-11-29-55_zed2i_vio.bag
     #   topic: "/boxi/zed2i_vio/odom"
 
-    - alias: cpt7_ie_rt_odometry
-      file: 2024-10-01-11-29-55_cpt7_ie_rt.bag
-      topic: "/boxi/inertial_explorer/rt/odometry"
+    # TODO: not yet ready on the part of jonas
+    # - alias: cpt7_ie_rt_odometry
+    #   file: 2024-10-01-11-29-55_cpt7_ie_rt.bag
+    #   topic: "/boxi/inertial_explorer/rt/odometry"
 
     - alias: cpt7_ie_tc_odometry
       file: 2024-10-01-11-29-55_cpt7_ie_tc.bag
@@ -445,10 +432,6 @@ data:
       file: 2024-10-01-11-29-55_cpt7_ie_tc.bag
       topic: "/tf"
 
-    - alias: ie_ppp_tf
-      file: 2024-10-01-11-29-55_cpt7_ie_ppp.bag
-      topic: "/tf"
-
     # TODO: not yet ready on the part of jonas
     # - alias: zed2i_vio_tf
     #   file: 2024-10-01-11-29-55_zed2i_vio.bag
@@ -459,34 +442,39 @@ data:
       topic: "/tf"
 
   nav_sat_fix_topics:
-    - alias: navsatfix_cpt7_ie_rt
-      file: 2024-10-01-11-29-55_cpt7_ie_rt.bag
-      topic: "/boxi/inertial_explorer/rt/navsatfix"
+    # TODO: not yet ready on the part of jonas
+    # - alias: navsatfix_cpt7_ie_rt
+    #   file: 2024-10-01-11-29-55_cpt7_ie_rt.bag
+    #   topic: "/boxi/inertial_explorer/rt/navsatfix"
 
-    - alias: navsatfix_origin_cpt7_ie_rt
-      file: 2024-10-01-11-29-55_cpt7_ie_rt.bag
-      topic: "/boxi/inertial_explorer/rt/navsatfix_origin"
+    # TODO: not yet ready on the part of jonas
+    # - alias: navsatfix_origin_cpt7_ie_rt
+    #   file: 2024-10-01-11-29-55_cpt7_ie_rt.bag
+    #   topic: "/boxi/inertial_explorer/rt/navsatfix_origin"
 
     - alias: navsatfix_cpt7_ie_tc
       file: 2024-10-01-11-29-55_cpt7_ie_tc.bag
       topic: "/boxi/inertial_explorer/tc/navsatfix"
 
-    - alias: navsatfix_origin_cpt7_ie_tc
-      file: 2024-10-01-11-29-55_cpt7_ie_tc.bag
-      topic: "/boxi/inertial_explorer/tc/navsatfix_origin"
+    # TODO: not yet ready on the part of jonas
+    # - alias: navsatfix_origin_cpt7_ie_tc
+    #   file: 2024-10-01-11-29-55_cpt7_ie_tc.bag
+    #   topic: "/boxi/inertial_explorer/tc/navsatfix_origin"
 
   gnss_raw_topics:
-    - alias: gnss_origin_cpt7_ie_rt
-      file: 2024-10-01-11-29-55_cpt7_ie_rt.bag
-      topic: "/boxi/inertial_explorer/rt/origin"
+    # TODO: not yet ready on the part of jonas
+    # - alias: gnss_origin_cpt7_ie_rt
+    #   file: 2024-10-01-11-29-55_cpt7_ie_rt.bag
+    #   topic: "/boxi/inertial_explorer/rt/origin"
 
-    - alias: gnss_raw_cpt7_ie_rt
-      file: 2024-10-01-11-29-55_cpt7_ie_rt.bag
-      topic: "/boxi/inertial_explorer/rt/raw"
+    # TODO: not yet ready on the part of jonas
+    # - alias: gnss_raw_cpt7_ie_rt
+    #   file: 2024-10-01-11-29-55_cpt7_ie_rt.bag
+    #   topic: "/boxi/inertial_explorer/rt/raw"
 
-    - alias: gnss_origin_cpt7_ie_tc
-      file: 2024-10-01-11-29-55_cpt7_ie_tc.bag
-      topic: "/boxi/inertial_explorer/tc/origin"
+    # - alias: gnss_origin_cpt7_ie_tc
+    #   file: 2024-10-01-11-29-55_cpt7_ie_tc.bag
+    #   topic: "/boxi/inertial_explorer/tc/origin"
 
     - alias: gnss_raw_cpt7_ie_tc
       file: 2024-10-01-11-29-55_cpt7_ie_tc.bag
