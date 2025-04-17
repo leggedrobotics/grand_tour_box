@@ -82,6 +82,8 @@ class PointTopic(Topic): ...
 @dataclass
 class SingletonTransformTopic(Topic): ...
 
+@dataclass
+class MultitonTransformTopic(Topic): ...
 
 @dataclass
 class TemperatureTopic(Topic): ...
@@ -489,6 +491,10 @@ TOPIC_TYPES = {
     "point_topics": (PointTopic, _build_point_topics_attributes),
     "singleton_transform_topics": (
         SingletonTransformTopic,
+        _build_singleton_transform_topics_attributes,
+    ),
+    "multiton_transform_topics": (
+        MultitonTransformTopic,
         _build_singleton_transform_topics_attributes,
     ),
     "temperature_topics": (TemperatureTopic, _build_temperature_topics_attributes),

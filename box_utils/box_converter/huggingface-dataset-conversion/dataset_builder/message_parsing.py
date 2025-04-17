@@ -50,8 +50,10 @@ from dataset_builder.dataset_config import OdometryTopic
 from dataset_builder.dataset_config import PointTopic
 from dataset_builder.dataset_config import PoseTopic
 from dataset_builder.dataset_config import SingletonTransformTopic
+from dataset_builder.dataset_config import MultitonTransformTopic
 from dataset_builder.dataset_config import TemperatureTopic
 from dataset_builder.dataset_config import Topic
+
 from dataset_builder.dataset_config import (
     TwistTopic,
     BatteryStateTopic,
@@ -405,6 +407,11 @@ def _extract_tf2_message_header(msg: TFMessage) -> Header:
     transform = msg.transforms[0]  # type: ignore
     return transform.header  # type: ignore
 
+def _extract_multiple_tf2_message_header(msg: TFMessage) -> List[Header]:
+    # Use _extract_tf2_message_header for each transform in the list
+    if len(msg.transforms) > 0:
+        return [_extract_tf2_message_header(TFMessage([transform])) for transform in msg.transforms]
+    raise ValueError("TFMessage contains no transforms")
 
 # def _extract_actuator_readings_header(msg: SeActuatorReadings) -> Header:
 #     return msg.readings[0].header
@@ -412,6 +419,7 @@ def _extract_tf2_message_header(msg: TFMessage) -> Header:
 
 SPECIAL_HEADER_MESSAGES_EXTRACT_FUNCTIONS = [
     (SingletonTransformTopic, _extract_tf2_message_header),
+    (MultitonTransformTopic, _extract_multiple_tf2_message_header)
     # (ActuatorReadingsTopic, _extract_actuator_readings_header),
 ]
 

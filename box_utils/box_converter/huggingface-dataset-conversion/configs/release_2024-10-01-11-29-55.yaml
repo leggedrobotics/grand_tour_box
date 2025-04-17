@@ -298,6 +298,7 @@ data:
     - alias: zed2i_vio_map
       file: 2024-10-01-11-29-55_zed2i_vio.bag
       topic: "/boxi/zed2i_vio/map"
+      covariance: False
 
 
   imu_topics:
@@ -421,12 +422,13 @@ data:
       file: 2024-10-01-11-29-55_cpt7_ie_tc.bag
       topic: "/tf"
 
-    - alias: zed2i_vio_tf
-      file: 2024-10-01-11-29-55_zed2i_vio.bag
-      topic: "/tf"
-
     - alias: cpt7_ie_rt_tf
       file: 2024-10-01-11-29-55_cpt7_ie_rt.bag
+      topic: "/tf"
+
+  multiton_transform_topics:
+    - alias: zed2i_vio_tf
+      file: 2024-10-01-11-29-55_zed2i_vio.bag
       topic: "/tf"
 
   nav_sat_fix_topics:
