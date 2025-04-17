@@ -4,6 +4,7 @@ import logging
 from pathlib import Path
 from typing import Any
 from typing import Dict
+from scipy.spatial.transform import Rotation as R
 
 import yaml
 from sensor_msgs.msg import CameraInfo
@@ -22,7 +23,6 @@ from dataset_builder.message_parsing import (
 from dataset_builder.message_parsing import (
     extract_header_metadata_from_deserialized_message,
 )
-from dataset_builder.transforms import get_metadata_from_tf_msg
 from dataset_builder.utils import messages_in_bag_with_topic
 from tqdm import tqdm
 
@@ -70,6 +70,7 @@ def _load_tf_metadata_from_bag_file_and_topic(
     bag_path: Path,
     frame_transform_config: FrameTransformConfig,   
 ) -> Dict[str, Any]:
+    # TODO: integrate frame_transform_config
     """
     Load metadata from a bag file and a topic description
 
@@ -99,37 +100,31 @@ def _load_tf_metadata_from_bag_file_and_topic(
 
     """
     with rosbag.Bag(bag_path) as bag:
-        tf_transformer = BagTfTransformer(bag)
-        orig_frame = 'base'
-        dest_frame = tf_transformer.tf_messages[0].child_frame_id
-        transform_chain = tf_transformer.getChain(orig_frame, dest_frame)
-        transfrom_tuple = tf_transformer.getChainTuples(orig_frame, dest_frame)
+        tf_listener = BagTfTransformer(bag)
 
+        # TODO: read this from the config
+        orig_frame = 'base'
+        if not tf_listener.tf_static_messages:
+            raise ValueError("No TF messages found in the bag file.")
         
     metadata_dict = {}
-    for message in tqdm(tf_transformer.tf_messages, desc="Processing TF messages"):
-        frame_id = message.header.frame_id
+    for message in tqdm(tf_listener.tf_static_messages, desc="Processing TF messages"):
         child_frame_id = message.child_frame_id
+
+        try:
+            trans, quat = tf_listener.lookupTransform(orig_frame, child_frame_id, None, latest=True)
+        except Exception as e:
+            logger.warning(f"Failed to lookup transform for {orig_frame} to {child_frame_id}: {e}")
+            continue
+
         transform_data = {
-            "frame_id": frame_id,
+            "base_frame_id": orig_frame,
             "child_frame_id": child_frame_id,
-            "rotation": {
-                axis: getattr(message.transform.rotation, axis)
-                for axis in ("x", "y", "z", "w")
-            },
-            "translation": {
-                axis: getattr(message.transform.translation, axis)
-                for axis in ("x", "y", "z")
-            },
+            "translation": {"x": trans[0], "y": trans[1], "z": trans[2]},
+            "rotation": {"x": quat[0], "y": quat[1], "z": quat[2], "w": quat[3]},
         }
 
-        if frame_id not in metadata_dict:
-            metadata_dict[frame_id] = {
-                "frame_id": frame_id,
-                "child_frames": {},
-            }
-
-        metadata_dict[frame_id]["child_frames"][child_frame_id] = transform_data
+        metadata_dict[child_frame_id] = transform_data
 
     # old code
     # for message in messages_in_bag_with_topic(
@@ -143,7 +138,7 @@ def _load_tf_metadata_from_bag_file_and_topic(
               
     #     metadata = get_metadata_from_tf_msg(message, frame_transform_config.base_frame)
         
-    return metadata_dict
+        return metadata_dict
 
     # raise ValueError(f"no messages of type tf2_msgs.msg found in topic {frame_transform_config.topic}")
 

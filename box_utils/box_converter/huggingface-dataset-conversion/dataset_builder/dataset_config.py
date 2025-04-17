@@ -14,6 +14,7 @@ import numpy as np
 import numpy.typing
 import yaml
 
+
 METADATA_KEY = "metadata"
 DATA_KEY = "data"
 
@@ -583,9 +584,10 @@ def load_config(
     config_path: Path, mission_name: str
 ) -> Tuple[TopicRegistry, MetadataConfig]:
     
-    # load config --> data and metadata shapes
-    with open(config_path, "r") as f:
-        config_object = yaml.safe_load(f)
+    with open(config_path, 'r') as f:
+        yaml_data = yaml.safe_load(f)
+
+    config_object = replace_wildcards(yaml_data, mission_name)
 
     try:
         data_config_object = config_object[DATA_KEY]
@@ -601,3 +603,11 @@ def load_config(
         _load_metadata_config(metadata_config_object, mission_name),
     )
 
+def replace_wildcards(data, default_str="MISSION_NAME"):
+    if isinstance(data, dict):
+        return {k: replace_wildcards(v, default_str) for k, v in data.items()}
+    elif isinstance(data, list):
+        return [replace_wildcards(i, default_str) for i in data]
+    elif isinstance(data, str) and '*' in data:
+        return data.replace('*', default_str)
+    return data

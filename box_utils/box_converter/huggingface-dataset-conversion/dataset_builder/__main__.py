@@ -15,14 +15,17 @@ from dataset_builder.dataset_config import load_config
 
 #TODO: make this configurable
 # MISSION_NAME = "pub_2024-10-01-11-29-55"
-MISSION_NAME = "release_2024-10-01-11-29-55"
+CONFIG_FILE_NAME = "grandtour_release"
 # MISSION_NAME = "2024-10-01-12-00-49"
 
-DEFAULT_CONFIG_PATH = Path(__file__).parent.parent / "configs" / f"{MISSION_NAME}.yaml"
-DATA_PATH =  Path(__file__).parent.parent / "data"
+MISSION_NAME = "2024-10-01-11-29-55"
+DEFAULT_CONFIG_PATH = Path(__file__).parent.parent / "configs" / f"{CONFIG_FILE_NAME}.yaml"
+DATA_PATH =  Path(f"/tmp/dataset_builder_{MISSION_NAME}")
+# DATA_PATH =Path(__file__).parent.parent / "data"
 INPUT_PATH = DATA_PATH / "files" / MISSION_NAME
 DATASET_PATH = DATA_PATH / "dataset" / MISSION_NAME
 
+HUGGINGFACE_DATASET_NAME = f"leggedrobotics/{MISSION_NAME}"
 USERTOKEN_PATH = Path(__file__).parent.parent /"configs" / "user_token.txt"
 
 DOWNLOAD_FLAG = True
@@ -42,55 +45,25 @@ def push_dataset_to_huggingface_api(dataset_repo: str, dataset_path: str = ".",
     """
     Uploads a dataset to the Hugging Face Hub using the Python API.
 
-    Parameters:
-    - dataset_repo (str): The full Hugging Face dataset repository name (e.g., 'leggedrobotics/GT-Testing-MLI').
-    - dataset_path (str): Path to the dataset files. Defaults to current directory.
-    - token (str): Your Hugging Face access token.
     """
     if os.path.exists(token_path):
-        with open(token, "r") as token_file:
+        with open(token_path, "r") as token_file:
             token = token_file.read().strip()
     else:
         raise FileNotFoundError(f"Token file not found at {token}")
 
 
-    api = HfApi()
+    api = HfApi(token=os.getenv("HF_TOKEN"))
 
-    # Save the token for future use
-    HfFolder.save_token(token)
-
-    # Create the dataset repo on the Hub if it doesn't exist
     try:
-        api.create_repo(repo_id=dataset_repo, 
-                        repo_type="dataset", 
-                        exist_ok=True, 
-
-                        token=token)
+        api.upload_folder(
+            folder_path=dataset_path,
+            repo_id=dataset_repo,
+            repo_type="dataset",
+        )
+        print("Dataset uploaded successfully.")
     except Exception as e:
-        print(f"Error creating dataset repo: {e}")
-        return
-
-    if os.path.exists(DATASET_PATH):
-        shutil.rmtree(DATASET_PATH)
-    repo_url = api.get_repo_url(dataset_repo, repo_type="dataset")
-    repo = Repository(local_dir=DATASET_PATH, clone_from=repo_url, repo_type="dataset", use_auth_token=token)
-
-    for file_name in os.listdir(dataset_path):
-        full_file_path = os.path.join(dataset_path, file_name)
-        if os.path.isfile(full_file_path):
-            shutil.copy(full_file_path, os.path.join(DATASET_PATH, file_name))
-
-    repo.push_to_hub(commit_message="Upload dataset")
-
-    # TODO: uncomment if succensfull
-    # shutil.rmtree(DATASET_PATH)
-    print("Dataset uploaded successfully.")
-
-# Example usage:
-# push_dataset_to_huggingface_api("leggedrobotics/GT-Testing-MLI", ".", token="your_hf_token_here")
-
-
-
+        print(f"Error uploading dataset: {e}")
 
 def run_converter(
     input_path: Path, output_path: Path, *, config_path: Path, mission_prefix: str
@@ -114,36 +87,26 @@ def run_converter(
 
 
 def main() -> int:
-
-    parser = ArgumentParser()
-    parser.add_argument(
-        "--config",
-        type=Path,
-        default=DEFAULT_CONFIG_PATH,
-        help="Path to the configuration file",
-    )
-    parser.add_argument(
-        "--mission-name",
-        type=str,
-        default=MISSION_NAME,
-        help="Prefix for the mission",
-    )
-
-    args = parser.parse_args()
-
-    missions = kleinkram.list_missions(mission_names=[args.mission_name])      
-    assert len(missions) == 1
-    mission = missions[0]
+    # missions = kleinkram.list_missions(mission_names=['release_' + MISSION_NAME])      
+    # assert len(missions) == 1
+    # mission = missions[0]
     
-    if DOWNLOAD_FLAG:
-        download_mission(mission_id=mission.id, input_path=INPUT_PATH)
+    # if DOWNLOAD_FLAG:
+    #     download_mission(mission_id=mission.id, input_path=INPUT_PATH)
 
-    run_converter(
-        input_path=INPUT_PATH,
-        output_path=DATASET_PATH,
-        config_path=args.config,
-        mission_prefix=MISSION_NAME,
+    # run_converter(
+    #     input_path=INPUT_PATH,
+    #     output_path=DATASET_PATH,
+    #     config_path=DEFAULT_CONFIG_PATH,
+    #     mission_prefix=MISSION_NAME,
+    # )
+
+    push_dataset_to_huggingface_api(
+        dataset_repo=HUGGINGFACE_DATASET_NAME,
+        dataset_path=DATASET_PATH,
+        token_path=USERTOKEN_PATH
     )
+
     return 0
 
 
