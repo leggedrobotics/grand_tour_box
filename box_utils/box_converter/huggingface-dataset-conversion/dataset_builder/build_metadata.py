@@ -100,24 +100,36 @@ def _load_tf_metadata_from_bag_file_and_topic(
     """
     with rosbag.Bag(bag_path) as bag:
         tf_transformer = BagTfTransformer(bag)
-    
-    metadata_dict = {
-        message.child_frame_id: {
-            "child_frame_id": message.child_frame_id,
-            "frame_id": message.header.frame_id,
-            "transform": {
-                "rotation": {
-                    axis: getattr(message.transform.rotation, axis)
-                    for axis in ("x", "y", "z", "w")
-                },
-                "translation": {
-                    axis: getattr(message.transform.translation, axis)
-                    for axis in ("x", "y", "z")
-                },
+        orig_frame = 'base'
+        dest_frame = tf_transformer.tf_messages[0].child_frame_id
+        transform_chain = tf_transformer.getChain(orig_frame, dest_frame)
+        transfrom_tuple = tf_transformer.getChainTuples(orig_frame, dest_frame)
+
+        
+    metadata_dict = {}
+    for message in tqdm(tf_transformer.tf_messages, desc="Processing TF messages"):
+        frame_id = message.header.frame_id
+        child_frame_id = message.child_frame_id
+        transform_data = {
+            "frame_id": frame_id,
+            "child_frame_id": child_frame_id,
+            "rotation": {
+                axis: getattr(message.transform.rotation, axis)
+                for axis in ("x", "y", "z", "w")
+            },
+            "translation": {
+                axis: getattr(message.transform.translation, axis)
+                for axis in ("x", "y", "z")
             },
         }
-        for message in tqdm(tf_transformer.tf_messages, desc="Processing TF messages")
-    }
+
+        if frame_id not in metadata_dict:
+            metadata_dict[frame_id] = {
+                "frame_id": frame_id,
+                "child_frames": {},
+            }
+
+        metadata_dict[frame_id]["child_frames"][child_frame_id] = transform_data
 
     # old code
     # for message in messages_in_bag_with_topic(

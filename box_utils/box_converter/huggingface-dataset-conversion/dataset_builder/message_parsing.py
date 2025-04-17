@@ -491,6 +491,8 @@ def extract_header_metadata_from_deserialized_message(
 ) -> Dict[str, Any]:
     header = _extract_header(msg, topic_desc)
 
+    if isinstance(header, list):  # since there can be multiple transforms in a TFMessage
+        return {f"frame_id_{i}": h.frame_id for i, h in enumerate(header)}
     return {
         "frame_id": header.frame_id,
     }

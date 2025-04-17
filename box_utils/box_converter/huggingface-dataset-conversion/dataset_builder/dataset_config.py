@@ -123,8 +123,6 @@ class FrameTransformConfig:
     topic: str
     file: str
     frame_id: str = "" # Parent (base) frame
-    child_frame_id: str = "child" # Child frame
-
 
 @dataclass
 class MetadataConfig:
