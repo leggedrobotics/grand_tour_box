@@ -77,20 +77,17 @@ metadata:
       file: 2024-10-01-11-29-55_hdr_right.bag
       topic: "/boxi/hdr/right/camera_info"
 
-    # TODO: not yet ready on the part of jonas
-    # - alias: zed2i_depth_caminfo
-    #   file: 2024-10-01-11-29-55_zed2i_depth.bag
-    #   topic: "/boxi/zed2i/depth/camera_info"
+    - alias: zed2i_depth_caminfo
+      file: 2024-10-01-11-29-55_zed2i_depth.bag
+      topic: "/boxi/zed2i/depth/camera_info"
 
-    # TODO: not yet ready on the part of jonas
-    # - alias: zed2i_left_caminfo
-    #   file: 2024-10-01-11-29-55_zed2i_images.bag
-    #   topic: "/boxi/zed2i/left/camera_info"
+    - alias: zed2i_left_caminfo
+      file: 2024-10-01-11-29-55_zed2i_images.bag
+      topic: "/boxi/zed2i/left/camera_info"
 
-    # TODO: not yet ready on the part of jonas
-    # - alias: zed2i_right_caminfo
-    #   file: 2024-10-01-11-29-55_zed2i_images.bag
-    #   topic: "/boxi/zed2i/right/camera_info"
+    - alias: zed2i_right_caminfo
+      file: 2024-10-01-11-29-55_zed2i_images.bag
+      topic: "/boxi/zed2i/right/camera_info"
 
     # TODO: not apparent in the bag file
     # - alias: anymal_depth_camera_front_lower
@@ -213,33 +210,29 @@ data:
       format: jpeg
       compressed: true
 
-    # TODO: Not ready on the part of Jonas
-    # - alias: zed2i_depth_confidence_image
-    #   file: 2024-10-01-11-29-55_zed2i_depth.bag
-    #   topic: "/boxi/zed2i/confidence/image_raw/compressedDepth"
-    #   format: jpeg
-    #   compressed: true
+    - alias: zed2i_depth_confidence_image
+      file: 2024-10-01-11-29-55_zed2i_depth.bag
+      topic: "/boxi/zed2i/confidence/image_raw/compressedDepth"
+      format: jpeg
+      compressed: true
 
-    # TODO: Not ready on the part of Jonas
-    # - alias: zed2i_depth_image
-    #   file: 2024-10-01-11-29-55_zed2i_depth.bag
-    #   topic: "/boxi/zed2i/depth/image_raw/compressedDepth"
-    #   format: jpeg
-    #   compressed: true
+    - alias: zed2i_depth_image
+      file: 2024-10-01-11-29-55_zed2i_depth.bag
+      topic: "/boxi/zed2i/depth/image_raw/compressedDepth"
+      format: jpeg
+      compressed: true
 
-    # TODO: Not ready on the part of Jonas
-    # - alias: zed2i_left_images
-    #   file: 2024-10-01-11-29-55_zed2i_images.bag
-    #   topic: "/boxi/zed2i/left/image_raw/compressed"
-    #   format: jpeg
-    #   compressed: true
+    - alias: zed2i_left_images
+      file: 2024-10-01-11-29-55_zed2i_images.bag
+      topic: "/boxi/zed2i/left/image_raw/compressed"
+      format: jpeg
+      compressed: true
 
-    # TODO: Not ready on the part of Jonas
-    # - alias: zed2i_right_images
-    #   file: 2024-10-01-11-29-55_zed2i_images.bag
-    #   topic: "/boxi/zed2i/right/image_raw/compressed"
-    #   format: jpeg
-    #   compressed: true
+    - alias: zed2i_right_images
+      file: 2024-10-01-11-29-55_zed2i_images.bag
+      topic: "/boxi/zed2i/right/image_raw/compressed"
+      format: jpeg
+      compressed: true
 
     # No need for conversion since raw bag files are used
     # - alias: hesai_packets
@@ -301,11 +294,10 @@ data:
       topic: "/boxi/dlio/lidar_map_odometry"
       max_points: 64000
 
-  # pose_topics:
-    # TODO: not yet ready on the part of jonas    
-    # - alias: zed2i_vio_map
-    #   file: 2024-10-01-11-29-55_zed2i_vio.bag
-    #   topic: "/boxi/zed2i_vio/map"
+  pose_topics:
+    - alias: zed2i_vio_map
+      file: 2024-10-01-11-29-55_zed2i_vio.bag
+      topic: "/boxi/zed2i_vio/map"
 
 
   imu_topics:
@@ -348,10 +340,9 @@ data:
     #   file: 2024-10-01-11-29-55_zed2i_prop.bag
     #   topic: "/boxi/zed2i/imu"
 
-    # TODO: not yet ready on the part of jonas
-    # - alias: cpt7_imu
-    #   file: 2024-10-01-11-29-55_cpt7_imu.bag
-    #   topic: "/boxi/cpt7/imu"
+    - alias: cpt7_imu
+      file: 2024-10-01-11-29-55_cpt7_imu.bag
+      topic: "/boxi/cpt7/imu"
 
     # TODO: not yet ready on the part of jonas
     # - alias: cpt7_imu_acc_bias
@@ -381,23 +372,20 @@ data:
   #     file: 2024-10-01-11-29-55_anymal_velodyne_undist.bag
   #     topic: "/anymal/velodyne/points_undistorted"
 
-  # TODO: not yet ready on the part of jonas
-  # fluid_pressure_topics:
-  #   - alias: zed2i_pressure
-  #     file: 2024-10-01-11-29-55_zed2i_prop.bag
-  #     topic: "/boxi/zed2i/baro/pressure"
+  fluid_pressure_topics:
+    - alias: zed2i_pressure
+      file: 2024-10-01-11-29-55_zed2i_prop.bag
+      topic: "/boxi/zed2i/baro/pressure"
 
-  # TODO: not yet ready on the part of jonas
-  # magnetic_field_topics:
-  #   - alias: zed2i_magnetic_filed
-  #     file: 2024-10-01-11-29-55_zed2i_prop.bag
-  #     topic: "/boxi/zed2i/magnetic_field"
+  magnetic_field_topics:
+    - alias: zed2i_magnetic_filed
+      file: 2024-10-01-11-29-55_zed2i_prop.bag
+      topic: "/boxi/zed2i/magnetic_field"
 
   odometry_topics:
-  # TODO: not yet ready on the part of jonas
-    # - alias: zed2i_vio_odometry
-    #   file: 2024-10-01-11-29-55_zed2i_vio.bag
-    #   topic: "/boxi/zed2i_vio/odom"
+    - alias: zed2i_vio_odometry
+      file: 2024-10-01-11-29-55_zed2i_vio.bag
+      topic: "/boxi/zed2i_vio/odom"
 
     # TODO: not yet ready on the part of jonas
     # - alias: cpt7_ie_rt_odometry
@@ -433,10 +421,9 @@ data:
       file: 2024-10-01-11-29-55_cpt7_ie_tc.bag
       topic: "/tf"
 
-    # TODO: not yet ready on the part of jonas
-    # - alias: zed2i_vio_tf
-    #   file: 2024-10-01-11-29-55_zed2i_vio.bag
-    #   topic: "/tf"
+    - alias: zed2i_vio_tf
+      file: 2024-10-01-11-29-55_zed2i_vio.bag
+      topic: "/tf"
 
     - alias: cpt7_ie_rt_tf
       file: 2024-10-01-11-29-55_cpt7_ie_rt.bag
