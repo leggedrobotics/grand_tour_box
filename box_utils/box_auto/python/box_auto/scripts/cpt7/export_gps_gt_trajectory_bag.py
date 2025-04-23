@@ -22,6 +22,63 @@ from scipy.spatial.transform import Rotation
 from pathlib import Path
 from nav_msgs.msg import Path as PathRos
 from box_auto.utils import MISSION_DATA, GPS_utils
+import xml.etree.ElementTree as ET
+from html.parser import HTMLParser
+import json
+
+
+# HTML parser to handle CDATA with <BR> and text
+class DescriptionHTMLParser(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.lines = []
+
+    def handle_data(self, data):
+        line = data.strip()
+        if line:
+            self.lines.append(line)
+
+
+# Parses description content into key-value pairs
+def parse_solution_description(description_html):
+    parser = DescriptionHTMLParser()
+    parser.feed(description_html)
+
+    result = {}
+    current_key = None
+
+    for line in parser.lines:
+        if ":" in line:
+            key, value = line.split(":", 1)
+            current_key = key.strip()
+            result[current_key] = value.strip()
+        elif current_key:
+            result[current_key] += " " + line.strip()
+    return result
+
+
+# Efficiently stream-parse large KML files
+def extract_solution_data_stream(kml_file, output_json):
+    ns = "http://earth.google.com/kml/2.2"
+    target_tag = f"{{{ns}}}Placemark"
+    name_tag = f"{{{ns}}}name"
+    desc_tag = f"{{{ns}}}description"
+
+    context = ET.iterparse(kml_file, events=("end",))
+    for event, elem in context:
+        if elem.tag == target_tag:
+            name_elem = elem.find(name_tag)
+            if name_elem is not None and name_elem.text == "Solution":
+                desc_elem = elem.find(desc_tag)
+                if desc_elem is not None and desc_elem.text:
+                    parsed = parse_solution_description(desc_elem.text)
+                    with open(output_json, "w") as f:
+                        json.dump(parsed, f, indent=2)
+                    print(f"[OK] Extracted to {output_json}")
+                    return parsed
+            elem.clear()  # Free memory
+    raise ValueError("No <Placemark> with <name>Solution</name> found.")
+
 
 # Used to verify gpsUtils
 """
@@ -170,10 +227,25 @@ def main():
 
     As a result, conflicting TFs (Transforms) might be published between the ROS bags.
     """
-    try:
-        date = [(str(s.name)).split("_")[0] for s in Path(MISSION_DATA).glob("*_nuc_livox.bag")][0]
-    except:
-        date = [(str(s.name)).split("_")[0] for s in Path(MISSION_DATA).glob("*_nuc_hesai.bag")][0]
+    patterns = ["*_nuc_livox.bag", "*_dlio.bag", "*_nuc_hesai.bag"]  # Add more patterns as needed
+    date = None
+    for pattern in patterns:
+        try:
+            # Find files matching the current pattern and extract the date from the first match
+            date = [(str(s.name)).split("_")[0] for s in Path(MISSION_DATA).glob(pattern)][0]
+            # If a date is found, break the loop
+            break
+        except IndexError:
+            # If no files match the current pattern or the list is empty, continue to the next pattern
+            continue
+
+    # Check if a date was found after trying all patterns
+    if date is None:
+        print(
+            f"Error: Could not find a suitable bag file in {MISSION_DATA} matching patterns: {patterns} to determine the date."
+        )
+        # Exit or raise an error if no suitable file is found
+        exit(1)
 
     gps_files = [str(s) for s in (Path(MISSION_DATA) / "ie").rglob("*_GrandTour-LocalFrame-extended.txt")]
     post_proc_modes = [s.split("/")[-1].split("_")[1] for s in gps_files]
@@ -183,6 +255,18 @@ def main():
     ]
 
     for gps_file_path, bag_path, post_proc_mode in zip(gps_files, bag_paths, post_proc_modes):
+
+        # Read the KML file.
+        if post_proc_mode == "tc":
+            kml_file_path = Path(MISSION_DATA) / "ie" / post_proc_mode / "Html" / f"ie_{post_proc_mode}.GE.kml"
+            if not kml_file_path.exists() or not kml_file_path.is_file() or kml_file_path.stat().st_size == 0:
+                print(f"Warning: No KML data found for {post_proc_mode}")
+                raise ValueError(f"Warning: No KML data found for {post_proc_mode}. Meaning the processing failed.")
+            else:
+                print(f"Using KML file: {kml_file_path}")
+                json_path = bag_path.replace(".bag", "_statistics.json")
+                extract_solution_data_stream(kml_file_path, json_path)
+
         # Export the IMU SBET data.
         sbet_data_path = Path(MISSION_DATA) / "ie" / post_proc_mode / f"SBET_{post_proc_mode}.OUT"
 
