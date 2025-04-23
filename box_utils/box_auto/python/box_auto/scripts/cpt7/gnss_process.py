@@ -91,6 +91,7 @@ def main():
                 print(f"\033[32m[{PROCMODE}] Attempt {attempt} | procint = {procInterval:.5f}\033[0m")
 
                 # os.chdir(Path(WS) / "src/grand_tour_box/box_applications/waypoint_ie_10_00_1206/bin")
+                # os.chdir("/home/tutuna/Documents/IE_CLI_10/Inertial Explorer/waypoint_ie_10_00_1206/bin")
                 os.chdir("/home/jonfrey/ie_turcan/waypoint_ie_10_00_1206/bin")
                 print(cmd)
                 results = subprocess.run(
