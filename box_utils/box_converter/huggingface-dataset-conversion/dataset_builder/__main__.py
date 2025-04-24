@@ -28,7 +28,7 @@ HUGGINGFACE_DATASET_NAME = f"leggedrobotics/{MISSION_NAME}"
 USERTOKEN_PATH = Path(__file__).parent.parent /"configs" / "user_token.txt"
 
 # to not always doublecheck the hashes
-DOWNLOAD_FLAG = False
+DOWNLOAD_FLAG = True
 PUSHDATASET_FLAG = False
 
 
@@ -91,12 +91,12 @@ def run_converter(
     assert input_path.is_dir()
     topic_registry, metadata_config = load_config(config_path, mission_prefix)
 
-    # build_metadata_part(
-    #     base_dataset_path=output_path,
-    #     bags_path=input_path,
-    #     metadata_config=metadata_config,
-    #     topic_registry=topic_registry,
-    # )
+    build_metadata_part(
+        base_dataset_path=output_path,
+        bags_path=input_path,
+        metadata_config=metadata_config,
+        topic_registry=topic_registry,
+    )
 
     build_data_part(
         topic_registry=topic_registry,
