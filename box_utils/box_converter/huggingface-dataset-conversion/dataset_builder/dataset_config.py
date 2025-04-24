@@ -123,7 +123,8 @@ class CameraInfoTopic(Topic): ...
 class FrameTransformConfig:
     topic: str
     file: str
-    frame_id: str = "" # Parent (base) frame
+    frame_id: str = ""
+    reference_frame_id: str = ""
 
 @dataclass
 class MetadataConfig:
@@ -545,6 +546,7 @@ def _load_topic_registry_from_config(
     
     return _add_universal_attributes(registry)
 
+
 def _load_metadata_config(
     metadata_config_object: Mapping[str, Any], mission_name: str
 ) -> MetadataConfig:
@@ -566,7 +568,9 @@ def _load_metadata_config(
 
     try:
         frame_transforms_object = metadata_config_object.get(FRAME_TRANSFORMS_KEY, {})
-        frame_transforms = FrameTransformConfig(**frame_transforms_object)
+        frame_transforms = [
+            FrameTransformConfig(**transform_obj) for transform_obj in frame_transforms_object
+        ]
     except Exception as e:
 
         raise ValueError(
@@ -574,11 +578,14 @@ def _load_metadata_config(
         ) from e
 
     # format file names
-    frame_transforms.file = frame_transforms.file.format(mission_name)
+    for frame_transform in frame_transforms:
+        frame_transform.file = frame_transform.file.format(mission_name)
+
     for camera in camera_intrinsics:
         camera.file = camera.file.format(mission_name)
 
     return MetadataConfig(frame_transforms, camera_intrinsics)
+
 
 def load_config(
     config_path: Path, mission_name: str
@@ -602,6 +609,7 @@ def load_config(
         _load_topic_registry_from_config(data_config_object, mission_name),
         _load_metadata_config(metadata_config_object, mission_name),
     )
+
 
 def replace_wildcards(data, default_str="MISSION_NAME"):
     if isinstance(data, dict):

@@ -1,2 +1,2 @@
 huggingface-hub
-kleinkram==0.44.1
+kleinkram==0.45.0

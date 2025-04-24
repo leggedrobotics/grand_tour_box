@@ -50,19 +50,19 @@ metadata:
       topic: "/boxi/alphasense/front_center/camera_info"
       # reference_frame_id: box_base
 
-    - alias: alphasense_cam2_caminfo
+    - alias: alphasense_front_right_caminfo
       file: "*_alphasense.bag"
       topic: "/boxi/alphasense/front_right/camera_info"
 
-    - alias: alphasense_cam3_caminfo
+    - alias: alphasense_front_left_caminfo
       file: "*_alphasense.bag"
       topic: "/boxi/alphasense/front_left/camera_info"
 
-    - alias: alphasense_cam4_caminfo
+    - alias: alphasense_left_caminfo
       file: "*_alphasense.bag"
       topic: "/boxi/alphasense/left/camera_info"
 
-    - alias: alphasense_cam5_caminfo
+    - alias: alphasense_right_caminfo
       file: "*_alphasense.bag"
       topic: "/boxi/alphasense/right/camera_info"
 
@@ -120,9 +120,154 @@ metadata:
   # TODO: which of the transforms belong here? Are there any?
   # TODO: comment this
   frame_transforms:
-    frame_id: tf_static_minimal
-    file: "*_tf_minimal.bag"
-    topic: /tf_static
+    # frame_id: tf_static_minimal
+    # file: "*_tf_minimal.bag"
+    # topic: /tf_static
+
+    - frame_id: alphasense_front_center
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: alphasense_front_left
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: alphasense_front_right
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: alphasense_left
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: alphasense_right
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: hdr_right
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: hdr_left
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: hdr_front
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: zed2i_left
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: zed2i_right
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: depth_camera_rear_upper
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: depth_camera_left
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: depth_camera_right
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: hesai_lidar
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: livox_lidar
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: dlio_map
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: zed2i_map
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: adis16475_imu
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: ap20_imu
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: stim320_imu
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: livox_imu
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: cpt7_imu
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: enu_origin
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: anymal_imu
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: zed2i_odom
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: odom
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: zed2i_mag
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: leica_total_station
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: zed2i_baro
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
 
     # doesn't have much information in it --> probably not needed
     # frame_id: tf_minimal

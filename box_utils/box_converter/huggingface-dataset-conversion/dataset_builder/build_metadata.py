@@ -102,45 +102,30 @@ def _load_tf_metadata_from_bag_file_and_topic(
     with rosbag.Bag(bag_path) as bag:
         tf_listener = BagTfTransformer(bag)
 
-        # TODO: read this from the config
-        orig_frame = 'base'
+        orig_frame = frame_transform_config.reference_frame_id
+        child_frame_id = frame_transform_config.frame_id
+
         if not tf_listener.tf_static_messages:
             raise ValueError("No TF messages found in the bag file.")
-        
-    metadata_dict = {}
-    for message in tqdm(tf_listener.tf_static_messages, desc="Processing TF messages"):
-        child_frame_id = message.child_frame_id
 
-        try:
-            trans, quat = tf_listener.lookupTransform(orig_frame, child_frame_id, None, latest=True)
-        except Exception as e:
-            logger.warning(f"Failed to lookup transform for {orig_frame} to {child_frame_id}: {e}")
-            continue
+        metadata_dict = {}
+        for message in tf_listener.tf_static_messages:
+            if message.child_frame_id != child_frame_id:
+                continue
 
-        transform_data = {
-            "base_frame_id": orig_frame,
-            "child_frame_id": child_frame_id,
-            "translation": {"x": trans[0], "y": trans[1], "z": trans[2]},
-            "rotation": {"x": quat[0], "y": quat[1], "z": quat[2], "w": quat[3]},
-        }
+            try:
+                trans, quat = tf_listener.lookupTransform(child_frame_id, orig_frame, None, latest=True)
+                metadata_dict[child_frame_id] = {
+                    "base_frame_id": orig_frame,
+                    "child_frame_id": child_frame_id,
+                    "translation": {"x": trans[0], "y": trans[1], "z": trans[2]},
+                    "rotation": {"x": quat[0], "y": quat[1], "z": quat[2], "w": quat[3]},
+                }
+                break  # Exit loop early since the desired transform is found
+            except Exception as e:
+                logger.warning(f"Failed to lookup transform for {orig_frame} to {child_frame_id}: {e}")
 
-        metadata_dict[child_frame_id] = transform_data
-
-    # old code
-    # for message in messages_in_bag_with_topic(
-    #     bag_path, frame_transform_config.topic, progress_bar=False
-    # ):
-    #     # frame_transform_config.topic      i.e /tf_static
-    #     # frame_transform_config.base_frame i.e. base
-    #     assert isinstance(
-    #         message, TFMessage
-    #     ), f"topic {frame_transform_config.topic} does not contain TFMessage messages"
-              
-    #     metadata = get_metadata_from_tf_msg(message, frame_transform_config.base_frame)
-        
-        return metadata_dict
-
-    # raise ValueError(f"no messages of type tf2_msgs.msg found in topic {frame_transform_config.topic}")
+    return metadata_dict
 
 
 def _get_frame_id_from_topic(bags_path: Path, topic_desc: Topic) -> Dict[str, str]:
@@ -233,6 +218,7 @@ def _get_camera_infos(
         ret[cam_info_topic_desc.alias] = cam_info
     return ret
 
+
 def _get_frame_transform_metadata(
     bags_path: Path, frame_transform_config: FrameTransformConfig
 ) -> Dict[str, Any]:
@@ -251,8 +237,17 @@ def _get_frame_transform_metadata(
                                             'translation': {'x': 0.0, y': 0.0, 'z': 0.0}, 
                                             'rotation': {'x': 0.0, 'y': 0.0, 'z': 0.0, 'w': 0.0,}}
     """
-    bag_path = bags_path / frame_transform_config.file
-    tf_metadata = _load_tf_metadata_from_bag_file_and_topic(bag_path, frame_transform_config)
+    tf_metadata = {}
+
+    for frame_transform in tqdm(frame_transform_config, desc="Processing frame transforms"):
+        bag_path = bags_path / frame_transform.file
+
+        if not (bag_path.exists() and bag_path.is_file() and bag_path.suffix == ".bag"):
+            raise ValueError(f"Invalid bag file: {bag_path}")
+
+        tf_metadata.update(
+            _load_tf_metadata_from_bag_file_and_topic(bag_path, frame_transform)
+        )
     return tf_metadata
     
 
@@ -304,6 +299,7 @@ def build_metadata_part(
         transform = transform_metadata.get(frame_id)
         if transform is None:
             logger.warning(f"no transform found for frame_id {frame_id!r}")
+            
         else:
             alias_metadata.update({"transform": transform})
 

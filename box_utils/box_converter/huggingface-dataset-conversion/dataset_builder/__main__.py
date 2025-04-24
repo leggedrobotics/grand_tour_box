@@ -14,14 +14,13 @@ from dataset_builder.build_metadata import build_metadata_part
 from dataset_builder.dataset_config import load_config
 
 #TODO: make this configurable
-# MISSION_NAME = "pub_2024-10-01-11-29-55"
 CONFIG_FILE_NAME = "grandtour_release"
-# MISSION_NAME = "2024-10-01-12-00-49"
+
 
 MISSION_NAME = "2024-10-01-11-29-55"
 DEFAULT_CONFIG_PATH = Path(__file__).parent.parent / "configs" / f"{CONFIG_FILE_NAME}.yaml"
 DATA_PATH =  Path(f"/tmp/dataset_builder_{MISSION_NAME}")
-# DATA_PATH =Path(__file__).parent.parent / "data"
+
 INPUT_PATH = DATA_PATH / "files" / MISSION_NAME
 DATASET_PATH = DATA_PATH / "dataset" / MISSION_NAME
 
@@ -50,20 +49,37 @@ def push_dataset_to_huggingface_api(dataset_repo: str, dataset_path: str = ".",
         with open(token_path, "r") as token_file:
             token = token_file.read().strip()
     else:
-        raise FileNotFoundError(f"Token file not found at {token}")
+        raise FileNotFoundError(f"Token file not found at {token_path}")
 
+    with open(token_path, "r") as token_file:
+        token = token_file.read().strip()
+    os.environ["HF_TOKEN"] = token
 
-    api = HfApi(token=os.getenv("HF_TOKEN"))
+    api = HfApi(token=token)
 
     try:
-        api.upload_folder(
+        api.create_repo(repo_id=dataset_repo, 
+                        repo_type="dataset", 
+                        exist_ok=True, 
+                        token=token)
+        
+    except Exception as e:
+        raise RuntimeError(f"Error creating repository: {e}")
+
+    try:
+        # Use upload_large_folder for large datasets
+        api.upload_large_folder(
             folder_path=dataset_path,
             repo_id=dataset_repo,
             repo_type="dataset",
+            private=True,
+            print_report=True,
+            print_report_every=1,
         )
         print("Dataset uploaded successfully.")
+        
     except Exception as e:
-        print(f"Error uploading dataset: {e}")
+        raise RuntimeError(f"Error uploading dataset: {e}")
 
 def run_converter(
     input_path: Path, output_path: Path, *, config_path: Path, mission_prefix: str
@@ -79,17 +95,18 @@ def run_converter(
         metadata_config=metadata_config,
         topic_registry=topic_registry,
     )
-    build_data_part(
-        topic_registry=topic_registry,
-        bags_path=input_path,
-        dataset_base_path=output_path,
-    )
+    # TODO: uncomment this
+    # build_data_part(
+    #     topic_registry=topic_registry,
+    #     bags_path=input_path,
+    #     dataset_base_path=output_path,
+    # )
 
 
 def main() -> int:
-    # missions = kleinkram.list_missions(mission_names=['release_' + MISSION_NAME])      
-    # assert len(missions) == 1
-    # mission = missions[0]
+    missions = kleinkram.list_missions(mission_names=['release_' + MISSION_NAME])      
+    assert len(missions) == 1
+    mission = missions[0]
     
     # if DOWNLOAD_FLAG:
     #     download_mission(mission_id=mission.id, input_path=INPUT_PATH)

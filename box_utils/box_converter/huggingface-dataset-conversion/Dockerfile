@@ -51,6 +51,7 @@ RUN . /opt/ros/$ROS_DISTRO/setup.sh && catkin build \
     gnss_msgs \
     && :
 
+        
 # entrypoint
 WORKDIR /app
 COPY ./entrypoint.sh /
