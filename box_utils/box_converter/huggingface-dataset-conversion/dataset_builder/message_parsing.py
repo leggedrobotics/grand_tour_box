@@ -18,6 +18,7 @@ from geometry_msgs.msg import PoseStamped
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from geometry_msgs.msg import Quaternion
 from geometry_msgs.msg import Twist
+from geometry_msgs.msg import TwistStamped
 from geometry_msgs.msg import Vector3
 from gnss_msgs.msg import GnssRaw  # type: ignore
 from gps_common.msg import GPSFix  # type: ignore
@@ -50,7 +51,6 @@ from dataset_builder.dataset_config import OdometryTopic
 from dataset_builder.dataset_config import PointTopic
 from dataset_builder.dataset_config import PoseTopic
 from dataset_builder.dataset_config import SingletonTransformTopic
-from dataset_builder.dataset_config import MultitonTransformTopic
 from dataset_builder.dataset_config import TemperatureTopic
 from dataset_builder.dataset_config import Topic
 
@@ -407,19 +407,12 @@ def _extract_tf2_message_header(msg: TFMessage) -> Header:
     transform = msg.transforms[0]  # type: ignore
     return transform.header  # type: ignore
 
-def _extract_multiple_tf2_message_header(msg: TFMessage) -> List[Header]:
-    # Use _extract_tf2_message_header for each transform in the list
-    if len(msg.transforms) > 0:
-        return [_extract_tf2_message_header(TFMessage([transform])) for transform in msg.transforms]
-    raise ValueError("TFMessage contains no transforms")
-
 # def _extract_actuator_readings_header(msg: SeActuatorReadings) -> Header:
 #     return msg.readings[0].header
 
 
 SPECIAL_HEADER_MESSAGES_EXTRACT_FUNCTIONS = [
     (SingletonTransformTopic, _extract_tf2_message_header),
-    (MultitonTransformTopic, _extract_multiple_tf2_message_header)
     # (ActuatorReadingsTopic, _extract_actuator_readings_header),
 ]
 
@@ -435,6 +428,10 @@ def _extract_header_data_from_deserialized_message(
     msg: Any, topic_desc: Topic
 ) -> Dict[str, BasicType]:
     header = _extract_header(msg, topic_desc)
+    if isinstance(header, list):  # since there can be multiple transforms in a TFMessage
+        return {
+            f"frame_id_{i}": h.frame_id for i, h in enumerate(header)
+        }
     return {
         "timestamp": header.stamp.to_sec(),  # type: ignore
         "sequence_id": header.seq,  # type: ignore

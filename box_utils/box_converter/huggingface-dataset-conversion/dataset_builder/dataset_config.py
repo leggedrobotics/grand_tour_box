@@ -84,9 +84,6 @@ class PointTopic(Topic): ...
 class SingletonTransformTopic(Topic): ...
 
 @dataclass
-class MultitonTransformTopic(Topic): ...
-
-@dataclass
 class TemperatureTopic(Topic): ...
 
 
@@ -455,8 +452,8 @@ def _build_twist_topics_attributes(
     twist_topics: Sequence[TwistTopic],
 ):
     topic_tp = {
-        "twist_lin": ArrayType((3,), np.float64),
-        "twist_ang": ArrayType((3,), np.float64),
+        "linear": ArrayType((3,), np.float64),
+        "angular": ArrayType((3,), np.float64),
     }
     return {topic.alias: (topic_tp.copy(), topic) for topic in twist_topics}
 
@@ -491,10 +488,6 @@ TOPIC_TYPES = {
     "point_topics": (PointTopic, _build_point_topics_attributes),
     "singleton_transform_topics": (
         SingletonTransformTopic,
-        _build_singleton_transform_topics_attributes,
-    ),
-    "multiton_transform_topics": (
-        MultitonTransformTopic,
         _build_singleton_transform_topics_attributes,
     ),
     "temperature_topics": (TemperatureTopic, _build_temperature_topics_attributes),

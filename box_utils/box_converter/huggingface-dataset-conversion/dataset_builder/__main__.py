@@ -27,7 +27,9 @@ DATASET_PATH = DATA_PATH / "dataset" / MISSION_NAME
 HUGGINGFACE_DATASET_NAME = f"leggedrobotics/{MISSION_NAME}"
 USERTOKEN_PATH = Path(__file__).parent.parent /"configs" / "user_token.txt"
 
-DOWNLOAD_FLAG = True
+# to not always doublecheck the hashes
+DOWNLOAD_FLAG = False
+PUSHDATASET_FLAG = False
 
 
 def download_mission(mission_id: UUID, input_path: Path) -> None:
@@ -77,7 +79,7 @@ def push_dataset_to_huggingface_api(dataset_repo: str, dataset_path: str = ".",
             print_report_every=1,
         )
         print("Dataset uploaded successfully.")
-        
+
     except Exception as e:
         raise RuntimeError(f"Error uploading dataset: {e}")
 
@@ -89,18 +91,18 @@ def run_converter(
     assert input_path.is_dir()
     topic_registry, metadata_config = load_config(config_path, mission_prefix)
 
-    build_metadata_part(
-        base_dataset_path=output_path,
-        bags_path=input_path,
-        metadata_config=metadata_config,
-        topic_registry=topic_registry,
-    )
-    # TODO: uncomment this
-    # build_data_part(
-    #     topic_registry=topic_registry,
+    # build_metadata_part(
+    #     base_dataset_path=output_path,
     #     bags_path=input_path,
-    #     dataset_base_path=output_path,
+    #     metadata_config=metadata_config,
+    #     topic_registry=topic_registry,
     # )
+
+    build_data_part(
+        topic_registry=topic_registry,
+        bags_path=input_path,
+        dataset_base_path=output_path,
+    )
 
 
 def main() -> int:
@@ -108,21 +110,22 @@ def main() -> int:
     assert len(missions) == 1
     mission = missions[0]
     
-    # if DOWNLOAD_FLAG:
-    #     download_mission(mission_id=mission.id, input_path=INPUT_PATH)
+    if DOWNLOAD_FLAG:
+        download_mission(mission_id=mission.id, input_path=INPUT_PATH)
 
-    # run_converter(
-    #     input_path=INPUT_PATH,
-    #     output_path=DATASET_PATH,
-    #     config_path=DEFAULT_CONFIG_PATH,
-    #     mission_prefix=MISSION_NAME,
-    # )
-
-    push_dataset_to_huggingface_api(
-        dataset_repo=HUGGINGFACE_DATASET_NAME,
-        dataset_path=DATASET_PATH,
-        token_path=USERTOKEN_PATH
+    run_converter(
+        input_path=INPUT_PATH,
+        output_path=DATASET_PATH,
+        config_path=DEFAULT_CONFIG_PATH,
+        mission_prefix=MISSION_NAME,
     )
+
+    if PUSHDATASET_FLAG:
+        push_dataset_to_huggingface_api(
+            dataset_repo=HUGGINGFACE_DATASET_NAME,
+            dataset_path=DATASET_PATH,
+            token_path=USERTOKEN_PATH
+        )
 
     return 0
 

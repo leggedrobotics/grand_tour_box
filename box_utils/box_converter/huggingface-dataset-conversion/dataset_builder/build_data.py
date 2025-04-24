@@ -252,7 +252,7 @@ def _tar_ball_dataset(base_dataset_path: Path) -> None:
     image_files = base_dataset_path / IMAGE_PREFIX
     if image_files.exists():
         _tar_ball_dirs_in_dir(image_files)
-    
+
 def build_data_part(
     *, bags_path: Path, dataset_base_path: Path, topic_registry: TopicRegistry
 ) -> None:
