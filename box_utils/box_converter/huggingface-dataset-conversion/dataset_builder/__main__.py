@@ -47,6 +47,8 @@ def push_dataset_to_huggingface_api(dataset_repo: str, dataset_path: str = ".",
     Uploads a dataset to the Hugging Face Hub using the Python API.
 
     """
+
+    # TODO change loading of token
     if os.path.exists(token_path):
         with open(token_path, "r") as token_file:
             token = token_file.read().strip()

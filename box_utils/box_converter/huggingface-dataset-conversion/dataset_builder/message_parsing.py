@@ -430,6 +430,7 @@ def _parse_float32_multi_array(msg: Float32MultiArray, _: Any) -> Dict[str, Basi
         "dimensions": dim_info,
     }
 
+
 def _extract_default_header(msg: Any) -> Header:
     return msg.header  # type: ignore
 
