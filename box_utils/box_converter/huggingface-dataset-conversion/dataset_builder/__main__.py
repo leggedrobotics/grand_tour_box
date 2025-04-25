@@ -28,7 +28,7 @@ HUGGINGFACE_DATASET_NAME = f"leggedrobotics/{MISSION_NAME}"
 USERTOKEN_PATH = Path(__file__).parent.parent /"configs" / "user_token.txt"
 
 #TODO: check how this is needed in the end
-DOWNLOAD_FLAG = False
+DOWNLOAD_FLAG = True
 PUSHDATASET_FLAG = False
 
 

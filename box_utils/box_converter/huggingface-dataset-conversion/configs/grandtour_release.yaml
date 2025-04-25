@@ -371,14 +371,15 @@ data:
     #   topic: "/boxi/hesai/intensity_image"
 
   lidar_topics:
-    - alias: anymal_velodyne
-      file: "*_anymal_velodyne.bag"
-      topic: "/anymal/velodyne/points"
-      max_points: 64000
-      attributes:
-        - intensity
-        - ring
-        - timestamp
+  # TODO: not yet ready
+    # - alias: anymal_velodyne
+    #   file: "*_anymal_velodyne.bag"
+    #   topic: "/anymal/velodyne/points"
+    #   max_points: 64000
+    #   attributes:
+    #     - intensity
+    #     - ring
+    #     - timestamp
 
     - alias: hesai
       file: "*_hesai.bag"
@@ -459,9 +460,9 @@ data:
       topic: "/boxi/livox/imu"
 
     # not used according to Jonas
-    - alias: zed2i_imu
-      file: "*_zed2i_prop.bag"
-      topic: "/boxi/zed2i/imu"
+    # - alias: zed2i_imu
+    #   file: "*_zed2i_prop.bag"
+    #   topic: "/boxi/zed2i/imu"
 
     - alias: cpt7_imu
       file: "*_cpt7_imu.bag"
