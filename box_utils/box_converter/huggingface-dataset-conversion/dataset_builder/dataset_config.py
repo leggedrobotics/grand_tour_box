@@ -67,6 +67,9 @@ class AnymalStateTopic(Topic):
     number_of_joints: int
     feet: List[str] = field(default_factory=list)
 
+# TODO: test and debug
+@dataclass
+class AnymalDebugTopic(Topic): ...
 
 @dataclass
 class NavSatFixTopic(Topic): ...
@@ -94,6 +97,11 @@ class FluidPressureTopic(Topic): ...
 @dataclass
 class TwistTopic(Topic): ...
 
+@dataclass
+class AnymalTwistTopic(Topic): ...
+
+@dataclass
+class ImuVector(Topic): ...
 
 @dataclass
 class GPSFixTopic(Topic): ...
@@ -458,6 +466,37 @@ def _build_twist_topics_attributes(
     return {topic.alias: (topic_tp.copy(), topic) for topic in twist_topics}
 
 
+def _build_anymal_twist_topics_attributes(
+    twist_topics: Sequence[TwistTopic],
+):
+    topic_tp = {
+        "linear": ArrayType((3,), np.float64),
+        "angular": ArrayType((3,), np.float64),
+    }
+    return {topic.alias: (topic_tp.copy(), topic) for topic in twist_topics}
+
+
+def _build_imu_vector_topics_attributes(
+    imu_vector: Sequence[ImuVector],
+):
+    topic_tp = {
+        "vector": ArrayType((3,), np.float64)
+    }
+    return {topic.alias: (topic_tp.copy(), topic) for topic in imu_vector}
+
+# TODO: test and debug
+def _build_anymal_debug_topics_attributes(
+    anymal_debug_topics: Sequence[AnymalDebugTopic],
+) -> TopicRegistry:
+    topic_tp = {
+        "matrix_data": ArrayType((3,), np.float32),
+        "matrix_data_offset": ArrayType(tuple(), np.uint32),
+        "matrix_dimensions": ArrayType((3, 3), np.object_),
+    }
+
+    return {topic.alias: (topic_tp.copy(), topic) for topic in anymal_debug_topics}
+
+
 UNIVERSAL_ATTRIBUTES: Dict[str, ArrayType] = {
     "timestamp": ArrayType(tuple(), np.uint64),
     "sequence_id": ArrayType(tuple(), np.uint64),
@@ -480,6 +519,8 @@ TOPIC_TYPES = {
     "imu_topics": (ImuTopic, _build_imu_topics_attributes),
     "odometry_topics": (OdometryTopic, _build_odometry_topics_attributes),
     "anymal_state_topics": (AnymalStateTopic, _build_anymal_state_topics_attributes),
+    "anymal_twist_topics": (AnymalTwistTopic, _build_anymal_twist_topics_attributes),
+    "anymal_debug_topics": (AnymalDebugTopic, _build_anymal_debug_topics_attributes),
     "nav_sat_fix_topics": (NavSatFixTopic, _build_nav_sat_fix_topics_attributes),
     "magnetic_field_topics": (
         MagneticFieldTopic,
@@ -503,6 +544,7 @@ TOPIC_TYPES = {
         ActuatorReadingsTopic,
         _build_actuator_readings_topics_attributes,
     ),
+    "imu_vector_topics": (ImuVector, _build_imu_vector_topics_attributes),
 }
 
 

@@ -27,8 +27,8 @@ DATASET_PATH = DATA_PATH / "dataset" / MISSION_NAME
 HUGGINGFACE_DATASET_NAME = f"leggedrobotics/{MISSION_NAME}"
 USERTOKEN_PATH = Path(__file__).parent.parent /"configs" / "user_token.txt"
 
-# to not always doublecheck the hashes
-DOWNLOAD_FLAG = True
+#TODO: check how this is needed in the end
+DOWNLOAD_FLAG = False
 PUSHDATASET_FLAG = False
 
 

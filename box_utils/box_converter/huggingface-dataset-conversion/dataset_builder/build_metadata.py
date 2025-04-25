@@ -264,6 +264,7 @@ def build_metadata_part(
     metadata_config: MetadataConfig,
     topic_registry: TopicRegistry,
 ) -> None:
+    # TODO: fix Nonetype error
     frame_id_metadata = _get_frame_ids(bags_path, topic_registry)
     cam_info_metadata = _get_camera_infos(bags_path, metadata_config)
     transform_metadata = _get_frame_transform_metadata(
