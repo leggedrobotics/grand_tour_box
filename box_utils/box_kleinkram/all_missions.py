@@ -2,6 +2,7 @@ import os
 import subprocess
 import shlex
 from box_auto.utils import deployments
+import time
 
 
 # Optional: Verbose mode with more details
@@ -68,7 +69,7 @@ def execute_command_per_mission(cmd):
         print(k, ": ", v)
 
 
-def execute_command_per_mission2(cmd, parallel=1, skip=-1):
+def execute_command_per_mission2(cmd, parallel=8, skip=-1, add_mission_name=False):
     summary = {}
     j = 0
     executed_j = 0
@@ -112,20 +113,66 @@ def execute_command_per_mission2(cmd, parallel=1, skip=-1):
         print(k, ": ", v)
 
 
-def process_all_gnss():
+def execute_command_per_mission3(cmd, parallel=8):
     summary = {}
-    for dep in deployments:
-        f = dep["data_folder"]
-        cmd = f"python3 /home/jonfrey/git/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/cpt7/move_cpt7_files.py --data_folder {f} --cpt7_folder /media/jonfrey/Data/CPT7/2024-11-27_post_leica"
-        result = subprocess.run(shlex.split(cmd))
-        return_code = result.returncode
-        summary[dep["data_folder"]] = return_code
+    j = 0
+    executed_j = 0
+
+    from box_auto.utils import get_uuid_mapping, read_sheet_data
+    import os
+
+    uuid_mappings = get_uuid_mapping()
+    SPREADSHEET_ID = "1mENfskg_jO_vJGFM5yonqPuf-wYUNmg26IPv3pOu3gg"
+    # Read the data and print the list
+    _, MISSION_DATA = read_sheet_data(SPREADSHEET_ID)
+
+    for mission_name, _ in uuid_mappings.items():
+        print("Mission name: ", mission_name)
+        if MISSION_DATA[mission_name]["GOOD_MISSION"] == "TRUE":
+            try:
+                cmd_out = cmd + f" --mission_name={mission_name} "
+                if (executed_j - parallel + 1) % parallel != 0:  # TRUST ME BRO
+                    cmd_out = cmd + f" --mission_name={mission_name} " + "&"
+                    os.system(cmd_out)
+                    summary[mission_name] = "Results not logged given that executed in background"
+                else:
+                    result = subprocess.run(
+                        shlex.split(cmd_out),
+                        check=True,  # Raise an exception if the command fails
+                    )
+                    exit_code = result.returncode
+                    summary[mission_name] = f"Script executed successfully with exit code {exit_code}."
+
+                    print(f"Script executed successfully with exit code {exit_code}.")
+            except subprocess.CalledProcessError as e:
+                print(f"Script failed with exit code {e.returncode}.")
+                summary[mission_name] = f"Script failed with exit code {e.returncode}."
+            except Exception as e:
+                print(f"An error occurred: {e}")
+                summary[mission_name] = f"An error occurred: {e}"
+
+            time.sleep(5)
+            executed_j += 1
+            j += 1
+
     for k, v in summary.items():
         print(k, ": ", v)
 
-    execute_command_per_mission(
-        "python3 /home/jonfrey/git/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/cpt7/export_raw_imu_bag.py"
-    )
+
+def process_all_gnss():
+    # summary = {}
+    # for dep in deployments:
+    #     f = dep["data_folder"]
+    #     cmd = f"python3 /home/jonfrey/git/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/cpt7/move_cpt7_files.py --data_folder {f} --cpt7_folder /media/jonfrey/Data/CPT7/2024-11-27_post_leica"
+    #     result = subprocess.run(shlex.split(cmd))
+    #     return_code = result.returncode
+    #     summary[dep["data_folder"]] = return_code
+    # for k, v in summary.items():
+    #     print(k, ": ", v)
+
+    # execute_command_per_mission(
+    #     "python3 /home/jonfrey/git/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/cpt7/export_raw_imu_bag.py"
+    # )
     execute_command_per_mission(
         "python3 /home/jonfrey/git/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/cpt7/gnss_process.py"
     )
@@ -145,9 +192,24 @@ if __name__ == "__main__":
     #     "python3 /home/jonfrey/git/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/ap20/ap20_validate.py"
     # )
 
-    execute_command_per_mission(
-        "python3 /home/jonfrey/git/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/calibration/update_calibration.py"
+    # execute_command_per_mission(
+    #     "python3 /home/jonfrey/git/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/cpt7/gnss_process.py"
+    # )
+
+    # execute_command_per_mission(
+    #     "python3 /home/jonfrey/git/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/cpt7/export_gps_gt_trajectory_bag.py"
+    # )
+
+    # execute_command_per_mission2(
+    #     "python3 /home/jonfrey/git/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/calibration/update_imu_intrinsics_copy.py"
+    # )
+
+    execute_command_per_mission3(
+        "python3 /home/jonfrey/git/grand_tour_box/box_utils/box_converter/nerfstudio/nerf_studio.py ", parallel=12
     )
+    # execute_command_per_mission(
+    #     "python3 /home/jonfrey/git/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/calibration/update_calibration.py"
+    # )
 
     # execute_command_per_mission2( "python3 /home/jonfrey/git/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/camera/color_correction.py", parallel = 20, skip = 0)
     # execute_command_per_mission("docker compose -f kleinkram.yaml up")

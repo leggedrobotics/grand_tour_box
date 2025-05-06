@@ -301,6 +301,7 @@ def save_image_to_bag(
     bag: rosbag.Bag,
     cv_bridge: CvBridge,
     timestamp: int,
+    seq: int,
     topic: str,
     compressed: bool,
     grayscale: bool,
@@ -313,6 +314,7 @@ def save_image_to_bag(
     # write the image
     msg = save_image_to_ros1_message(image, cv_bridge, compressed=compressed, grayscale=grayscale)
     msg.header.stamp = timestamp
+    msg.header.seq = seq
     bag.write(topic, msg, timestamp)
 
     # write number of detections
@@ -357,6 +359,7 @@ def anonymize_image_topics_in_bagfile(
                 out_bag,
                 cv_bridge,
                 timestamp,
+                msg.header.seq,
                 topic,
                 compressed,
                 grayscale,

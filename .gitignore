@@ -32,3 +32,4 @@ box_applications/waypoint_ie_10_00_1206/*
 **/.export
 box_utils/box_converter/image-anonymization-pipeline/cluster/.export/*
 box_utils/box_converter/image-anonymization-pipeline/cluster/.submit/*
+box_utils/box_converter/image-anonymization-pipeline/cluster/.out/*

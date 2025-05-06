@@ -18,17 +18,18 @@ for name, data in uuid_mappings.items():
 
     if MISSION_DATA[name]["GOOD_MISSION"] == "TRUE":
         uuid = data["uuid_pub"]
+
         files = kleinkram.list_files(mission_ids=[uuid], file_names=["*_ready.bag"])
         files = [f for f in files if round(f.size / 1024 / 1024, 2) > 0.1]
 
-        if len(files) == 3:
+        if len(files) == 1:
             print(f"MISSION:   {name} already done")
             continue
 
         uuid = data["uuid"]
 
         try:
-            tmp_folder = Path("/tmp") / (name + "_lidar")
+            tmp_folder = Path("/data") / (name + "_lidar")
             tmp_folder.mkdir(parents=True, exist_ok=True)
 
             file_names = [
@@ -58,6 +59,24 @@ for name, data in uuid_mappings.items():
                 path_upload = get_bag(pattern, directory=tmp_folder)
                 upload_simple(project_name="GrandTour", mission_name="pub_" + name, path=path_upload)
 
+            # Doggy minimal generation without fusing hesai_dlio.bag nore ie_tc.bag as intermediate solution
+            os.system(
+                f"export MISSION_DATA={tmp_folder}; docker compose -f /home/jonfrey/git/grand_tour_box/box_utils/box_auto/compose/kleinkram.yaml up --no-deps tf_static_minimal_model; sleep 5;"
+            )
+
+            # This requires the minimal
+            os.system(
+                f"export MISSION_DATA={tmp_folder}; docker compose -f /home/jonfrey/git/grand_tour_box/box_utils/box_auto/compose/kleinkram.yaml up --no-deps pointcloud_undistortion; sleep 5;"
+            )
+
+            patterns = [
+                "*_nuc_hesai_undist.bag",
+                "*_nuc_livox_undist.bag",
+            ]
+            for pattern in patterns:
+                path_upload = get_bag(pattern, directory=tmp_folder)
+                upload_simple(project_name="GrandTour", mission_name="pub_" + name, path=path_upload)
+
             error = False
             for file_name in file_names:
                 p = get_bag(file_name, directory=tmp_folder)
@@ -81,26 +100,11 @@ for name, data in uuid_mappings.items():
             os.system(
                 f"export MISSION_DATA={tmp_folder}; docker compose -f /home/jonfrey/git/grand_tour_box/box_utils/box_auto/compose/kleinkram.yaml up --no-deps velodyne; sleep 5;"
             )
+            os.system(
+                f"export MISSION_DATA={tmp_folder}; docker compose -f /home/jonfrey/git/grand_tour_box/box_utils/box_auto/compose/kleinkram.yaml up --no-deps filter_pointclouds_velo; sleep 5;"
+            )
             path_upload = get_bag("*_npc_velodyne_ready.bag", directory=tmp_folder)
             upload_simple(project_name="GrandTour", mission_name="pub_" + name, path=path_upload)
-
-            # Doggy minimal generation without fusing hesai_dlio.bag nore ie_tc.bag as intermediate solution
-            os.system(
-                f"export MISSION_DATA={tmp_folder}; docker compose -f /home/jonfrey/git/grand_tour_box/box_utils/box_auto/compose/kleinkram.yaml up --no-deps tf_static_minimal_model; sleep 5;"
-            )
-
-            # This requires the minimal
-            os.system(
-                f"export MISSION_DATA={tmp_folder}; docker compose -f /home/jonfrey/git/grand_tour_box/box_utils/box_auto/compose/kleinkram.yaml up --no-deps pointcloud_undistortion; sleep 5;"
-            )
-
-            patterns = [
-                "*_nuc_hesai_undist.bag",
-                "*_nuc_livox_undist.bag",
-            ]
-            for pattern in patterns:
-                path_upload = get_bag(pattern, directory=tmp_folder)
-                upload_simple(project_name="GrandTour", mission_name="pub_" + name, path=path_upload)
 
         except Exception as e:
             print("Error: ", e)
