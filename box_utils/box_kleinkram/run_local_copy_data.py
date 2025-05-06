@@ -36,7 +36,7 @@ for name, data in uuid_mappings.items():
         ]
         try:
             for pat in master_p:
-                tmp_folder = Path("/tmp") / (name + "_run_local_copy_data")
+                tmp_folder = Path("/data") / (name + "_run_local_copy_data")
                 tmp_folder.mkdir(parents=True, exist_ok=True)
                 patterns = [pat]
 

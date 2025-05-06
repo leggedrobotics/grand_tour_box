@@ -47,12 +47,12 @@ def launch_nodes(patterns, output_bag_path):
         background=True,
     )
     sleep(5)
-    run_ros_command(f"rosbag play -r 5 --clock {merged_rosbag_path}")
-    print("Waiting for 10s before uploading!")
-    sleep(10)
+    run_ros_command(f"rosbag play -r 3 --clock {merged_rosbag_path}")
+    print("Waiting for 15s before stopping!")
+    sleep(15)
     print("Moving and uploading bag!")
     kill_roscore()
-
+    sleep(20)
     # Remove the merged rosbag file as it's no longer needed
     if os.path.exists(merged_rosbag_path):
         print(f"Removing merged rosbag at {merged_rosbag_path}")

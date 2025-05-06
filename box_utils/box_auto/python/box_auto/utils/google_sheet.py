@@ -13,7 +13,7 @@ def read_sheet_data(spreadsheet_id, sheet_name_topic="topic_overview", sheet_nam
     worksheet = sheet.worksheet(sheet_name_topic)
 
     # Read data from A1 to G500
-    data = worksheet.get_all_values("A1:G500")
+    data = worksheet.get_all_values("A1:G542")
 
     # Define the keys for the dictionary
     keys = ["topic_name_orig", "type", "frame_id_orig", "convert", "topic_name_out", "frame_id_out", "bag_name_out"]

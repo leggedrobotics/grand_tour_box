@@ -94,7 +94,7 @@ measurement_integrators:
 
 inputs:
   - type: pointcloud_topic
-    topic_name: /dlio/deskewed_point_cloud
+    topic_name: /boxi/dlio/hesai_deskewed
     topic_type: PointCloud2
     measurement_integrator_names: 
       - hesai_xt32_short
@@ -103,7 +103,7 @@ inputs:
     topic_queue_length: 2
     max_wait_for_pose: { seconds: 0.1 }
   - type: pointcloud_topic
-    topic_name: /gt_box/livox/lidar
+    topic_name: /boxi/livox/points_undistorted
     topic_type: pointcloud_topic
     measurement_integrator_names: livox_mid360
     undistort_motion: false

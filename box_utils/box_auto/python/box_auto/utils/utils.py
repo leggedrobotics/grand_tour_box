@@ -54,7 +54,13 @@ def kill_roscore():
 
 
 def get_bag(
-    pattern, directory=MISSION_DATA, auto_download=True, return_list=False, rglob=False, return_upon_no_files=False
+    pattern,
+    directory=MISSION_DATA,
+    auto_download=True,
+    return_list=False,
+    rglob=False,
+    return_upon_no_files=False,
+    try_until_suc=False,
 ):
     """
     Finds the matching .bag files in the mission on Kleinram and downloads it.
@@ -78,38 +84,51 @@ def get_bag(
     if (auto_download) and (not (pattern.endswith(".bag") or pattern.endswith(".mcap"))):
         raise ValueError(f"Pattern must end with '.bag' or '.mcap'. Got: {pattern}")
 
-    # Download pattern matched files from Kleinkram
-    if (auto_download) and (os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE"):
-        uuid = os.environ["MISSION_UUID"]
-        kleinkram.download(
-            mission_ids=[uuid],
-            file_names=[pattern],
-            dest=directory,
-            verbose=True,
-        )
+    j = 0
+    while True:
+        # Download pattern matched files from Kleinkram
+        if (auto_download) and (os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE"):
+            uuid = os.environ["MISSION_UUID"]
+            kleinkram.download(
+                mission_ids=[uuid],
+                file_names=[pattern],
+                dest=directory,
+                verbose=True,
+            )
 
-    if rglob:
-        # Get reference bag path
-        files = [str(s) for s in Path(directory).rglob(pattern)]
-    else:
-        # Get reference bag path
-        files = [str(s) for s in Path(directory).glob(pattern)]
+        if rglob:
+            # Get reference bag path
+            files = [str(s) for s in Path(directory).rglob(pattern)]
+        else:
+            # Get reference bag path
+            files = [str(s) for s in Path(directory).glob(pattern)]
 
-    if not files:
-        if return_upon_no_files:
-            return None
+        if not files:
+            # No file was downloaded
+            if return_upon_no_files:
+                return None
 
-        raise FileNotFoundError(f"No matching bags found: {pattern} in directory {directory} \n")
+            if try_until_suc:
+                # Repeat downloading for 10 times
+                if j == 10:
+                    raise ValueError(
+                        f"Error: No file found: {pattern} -> Stop Trying {j}/10 in directory {directory}: \n"
+                        + str(files)
+                    )
+                print(f"Error: No file found: {pattern} -> Try again {j}/10 in directory {directory}: \n" + str(files))
+                j += 1
+            else:
+                raise FileNotFoundError(f"No matching bags found: {pattern} in directory {directory} \n")
 
-    if len(files) > 1:
-        if return_list:
-            return files
+        if len(files) > 1:
+            if return_list:
+                return files
 
-        raise ValueError(
-            f"Error: More or less matching bag files found: {pattern} in directory {directory}: \n" + str(files)
-        )
-
-    return files[0]
+            raise ValueError(
+                f"Error: More or less matching bag files found: {pattern} in directory {directory}: \n" + str(files)
+            )
+        if len(files) == 1:
+            return files[0]
 
 
 def find_and_extract_non_matching(directory, pattern):
@@ -165,13 +184,14 @@ def get_file(pattern, directory=MISSION_DATA, rglob=False, return_list=False):
     if len(files) == 0:
         print(f"Error: Found {len(files)} matching files for pattern {pattern} in directory {directory}")
         return None, False
-    
+
     if len(files) > 1:
         if return_list:
             return files
 
         raise ValueError(
-            f"Error: More than 1 matching bag files found. If you want list of these files set return_list=True. Bags : {pattern} in directory {directory}: \n" + str(files)
+            f"Error: More than 1 matching bag files found. If you want list of these files set return_list=True. Bags : {pattern} in directory {directory}: \n"
+            + str(files)
         )
 
     return str(files[0]), True

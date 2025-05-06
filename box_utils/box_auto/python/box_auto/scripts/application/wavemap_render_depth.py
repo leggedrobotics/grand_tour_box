@@ -21,7 +21,7 @@ class Saver:
         self.folder = Path(folder)
         self.folder.mkdir(parents=True, exist_ok=True)
         self.bag = None
-
+        self.count = 0
         if save_rosbag:
             self.bag_path = self.folder / f"{rosbag_prefix}_wavemap.bag"
             self.bag = rosbag.Bag(self.bag_path, "w", compression="lz4")
@@ -40,12 +40,16 @@ class Saver:
         self.bag.write(topic, msg, t)
 
     def save_png(self, depth_image, postfix, header=None):
+        if header.seq == 0:
+            header.seq = self.count
+
         output_path = self.folder / f"{postfix}_{header.seq:05d}.png"
         invalid = depth_image == -1
         depth_image = depth_image.clip(0, (2**16 - 1) / 1000)
         depth_image = (depth_image * 1000).astype(np.uint16)  # Scale and convert to uint16
         depth_image[invalid] = 0
         Image.fromarray(depth_image.T).save(str(output_path))
+        self.count += 1
 
     def __del__(self):
         if self.bag:
@@ -120,7 +124,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--config_file",
         type=str,
-        default=str(Path(BOX_AUTO_DIR).parent / "box_converter/grand_tour_offline.yaml"),
+        default=str(Path(BOX_AUTO_DIR).parent / "box_converter/nerfstudio/cfg/grand_tour_release.yaml"),
         help="Path to the configuration YAML file",
     )
 
@@ -140,7 +144,7 @@ if __name__ == "__main__":
         config = yaml.safe_load(f)
 
     # Retrieve tf bag
-    tf_bag_path = get_bag("*_tf_static_hesai_dlio_tf.bag")
+    tf_bag_path = get_bag("*_tf_minimal.bag")
     prefix = Path(tf_bag_path).stem.split("_")[0]
 
     tf_listener = BagTfTransformer(tf_bag_path)
@@ -199,12 +203,12 @@ if __name__ == "__main__":
                     break
 
     key = config["wavemap"]["key"]
-    saver = Saver(
-        Path(args.mission_data) / f"wavemap/{key}", save_rosbag=config["wavemap"]["save_ros"], rosbag_prefix="prefix"
-    )
+
+    from box_auto.utils import ARTIFACT_FOLDER
 
     # Process cameras
     for camera in config["cameras"]:
+        saver = Saver(Path(ARTIFACT_FOLDER) / key, save_rosbag=config["wavemap"]["save_ros"], rosbag_prefix="prefix")
         bag_file = get_bag(camera["bag_pattern_image"])
         last_trans = None
         with rosbag.Bag(bag_file, "r") as bag:

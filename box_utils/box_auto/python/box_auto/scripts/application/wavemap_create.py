@@ -14,11 +14,13 @@ from box_auto.utils import get_bag, WS, MISSION_DATA, ARTIFACT_FOLDER
 
 def main():
     # Parameters
-    date = [(str(s.name)).split("_")[0] for s in Path(MISSION_DATA).glob("*_nuc_livox*.bag")][0]
-    OUTPUT = f"{date}_wavemap.wvmp"
-    TF_BAG = get_bag("*_tf_static_hesai_dlio_tf.bag")
-    POINTCLOUD_BAGS = [get_bag("*_nuc_livox_ready.bag"), get_bag("*_hesai_dlio.bag")]
+    print(MISSION_DATA)
+    TF_BAG = get_bag("*_tf_minimal.bag")
+    POINTCLOUD_BAGS = [get_bag("*_livox_undist.bag"), get_bag("*_dlio.bag")]
     (Path(ARTIFACT_FOLDER) / "wavemap").mkdir(exist_ok=True, parents=True)
+
+    date = [(str(s.name)).split("_")[0] for s in Path(MISSION_DATA).glob("*_livox_undist.bag")][0]
+    OUTPUT = f"{date}_wavemap.wvmp"
     OUTFILE = str(Path(ARTIFACT_FOLDER) / "wavemap" / OUTPUT)
 
     START_PLUS = 0
@@ -102,7 +104,7 @@ def main():
     your_map.prune()
 
     # Save the map
-    print(f"Saving map of size {your_map.memory_usage} bytes")
+    print(f"Saving map of size {your_map.memory_usage} bytes: {OUTFILE}")
     your_map.store(OUTFILE)
 
     # Avoids leak warnings on old Python versions with lazy garbage collectors
