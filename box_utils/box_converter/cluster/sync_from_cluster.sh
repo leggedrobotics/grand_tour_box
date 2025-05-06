@@ -1,1 +1,0 @@
-scp -r euler.ethz.ch:/cluster/scratch/jonfrey/.submit /home/jonfrey/git/grand_tour_box/box_utils/box_converter/cluster/.out

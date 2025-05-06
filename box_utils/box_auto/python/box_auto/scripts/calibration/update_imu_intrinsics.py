@@ -37,13 +37,13 @@ CONFIG = {
     "cpt7": {
         "pattern": "_cpt7_raw_imu.bag",
         "topics": [
-            "/gt_box/cpt7/imu/data_raw",
+            "/gt_box/cpt7/offline_from_novatel_logs/imu",
         ],
         "out_pattern": "_cpt7_raw_intrinsics.bag",
         "frequency": 100,
     },
     "alphasense": {
-        "pattern": "_nuc_alphasense_color.bag",
+        "pattern": "_nuc_alphasense.bag",
         "topics": ["/gt_box/alphasense_driver_node/imu"],
         "out_pattern": "_nuc_alphasense_intrinsics.bag",
         "frequency": 200,
