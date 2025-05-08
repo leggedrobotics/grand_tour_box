@@ -12,18 +12,24 @@ for name, data in uuid_mappings.items():
         continue
 
     if MISSION_DATA[name]["GOOD_MISSION"] == "TRUE":
-        uuid = data["uuid_pub"]
+        uuid = data["uuid_release"]
         j += 1
-        files = kleinkram.list_files(mission_ids=[uuid], file_names=["*_tf_minimal.bag"])
-        files = [f for f in files if f.size / 1024 / 1024 > 0.1]
+        files = kleinkram.list_files(mission_ids=[uuid], file_names=["*"])
 
-        print(f"MISSION NAME      {name}:                                                 {len(files)}")
-        suc = MISSION_DATA[name]["gnss_tc"]
+        if len(files) == 34:
+            processed = "processed"
+        else:
+            processed = "open     "
+
+        files = [f for f in files if f.size / 1024 / 1024 < 0.1]
+
+        print(f"MISSION NAME      {name}:                                 {processed} : {len(files)}")
 
         for f in files:
-            print("   " + f.name + " : " + str(round(f.size / 1024 / 1024, 2)) + " MB")
+            print(("   " + f.name).ljust(50) + " : " + str(round(f.size / 1024, 2)) + " KB")
             #   --- - GNSS was {suc}")
 
+        print("")
         # if len(files) == 0:
         #     print("   " + f" GNSS was {suc}")
 

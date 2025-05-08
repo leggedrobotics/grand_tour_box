@@ -111,6 +111,9 @@ pip3 install google-api-python-client
 pip3 install torch
 pip3 install rerun-sdk
 
+# Dependencies of export nerfstudio images
+pip3 install torchvision
+
 # 
 pip3 install sortedcontainers
 pip3 install rosnumpy
@@ -159,6 +162,8 @@ catkin build direct_lidar_inertial_odometry
 # Build post-processing package in full (export DEBUG_MODE=1 , to build in debug mode)
 export DEBUG_MODE=0
 catkin build box_auto
+
+rm -rf /home/catkin_ws/src/grand_tour_box/box_applications/open3d_slam_private/open3d_slam_rsl/open3d_catkin/tmp
 
 # Make sure to add source to bashrc
 echo "source /home/catkin_ws/devel/setup.bash" >> /root/.bashrc

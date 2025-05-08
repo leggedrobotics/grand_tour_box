@@ -1,121 +1,169 @@
 from pathlib import Path
-from box_auto.utils import MISSION_DATA, get_bag, get_uuid_mapping, read_sheet_data
+from box_auto.utils import get_bag, get_uuid_mapping, read_sheet_data
 import rosbag
 import rospy
 from collections import defaultdict
 from box_auto.utils import upload_simple
 import subprocess
+import kleinkram
+import os
+import shutil
 
+uuid_mappings = get_uuid_mapping()
 # Define the spreadsheet ID and sheet name
 SPREADSHEET_ID = "1mENfskg_jO_vJGFM5yonqPuf-wYUNmg26IPv3pOu3gg"
 # Read the data and print the list
 topic_data, mission_data = read_sheet_data(SPREADSHEET_ID)
 
 
-# Create a dictionary with bag_name_out as the key and a list of missions as the value
-data_dict_by_bag_name = defaultdict(list)
-for entry in topic_data:
-    data_dict_by_bag_name[entry["bag_name_out"]].append(entry)
+for name, data in uuid_mappings.items():
+    # Create a dictionary with bag_name_out as the key and a list of missions as the value
+    try:
+        data_dict_by_bag_name = defaultdict(list)
+        for entry in topic_data:
+            data_dict_by_bag_name[entry["bag_name_out"]].append(entry)
 
+        print(name)
+        if mission_data[name]["GOOD_MISSION"] != "TRUE":
+            print("Skip processing mission - no good mission")
+            continue
 
-import os
+        res = kleinkram.list_files(mission_ids=[data["uuid_release"]])
+        # if len(res) == 34:
+        #    print("Skip processing mission - already uploaded")
+        #    continue
 
-mission_name = Path(MISSION_DATA).stem
+        exit_code = 0
 
-os.environ["MISSION_UUID"] = get_uuid_mapping()[mission_name]["uuid"]
+        error_list = {}
+        secret_gnss_topics = [
+            "/gt_box/inertial_explorer/tc/raw",
+            "/gt_box/inertial_explorer/tc/origin"
+            "/gt_box/inertial_explorer/tc/navsatfix_origin"
+            "/gt_box/inertial_explorer/tc/raw"
+            "/gt_box/inertial_explorer/tc/origin"
+            "/gt_box/inertial_explorer/tc/navsatfix_origin",
+        ]
 
+        tmp_folder = Path("/data") / (name + "_release_imu")
+        tmp_folder.mkdir(parents=True, exist_ok=True)
 
-if mission_name not in mission_data:
-    print("Mission not found in sheet")
-    exit(1)
+        out_dir_bag = tmp_folder / "publish_bags"
+        out_dir_bag.mkdir(exist_ok=True, parents=True)
 
-if mission_data[mission_name]["GOOD_MISSION"] != "TRUE":
-    print("Skip processing mission")
-    exit(2)
+        # data_dict_by_bag_name = {k: v for k, v in data_dict_by_bag_name.items() if k == "cpt7_imu.bag"}
 
+        ls = []
+        for k, v in data_dict_by_bag_name.items():
+            for topic_config in v:
+                if "*" + topic_config["bag_name_orig"] not in ls:
+                    if "zed2i_image" not in topic_config["bag_name_orig"]:
+                        continue
 
-out_dir_bag = Path(MISSION_DATA) / "publish_bags"
-out_dir_bag.mkdir(exist_ok=True, parents=True)
+                    # else:
+                    ls.append("*" + topic_config["bag_name_orig"])
 
-exit_code = 0
+        kleinkram.download(
+            mission_ids=[data["uuid_pub"]],
+            file_names=ls,
+            dest=tmp_folder,
+            verbose=True,
+        )
+        for output_bag_name, topic_configs in data_dict_by_bag_name.items():
+            for topic_config in topic_configs:
+                if topic_config["frame_id_out"] != "":
+                    print(topic_config["frame_id_out"])
 
-error_list = {}
-secret_gnss_topics = [
-    "/gt_box/inertial_explorer/dgps/origin",
-    "/gt_box/inertial_explorer/dgps/raw",
-    "/gt_box/inertial_explorer/lc/origin",
-    "/gt_box/inertial_explorer/lc/raw",
-    "/gt_box/inertial_explorer/ppp/origin",
-    "/gt_box/inertial_explorer/ppp/raw",
-    "/gt_box/inertial_explorer/tc/origin",
-    "/gt_box/inertial_explorer/tc/raw",
-]
+        # Do a quick sorting operation
+        bags_to_upload = []
 
-# Do a quick sorting operation
-for output_bag_name, topic_configs in data_dict_by_bag_name.items():
-    bag_path_out = out_dir_bag / (mission_name + "_" + output_bag_name)
-    # open bag with fzf compression
+        for output_bag_name, topic_configs in data_dict_by_bag_name.items():
+            bag_path_out = out_dir_bag / (name + "_" + output_bag_name)
 
-    with rosbag.Bag(bag_path_out, "w") as bag_out:
-        print(output_bag_name)
-        for topic_config in topic_configs:
-            print(
-                "   process: ",
-                topic_config["bag_name_orig"],
-                " - ",
-                topic_config["topic_name_orig"],
-                " -> ",
-                topic_config["topic_name_out"],
-            )
-            try:
-                bag_path_in = get_bag("*" + topic_config["bag_name_orig"])
-                with rosbag.Bag(bag_path_in, "r", compression="lz4") as bag_in:
-                    desired_start_time = rospy.Time.from_sec(float(mission_data[mission_name]["mission_start_time"]))
+            if "zed2i_images" not in bag_path_out:
+                continue
+            # open bag with fzf compression
+            # if ("zed" not in str(bag_path_out)) or ("adis" not in str(bag_path_out)) or ("cpt7" not in str(bag_path_out)):
+            # continue
 
-                    if topic_config["topic_name_orig"] == "/tf_static":
-                        start_time = None
-                    else:
-                        start_time = desired_start_time
+            with rosbag.Bag(bag_path_out, "w") as bag_out:
+                print(output_bag_name)
+                for topic_config in topic_configs:
+                    print(
+                        "   process: ",
+                        topic_config["bag_name_orig"],
+                        " - ",
+                        topic_config["topic_name_orig"],
+                        " -> ",
+                        topic_config["topic_name_out"],
+                    )
+                    try:
+                        bag_path_in = get_bag("*" + topic_config["bag_name_orig"], directory=tmp_folder)
+                        with rosbag.Bag(bag_path_in, "r", compression="lz4") as bag_in:
+                            desired_start_time = rospy.Time.from_sec(float(mission_data[name]["mission_start_time"]))
+                            desired_stop_time = rospy.Time.from_sec(float(mission_data[name]["mission_stop_time"]))
 
-                    for topic, msg, t in bag_in.read_messages(
-                        topics=[topic_config["topic_name_orig"]],
-                        start_time=start_time,
-                        end_time=rospy.Time.from_sec(float(mission_data[mission_name]["mission_stop_time"])),
-                    ):
-                        has_header = hasattr(msg, "header")
+                            if topic_config["topic_name_orig"] == "/tf_static":
+                                start_time = None
+                            else:
+                                start_time = desired_start_time
 
-                        if has_header:
-                            t = msg.header.stamp
+                            k = 0
+                            for topic, msg, t in bag_in.read_messages(
+                                topics=[topic_config["topic_name_orig"]],
+                                start_time=start_time,
+                                end_time=rospy.Time.from_sec(float(mission_data[name]["mission_stop_time"])),
+                            ):
+                                has_header = hasattr(msg, "header")
+
+                                if has_header:
+                                    t = msg.header.stamp
+                                else:
+                                    if type(msg)._type == "tf2_msgs/TFMessage":
+                                        t = msg.transforms[0].header.stamp
+                                if t > desired_stop_time:
+                                    if k > 50:
+                                        break
+                                    k += 1
+                                    continue
+
+                                if topic_config["frame_id_out"] != "":
+                                    msg.header.frame_id = topic_config["frame_id_out"]
+
+                                if mission_data[name]["publish_gnss"] == "FALSE" and topic in secret_gnss_topics:
+                                    continue
+
+                                if topic_config["topic_name_orig"] == "/tf_static" and t < desired_start_time:
+                                    t = desired_start_time
+                                    for transform in msg.transforms:
+                                        transform.header.stamp = t
+
+                                bag_out.write(topic_config["topic_name_out"], msg, t)
+
+                    except Exception as e:
+                        if topic_config["bag_name_out"] in error_list:
+                            error_list[topic_config["bag_name_out"]] += topic_config
                         else:
-                            if type(msg)._type == "tf2_msgs/TFMessage":
-                                t = msg.transforms[0].header.stamp
+                            error_list[topic_config["bag_name_out"]] = [topic_config]
 
-                        if topic_config["frame_id_out"] != "":
-                            msg.header.frame_id = topic_config["frame_id_out"]
+                        print(f"Error processing bag {topic_config['bag_name_orig']}")
+                        exit_code = 3
+                        print(e)
 
-                        if mission_data[mission_name]["publish_gnss"] == "FALSE" and topic in secret_gnss_topics:
-                            continue
+            subprocess.run(["rosbag", "reindex", str(bag_path_out)])
+            tmp_path = str(bag_path_out).replace(".bag", ".orig.bag")
+            if os.path.exists(tmp_path):
+                os.remove(tmp_path)
+            bags_to_upload.append(str(bag_path_out))
 
-                        if topic_config["topic_name_orig"] == "/tf_static" and t < desired_start_time:
-                            t = desired_start_time
-                            for transform in msg.transforms:
-                                transform.header.stamp = t
+        for bag_path_out in bags_to_upload:
+            upload_simple("GrandTour", "release_" + name, str(bag_path_out))
 
-                        bag_out.write(topic_config["topic_name_out"], msg, t)
-
-            except Exception as e:
-                if topic_config["bag_name_out"] in error_list:
-                    error_list[topic_config["bag_name_out"]] += topic_config
-                else:
-                    error_list[topic_config["bag_name_out"]] = [topic_config]
-
-                print(f"Error processing bag {topic_config['bag_name_orig']}")
-                exit_code = 3
-                print(e)
-
-    subprocess.run(["rosbag", "reindex", str(bag_path_out)])
-    upload_simple("GrandTour", "release_" + mission_name, str(bag_path_out))
-
-
-print(error_list)
-exit(exit_code)
+        print(error_list)
+    except Exception as e:
+        print("Got exception mission ", name, e)
+    finally:
+        try:
+            shutil.rmtree(tmp_folder)
+        except:
+            pass
