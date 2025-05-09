@@ -12,7 +12,7 @@ $HOME$/git/grand_tour_box/box_utils/box_converter/nerfstudio/sync_to_cluster.sh
 
 Obtaining an interactive session:
 ```
-srun --account=es_hutter --ntasks=1 --cpus-per-task=4 --gpus=1 --time=4:00:00 --mem-per-cpu=8024 --tmp=50000 --pty bash
+srun --account=es_hutter --ntasks=1 --cpus-per-task=4 --time=4:00:00 --mem-per-cpu=8024 --tmp=50000 --pty bash
 ```
 
 Copy container to local SSD:
@@ -22,7 +22,7 @@ tar -xf /cluster/work/rsl/$USER/grand_tour/containers/grand-tour-kleinkram.tar  
 
 Command to run test mission:
 ```
-apptainer exec --nv --writable --bind /cluster/scratch/jonfrey:/out --bind /cluster/home/jonfrey/grand_tour_box:/home/catkin_ws/src/grand_tour_box --env KLEINKRAM_CONFIG="$(cat ~/.kleinkram.json)" --containall $TMPDIR/grand-tour-kleinkram.sif /bin/bash -c 'export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH; source /home/opencv_gtsam_ws/devel/setup.bash; source /home/catkin_ws/devel/setup.bash; export HOME=/home; export KLEINKRAM_ACTIVE=ACTIVE; /entrypoint_euler.sh  python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_converter/nerfstudio/nerf_studio.py --mission_uuid 4ae7f9bc-ee51-4ba7-97c7-6a86fe765ab8 --head 10'
+apptainer exec --nv --writable --bind /cluster/scratch/jonfrey/out:/out --bind /cluster/home/jonfrey/grand_tour_box:/home/catkin_ws/src/grand_tour_box --env KLEINKRAM_CONFIG="$(cat ~/.kleinkram.json)" --containall $TMPDIR/grand-tour-kleinkram.sif /bin/bash -c 'export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH; source /home/opencv_gtsam_ws/devel/setup.bash; source /home/catkin_ws/devel/setup.bash; export HOME=/home; export KLEINKRAM_ACTIVE=ACTIVE; /entrypoint_euler.sh  python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_converter/nerfstudio/nerf_studio.py --mission_uuid d7c37880-a3cf-4aaa-b489-e501591d14b7 --head 10'
 ```
 
 Script to update docker container on euler:
