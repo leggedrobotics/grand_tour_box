@@ -10,7 +10,7 @@ from typing import cast
 
 import numpy as np
 from anymal_msgs.msg import AnymalState  # type: ignore
-from anymal_msgs.msg import Contact  # type: ignore
+from anymal_msgs.msg import Contact      # type: ignore
 from anymal_msgs.msg import ExtendedJointState  # type: ignore
 from geometry_msgs.msg import Point
 from geometry_msgs.msg import PointStamped
@@ -18,15 +18,16 @@ from geometry_msgs.msg import PoseStamped
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from geometry_msgs.msg import Quaternion
 from geometry_msgs.msg import Twist
+from geometry_msgs.msg import TwistStamped
 from geometry_msgs.msg import Vector3
 from gnss_msgs.msg import GnssRaw  # type: ignore
 from gps_common.msg import GPSFix  # type: ignore
 from nav_msgs.msg import Odometry
 from ros_numpy import numpify
 from anymal_msgs.msg import SeActuatorReadings  # type: ignore
-from anymal_msgs.msg import SeActuatorReading  # type: ignore
-from anymal_msgs.msg import SeActuatorCommand  # type: ignore
-from anymal_msgs.msg import SeActuatorState  # type: ignore
+from anymal_msgs.msg import SeActuatorReading   # type: ignore
+from anymal_msgs.msg import SeActuatorCommand   # type: ignore
+from anymal_msgs.msg import SeActuatorState     # type: ignore
 from sensor_msgs.msg import CameraInfo
 from sensor_msgs.msg import FluidPressure
 from sensor_msgs.msg import Imu
@@ -37,6 +38,7 @@ from sensor_msgs.msg import RegionOfInterest
 from sensor_msgs.msg import Temperature
 from anymal_msgs.msg import BatteryState  # type: ignore
 from std_msgs.msg import Header
+from std_msgs.msg import Float32MultiArray
 from tf2_msgs.msg import TFMessage
 
 from dataset_builder.dataset_config import AnymalStateTopic, GnssRawTopic
@@ -52,10 +54,14 @@ from dataset_builder.dataset_config import PoseTopic
 from dataset_builder.dataset_config import SingletonTransformTopic
 from dataset_builder.dataset_config import TemperatureTopic
 from dataset_builder.dataset_config import Topic
+
 from dataset_builder.dataset_config import (
     TwistTopic,
+    AnymalTwistTopic,
     BatteryStateTopic,
     ActuatorReadingsTopic,
+    ImuVector,
+    AnymalDebugTopic,
 )
 
 BasicType = Union[np.ndarray, int, float, str, bool]
@@ -364,6 +370,13 @@ def _parse_twist_message(msg: Twist, _: Any) -> Dict[str, BasicType]:
     }
 
 
+def _parse_anymal_twist_message(msg: TwistStamped, _: Any) -> Dict[str, BasicType]:
+    return {
+        "linear": _parse_vector3(msg.twist.linear),
+        "angular": _parse_vector3(msg.twist.angular),
+    }
+
+
 def _parse_gps_fix_message(msg: GPSFix, _: Any) -> Dict[str, BasicType]:
     return {
         "long": msg.longitude,
@@ -393,6 +406,28 @@ def _parse_gps_fix_message(msg: GPSFix, _: Any) -> Dict[str, BasicType]:
         "err_dip": msg.err_dip,
         "pos_cov": np.array(msg.position_covariance).reshape(3, 3),
         "pos_cov_type": msg.position_covariance_type,
+    }
+
+
+def _parse_imu_vecor(msg: Vector3, _: Any) -> Dict[str, BasicType]:
+    return {
+        "vector": _parse_vector3(msg.vector),
+    }
+
+
+def _parse_float32_multi_array(msg: Float32MultiArray, _: Any) -> Dict[str, BasicType]:
+    dim_info = [
+        {
+            "label": dim.label,
+            "size": dim.size,
+            "stride": dim.stride,
+        }
+        for dim in msg.layout.dim
+    ]
+    return {
+        "data": np.array(msg.data),
+        "data_offset": msg.layout.data_offset,
+        "dimensions": dim_info,
     }
 
 
@@ -427,6 +462,10 @@ def _extract_header_data_from_deserialized_message(
     msg: Any, topic_desc: Topic
 ) -> Dict[str, BasicType]:
     header = _extract_header(msg, topic_desc)
+    if isinstance(header, list):  # since there can be multiple transforms in a TFMessage
+        return {
+            f"frame_id_{i}": h.frame_id for i, h in enumerate(header)
+        }
     return {
         "timestamp": header.stamp.to_sec(),  # type: ignore
         "sequence_id": header.seq,  # type: ignore
@@ -446,10 +485,13 @@ MESSAGE_PARSING_FUNCTIONS = [
     (TemperatureTopic, _parse_temperature_message),
     (FluidPressureTopic, _parse_fluid_pressure_message),
     (TwistTopic, _parse_twist_message),
+    (AnymalTwistTopic, _parse_anymal_twist_message),
     (GPSFixTopic, _parse_gps_fix_message),
     (GnssRawTopic, _parse_gnss_raw),
+    (ImuVector, _parse_imu_vecor),
     (BatteryStateTopic, _parse_battery_state),
     (ActuatorReadingsTopic, _parse_actuator_readings),
+    (AnymalDebugTopic, _parse_float32_multi_array),
 ]
 
 

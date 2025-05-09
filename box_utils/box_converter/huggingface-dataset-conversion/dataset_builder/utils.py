@@ -20,18 +20,25 @@ NEEDS_ROSLIB = {
     "BatteryState": "anymal_msgs/BatteryState",
 }
 
-
+# TODO: make amount of messages configurable
+# max_messages: int = 10
 def messages_in_bag_with_topic(
-    bag_path: Path, topic: str, progress_bar: bool = True
+    bag_path: Path, topic: str, progress_bar: bool = True, 
 ) -> Generator[Any, None, None]:
-    with rosbag.Bag(bag_path) as bag:
+
+    with rosbag.Bag(bag_path, "r") as bag:
         total_message = bag.get_message_count(topic)
+        # count = 0
         for _, msg, _ in tqdm(
             bag.read_messages(topic),
             total=total_message,
             disable=not progress_bar,
             leave=False,
         ):
+            # if count >= max_messages:
+            #     break
+            # count += 1
+            
             for tp_patter, msg_tp_str in NEEDS_ROSLIB.items():
                 if tp_patter in msg._type:
                     msg_class = get_message_class(msg_tp_str)

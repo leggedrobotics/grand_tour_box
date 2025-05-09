@@ -20,12 +20,14 @@ run the container
 
 ```bash
 docker run -v "$(pwd):/app" --env KLEINKRAM_CONFIG="$(cat ~/.kleinkram.json)" --rm -it grand-tour-dataset
+
 ```
 
 run the converter inside the container
+build the tf_bag first and source the catkin workspace befor debugging in VSCode!
 
 ```
-python -m dataset_builder
+cd ../catkin_ws/src; catkin build tf_bag; cd ../../app; source /catkin_ws/devel/setup.bash; python -m dataset_builder
 ```
 
 ## Configuring the Converter
@@ -107,6 +109,10 @@ The `data` section supports the following keys:
 
   Note that the `singleton_transform_topics` are generally very similar to `pose_topics`, i.e. they are a list containing a single pose.
 
+
+  #TODO: add missing topics according to mission
+
+
 ## Profiling the Converter
 
 ```bash
@@ -122,3 +128,22 @@ But overall most time is still spent inside ros packages.
 - 60-70% of the time is spent reading and writing images (we can't really improve this)
 - 20% of time is spent inside the bag message iterator function (we can't really improve this)
 - 10-15% of the time is spent inside our code (not worth improving)
+
+
+## Upload datasets to Hugging-Face
+
+#### `Install the Hugging Face CLI`
+```bash
+pip install -U "huggingface_hub[cli]"
+```
+
+#### `Login with your Hugging Face credentials`
+```bash
+huggingface-cli login
+```
+
+#### `Push your dataset files`
+```bash
+huggingface-cli upload leggedrobotics/GT-Testing-MLI . --repo-type=dataset
+```
+

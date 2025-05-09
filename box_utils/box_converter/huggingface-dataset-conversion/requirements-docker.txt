@@ -5,5 +5,5 @@ zarr
 tqdm
 cv_bridge
 scipy
-kleinkram
+kleinkram==0.44.1.dev20250409111712
 huggingface-hub

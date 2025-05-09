@@ -1,0 +1,522 @@
+# listed bag files --> klein list files -m "release_2024-10-01-11-29-55"
+# ┏━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━┓
+# ┃ project   ┃ mission                     ┃ name                                           ┃ id                                   ┃ state ┃ size       ┃ categories ┃
+# ┡━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━┩
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_adis.bag                   │ 0e71888b-44b1-4229-9358-48e248d9afd9 │ OK    │ 24.48 MB   │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_alphasense.bag             │ e6a04446-afb2-499a-83e3-f43160a5ea84 │ OK    │ 5.90 GB    │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_alphasense_imu.bag         │ 9ab1a1f5-2012-418c-ab18-7cde384167ab │ OK    │ 4.02 KB    │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_anymal_command.bag         │ 0c9214bb-77dd-4450-b453-27910977ee8d │ OK    │ 625.90 KB  │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_anymal_depth_cameras.bag   │ f5af8bd5-35fa-4bb0-b58e-ee7ea62dca30 │ OK    │ 15.93 GB   │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_anymal_elevation.bag       │ 98b272b8-d500-4245-a6b9-5945573a3fa0 │ OK    │ 1.55 GB    │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_anymal_imu.bag             │ ebf18cac-bc35-4363-a0ac-6b1803dc7207 │ OK    │ 50.68 MB   │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_anymal_locomotion.bag      │ 7001c8b1-d334-42a5-8c21-c23685f64782 │ OK    │ 25.46 MB   │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_anymal_state.bag           │ f26ffe0c-e21d-4db7-9521-65c9d5cd8ed3 │ OK    │ 975.18 MB  │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_anymal_velodyne.bag        │ 3ca2976d-a36e-4518-af3d-13ae5f26220e │ OK    │ 4.02 KB    │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_anymal_velodyne_packets.b… │ 19200808-304c-4500-8cdb-6b7b0db2cade │ OK    │ 4.02 KB    │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_anymal_velodyne_undist.bag │ a3a81e23-107a-40dc-9064-1893a6e673f2 │ OK    │ 4.02 KB    │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_ap20_imu.bag               │ d6f08bbe-2aeb-412d-961d-97cfd40d10b6 │ OK    │ 23.78 MB   │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_ap20_prism_position.bag    │ ca66482f-8ab6-41b8-b246-d72b19900a1c │ OK    │ 526.00 KB  │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_cpt7_ie_rt.bag             │ 8bf0b2d8-a94c-4d9a-a5ee-3fe1a6a803ac │ OK    │ 10.37 MB   │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_cpt7_ie_tc.bag             │ 4a3f5919-ef5d-442f-b2f1-7c8ca560d96a │ OK    │ 104.41 MB  │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_cpt7_imu.bag               │ 52063d54-a812-47e0-8025-65115131948a │ OK    │ 4.02 KB    │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_dlio.bag                   │ ff4cfce2-ed38-4a8f-bff2-6ab326e61781 │ OK    │ 4.54 GB    │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_hdr_front.bag              │ 2e521503-80a4-4e28-94d6-9f4ed277f49e │ OK    │ 2.33 GB    │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_hdr_left.bag               │ 0696827f-eea2-4a5a-a6ae-7068a76def54 │ OK    │ 2.54 GB    │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_hdr_right.bag              │ d75d6c92-621d-4425-aa07-771d04a89527 │ OK    │ 2.60 GB    │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_hesai.bag                  │ 1b236ab3-d855-4e47-bcaa-6dace7fb7eba │ OK    │ 4.73 GB    │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_hesai_packets.bag          │ b7266c89-d6b9-4747-bec1-0df37b8dcf98 │ OK    │ 905.68 MB  │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_hesai_undist.bag           │ c6084bbb-5168-40a8-a9f6-73fc050deb49 │ OK    │ 4.02 KB    │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_livox.bag                  │ cd89b419-9cf6-4d09-bd53-41748c312d54 │ OK    │ 1015.06 MB │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_livox_imu.bag              │ 50fa47a4-5ef2-4214-982e-77384415c2a7 │ OK    │ 25.09 MB   │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_livox_undist.bag           │ d3e1e1fb-aff9-4fd3-8734-de46cd05a3b7 │ OK    │ 4.02 KB    │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_stim320_imu.bag            │ da4c534b-21e5-44be-926e-5e114e4f8817 │ OK    │ 92.77 MB   │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_tf_minimal.bag             │ 96864fca-8465-4cf0-b86f-33b481c6f81a │ OK    │ 61.85 MB   │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_tf_model.bag               │ 615e2fa9-9bc0-4cff-b2a9-e9f3400d268a │ OK    │ 62.24 MB   │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_zed2i_depth.bag            │ a0f2a7de-e36a-47e6-b80d-7d9fec16f98d │ OK    │ 4.02 KB    │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_zed2i_images.bag           │ 40dcc64e-6edf-4854-99e6-63733efc2712 │ OK    │ 4.02 KB    │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_zed2i_prop.bag             │ 4eab5a5d-2ace-4c00-b915-937a67c53434 │ OK    │ 4.02 KB    │            │
+# │ GrandTour │ release_2024-10-01-11-29-55 │ 2024-10-01-11-29-55_zed2i_vio.bag              │ 308381af-9a14-4ace-92a0-179c1ba6c864 │ OK    │ 4.02 KB    │            │
+# └───────────┴─────────────────────────────┴────────────────────────────────────────────────┴──────────────────────────────────────┴───────┴────────────┴────────────┘
+
+metadata:
+  # TODO: check with Jonas --> Not yet implemented!  
+    # - alias: anymal_depth_camera_front_lower_info
+    #   file: 2024-10-01-11-29-55_anymal_depth_cameras.bag
+    #   topic: "/anymal/depth_camera_front_lower/depth/image_rect_raw"
+
+  camera_intrinsics:
+    - alias: alphasense_front_center_caminfo
+      file: 2024-10-01-11-29-55_alphasense.bag
+      topic: "/boxi/alphasense/front_center/camera_info"
+      reference_frame_id: box_base
+
+    - alias: alphasense_cam2_caminfo
+      file: 2024-10-01-11-29-55_alphasense.bag
+      topic: "/boxi/alphasense/front_right/camera_info"
+
+    - alias: alphasense_cam3_caminfo
+      file: 2024-10-01-11-29-55_alphasense.bag
+      topic: "/boxi/alphasense/front_left/camera_info"
+
+    - alias: alphasense_cam4_caminfo
+      file: 2024-10-01-11-29-55_alphasense.bag
+      topic: "/boxi/alphasense/left/camera_info"
+
+    - alias: alphasense_cam5_caminfo
+      file: 2024-10-01-11-29-55_alphasense.bag
+      topic: "/boxi/alphasense/right/camera_info"
+
+    - alias: hdr_left_caminfo
+      file: 2024-10-01-11-29-55_hdr_left.bag
+      topic: "/boxi/hdr/left/camera_info"
+
+    - alias: hdr_front_caminfo
+      file: 2024-10-01-11-29-55_hdr_front.bag
+      topic: "/boxi/hdr/front/camera_info"
+
+    - alias: hdr_right_caminfo
+      file: 2024-10-01-11-29-55_hdr_right.bag
+      topic: "/boxi/hdr/right/camera_info"
+
+    - alias: zed2i_depth_caminfo
+      file: 2024-10-01-11-29-55_zed2i_depth.bag
+      topic: "/boxi/zed2i/depth/camera_info"
+
+    - alias: zed2i_left_caminfo
+      file: 2024-10-01-11-29-55_zed2i_images.bag
+      topic: "/boxi/zed2i/left/camera_info"
+
+    - alias: zed2i_right_caminfo
+      file: 2024-10-01-11-29-55_zed2i_images.bag
+      topic: "/boxi/zed2i/right/camera_info"
+
+    # TODO: not apparent in the bag file
+    # - alias: anymal_depth_camera_front_lower
+    #   file: 2024-10-01-11-29-55_anymal_depth_cameras.bag
+    #   topic: "/anymal/depth_camera/front_lower/depth/camera_info"
+
+    - alias: anymal_depth_camera_front_upper
+      file: 2024-10-01-11-29-55_anymal_depth_cameras.bag
+      topic: "/anymal/depth_camera/front_upper/depth/camera_info"
+      reference_frame_id: base
+
+    # TODO: not apparent in the bag file
+    # - alias: anymal_depth_camera_rear_lower
+    #   file: 2024-10-01-11-29-55_anymal_depth_cameras.bag
+    #   topic: "/anymal/depth_camera/rear_lower/depth/camera_info"
+
+    - alias: anymal_depth_camera_rear_upper
+      file: 2024-10-01-11-29-55_anymal_depth_cameras.bag
+      topic: "/anymal/depth_camera/rear_upper/depth/camera_info"
+
+    - alias: depth_camera_left
+      file: 2024-10-01-11-29-55_anymal_depth_cameras.bag
+      topic: "/anymal/depth_camera/left/depth/camera_info"
+
+    - alias: depth_camera_right
+      file: 2024-10-01-11-29-55_anymal_depth_cameras.bag
+      topic: "/anymal/depth_camera/right/depth/camera_info"
+
+
+  # TODO: which of the transforms belong here? Are there any?
+  # TODO: comment this
+  frame_transforms:
+    frame_id: tf_static_minimal
+    file: 2024-10-01-11-29-55_tf_minimal.bag
+    topic: /tf_static
+
+    # doesn't have much information in it --> probably not needed
+    # frame_id: tf_minimal
+    # file: 2024-10-01-11-29-55_tf_minimal.bag
+    # topic: /tf
+
+    # NOT USED since not relevant according to Jonas
+    # base_frame: tf_static_model
+    # file: 2024-10-01-11-29-55_tf_model.bag
+    # topic: /tf_static
+
+    # NOT USED since not relevant according to Jonas
+    # base_frame: tf_model
+    # file: 2024-10-01-11-29-55_tf_model.bag
+    # topic: /tf
+
+data:
+  image_topics:
+
+    #   No need for conversion since raw bag files are used
+    # - alias: hesai_range_image
+    #   file: 2024-10-01-11-29-55_hesai.bag
+    #   topic: "/boxi/hesai/range_image"
+
+    #   No need for conversion since raw bag files are used 
+    # - alias: hesai_intensity_image
+    #   file: 2024-10-01-11-29-55_hesai.bag
+    #   topic: "/boxi/hesai/intensity_image"
+
+    # TODO: Not appearant in the bag file
+    # - alias: depth_camera_front_lower
+    #   file: 2024-10-01-11-29-55_anymal_depth_cameras.bag
+    #   topic: "/anymal/depth_camera/front_lower/depth/image_rect_raw"
+    #   format: jpeg
+    #   compressed: false
+
+    - alias: depth_camera_front_upper
+      file: 2024-10-01-11-29-55_anymal_depth_cameras.bag
+      topic: "/anymal/depth_camera/front_upper/depth/image_rect_raw"
+      format: jpeg
+      compressed: false
+
+    # TODO: Not appearant in the bag file
+    # - alias: depth_camera_rear_lower
+    #   file: 2024-10-01-11-29-55_anymal_depth_cameras.bag
+    #   topic: "/anymal/depth_camera/rear_lower/depth/image_rect_raw"
+    #   format: jpeg
+    #   compressed: false
+
+    - alias: depth_camera_rear_upper
+      file: 2024-10-01-11-29-55_anymal_depth_cameras.bag
+      topic: "/anymal/depth_camera/rear_upper/depth/image_rect_raw"
+      format: jpeg
+      compressed: false
+
+    - alias: depth_camera_left_image_rect_raw
+      file: 2024-10-01-11-29-55_anymal_depth_cameras.bag
+      topic: "/anymal/depth_camera/left/depth/image_rect_raw"
+      format: jpeg
+      compressed: false
+
+    - alias: depth_camera_right_image_rect_raw
+      file: 2024-10-01-11-29-55_anymal_depth_cameras.bag
+      topic: "/anymal/depth_camera/right/depth/image_rect_raw"
+      format: jpeg
+      compressed: false
+
+    # TODO: used, doublecheck with Jonas
+    - alias: hdr_left
+      file: 2024-10-01-11-29-55_hdr_left.bag
+      topic: "/boxi/hdr/left/image_raw/compressed"
+      format: jpeg
+      compressed: true
+
+    # TODO: used, doubleck with Jonas
+    - alias: hdr_front
+      file: 2024-10-01-11-29-55_hdr_front.bag
+      topic: "/boxi/hdr/front/image_raw/compressed"
+      format: jpeg
+      compressed: true
+
+    # TODO: used, doublecheck with Jonas
+    - alias: hdr_right
+      file: 2024-10-01-11-29-55_hdr_right.bag
+      topic: "/boxi/hdr/right/image_raw/compressed"
+      format: jpeg
+      compressed: true
+
+    - alias: zed2i_depth_confidence_image
+      file: 2024-10-01-11-29-55_zed2i_depth.bag
+      topic: "/boxi/zed2i/confidence/image_raw/compressedDepth"
+      format: jpeg
+      compressed: true
+
+    - alias: zed2i_depth_image
+      file: 2024-10-01-11-29-55_zed2i_depth.bag
+      topic: "/boxi/zed2i/depth/image_raw/compressedDepth"
+      format: jpeg
+      compressed: true
+
+    - alias: zed2i_left_images
+      file: 2024-10-01-11-29-55_zed2i_images.bag
+      topic: "/boxi/zed2i/left/image_raw/compressed"
+      format: jpeg
+      compressed: true
+
+    - alias: zed2i_right_images
+      file: 2024-10-01-11-29-55_zed2i_images.bag
+      topic: "/boxi/zed2i/right/image_raw/compressed"
+      format: jpeg
+      compressed: true
+
+    # No need for conversion since raw bag files are used
+    # - alias: hesai_packets
+    #   file: 2024-10-01-11-29-55_hesai_packets.bag
+    #   topic: "/boxi/hesai/packets"
+
+  lidar_topics:
+    # TODO: used, doublecheck with Jonas
+    - alias: hesai
+      file: 2024-10-01-11-29-55_hesai.bag
+      topic: "/boxi/hesai/points"
+      max_points: 64000
+      attributes:
+        - intensity
+        - ring
+        - timestamp
+
+    # TODO: Not ready on the part of Jonas
+    # - alias: hesai_undistorted
+    #   file: 2024-10-01-11-29-55_hesai_undist.bag
+    #   topic: "/boxi/hesai/points_undistorted"
+    #   max_points: 64000
+        # attributes:
+        # - intensity
+        # - ring
+        # - timestamp
+
+    # TODO: used, doubleck with Jonas
+    - alias: livox_points
+      file: 2024-10-01-11-29-55_livox.bag
+      topic: "/boxi/livox/points"
+      max_points: 64000
+      attributes:
+        - intensity
+        - tag
+        - line
+        - timestamp
+
+    # TODO: Not ready on the part of Jonas
+    # - alias: livox_points_undistorted
+    #   file: 2024-10-01-11-29-55_livox_undist.bag
+    #   topic: "/boxi/livox/points_undistorted"
+    #   max_points: 64000
+    #   attributes:
+    #     - intensity
+    #     - tag
+    #     - line
+    #     - timestamp
+
+    # TODO: used, doublecheck with Jonas
+    - alias: dlio_hesai_deskewed
+      file: 2024-10-01-11-29-55_dlio.bag
+      topic: "/boxi/dlio/hesai_deskewed"
+      max_points: 64000
+
+    # TODO: used, doublecheck with Jonasd
+    - alias: dlio_map_odometry
+      file: 2024-10-01-11-29-55_dlio.bag
+      topic: "/boxi/dlio/lidar_map_odometry"
+      max_points: 64000
+
+  pose_topics:
+    - alias: zed2i_vio_map
+      file: 2024-10-01-11-29-55_zed2i_vio.bag
+      topic: "/boxi/zed2i_vio/map"
+      covariance: False
+
+
+  imu_topics:
+    - alias: adis_imu
+      file: 2024-10-01-11-29-55_adis.bag
+      topic: "/boxi/adis/imu"
+
+    # TODO: not yet ready on the part of jonas
+    # - alias: alphasense_imu
+    #   file: 2024-10-01-11-29-55_alphasense_imu.bag
+    #   topic: "/boxi/alphasense/imu"
+
+    - alias: ap20_imu
+      file: 2024-10-01-11-29-55_ap20_imu.bag
+      topic: "/boxi/ap20/imu"
+
+    - alias: stim320_imu
+      file: 2024-10-01-11-29-55_stim320_imu.bag
+      topic: "/boxi/stim320/imu"
+
+    # # TODO: not yet implemented, doublecheck with Jonas --> category?
+    # message type: sensor_msgs/Temperature
+    # - alias: stim320_acceletometer_temperature
+    #   file: 2024-10-01-11-29-55_stim320_imu.bag
+    #   topic: "/boxi/stim320/acceletometer_temperature"
+
+    # TODO: not yet implemented, doublecheck with Jonas --> category?
+    # message type: sensor_msgs/Temperature
+    # - alias: stim320_gyroscope_temperature
+    #   file: 2024-10-01-11-29-55_stim320_imu.bag
+    #   topic: "/boxi/stim320/gyroscope_temperature"
+
+    # TODO: used, doublecheck with Jonas
+    - alias: livox_imu_si_compliant
+      file: 2024-10-01-11-29-55_livox_imu.bag
+      topic: "/boxi/livox/imu"
+
+    # not used according to Jonas
+    # - alias: zed2i_imu
+    #   file: 2024-10-01-11-29-55_zed2i_prop.bag
+    #   topic: "/boxi/zed2i/imu"
+
+    - alias: cpt7_imu
+      file: 2024-10-01-11-29-55_cpt7_imu.bag
+      topic: "/boxi/cpt7/imu"
+
+    # TODO: not yet ready on the part of jonas
+    # - alias: cpt7_imu_acc_bias
+    #   file: 2024-10-01-11-29-55_cpt7_ie_rt.bag
+    #   topic: "/boxi/inertial_explorer/rt/cpt7_imu_acc_bias"
+
+    # TODO: not yet ready on the part of jonas
+    # - alias: cpt7_imu_gyro_drift
+    #   file: 2024-10-01-11-29-55_cpt7_ie_rt.bag
+    #   topic: "/boxi/inertial_explorer/rt/cpt7_imu_gyro_drift"
+
+    - alias: cpt7_tc_imu_acc_bias
+      file: 2024-10-01-11-29-55_cpt7_ie_tc.bag
+      topic: "/boxi/inertial_explorer/tc/cpt7_imu_acc_bias"
+
+    - alias: cpt7_tc_imu_gyro_drift
+      file: 2024-10-01-11-29-55_cpt7_ie_tc.bag
+      topic: "/boxi/inertial_explorer/tc/cpt7_imu_gyro_drift"
+
+    - alias: anymal_imu
+      file: 2024-10-01-11-29-55_anymal_imu.bag
+      topic: "/anymal/imu"
+
+  # TODO: not yet ready on the part of jonas
+  # unknown message type --> probably points
+  #   - alias: anymal_velodyne_undist
+  #     file: 2024-10-01-11-29-55_anymal_velodyne_undist.bag
+  #     topic: "/anymal/velodyne/points_undistorted"
+
+  fluid_pressure_topics:
+    - alias: zed2i_pressure
+      file: 2024-10-01-11-29-55_zed2i_prop.bag
+      topic: "/boxi/zed2i/baro/pressure"
+
+  magnetic_field_topics:
+    - alias: zed2i_magnetic_filed
+      file: 2024-10-01-11-29-55_zed2i_prop.bag
+      topic: "/boxi/zed2i/magnetic_field"
+
+  odometry_topics:
+    - alias: zed2i_vio_odometry
+      file: 2024-10-01-11-29-55_zed2i_vio.bag
+      topic: "/boxi/zed2i_vio/odom"
+
+    # TODO: not yet ready on the part of jonas
+    # - alias: cpt7_ie_rt_odometry
+    #   file: 2024-10-01-11-29-55_cpt7_ie_rt.bag
+    #   topic: "/boxi/inertial_explorer/rt/odometry"
+
+    - alias: cpt7_ie_tc_odometry
+      file: 2024-10-01-11-29-55_cpt7_ie_tc.bag
+      topic: "//boxi/inertial_explorer/tc/odometry"
+
+    - alias: anymal_state_odometry
+      file: 2024-10-01-11-29-55_anymal_state.bag
+      topic: "/anymal/state_estimator/odometry"
+
+  # TODO: used, doublecheck with Jonas
+  point_topics:
+    - alias: prism_position
+      file: 2024-10-01-11-29-55_ap20_prism_position.bag 
+      topic: "/boxi/ap20/prism_position"
+
+  # TODO: not yet ready on the part of jonas
+  # unknown message type --> probably points
+  #   - alias: anymal_velodyne
+  #     file: 2024-10-01-11-29-55_anymal_velodyne.bag
+  #     topic: "/anymal/velodyne/points"
+
+  singleton_transform_topics:
+    - alias: dlio_tf
+      file: 2024-10-01-11-29-55_dlio.bag
+      topic: "/tf"
+
+    - alias: cpt7_ie_tc_tf
+      file: 2024-10-01-11-29-55_cpt7_ie_tc.bag
+      topic: "/tf"
+
+    - alias: cpt7_ie_rt_tf
+      file: 2024-10-01-11-29-55_cpt7_ie_rt.bag
+      topic: "/tf"
+
+  multiton_transform_topics:
+    - alias: zed2i_vio_tf
+      file: 2024-10-01-11-29-55_zed2i_vio.bag
+      topic: "/tf"
+
+  nav_sat_fix_topics:
+    # TODO: not yet ready on the part of jonas
+    # - alias: navsatfix_cpt7_ie_rt
+    #   file: 2024-10-01-11-29-55_cpt7_ie_rt.bag
+    #   topic: "/boxi/inertial_explorer/rt/navsatfix"
+
+    # TODO: not yet ready on the part of jonas
+    # - alias: navsatfix_origin_cpt7_ie_rt
+    #   file: 2024-10-01-11-29-55_cpt7_ie_rt.bag
+    #   topic: "/boxi/inertial_explorer/rt/navsatfix_origin"
+
+    - alias: navsatfix_cpt7_ie_tc
+      file: 2024-10-01-11-29-55_cpt7_ie_tc.bag
+      topic: "/boxi/inertial_explorer/tc/navsatfix"
+
+    # TODO: not yet ready on the part of jonas
+    # - alias: navsatfix_origin_cpt7_ie_tc
+    #   file: 2024-10-01-11-29-55_cpt7_ie_tc.bag
+    #   topic: "/boxi/inertial_explorer/tc/navsatfix_origin"
+
+  gnss_raw_topics:
+    # TODO: not yet ready on the part of jonas
+    # - alias: gnss_origin_cpt7_ie_rt
+    #   file: 2024-10-01-11-29-55_cpt7_ie_rt.bag
+    #   topic: "/boxi/inertial_explorer/rt/origin"
+
+    # TODO: not yet ready on the part of jonas
+    # - alias: gnss_raw_cpt7_ie_rt
+    #   file: 2024-10-01-11-29-55_cpt7_ie_rt.bag
+    #   topic: "/boxi/inertial_explorer/rt/raw"
+
+    # - alias: gnss_origin_cpt7_ie_tc
+    #   file: 2024-10-01-11-29-55_cpt7_ie_tc.bag
+    #   topic: "/boxi/inertial_explorer/tc/origin"
+
+    - alias: gnss_raw_cpt7_ie_tc
+      file: 2024-10-01-11-29-55_cpt7_ie_tc.bag
+      topic: "/boxi/inertial_explorer/tc/raw"
+
+
+# TODO: check with Jonas --> Not yet implemented!
+  twist_topics:
+    - alias: anymal_command
+      file: 2024-10-01-11-29-55_anymal_command.bag
+      topic: "/anymal/twist_command"
+
+# TODO: implement topic of type any_velodyne_msgs/VelodyneScan
+# only generate the topic_name and frame_id no conversion needed
+  #   - alias: anymal_velodyne_packets
+  #     file: 2024-10-01-11-29-55_anymal_velodyne_packets.bag
+  #     topic: "/anymal/velodyne/packets"
+
+# TODO: check with Jonas --> No conversion needed
+#     - alias: anymal_elevation
+#       file: 2024-10-01-11-29-55_anymal_elevation.bag
+#       topic: "/anymal/elevation_mapping/elevation_map_raw"
+
+# TODO: implement conversion from series_elastic_actuator_msgs/SeActuatorReadings
+#     - alias: anymal_state_actuator
+#       file: 2024-10-01-11-29-55_anymal_state.bag
+#       topic: "/anymal/actuator_readings"
+
+# TODO: implement conversion from pdb_msgs/BatteryState
+#     - alias: anymal_state_battery
+#       file: 2024-10-01-11-29-55_anymal_state.bag
+#       topic: "/anymal/battery_state"
+
+# TODO: implement conversion from anymal_msgs/AnymalState
+#     - alias: anymal_state_state_estimator
+#       file: 2024-10-01-11-29-55_anymal_state.bag
+#       topic: "/anymal/state_estimator/anymal_state"
+
+# TODO: check with Jonas --> Not in list and not yet implemented!
+  #   - alias: anymal_tf
+  #     file: 2024-10-01-11-29-55_anymal_tf.bag
+  #     topic: "/tf"
+
+
+# TODO: implement conversion from signal_logger_msgs/Float32MultiArrayStamped
+#     - alias: anymal_locomotion
+#       file: 2024-10-01-11-29-55_anymal_locomotion.bag
+#       topic: "/anymal/locomotion_policy/debug_info"
+     
+# GENERAL NOTES:
+# are odometry messages in general supersets of position messages?, do we really need all of these
+# in general i think that there is a massive hierarchy of dupliate information store, we should propably dedupe this
+# i have no way of knowing for sure which are duplicates of which...

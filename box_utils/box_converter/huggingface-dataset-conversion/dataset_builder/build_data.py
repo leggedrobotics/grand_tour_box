@@ -35,11 +35,9 @@ from dataset_builder.utils import messages_in_bag_with_topic
 DATA_PREFIX = "data"
 IMAGE_PREFIX = "images"
 
-
 ImageExtractorCallback = Callable[
     [Union[CompressedImage, Image], int, ImageTopic], None
 ]
-
 
 def _extract_and_save_image_from_message(
     msg: Union[CompressedImage, Image],
@@ -72,6 +70,7 @@ def _np_arrays_from_buffered_messages(
     for record in buffer:
         for key, value in record.items():
             data[key].append(value)
+
     array_data = {
         key: np.array(data[key], dtype=attr.dtype) for key, attr in attr_tps.items()
     }
@@ -80,6 +79,7 @@ def _np_arrays_from_buffered_messages(
         assert (
             array_data[key].shape[1:] == attr.shape
         ), f"{key}: {array_data[key].shape[1:]} != {attr.shape}"
+    
     return array_data
 
 
@@ -123,12 +123,13 @@ def _create_zarr_group_for_topic(zarr_root: Path, topic_alias: str) -> zarr.Grou
     create zarr group for topic in the dataset, overwrite the group if it already exists
     don't overwrite the dataset
     """
-    # create the zarr dataset root
+    # create the zarr dataset root --> /datapath
     store = zarr.storage.DirectoryStore(zarr_root)
     root = zarr.group(store, overwrite=False)
 
     # overwrite existing sub group
-    return root.create_group(topic_alias, overwrite=True)
+    group = root.create_group(topic_alias, overwrite=True)
+    return group
 
 
 APPROX_CHUNK_SIZE = 256 * (2**20)  # 256 MB
@@ -146,7 +147,8 @@ def _compute_zarr_array_chunk_size(tp: ArrayType) -> Tuple[int, ...]:
     slice_exponent = np.floor(np.log2(slice_ratio))
 
     n_slices = 2 ** max(slice_exponent, 0)
-    return (n_slices,) + tp.shape
+    size = (n_slices,) + tp.shape
+    return size 
 
 
 def _create_zarr_arrays_for_topic(
@@ -170,7 +172,9 @@ def _create_zarr_arrays_for_topic(
             chunks=chunk_size,
         )
 
-    return min(slice_sizes)
+    slice_min = min(slice_sizes)
+
+    return slice_min
 
 
 def _create_jpeg_topic_folder(jpeg_root: Path, topic_alias: str) -> Path:
@@ -249,15 +253,18 @@ def _tar_ball_dataset(base_dataset_path: Path) -> None:
     if image_files.exists():
         _tar_ball_dirs_in_dir(image_files)
 
-
 def build_data_part(
     *, bags_path: Path, dataset_base_path: Path, topic_registry: TopicRegistry
 ) -> None:
+    # progressbar
     progress = tqdm(topic_registry.values())
+
     for attribute_types, topic_desc in progress:
         progress.set_description(f"Processing {topic_desc.alias}")
 
         bag_file = bags_path / topic_desc.file
+
+
         _generate_dataset_from_topic_description_and_attribute_types(
             dataset_base_path,
             bag_file,

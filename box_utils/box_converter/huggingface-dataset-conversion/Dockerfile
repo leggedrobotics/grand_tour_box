@@ -1,5 +1,8 @@
 FROM ros:noetic
 
+# used to debug in vscode in container
+ENV PYTHONPATH="/catkin_ws/devel/lib/python3/dist-packages:/opt/ros/noetic/lib/python3/dist-packages"
+
 RUN apt-get update && apt-get install -y \
     python3-pip \
     python3-virtualenv \
@@ -38,7 +41,7 @@ RUN pip install -r requirements-docker.txt
 
 # installing ros packages
 WORKDIR /catkin_ws/src
-ADD git@github.com:leggedrobotics/grand_tour_box.git#fix/missing-messages-anymal-msgs grand_tour_box
+ADD git@github.com:leggedrobotics/grand_tour_box.git grand_tour_box
 ADD git@github.com:ros-drivers/gps_umd.git gps_umd
 ADD git@github.com:ANYbotics/signal_logger.git signal_logger
 RUN . /opt/ros/$ROS_DISTRO/setup.sh && catkin build \
@@ -48,6 +51,7 @@ RUN . /opt/ros/$ROS_DISTRO/setup.sh && catkin build \
     gnss_msgs \
     && :
 
+        
 # entrypoint
 WORKDIR /app
 COPY ./entrypoint.sh /

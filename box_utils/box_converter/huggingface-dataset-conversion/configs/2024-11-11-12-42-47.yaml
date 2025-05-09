@@ -142,11 +142,19 @@ data:
       format: png
       compressed: false
 
+  # actuator_readings_topics:
+  #   - alias: anymal_lpc_readings
+  #     file: "{}_lpc_general.bag"
+  #     topic: "/anymal_low_level_controller/actuator_readings"
+  #     actuator_names:
+  #       - foo
+  #       - bar
   actuator_readings_topics:
     - alias: anymal_lpc_readings
       file: "{}_lpc_general.bag"
       topic: "/anymal_low_level_controller/actuator_readings"
       number_of_actuators: 12
+
 
   lidar_topics:
     - alias: hesai

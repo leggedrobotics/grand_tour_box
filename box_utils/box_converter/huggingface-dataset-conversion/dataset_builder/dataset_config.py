@@ -14,11 +14,14 @@ import numpy as np
 import numpy.typing
 import yaml
 
+
 METADATA_KEY = "metadata"
 DATA_KEY = "data"
 
 CAMERA_INTRISICS_KEY = "camera_intrinsics"
 FRAME_TRANSFORMS_KEY = "frame_transforms"
+
+#TODO: add missing topics according to mission
 
 
 @dataclass(frozen=True)
@@ -64,6 +67,9 @@ class AnymalStateTopic(Topic):
     number_of_joints: int
     feet: List[str] = field(default_factory=list)
 
+# TODO: test and debug
+@dataclass
+class AnymalDebugTopic(Topic): ...
 
 @dataclass
 class NavSatFixTopic(Topic): ...
@@ -80,7 +86,6 @@ class PointTopic(Topic): ...
 @dataclass
 class SingletonTransformTopic(Topic): ...
 
-
 @dataclass
 class TemperatureTopic(Topic): ...
 
@@ -92,6 +97,11 @@ class FluidPressureTopic(Topic): ...
 @dataclass
 class TwistTopic(Topic): ...
 
+@dataclass
+class AnymalTwistTopic(Topic): ...
+
+@dataclass
+class ImuVector(Topic): ...
 
 @dataclass
 class GPSFixTopic(Topic): ...
@@ -118,13 +128,13 @@ class CameraInfoTopic(Topic): ...
 class FrameTransformConfig:
     topic: str
     file: str
-    base_frame: str = "base"
-
+    frame_id: str = ""
+    reference_frame_id: str = ""
 
 @dataclass
 class MetadataConfig:
     frame_transforms: FrameTransformConfig
-    camera_intrinsics: List[CameraInfoTopic] = field(default_factory=list)
+    camera_intrinsics: List[CameraInfoTopic] = field(default_factory=list) # set a default value to []
 
 
 AttributeTypes = Dict[str, ArrayType]
@@ -450,10 +460,41 @@ def _build_twist_topics_attributes(
     twist_topics: Sequence[TwistTopic],
 ):
     topic_tp = {
-        "twist_lin": ArrayType((3,), np.float64),
-        "twist_ang": ArrayType((3,), np.float64),
+        "linear": ArrayType((3,), np.float64),
+        "angular": ArrayType((3,), np.float64),
     }
     return {topic.alias: (topic_tp.copy(), topic) for topic in twist_topics}
+
+
+def _build_anymal_twist_topics_attributes(
+    twist_topics: Sequence[TwistTopic],
+):
+    topic_tp = {
+        "linear": ArrayType((3,), np.float64),
+        "angular": ArrayType((3,), np.float64),
+    }
+    return {topic.alias: (topic_tp.copy(), topic) for topic in twist_topics}
+
+
+def _build_imu_vector_topics_attributes(
+    imu_vector: Sequence[ImuVector],
+):
+    topic_tp = {
+        "vector": ArrayType((3,), np.float64)
+    }
+    return {topic.alias: (topic_tp.copy(), topic) for topic in imu_vector}
+
+# TODO: test and debug
+def _build_anymal_debug_topics_attributes(
+    anymal_debug_topics: Sequence[AnymalDebugTopic],
+) -> TopicRegistry:
+    topic_tp = {
+        "matrix_data": ArrayType((3,), np.float32),
+        "matrix_data_offset": ArrayType(tuple(), np.uint32),
+        "matrix_dimensions": ArrayType((3, 3), np.object_),
+    }
+
+    return {topic.alias: (topic_tp.copy(), topic) for topic in anymal_debug_topics}
 
 
 UNIVERSAL_ATTRIBUTES: Dict[str, ArrayType] = {
@@ -478,6 +519,8 @@ TOPIC_TYPES = {
     "imu_topics": (ImuTopic, _build_imu_topics_attributes),
     "odometry_topics": (OdometryTopic, _build_odometry_topics_attributes),
     "anymal_state_topics": (AnymalStateTopic, _build_anymal_state_topics_attributes),
+    "anymal_twist_topics": (AnymalTwistTopic, _build_anymal_twist_topics_attributes),
+    "anymal_debug_topics": (AnymalDebugTopic, _build_anymal_debug_topics_attributes),
     "nav_sat_fix_topics": (NavSatFixTopic, _build_nav_sat_fix_topics_attributes),
     "magnetic_field_topics": (
         MagneticFieldTopic,
@@ -501,12 +544,18 @@ TOPIC_TYPES = {
         ActuatorReadingsTopic,
         _build_actuator_readings_topics_attributes,
     ),
+    "imu_vector_topics": (ImuVector, _build_imu_vector_topics_attributes),
 }
 
 
 def _load_topic_registry_from_config(
     data_config_object: Mapping[str, List[Mapping[str, Any]]], mission_name: str
 ) -> TopicRegistry:
+    
+    """
+    Load the topic registry from the data part of the config file
+    """
+
     registry: TopicRegistry = {}
     assert isinstance(
         data_config_object, Mapping
@@ -523,17 +572,23 @@ def _load_topic_registry_from_config(
                     for topic_obj in data_config_object.get(key, [])
                 ]
                 registry.update(_build_fn(topics))
+
         for _, topic_obj in registry.values():
             topic_obj.file = topic_obj.file.format(mission_name)
 
     except Exception as e:
         raise ValueError(f"error parsing data part of config file: {e}") from e
+    
     return _add_universal_attributes(registry)
 
 
 def _load_metadata_config(
     metadata_config_object: Mapping[str, Any], mission_name: str
 ) -> MetadataConfig:
+    """
+    Load the metadata config from the metadata part of the config file
+    """
+    
     camera_intrinsics_object = metadata_config_object.get(CAMERA_INTRISICS_KEY, [])
 
     try:
@@ -541,20 +596,26 @@ def _load_metadata_config(
             CameraInfoTopic(**topic_obj) for topic_obj in camera_intrinsics_object
         ]
     except Exception as e:
+
         raise ValueError(
             f"error parsing {CAMERA_INTRISICS_KEY!r} part of config file: {e}"
         ) from e
 
     try:
         frame_transforms_object = metadata_config_object.get(FRAME_TRANSFORMS_KEY, {})
-        frame_transforms = FrameTransformConfig(**frame_transforms_object)
+        frame_transforms = [
+            FrameTransformConfig(**transform_obj) for transform_obj in frame_transforms_object
+        ]
     except Exception as e:
+
         raise ValueError(
             f"error parsing {FRAME_TRANSFORMS_KEY!r} part of config file: {e}"
         ) from e
 
     # format file names
-    frame_transforms.file = frame_transforms.file.format(mission_name)
+    for frame_transform in frame_transforms:
+        frame_transform.file = frame_transform.file.format(mission_name)
+
     for camera in camera_intrinsics:
         camera.file = camera.file.format(mission_name)
 
@@ -564,13 +625,17 @@ def _load_metadata_config(
 def load_config(
     config_path: Path, mission_name: str
 ) -> Tuple[TopicRegistry, MetadataConfig]:
-    with open(config_path, "r") as f:
-        config_object = yaml.safe_load(f)
+    
+    with open(config_path, 'r') as f:
+        yaml_data = yaml.safe_load(f)
+
+    config_object = replace_wildcards(yaml_data, mission_name)
 
     try:
         data_config_object = config_object[DATA_KEY]
         metadata_config_object = config_object[METADATA_KEY]
     except KeyError as e:
+
         raise ValueError(
             f"config {config_path!r} does not contain keys {DATA_KEY!r} or {METADATA_KEY!r}"
         ) from e
@@ -579,3 +644,13 @@ def load_config(
         _load_topic_registry_from_config(data_config_object, mission_name),
         _load_metadata_config(metadata_config_object, mission_name),
     )
+
+
+def replace_wildcards(data, default_str="MISSION_NAME"):
+    if isinstance(data, dict):
+        return {k: replace_wildcards(v, default_str) for k, v in data.items()}
+    elif isinstance(data, list):
+        return [replace_wildcards(i, default_str) for i in data]
+    elif isinstance(data, str) and '*' in data:
+        return data.replace('*', default_str)
+    return data
