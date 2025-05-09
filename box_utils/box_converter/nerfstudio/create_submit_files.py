@@ -34,7 +34,7 @@ for name, data in uuid_mappings.items():
 
 tar -xf /cluster/work/rsl/jonfrey/grand_tour/containers/grand-tour-kleinkram.tar  -C $TMPDIR; mkdir $TMPDIR/grand-tour-kleinkram.sif/out
 
-apptainer exec --nv --writable --bind /cluster/scratch/jonfrey:/out --bind /cluster/home/jonfrey/grand_tour_box:/home/catkin_ws/src/grand_tour_box --env KLEINKRAM_CONFIG="$(cat ~/.kleinkram.json)" --containall $TMPDIR/grand-tour-kleinkram.sif /bin/bash -c 'export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH; source /home/opencv_gtsam_ws/devel/setup.bash; source /home/catkin_ws/devel/setup.bash; export HOME=/home; export KLEINKRAM_ACTIVE=ACTIVE; /entrypoint_euler.sh  python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_converter/nerfstudio/nerf_studio.py --mission_uuid {uuid}'
+apptainer exec --nv --writable --bind /cluster/scratch/jonfrey/out:/out --bind /cluster/home/jonfrey/grand_tour_box:/home/catkin_ws/src/grand_tour_box --env KLEINKRAM_CONFIG="$(cat ~/.kleinkram.json)" --containall $TMPDIR/grand-tour-kleinkram.sif /bin/bash -c 'export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH; source /home/opencv_gtsam_ws/devel/setup.bash; source /home/catkin_ws/devel/setup.bash; export HOME=/home; export KLEINKRAM_ACTIVE=ACTIVE; /entrypoint_euler.sh  python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_converter/nerfstudio/nerf_studio.py --mission_uuid {uuid}'
 
 
 exit 0
@@ -49,9 +49,5 @@ if SCHEDULE:
     i = 0
     for name, _ in uuid_mappings.items():
         if MISSION_DATA[name]["GOOD_MISSION"] == "TRUE":
-            if i < 2:
-                i += 1
-                continue
-
             os.system(f"ssh {host} sbatch /cluster/scratch/jonfrey/.submit/{name}_nerfstudio.sh")
             time.sleep(120)
