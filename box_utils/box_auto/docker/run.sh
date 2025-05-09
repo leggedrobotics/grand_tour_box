@@ -9,7 +9,7 @@ __usage="
 Usage: $(basename $0) [OPTIONS]
 
 Required:
-  --type=TYPE               Select image type: kleinkram, kleinkram_minimal, ros2, full
+  --type=TYPE               Select image type: kleinkram, kleinkram_minimal, ros2, full, depth_benchmark
 
 Optional:
   --no-rm                  Don't remove container after exit
@@ -27,7 +27,7 @@ INTERACTIVE_FLAG="-it"
 IMAGE="rslethz/grand_tour_box"
 IMAGE_TYPE=""
 COMMAND=""
-MISSION_DATA=""
+MISSION_DATA="/tmp_disk"
 DEBUG_MOUNT=""
 REPO_PATH="$HOME/git/grand_tour_box"  # Default repo path
 
@@ -40,7 +40,7 @@ for i in "$@"; do
         --type=*)
             TYPE=${i#*=}
             case $TYPE in
-                kleinkram|kleinkram_minimal|ros2|bridge)
+                kleinkram|kleinkram_minimal|ros2|bridge|depth_benchmark)
                     IMAGE_TYPE=$TYPE
                     ;;
                 *)
@@ -137,6 +137,7 @@ eval docker run --privileged \
     --gpus all \
     --volume $SSH_AUTH_SOCK:/ssh-agent \
     --env SSH_AUTH_SOCK=/ssh-agent \
+    -v ~/.kleinkram.json:/home/.kleinkram.json \
     "${ENV_VARS[@]}" \
     $MISSION_DATA_MOUNT \
     $DEBUG_MOUNT \

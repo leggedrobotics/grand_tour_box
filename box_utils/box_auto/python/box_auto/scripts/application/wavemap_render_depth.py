@@ -199,6 +199,7 @@ if __name__ == "__main__":
                         "map1": map1,
                         "map2": map2,
                     }
+
                     print("Found camera:", camera["name"])
                     break
 
@@ -221,7 +222,7 @@ if __name__ == "__main__":
                 start_time=rospy.Time(start_time),
                 end_time=rospy.Time(end_time),
             ):
-                if count.get(topic, 0) > config["num_images_per_topic"]:
+                if count.get(topic, 0) >= config["num_images_per_topic"]:
                     print(msg.header.seq, "num_images")
                     break
 

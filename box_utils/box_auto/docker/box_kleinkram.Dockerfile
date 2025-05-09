@@ -42,9 +42,13 @@ RUN chmod +x /entrypoint.sh
 # Install Roboto for preview videos
 RUN apt-get update && apt-get install -y fonts-roboto && rm -rf /var/lib/apt/lists/*
 RUN fc-cache -f -v
+RUN pip3 install torchvision
 
 RUN mkdir /home/catkin_ws/src/grand_tour_box/.secrets
 
 COPY .secrets/halogen-oxide-451108-u4-67f470bcc02e.json /home/catkin_ws/src/grand_tour_box/.secrets/halogen-oxide-451108-u4-67f470bcc02e.json
+
+COPY entrypoint_euler.sh /entrypoint_euler.sh
+RUN chmod +x /entrypoint_euler.sh
 
 ENTRYPOINT ["/entrypoint_kleinkram.sh"]
