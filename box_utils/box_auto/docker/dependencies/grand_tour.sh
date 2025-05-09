@@ -170,3 +170,5 @@ echo "source /home/catkin_ws/devel/setup.bash" >> /root/.bashrc
 
 # Install boxi
 cd /home/catkin_ws/src/grand_tour_box/box_utils/boxi; pip3 install -e ./ --no-cache-dir
+
+mkdir /out

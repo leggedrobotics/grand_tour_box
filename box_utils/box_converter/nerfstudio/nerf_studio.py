@@ -285,7 +285,7 @@ def main():
     with open(args.config_file, "r") as f:
         config = yaml.safe_load(f)
 
-    Path(data_folder).mkdir(exist_ok=True)
+    Path(data_folder).mkdir(exist_ok=True, parents=True)
 
     try:
         tf_bag_path = get_bag("*_tf_minimal.bag", directory=data_folder, try_until_suc=False)
@@ -337,6 +337,7 @@ def main():
         parent_folder = Path(image_saver.output_folder).parent
         tar_file = Path(ARTIFACT_FOLDER) / "nerfstudio_scratch" / f"{mission_name}_nerfstudio.tar"
         tar_file.parent.mkdir(parents=True, exist_ok=True)
+        print("Creating tar file", tar_file)
         os.system(f"cd {parent_folder}; tar -cvf {tar_file} {out_dir}")
 
     # shutil.rmtree(data_folder, ignore_errors=True)
