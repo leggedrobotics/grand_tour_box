@@ -8,10 +8,10 @@ source /home/opencv_gtsam_ws/devel/setup.bash
 cd /home/catkin_ws
 catkin init
 catkin config --extend /home/opencv_gtsam_ws/devel
-catkin config --cmake-args -DCMAKE_BUILD_TYPE=RelWithDebInfo
+catkin config --cmake-args -DCMAKE_BUILD_TYPE=Release
 
 # grand_tour_box repository
-cd /home/catkin_ws/src; git clone --recurse-submodules --shallow-submodules git@github.com:leggedrobotics/grand_tour_box.git --depth 1
+cd /home/catkin_ws/src; git clone --recurse-submodules --shallow-submodules git@github.com:leggedrobotics/grand_tour_box.git --depth 1 --branch main
 
 # Dependencies: raw_image_pipeline
 cd /home/catkin_ws/src; git clone https://github.com/leggedrobotics/pybind11_catkin.git --depth 1
@@ -20,7 +20,6 @@ cd /home/catkin_ws/src; git clone https://github.com/ethz-asl/glog_catkin.git --
 
 # Dependencies: open3d_slam_private
 cd /home/catkin_ws/src;  git clone https://github.com/leggedrobotics/message_logger.git --depth 1
-# Dependencies (not sure if needed): graph_msf_dev
 cd /home/catkin_ws/src; git clone https://github.com/leggedrobotics/libnabo.git --depth 1
 
 
@@ -30,20 +29,24 @@ mkdir -p ~/.vim/colors
 cp /home/catkin_ws/src/grand_tour_box/box_configuration/general/solarized.vim ~/.vim/colors/
 cp /home/catkin_ws/src/grand_tour_box/box_configuration/general/.tmux.conf ~/
 
+# For velodyne_driver
+apt install libpcap-dev -y
+apt install ros-noetic-angles -y
 
-# Dependencies: open3d_slam_private - Upgrade cmake version to 3.19.2
+# Dependencies: open3d_slam_private - Upgrade cmake version to 3.26.4
 apt update -y
 apt install wget software-properties-common -y
 wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null
 apt-add-repository "deb https://apt.kitware.com/ubuntu/ $(lsb_release -cs) main"
 apt update -y
 apt install kitware-archive-keyring -y
-apt install cmake=3.19.2-0kitware1ubuntu20.04.1 cmake-data=3.19.2-0kitware1ubuntu20.04.1 -y
+apt install cmake=3.26.4-0kitware1ubuntu20.04.1 cmake-data=3.26.4-0kitware1ubuntu20.04.1 -y
 apt install libgoogle-glog-dev libglfw3-dev liblua5.2-dev -y
 apt install python3-catkin-tools libc++-dev libc++abi-dev -y 
 apt install libxinerama-dev -y
 apt install libxcursor-dev -y
 apt install ros-noetic-tf-conversions -y
+apt install ros-noetic-xacro -y
 # Use: install_deps_ubuntu.sh [ assume-yes ]
 set -ev
 
@@ -101,18 +104,19 @@ pip3 install matplotlib # graph_msf
 pip3 uninstall kleinkram -y
 pip3 install kleinkram
 pip3 install --upgrade pyOpenSSL # Kleinkram fails to run without this
+pip3 install gspread
+pip3 install google-api-python-client
 
 # Dependencies for box_auto imu_timesync
 pip3 install torch
 pip3 install rerun-sdk
 
+# Dependencies of export nerfstudio images
+pip3 install torchvision
+
 # 
 pip3 install sortedcontainers
 pip3 install rosnumpy
-
-# anonymization script
-pip3 install ultralytics
-pip3 install supervision
 
 # Dependencies: box_auto - hesai.py
 mkdir -p /home/rsl/git/grand_tour_box/box_bringup/bringup_hesai/config
@@ -129,7 +133,7 @@ apt install -y ros-noetic-pcl-ros
 # Dependencies: tf_bag 
 pip3 install importlib-metadata==4.13.0
 
-# Dependencies: graph_msf_dev 
+# Dependencies: general ros 
 apt install -y libeigen3-dev
 apt install -y ros-noetic-kdl-parser
 apt install -y ros-noetic-eigen-conversions
@@ -143,7 +147,7 @@ apt install -y ros-noetic-tf2-eigen
 
 apt update -y
 
-# Build workspace
+# Source workspace
 source /opt/ros/noetic/setup.bash
 source /home/opencv_gtsam_ws/devel/setup.bash
 cd /home/catkin_ws
@@ -154,9 +158,17 @@ export LD_LIBRARY_PATH=$CUDA_HOME/lib64:$LD_LIBRARY_PATH
 export PATH=/usr/local/cuda/bin${PATH:+:${PATH}}
 
 catkin build direct_lidar_inertial_odometry
+
+# Build post-processing package in full (export DEBUG_MODE=1 , to build in debug mode)
+export DEBUG_MODE=0
 catkin build box_auto
 
+rm -rf /home/catkin_ws/src/grand_tour_box/box_applications/open3d_slam_private/open3d_slam_rsl/open3d_catkin/tmp
+
+# Make sure to add source to bashrc
 echo "source /home/catkin_ws/devel/setup.bash" >> /root/.bashrc
 
 # Install boxi
 cd /home/catkin_ws/src/grand_tour_box/box_utils/boxi; pip3 install -e ./ --no-cache-dir
+
+mkdir /out

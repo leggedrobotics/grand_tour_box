@@ -45,7 +45,7 @@ if __name__ == "__main__":
         background=True,
     )
     sleep(5)
-    run_ros_command(f"rosbag play -r 2 --clock {input_rosbag_path} --topics /gt_box/hesai/packets")
+    run_ros_command(f"rosbag play -r 5 --clock {input_rosbag_path} --topics /gt_box/hesai/packets")
 
     output_bag_path = input_rosbag_path.replace("_nuc_hesai.bag", "_nuc_hesai_post_processed.bag")
 

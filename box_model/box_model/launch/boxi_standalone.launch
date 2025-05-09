@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- Arguments -->
+  <arg name="description_name"         default="boxi_description"/>
+  <arg name="files_dir"                default="$(find box_model)/urdf/box"/>
+  <arg name="urdf_file"                default="$(arg files_dir)/box.urdf"/>
+  <arg name="xacro_file"               default="$(arg files_dir)/box.urdf.xacro"/>
+  <arg name="load_from_urdf"           default="false"/>
+  <arg name="calibration_file"         default="$(find box_calibration)/calibration/tf/calibration_latest.yaml" />
+
+  <!-- Load robot description -->
+  <include file="$(find box_model)/launch/load_boxi.launch">
+    <arg name="description_name"       value="$(arg description_name)"/>
+    <arg name="boxi_urdf"              value="$(arg urdf_file)"/>
+    <arg name="boxi_xacro"             value="$(arg xacro_file)"/>
+    <arg name="load_from_urdf"         value="$(arg load_from_urdf)"/>
+  </include>
+
+  <!-- Boxi state publisher -->
+  <node name="boxi_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" output="screen">
+    <param name="publish_frequency"    value="100"/>
+    <param name="use_tf_static"        value="true"/>
+    <remap from="robot_description" to="$(arg description_name)"/>
+  </node>
+
+  <!-- Publish Calibration info -->
+  <node name="calibration_metadata_publisher" pkg="box_model" type="publish_calibration_info.py">
+    <param name="capability_group"     value="Calibration"/>
+    <param name="calibration_file"     value="$(arg calibration_file)"/>
+  </node>
+
+  <!-- RViz -->
+  <node name="boxi_urdf_rviz" pkg="rviz" type="rviz"
+        args="-d $(find box_model)/config/display_urdf.rviz"
+        output="screen"/>
+
+  <!-- Record 1 tf_static message -->
+  <node name="record_tf_static" pkg="rosbag" type="record" output="screen"
+        args="-O $(arg files_dir)/tf_static_urdf.bag --chunksize=2048 -l 1 /tf_static"/>
+
+  <!-- Dump the description to yaml file. -->
+  <node pkg="box_model" type="dump_params.sh" name="dump_params" output="screen" />
+
+</launch>

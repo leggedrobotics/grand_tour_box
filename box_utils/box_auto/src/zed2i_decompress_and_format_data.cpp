@@ -302,11 +302,42 @@ int main(int argc, char** argv) {
   ros::init(argc, argv, "image_and_depth_save_node");
   ros::NodeHandle nh("~");
 
-  std::string depth_topic = "/gt_box/zed2i/zed_node/depth/depth_registered/compressedDepth";
-  std::string color_topic = "/gt_box/zed2i/zed_node/left/image_rect_color/compressed";
-  std::string camera_info_topic = "/gt_box/zed2i/zed_node/left/camera_info";
-
   // Get parameters
+  std::string global_rosbag_path = "";
+  if (!nh.getParam("global_rosbag_path", global_rosbag_path)) {
+    ROS_ERROR("Parameter 'global_rosbag_path' not set!");
+    return -1;
+  }
+
+  std::string depth_topic = "/gt_box/zed2i/zed_node/depth/depth_registered/compressedDepth";
+  if (!nh.getParam("depth_topic", depth_topic)) {
+    ROS_ERROR("Parameter 'depth_topic' not set!");
+    return -1;
+  }
+
+  std::string confidence_topic = "/gt_box/zed2i/zed_node/depth/depth_registered/compressedDepth";
+  if (!nh.getParam("confidence_topic", confidence_topic)) {
+    ROS_ERROR("Parameter 'confidence_topic' not set!");
+    return -1;
+  }
+
+  bool save_confidence = false;
+  if (!nh.getParam("save_confidence", save_confidence)) {
+    ROS_ERROR("Parameter 'save_confidence' not set!");
+    return -1;
+  }
+
+  std::string color_topic = "/gt_box/zed2i/zed_node/left/image_rect_color/compressed";
+  if (!nh.getParam("color_topic", color_topic)) {
+    ROS_ERROR("Parameter 'color_topic' not set!");
+    return -1;
+  }
+
+  std::string camera_info_topic = "/gt_box/zed2i/zed_node/left/camera_info";
+  if (!nh.getParam("camera_info_topic", camera_info_topic)) {
+    ROS_ERROR("Parameter 'camera_info_topic' not set!");
+    return -1;
+  }
 
   std::string bag_file_directory = "";
   if (!nh.getParam("bag_file_directory", bag_file_directory)) {
@@ -353,10 +384,43 @@ int main(int argc, char** argv) {
     }
   }
 
-  // Clear the files in the folder using std::filesystem
+  // Clear the files and any subfolders in the folder using std::filesystem
   for (const auto& entry : std::filesystem::directory_iterator(folder_path)) {
-    std::filesystem::remove(entry.path());
+    std::filesystem::remove_all(entry.path());
   }
+
+  // Create "images" subfolder if it doesn't exist
+  std::filesystem::path images_folder = std::filesystem::path(folder_path) / "images";
+  if (!std::filesystem::exists(images_folder)) {
+    if (!std::filesystem::create_directories(images_folder)) {
+      ROS_ERROR("Failed to create directory: %s", images_folder.string().c_str());
+      return -1;
+    }
+  }
+
+  // Create "depth_images" subfolder if it doesn't exist
+  std::filesystem::path depth_images_folder = std::filesystem::path(folder_path) / "depth_images";
+  if (!std::filesystem::exists(depth_images_folder)) {
+    if (!std::filesystem::create_directories(depth_images_folder)) {
+      ROS_ERROR("Failed to create directory: %s", depth_images_folder.string().c_str());
+      return -1;
+    }
+  }
+
+  // Create "confidence_images" subfolder if it doesn't exist
+  std::filesystem::path confidence_folder = std::filesystem::path(folder_path) / "confidence_images";
+
+  if (save_confidence) {
+    if (!std::filesystem::exists(confidence_folder)) {
+      if (!std::filesystem::create_directories(confidence_folder)) {
+        ROS_ERROR("Failed to create directory: %s", confidence_folder.string().c_str());
+        return -1;
+      }
+    }
+  }
+
+  ROS_INFO("Images folder: %s", images_folder.string().c_str());
+  ROS_INFO("Depth images folder: %s", depth_images_folder.string().c_str());
 
   std::string map_frame = "dlio_map";  // map_o3d world
   if (!nh.getParam("map_frame", map_frame)) {
@@ -367,89 +431,94 @@ int main(int argc, char** argv) {
   std::string rgbBagPath = "";
   std::string depthBagPath = "";
 
-  {
-    // Substring to look for
-    std::string target_substring = "_jetson_zed2i_depth.bag";
+  if (!global_rosbag_path.empty()) {
+    rgbBagPath = global_rosbag_path;
+    depthBagPath = global_rosbag_path;
+  } else {
+    {
+      // Substring to look for
+      std::string target_substring = "_depth.bag";
 
-    bool found_any = false;
+      bool found_any = false;
 
-    try {
-      // Iterate over the directory
-      for (const auto& entry : std::filesystem::directory_iterator(bag_file_directory)) {
-        if (!entry.is_regular_file()) {
-          continue;  // Skip directories/symlinks/etc.
-        }
-
-        const std::string filename = entry.path().filename().string();
-
-        // Check if file name contains the desired substring
-        if (filename.find(target_substring) != std::string::npos) {
-          if (found_any) {
-            // We already found a match before -> multiple files exist
-            std::cerr << "Error: Found multiple files containing '" << target_substring << "' in directory.\n";
-            return 1;  // or throw an exception
+      try {
+        // Iterate over the directory
+        for (const auto& entry : std::filesystem::directory_iterator(bag_file_directory)) {
+          if (!entry.is_regular_file()) {
+            continue;  // Skip directories/symlinks/etc.
           }
-          // Record this file as our match
-          depthBagPath = entry.path().string();
-          found_any = true;
+
+          const std::string filename = entry.path().filename().string();
+
+          // Check if file name contains the desired substring
+          if (filename.find(target_substring) != std::string::npos) {
+            if (found_any) {
+              // We already found a match before -> multiple files exist
+              std::cerr << "Error: Found multiple files containing '" << target_substring << "' in directory.\n";
+              return 1;  // or throw an exception
+            }
+            // Record this file as our match
+            depthBagPath = entry.path().string();
+            found_any = true;
+          }
         }
+
+        // After iterating, check our results
+        if (!found_any) {
+          std::cerr << "Error: No files containing '" << target_substring << "' found in directory.\n";
+          return -1;  // or throw an exception
+        }
+
+        // Exactly one match was found
+        std::cout << "Matched file path: " << depthBagPath << std::endl;
+
+      } catch (const std::filesystem::filesystem_error& e) {
+        std::cerr << "Filesystem error: " << e.what() << std::endl;
+        return -1;  // or throw
       }
-
-      // After iterating, check our results
-      if (!found_any) {
-        std::cerr << "Error: No files containing '" << target_substring << "' found in directory.\n";
-        return -1;  // or throw an exception
-      }
-
-      // Exactly one match was found
-      std::cout << "Matched file path: " << depthBagPath << std::endl;
-
-    } catch (const std::filesystem::filesystem_error& e) {
-      std::cerr << "Filesystem error: " << e.what() << std::endl;
-      return -1;  // or throw
     }
-  }
 
-  {
-    // Substring to look for
-    std::string target_substring = "_jetson_zed2i_images.bag";
+    {
+      // Substring to look for
+      std::string target_substring = "_images.bag";
 
-    bool found_any = false;
+      bool found_any = false;
 
-    try {
-      // Iterate over the directory
-      for (const auto& entry : std::filesystem::directory_iterator(bag_file_directory)) {
-        if (!entry.is_regular_file()) {
-          continue;  // Skip directories/symlinks/etc.
-        }
-
-        const std::string filename = entry.path().filename().string();
-
-        // Check if file name contains the desired substring
-        if (filename.find(target_substring) != std::string::npos) {
-          if (found_any) {
-            // We already found a match before -> multiple files exist
-            std::cerr << "Error: Found multiple files containing '" << target_substring << "' in directory.\n";
-            return 1;
+      try {
+        // Iterate over the directory
+        for (const auto& entry : std::filesystem::directory_iterator(bag_file_directory)) {
+          if (!entry.is_regular_file()) {
+            continue;  // Skip directories/symlinks/etc.
           }
 
-          rgbBagPath = entry.path().string();
-          found_any = true;
+          const std::string filename = entry.path().filename().string();
+
+          // Check if file name contains the desired substring
+          if (filename.find(target_substring) != std::string::npos) {
+            if (found_any) {
+              // We already found a match before -> multiple files exist
+              std::cerr << "Error: Found multiple files containing '" << target_substring << "' in directory.\n";
+              return 1;
+            }
+
+            rgbBagPath = entry.path().string();
+            found_any = true;
+          }
         }
+
+        // After iterating, check our results
+        if (!found_any) {
+          std::cerr << "Error: No files containing '" << target_substring << "' found in directory.\n";
+          return -1;  // or throw an exception
+        }
+
+        // Exactly one match was found
+        std::cout << "Matched file path: " << rgbBagPath << std::endl;
+
+      } catch (const std::filesystem::filesystem_error& e) {
+        std::cerr << "Filesystem error: " << e.what() << std::endl;
+        return -1;
       }
-
-      // After iterating, check our results
-      if (!found_any) {
-        std::cerr << "Error: No files containing '" << target_substring << "' found in directory.\n";
-        return -1;  // or throw an exception
-      }
-
-      // Exactly one match was found
-      std::cout << "Matched file path: " << rgbBagPath << std::endl;
-
-    } catch (const std::filesystem::filesystem_error& e) {
-      std::cerr << "Filesystem error: " << e.what() << std::endl;
-      return -1;
     }
   }
 
@@ -543,7 +612,7 @@ int main(int argc, char** argv) {
           mat.convertTo(depth_16u, CV_16UC1, 1000.0);  // Scale meters to millimeters
           std::ostringstream filename;
           filename << "depth" << saved_depth_count << ".png";
-          if (cv::imwrite(folder_path + "/" + filename.str(), depth_16u)) {
+          if (cv::imwrite(depth_images_folder.string() + "/" + filename.str(), depth_16u)) {
             ROS_INFO("Saved %s", filename.str().c_str());
             saved_depth_count++;
           } else {
@@ -565,6 +634,87 @@ int main(int argc, char** argv) {
     }
   }
 
+  if (save_confidence) {
+    /////////////////////////
+    ros::Time lastConfidenceImageTime;
+
+    ROS_WARN("Getting Confidence");
+    rosbag::View confidence_view(depthBag, rosbag::TopicQuery(confidence_topic));
+
+    int saved_confidence_count = 0;
+    int nbConfidenceFrames = 0;
+    bool found_confidence = false;
+
+    foreach (rosbag::MessageInstance const m, confidence_view) {
+      if (saved_confidence_count >= max_depth_images) {
+        break;
+      }
+
+      sensor_msgs::CompressedImage::ConstPtr cimg = m.instantiate<sensor_msgs::CompressedImage>();
+      if (cimg) {
+        ++nbConfidenceFrames;
+        if (nbConfidenceFrames < frames_to_skip) {
+          continue;
+        }
+
+        lastConfidenceImageTime = cimg->header.stamp;
+        found_confidence = true;
+
+        // Decode compressed depth image
+        sensor_msgs::Image::Ptr decompressed = decodeCompressedDepthImage(*cimg);
+
+        try {
+          cv_bridge::CvImageConstPtr cv_ptr;
+          cv::Mat mat;
+          try {
+            // Convert to CV_32FC1 as we assume myDecode returns a float image
+            cv_ptr = cv_bridge::toCvCopy(*decompressed, "32FC1");
+            mat = cv_ptr->image.clone();  // 32-bit float depth in meters (assumed)
+          } catch (cv_bridge::Exception& e) {
+            ROS_ERROR("cv_bridge exception: %s", e.what());
+            return -1;
+          }
+
+          if (saveAsEXR) {
+            std::ostringstream filename;
+            filename << "depth" << saved_confidence_count << ".exr";
+            if (cv::imwrite(folder_path + "/" + filename.str(), mat)) {
+              ROS_INFO("Saved %s", filename.str().c_str());
+              saved_confidence_count++;
+            } else {
+              ROS_ERROR("Failed to write %s", filename.str().c_str());
+              return -1;
+            }
+
+          } else {
+            // Convert 32F (meters) to 16U (millimeters) for PNG saving
+            cv::Mat depth_16u;
+            mat.convertTo(depth_16u, CV_16UC1, 1000.0);  // Scale meters to millimeters
+            std::ostringstream filename;
+            filename << "confidence" << saved_confidence_count << ".png";
+            if (cv::imwrite(confidence_folder.string() + "/" + filename.str(), depth_16u)) {
+              ROS_INFO("Saved %s", filename.str().c_str());
+              saved_confidence_count++;
+            } else {
+              ROS_ERROR("Failed to write %s", filename.str().c_str());
+            }
+          }
+
+        } catch (std::exception& e) {
+          ROS_ERROR("Error processing depth image: %s", e.what());
+        }
+      }
+
+      if (!found_confidence) {
+        ROS_WARN("No compressed confidence images found on topic '%s' in bag '%s'", confidence_topic.c_str(), depthBagPath.c_str());
+        return -1;
+      } else if (saved_confidence_count == 0) {
+        ROS_WARN("Found compressed confidence images but failed to decode or save any.");
+        return -1;
+      }
+    }
+  }
+
   // Create a vector to hold the opened bags
   std::vector<rosbag::Bag> bags;
   bags.reserve(tfContainingBags.size());
@@ -580,7 +730,11 @@ int main(int argc, char** argv) {
     bags.emplace_back();
 
     // tfbag.open(path, rosbag::bagmode::Read);
-    bags.back().open(path, rosbag::bagmode::Read);
+    try {
+      bags.back().open(path, rosbag::bagmode::Read);
+    } catch (const std::exception& e) {
+      bags.back().open(bag_file_directory + path, rosbag::bagmode::Read);
+    }
   }
 
   // Topics we care about
@@ -697,7 +851,7 @@ int main(int argc, char** argv) {
 
       std::ostringstream filename;
       filename << "frame" << saved_color_count << ".jpg";
-      if (cv::imwrite(folder_path + "/" + filename.str(), color_img)) {
+      if (cv::imwrite(images_folder.string() + "/" + filename.str(), color_img)) {
         ROS_INFO("Saved %s", filename.str().c_str());
         saved_color_count++;
       } else {
@@ -711,7 +865,7 @@ int main(int argc, char** argv) {
           //         tf_buffer.lookupTransform("dlio_map", cimg->header.stamp, "zed2i_left_camera_optical_frame", cimg->header.stamp,
           //         "dlio_map", ros::Duration(0.1));
           ros::spinOnce();
-          lookup_transform = tf_buffer.lookupTransform(map_frame, "zed2i_left_camera_optical_frame", cimg->header.stamp);
+          lookup_transform = tf_buffer.lookupTransform(map_frame, cimg->header.frame_id, cimg->header.stamp);
           ros::spinOnce();
 
           tf2::Quaternion q(lookup_transform.transform.rotation.x, lookup_transform.transform.rotation.y,

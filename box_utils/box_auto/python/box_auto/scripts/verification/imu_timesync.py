@@ -427,57 +427,86 @@ if __name__ == "__main__":
     master_summary = {}
     mission_summary = {}
 
-    from box_auto.utils import deployments
-    from box_auto.utils import BOX_AUTO_DIR
+    RUN_SINGLE = True
 
-    skip_till_found = True
-    for deployment in deployments:
-        for mission in deployment["mission_names"]:
-            # if mission == "2024-11-25-11-44-05":
-            #     skip_till_found = False
+    if RUN_SINGLE:
+        from box_auto.utils import MISSION_DATA
 
-            # if skip_till_found:
-            #     continue
+        for t in [30, 60, 90, 120, 180]:
+            for axis in ["x", "y"]:
+                mission = Path(MISSION_DATA).stem
 
-            MISSION_DATA = str(os.path.join(deployment["data_folder"], mission))
-            os.environ["MISSION_DATA"] = MISSION_DATA
+                try:
+                    summary_path = Path(MISSION_DATA) / "verification" / "imu_timesync_summary.yaml"
+                    summary_path.parent.mkdir(exist_ok=True)
 
-            for t in [60, 120, 180]:
-                # from box_auto.utils import MISSION_DATA
+                    master_summary[axis], offset_results = process_all(
+                        MISSION_DATA, output_folder=summary_path.parent, axis=axis, plot=False, skip_seconds=t
+                    )
 
-                for axis in ["x", "y"]:
-                    # Redirect stdout to devnull
-                    with open(os.devnull, "w") as devnull:
-                        old_stdout = sys.stdout
-                        old_stderr = sys.stderr
-                        sys.stdout = devnull
-                        sys.stderr = devnull
-                        try:
-                            summary_path = Path(MISSION_DATA) / "verification" / "imu_timesync_summary.yaml"
-                            summary_path.parent.mkdir(exist_ok=True)
+                    mission_summary[mission + "_" + axis + "_" + str(t)] = offset_results
 
-                            master_summary[axis], offset_results = process_all(
-                                MISSION_DATA, output_folder=summary_path.parent, axis=axis, plot=False, skip_seconds=t
-                            )
+                    print("[ GOOD ] - ", mission + "_" + axis + "_" + str(t))
 
-                            mission_summary[mission + "_" + axis + "_" + str(t)] = offset_results
-                            # Dump the dictionary to a YAML file
-                            with open(str(summary_path), "w") as file:
-                                yaml.dump(master_summary, file, default_flow_style=False, width=1000)
+                except Exception as e:
+                    print("[ FAIL ] - ", mission + "_" + axis + "_" + str(t))
+                    print(e)
 
-                            print("[ GOOD ] - ", mission + "_" + axis + "_" + str(t))
+        # Dump the dictionary to a YAML file
+        with open(str(summary_path), "w") as file:
+            yaml.dump(mission_summary, file, default_flow_style=False, width=1000)
 
-                        except Exception as e:
-                            print("[ FAIL ] - ", mission + "_" + axis + "_" + str(t))
-                            print(e)
-                        finally:
-                            sys.stdout = old_stdout
-                            sys.stderr = old_stderr
+    else:
+        from box_auto.utils import deployments
+        from box_auto.utils import BOX_AUTO_DIR
 
-    print(mission_summary)
+        for deployment in deployments:
+            for mission in deployment["mission_names"]:
+                master_summary = {}
 
-    summary_path = Path(BOX_AUTO_DIR) / "cfg" / "all_missions_summary_xy_60_120_180.yaml"
-    with open(str(summary_path), "w") as file:
-        yaml.dump(mission_summary, file, default_flow_style=False, width=1000)
+                MISSION_DATA = str(os.path.join(deployment["data_folder"], mission))
 
-    print("Finished successfull all results can be found in: ", str(summary_path))
+                os.environ["MISSION_DATA"] = MISSION_DATA
+
+                for t in [30, 60, 90, 120, 180]:
+                    # from box_auto.utils import MISSION_DATA
+
+                    for axis in ["x", "y"]:
+                        # Redirect stdout to devnull
+                        with open(os.devnull, "w") as devnull:
+                            old_stdout = sys.stdout
+                            old_stderr = sys.stderr
+                            sys.stdout = devnull
+                            sys.stderr = devnull
+                            try:
+                                summary_path = Path(MISSION_DATA) / "verification" / "imu_timesync_summary.yaml"
+                                summary_path.parent.mkdir(exist_ok=True)
+
+                                master_summary[axis + "_" + str(t)], offset_results = process_all(
+                                    MISSION_DATA,
+                                    output_folder=summary_path.parent,
+                                    axis=axis,
+                                    plot=False,
+                                    skip_seconds=t,
+                                )
+
+                                mission_summary[mission + "_" + axis + "_" + str(t)] = offset_results
+
+                                print("[ GOOD ] - ", mission + "_" + axis + "_" + str(t))
+
+                            except Exception as e:
+                                print("[ FAIL ] - ", mission + "_" + axis + "_" + str(t))
+                                print(e)
+                            finally:
+                                sys.stdout = old_stdout
+                                sys.stderr = old_stderr
+
+                with open(str(summary_path), "w") as file:
+                    yaml.dump(master_summary, file, default_flow_style=False, width=1000)
+
+        print(mission_summary)
+        summary_path = Path(BOX_AUTO_DIR) / "cfg" / "all_missions_summary_xy_60_120_180.yaml"
+        with open(str(summary_path), "w") as file:
+            yaml.dump(mission_summary, file, default_flow_style=False, width=1000)
+
+        print("Finished successfull all results can be found in: ", str(summary_path))

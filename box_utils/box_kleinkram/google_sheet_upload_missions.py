@@ -4,12 +4,13 @@ import pathlib
 import os
 from box_auto.utils import BOX_AUTO_DIR
 import numpy as np
+from pathlib import Path
 
 # uploads output from create_mission_metadata and imu_timesync
 
 # Google Sheet ID and sheet name
 SPREADSHEET_ID = "1mENfskg_jO_vJGFM5yonqPuf-wYUNmg26IPv3pOu3gg"
-SHEET_NAME = "mission_overview"
+SHEET_NAME = "mission_overview_push"
 
 
 def read_yaml(yaml_path):
@@ -33,22 +34,19 @@ def upload_to_sheets(mission_data, sheet_name, spreadsheet_id, keys):
 
     for mission_id, data in mission_data.items():
         row += 1
-        for key in keys:
+        for j, key in enumerate(keys):
             if key == "prism_distance":
                 val = str(float(np.array(data["prism_distance"]).mean()))
             else:
                 val = data.get(key, "")
-            cells_to_update.append({"range": f"{chr(ord('H')+keys.index(key))}{row}", "values": [[val]]})
+            cells_to_update.append({"range": f"{chr(ord('A')+j)}{row}", "values": [[val]]})
 
     worksheet.batch_update(cells_to_update)
 
 
 if __name__ == "__main__":
     # I) IMU DATA
-    imu_res_path = (
-        "/media/jonfrey/Data/deployment_day_18/2024-12-09-11-28-28/verification/all_missions_summary_skip_30.yaml"
-    )
-    # Path(BOX_AUTO_DIR) / "cfg" / "all_missions_summary_xy_60_120_180.yaml"
+    imu_res_path = Path(BOX_AUTO_DIR) / "cfg" / "all_missions_summary_xy_60_120_180.yaml"
     imu_res = read_yaml(imu_res_path)
     imu_summary = {}
     for timestamp_metadata, topics in imu_res.items():
@@ -72,6 +70,8 @@ if __name__ == "__main__":
         "bag_duration",
         "mission_duration",
         "distance_walked",
+        "mission_start_time",
+        "mission_stop_time",
         "prism",
         "ap20_bag_available",
         "prism_distance",

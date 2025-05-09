@@ -13,6 +13,7 @@ import tf.transformations
 import matplotlib.pyplot as plt
 import cv2
 from box_auto.utils import MISSION_DATA, BOX_AUTO_DIR, get_bag, upload_bag, get_file
+from scipy.spatial.transform import Rotation as R
 
 
 class Saver:
@@ -20,7 +21,7 @@ class Saver:
         self.folder = Path(folder)
         self.folder.mkdir(parents=True, exist_ok=True)
         self.bag = None
-
+        self.count = 0
         if save_rosbag:
             self.bag_path = self.folder / f"{rosbag_prefix}_wavemap.bag"
             self.bag = rosbag.Bag(self.bag_path, "w", compression="lz4")
@@ -39,12 +40,16 @@ class Saver:
         self.bag.write(topic, msg, t)
 
     def save_png(self, depth_image, postfix, header=None):
+        if header.seq == 0:
+            header.seq = self.count
+
         output_path = self.folder / f"{postfix}_{header.seq:05d}.png"
         invalid = depth_image == -1
         depth_image = depth_image.clip(0, (2**16 - 1) / 1000)
         depth_image = (depth_image * 1000).astype(np.uint16)  # Scale and convert to uint16
         depth_image[invalid] = 0
         Image.fromarray(depth_image.T).save(str(output_path))
+        self.count += 1
 
     def __del__(self):
         if self.bag:
@@ -119,14 +124,14 @@ if __name__ == "__main__":
     parser.add_argument(
         "--config_file",
         type=str,
-        default=str(Path(BOX_AUTO_DIR).parent / "box_converter/grand_tour_offline.yaml"),
+        default=str(Path(BOX_AUTO_DIR).parent / "box_converter/nerfstudio/cfg/grand_tour_release.yaml"),
         help="Path to the configuration YAML file",
     )
 
     args = parser.parse_args()
 
     if args.map_file == "automatic":
-        args.map_file, suc = get_file("*.wvmp")
+        args.map_file, suc = get_file("*.wvmp", rglob=True)
         if not suc:
             exit(-1)
 
@@ -139,7 +144,7 @@ if __name__ == "__main__":
         config = yaml.safe_load(f)
 
     # Retrieve tf bag
-    tf_bag_path = get_bag("*_tf_static_hesai_dlio.bag")
+    tf_bag_path = get_bag("*_tf_minimal.bag")
     prefix = Path(tf_bag_path).stem.split("_")[0]
 
     tf_listener = BagTfTransformer(tf_bag_path)
@@ -150,7 +155,7 @@ if __name__ == "__main__":
     # Load camera infos
     renderer = {}
     for camera in config["cameras"]:
-        bag_file = get_bag(args.mission_data, camera["bag_pattern"])
+        bag_file = get_bag(camera["bag_pattern_info"])
 
         with rosbag.Bag(bag_file, "r") as bag:
             for _topic, msg, _t in bag.read_messages(topics=[camera["info_topic"]]):
@@ -188,21 +193,26 @@ if __name__ == "__main__":
                             config["wavemap"]["max_range"],
                             config["wavemap"]["default_depth_value"],
                         ),
+                        "W": msg.width,
+                        "H": msg.height,
+                        "K": K_new,
                         "map1": map1,
                         "map2": map2,
                     }
+
+                    print("Found camera:", camera["name"])
                     break
 
-    saver = Saver(
-        Path(args.mission_data) / "wavemap", save_rosbag=config["wavemap"]["save_ros"], rosbag_prefix="prefix"
-    )
+    key = config["wavemap"]["key"]
+
+    from box_auto.utils import ARTIFACT_FOLDER
 
     # Process cameras
     for camera in config["cameras"]:
-        bag_file = get_bag(camera["bag_pattern"])
-
+        saver = Saver(Path(ARTIFACT_FOLDER) / key, save_rosbag=config["wavemap"]["save_ros"], rosbag_prefix="prefix")
+        bag_file = get_bag(camera["bag_pattern_image"])
+        last_trans = None
         with rosbag.Bag(bag_file, "r") as bag:
-
             start_time = bag.get_start_time() + config["skip_start_seconds"]
             end_time = bag.get_end_time() - config["skip_end_seconds"]
             image_last_stored = {}
@@ -212,14 +222,13 @@ if __name__ == "__main__":
                 start_time=rospy.Time(start_time),
                 end_time=rospy.Time(end_time),
             ):
-                if count.get(topic, 0) > config["num_images_per_topic"]:
-                    continue
+                if count.get(topic, 0) >= config["num_images_per_topic"]:
+                    print(msg.header.seq, "num_images")
+                    break
 
                 if msg.header.stamp.to_sec() - image_last_stored.get(topic, 0) < (1 / config["hz"]) - 0.001:
+                    print(msg.header.seq, "freq")
                     continue
-
-                count[topic] = count.get(topic, 0) + 1
-                image_last_stored[topic] = msg.header.stamp.to_sec()
 
                 try:
                     trans, quat = tf_listener.lookupTransform(
@@ -229,12 +238,28 @@ if __name__ == "__main__":
                     print(f"Transform lookup failed: {e}")
                     continue
 
+                if last_trans is None:
+                    last_trans = trans
+
+                if np.linalg.norm(np.array(last_trans[:2]) - np.array(trans[:2])) < config["distance_threshold"]:
+                    print(msg.header.seq, "distance")
+                    continue
+
+                count[topic] = count.get(topic, 0) + 1
+                image_last_stored[topic] = msg.header.stamp.to_sec()
+
+                print(msg.header.seq)
+                last_trans = trans
+
                 rot_so3 = tf.transformations.quaternion_matrix(quat)[:3, :3]
+                if config["wavemap"]["ground"]:
+                    yaw = np.arctan2(rot_so3[1, 0], rot_so3[0, 0])
+                    rot_so3 = (R.from_euler("z", yaw, degrees=True) * R.from_euler("y", -160, degrees=True)).as_matrix()
+                    trans[2] += 1.2
 
                 pose = wm.Pose(wm.Rotation(rot_so3), np.array(trans))
-                undistorted_depth_image = renderer[camera["name"]]["renderer"].render(pose).data
-
-                # plot_depth_image(undistorted_depth_image, max_range=config["wavemap"]["max_range"], colormap='viridis')
+                print(camera["name"])
+                undistorted_depth_image = renderer[camera["name"]]["renderer"].render(pose).data.astype(np.float64)
 
                 if config["wavemap"]["save_ros"]:
                     saver.save_ros(undistorted_depth_image, topic, msg.header, t)

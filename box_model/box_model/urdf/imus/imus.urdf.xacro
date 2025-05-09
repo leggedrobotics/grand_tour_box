@@ -2,6 +2,9 @@
 
 <robot name="imus" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
+  <xacro:macro name="viz_param_imus" params="enable_visualizable_model"/>
+  <xacro:property name="enable_visualizable_model_prop" value="$(arg enable_visualizable_model)" />
+
   <link name="cpt7_imu"/>
   <!-- CPT7 Coordinate System -->
   <joint name="box_base_to_cpt7_imu_frame" type="fixed">
@@ -15,6 +18,7 @@
     <child link="cpt7_imu" />
   </joint>
 
+  <xacro:unless value="${enable_visualizable_model_prop}">
   <link name="cpt7_antenna_front"/>
   <!-- CPT7 Coordinate System -->
   <joint name="cpt7_to_antenna_front" type="fixed">
@@ -28,6 +32,8 @@
     <child link="cpt7_antenna_front" />
   </joint>
 
+
+
   <link name="cpt7_antenna_back"/>
   <!-- CPT7 Coordinate System -->
   <joint name="cpt7_to_antenna_back" type="fixed">
@@ -40,6 +46,7 @@
     <parent link="cpt7_imu" />
     <child link="cpt7_antenna_back" />
   </joint>
+  </xacro:unless>
 
   <link name="ap20_imu"/>
   <!-- Basilisk IMU Frame -->
@@ -80,16 +87,40 @@
     <child link="adis16475_imu" />
   </joint>
 
-  <!-- IMU alphasesnse -->
-  <link name="imu_sensor_frame" />
-  <joint name="box_base_to_imu_alphasense" type="fixed">
-    <origin xyz=" ${calib['box_base_to_imu_alphasense']['x']}
-                  ${calib['box_base_to_imu_alphasense']['y']}
-                  ${calib['box_base_to_imu_alphasense']['z']}"
-            rpy=" ${calib['box_base_to_imu_alphasense']['roll']}
-                  ${calib['box_base_to_imu_alphasense']['pitch']}
-                  ${calib['box_base_to_imu_alphasense']['yaw']}" />
-    <parent link="box_base" />
-    <child link="imu_sensor_frame" />
-  </joint>
+  <xacro:if value="${enable_visualizable_model_prop}">
+  <!-- Visualization supported model enabled. imu_sensor_frame->alphasense_imu -->
+
+    <!-- IMU Alphasense -->
+    <link name="alphasense_imu" />
+    <joint name="box_base_to_imu_alphasense" type="fixed">
+      <origin xyz=" ${calib['box_base_to_imu_alphasense']['x']}
+                    ${calib['box_base_to_imu_alphasense']['y']}
+                    ${calib['box_base_to_imu_alphasense']['z']}"
+              rpy=" ${calib['box_base_to_imu_alphasense']['roll']}
+                    ${calib['box_base_to_imu_alphasense']['pitch']}
+                    ${calib['box_base_to_imu_alphasense']['yaw']}" />
+      <parent link="box_base" />
+      <child link="alphasense_imu" />
+    </joint>
+
+  </xacro:if>
+
+  <xacro:unless value="${enable_visualizable_model_prop}">
+
+    <link name="imu_sensor_frame" />
+    <joint name="box_base_to_imu_alphasense" type="fixed">
+      <origin xyz=" ${calib['box_base_to_imu_alphasense']['x']}
+                    ${calib['box_base_to_imu_alphasense']['y']}
+                    ${calib['box_base_to_imu_alphasense']['z']}"
+              rpy=" ${calib['box_base_to_imu_alphasense']['roll']}
+                    ${calib['box_base_to_imu_alphasense']['pitch']}
+                    ${calib['box_base_to_imu_alphasense']['yaw']}" />
+      <parent link="box_base" />
+      <child link="imu_sensor_frame" />
+    </joint>
+
+  </xacro:unless>
+
+  
+
 </robot>

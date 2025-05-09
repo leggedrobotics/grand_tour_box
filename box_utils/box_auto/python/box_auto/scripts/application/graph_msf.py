@@ -392,36 +392,34 @@ def launch_nodes():
     inputs = ",".join(inputs)
     merged_rosbag_path = os.path.join(MISSION_DATA, "merged_for_graph_msf.bag")
 
-    if True:
-        # Check if merged_rosbag_path already exists
-        if os.path.exists(merged_rosbag_path):
-            print(f"Using existing merged rosbag at {merged_rosbag_path}")
-        else:
-            print(f"Merging bags into {merged_rosbag_path}")
-            os.system(
-                f"python3 {BOX_AUTO_SCRIPTS_DIR}/general/merge_bags.py --input={inputs} --output={merged_rosbag_path}"
-            )
-        start_roscore()
-        sleep(1)
+    # If the file exists, remove it to ensure a fresh merge
+    if os.path.exists(merged_rosbag_path):
+        print(f"Removing existing merged rosbag at {merged_rosbag_path}")
+        os.remove(merged_rosbag_path)
 
-        initialize_using_gnss = "true" if is_gnss_in_bag(merged_rosbag_path) else "false"
-        print(f"Evaluate if initialize_using_gnss returns: {initialize_using_gnss}")
+    os.system(f"python3 {BOX_AUTO_SCRIPTS_DIR}/general/merge_bags.py --input={inputs} --output={merged_rosbag_path}")
 
-        run_ros_command(
-            f"roslaunch atn_position3_fuser position3_fuser_replay.launch  logging_dir_location:={GRAPH_MSF_ARTIFACT_FOLDER} initialize_using_gnss:={initialize_using_gnss}",
-            background=True,
-        )
+    start_roscore()
+    sleep(1)
 
-        print("Waiting 3s for graph_msf to startup")
-        sleep(3)
-        run_ros_command(f"rosbag play -r 1 --clock {merged_rosbag_path}")
+    initialize_using_gnss = "true" if is_gnss_in_bag(merged_rosbag_path) else "false"
+    print(f"Evaluate if initialize_using_gnss returns: {initialize_using_gnss}")
 
-        print("Waiting 3s for all messages to be consumed by graph_msf before starting optimization!")  #
-        sleep(3)
-        run_ros_command(
-            'rosservice call /graph_msf/trigger_offline_optimization "max_optimization_iterations: 1000\nsave_covariance: true"'
-        )
-        kill_roscore()
+    run_ros_command(
+        f"roslaunch atn_position3_fuser position3_fuser_replay.launch  logging_dir_location:={GRAPH_MSF_ARTIFACT_FOLDER} initialize_using_gnss:={initialize_using_gnss}",
+        background=True,
+    )
+
+    print("Waiting 3s for graph_msf to startup")
+    sleep(3)
+    run_ros_command(f"rosbag play -r 1 --clock {merged_rosbag_path}")
+
+    print("Waiting 3s for all messages to be consumed by graph_msf before starting optimization!")  #
+    sleep(3)
+    run_ros_command(
+        'rosservice call /graph_msf/trigger_offline_optimization "max_optimization_iterations: 2000\nsave_covariance: true"'
+    )
+    kill_roscore()
 
     print("GMSF processing finished. Converting the data.")
 
@@ -507,8 +505,8 @@ def launch_nodes():
         # Read in the full paths
         gps_ie = np.array(
             [
-                t.pose.pose
-                for _, t, _ in Bag(ap20_gps_bag).read_messages(topics="/gt_box/inertial_explorer/tc/gt_poses_novatel")
+                odom_msg.pose.pose  # Extract pose from odometry message
+                for _, odom_msg, _ in Bag(ap20_gps_bag).read_messages(topics="/gt_box/inertial_explorer/tc/odometry")
             ]
         )
 

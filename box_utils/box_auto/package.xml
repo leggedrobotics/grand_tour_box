@@ -2,49 +2,57 @@
 
 <package format="3">
 
-  <name>box_auto</name>
-  <version>0.1.0</version>
-  <description>Automated post-processing package for Grand Tour box.</description>
+    <name>box_auto</name>
+    <version>0.1.0</version>
+    <description>Automated post-processing package for Grand Tour box.</description>
+    <license>Proprietary</license>
+    <author email="tutuna@ethz.ch">Turcan Tuna</author>
+    <author email="jonfrey@ethz.ch">Jonas Frey</author>
+    <maintainer email="jonfrey@ethz.ch">Jonas Frey</maintainer>
+    <build_depend>python3</build_depend>
+    <buildtool_depend>catkin</buildtool_depend>
+    <build_depend>cmake_clang_tools</build_depend>
+    <depend>sensor_msgs</depend>
+    <depend>pcl_ros</depend>
+    <depend>pcl_conversions</depend>
+    <depend>roscpp</depend>
+    <depend>roslib</depend>
+    <depend>python-setuptools</depend>
+    <depend>rospy</depend>
+    <depend>eigen_conversions</depend>
+    <depend>tf2</depend>
+    <depend>rosgraph_msgs</depend>
+    <depend>tf2_ros</depend>
+    <depend>tf2_geometry_msgs</depend>
+    <depend>geometry_msgs</depend>
+    <depend>interactive_markers</depend>
+    <depend>cv_bridge</depend>
+    <depend>rosbag</depend>
+    <depend>nav_msgs</depend>
+    <depend>visualization_msgs</depend>
+    <depend>open3d_catkin</depend>
+    <depend>anymal_msgs</depend>
+    <depend>gnss_msgs</depend>
+    <depend>any_velodyne_pointcloud</depend>
+    <depend>gtsam_catkin</depend>
+    <depend>tf_bag</depend>
+    <depend>bringup_hesai</depend>
+    <depend>hesai_ros_driver</depend>
+    <depend>novatel_oem7_driver</depend>
+    <depend>anymal_d_simple_description</depend>
+    <depend>pointcloud_undistortion</depend>
+    <depend>box_model</depend>
 
-  <license>Proprietary</license>
-  <author email="tutuna@ethz.ch">Turcan Tuna</author>
-  <author email="jonfrey@ethz.ch">Jonas Frey</author>
-  <maintainer email="jonfrey@ethz.ch">Jonas Frey</maintainer>  
-  <build_depend>python3</build_depend>
-  <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>cmake_clang_tools</build_depend>
-  <depend>sensor_msgs</depend>
-  <depend>pcl_ros</depend>
-  <depend>pcl_conversions</depend>
-  <depend>roscpp</depend>
-  <depend>roslib</depend>
-  <depend>python-setuptools</depend>
-  <depend>rospy</depend>
-  <depend>eigen_conversions</depend>
-  <depend>tf2</depend>
-  <depend>rosgraph_msgs</depend>
-  <depend>tf2_ros</depend>
-  <depend>tf2_geometry_msgs</depend>
-  <depend>geometry_msgs</depend>
-  <depend>interactive_markers</depend>
-  <depend>cv_bridge</depend>
-  <depend>rosbag</depend>
-  <depend>nav_msgs</depend>
-  <depend>anymal_msgs</depend>
-  <depend>gnss_msgs</depend>
-  
-  <!-- To disable 3rd party application building. Set export DEBUG_MODE=1 -->
-  <depend condition="$DEBUG_MODE != 1">direct_lidar_inertial_odometry</depend>
-  <depend condition="$DEBUG_MODE != 1">raw_image_pipeline_python</depend>
-  <depend condition="$DEBUG_MODE != 1">raw_image_pipeline_ros</depend>
-  <depend condition="$DEBUG_MODE != 1">novatel_oem7_driver</depend>
-  <depend condition="$DEBUG_MODE != 1">hesai_ros_driver</depend>
-  <depend condition="$DEBUG_MODE != 1">bringup_hesai</depend>
-  <depend condition="$DEBUG_MODE != 1">zed_wrapper</depend>
-  <depend condition="$DEBUG_MODE != 1">tf_bag</depend>
-  <depend condition="$DEBUG_MODE != 1">atn_position3_fuser</depend>
-  <depend condition="$DEBUG_MODE != 1">ap20_driver_ros</depend>
-  <depend condition="$DEBUG_MODE != 1">open3d_slam_ros</depend>
+
+    <!-- To disable 3rd party application building. Set export DEBUG_MODE=1 -->
+    <depend condition="$DEBUG_MODE != 1">direct_lidar_inertial_odometry</depend>
+    <depend condition="$DEBUG_MODE != 1">raw_image_pipeline_python</depend>
+    <depend condition="$DEBUG_MODE != 1">raw_image_pipeline_ros</depend>
+    <depend condition="$DEBUG_MODE != 1">zed_wrapper</depend>
+    <depend condition="$DEBUG_MODE != 1">atn_position3_fuser</depend>
+    <depend condition="$DEBUG_MODE != 1">ap20_driver_ros</depend>
+    <depend condition="$DEBUG_MODE != 1">open3d_slam_ros</depend>
+
 
 
 </package>

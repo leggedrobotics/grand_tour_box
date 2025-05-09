@@ -45,12 +45,11 @@ def launch_nodes():
 
     # Check if merged_rosbag_path already exists
     if os.path.exists(merged_rosbag_path):
-        print(f"Using existing merged rosbag at {merged_rosbag_path}")
-    else:
-        print(f"Merging bags into {merged_rosbag_path}")
-        os.system(
-            f"python3 {BOX_AUTO_SCRIPTS_DIR}/general/merge_bags.py --input={inputs} --output={merged_rosbag_path}"
-        )
+        print(f"Removing existing merged rosbag at {merged_rosbag_path}")
+        os.remove(merged_rosbag_path)
+
+    print(f"Merging bags into {merged_rosbag_path}")
+    os.system(f"python3 {BOX_AUTO_SCRIPTS_DIR}/general/merge_bags.py --input={inputs} --output={merged_rosbag_path}")
 
     kill_roscore()
     start_roscore()
@@ -70,6 +69,11 @@ def launch_nodes():
 
     output_bag_path = os.path.join(MISSION_DATA, f"{timestamp}_open3d_slam.bag")
     shutil.move(str(Path(p) / "open3d_slam_replayed.bag"), output_bag_path)
+
+    # Check if merged_rosbag_path already exists
+    if os.path.exists(merged_rosbag_path):
+        print(f"Removing existing merged rosbag at {merged_rosbag_path}")
+        os.remove(merged_rosbag_path)
 
     print("Replayed bag is renamed. Uploading.")
     upload_bag(output_bag_path)

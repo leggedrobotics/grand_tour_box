@@ -1,0 +1,27 @@
+Checks: >
+  -*,
+  clang-analyzer-*,
+  bugprone-*,
+  cppcoreguidelines-*,
+  modernize-*,
+  performance-*,
+  portability-*,
+  readability-*,
+  misc-*,
+
+WarningsAsErrors: '*'
+HeaderFilterRegex: '^(?!/opt/ros/|/usr/include/|/usr/local/include/).*'
+FormatStyle: file
+
+CheckOptions:
+  - { key: readability-identifier-naming.ClassCase,            value: CamelCase }
+  - { key: readability-identifier-naming.StructCase,           value: CamelCase }
+  - { key: readability-identifier-naming.EnumCase,             value: CamelCase }
+  - { key: readability-identifier-naming.FunctionCase,         value: camelBack }
+  - { key: readability-identifier-naming.VariableCase,         value: camelBack }
+  - { key: readability-identifier-naming.PrivateMemberSuffix,  value: '_' }
+  - { key: readability-magic-numbers.IgnoredValues,            value: '0,1,-1,2' }
+  - { key: modernize-use-nullptr.NullMacros,                   value: 'NULL' }
+  - { key: cppcoreguidelines-avoid-magic-numbers.IgnoreConstants, value: 'true' }
+  - { key: modernize-loop-convert.MinConfidence,               value: reasonable }
+

@@ -6,28 +6,27 @@ from pathlib import Path
 import rospy
 from sensor_msgs.msg import CameraInfo
 from tqdm import tqdm
-
+import numpy as np
 from box_auto.utils import WS, get_bag, upload_bag
 
 CALIBRATION_DATA_PATH = Path(WS) / "src/grand_tour_box/box_calibration/box_calibration/calibration"
 CAMERA_INFO_PATTERNS = [
-    "*_jetson_hdr_right_updated.bag",
-    "*_jetson_hdr_left_updated.bag",
-    "*_jetson_hdr_front_updated.bag",
-    "*_nuc_alphasense_updated.bag",
-    "*_jetson_zed2i_images.bag",
+    # "*_jetson_zed2i_images.bag",
+    "*_jetson_hdr_right_encoding.bag",
+    "*_jetson_hdr_left_encoding.bag",
+    "*_jetson_hdr_front_encoding.bag",
+    "*_nuc_alphasense_color.bag",
 ]
 
 
 def load_calibration_data() -> Dict[str, Dict[str, Any]]:
-    bag_paths = [str(s) for s in Path(CALIBRATION_DATA_PATH).rglob("*tf_static_with_metadata.bag")]
-
+    bag_paths = [str(s) for s in Path(CALIBRATION_DATA_PATH).glob("*tf_static_metadata_new_*.bag")]
     calibration_data = {}
     # Iterate through all bag files
     for bag_path in bag_paths:
         # Open the bag file
         calibration_dict = {}
-
+        print(bag_path)
         with rosbag.Bag(bag_path, "r") as bag:
             # Iterate through all messages in the bag
             for topic, msg, _t in bag.read_messages():
@@ -59,15 +58,15 @@ def load_calibration_data() -> Dict[str, Dict[str, Any]]:
 
 
 def update_tf_static(tf_static_msg, start_end=False):
-    reference_bag_path = get_bag("*_jetson_utils.bag")
+    reference_bag_path = get_bag("*_jetson_adis.bag")
 
     # Get start and end time from reference bag
     with rosbag.Bag(reference_bag_path, "r") as ref_bag:
         start_time = ref_bag.get_start_time()
         end_time = ref_bag.get_end_time()
 
-    tf_static_bag_path = reference_bag_path.replace("_jetson_utils", "_tf_static")
-    tf_static_start_end_bag_path = reference_bag_path.replace("_jetson_utils", "_tf_static_start_end")
+    tf_static_bag_path = reference_bag_path.replace("_jetson_adis", "_tf_static")
+    tf_static_start_end_bag_path = reference_bag_path.replace("_jetson_adis", "_tf_static_start_end")
 
     if tf_static_msg is None:
         raise ValueError("No tf_static message found in the tf_static bag")
@@ -103,17 +102,24 @@ def update_camera_info(calibration):
         with rosbag.Bag(bag_path, "r") as inbag:
             total_messages = inbag.get_message_count()
 
-        if "_updated.bag" in bag_path:
-            out_bag = bag_path.replace("_updated.bag", "_calib.bag")
-        else:
-            out_bag = bag_path.replace(".bag", "_calib.bag")
+        if "_encoding.bag" in bag_path:
+            out_bag = bag_path.replace("_encoding.bag", "_calib.bag")
+        elif "_color.bag" in bag_path:
+            out_bag = bag_path.replace("_color.bag", "_calib.bag")
 
         with rosbag.Bag(out_bag, "w", compression="lz4") as outbag:
             with tqdm(total=total_messages, desc=f"Processing {Path(bag_path).name}", unit="msgs") as pbar:
                 for topic, msg, t in rosbag.Bag(bag_path).read_messages():
                     if str(type(msg)).find("CameraInfo") != -1:
-                        key = topic.replace("/camera_info", "").replace("/color", "")
+                        if topic == "/boxi/zed2i/left/camera_info":
+                            key = "/gt_box/zed2i_driver_node/left_raw/image_raw_color"
+                        elif topic == "/boxi/zed2i/right/camera_info":
+                            key = "/gt_box/zed2i_driver_node/right_raw/image_raw_color"
+                        else:
+                            key = topic.replace("/camera_info", "").replace("/color", "")
+
                         found = False
+
                         for k in calibration.keys():
                             if key in k:
                                 new_msg = calibration[k]
@@ -134,8 +140,7 @@ def update_camera_info(calibration):
 
                         new_msg.header = msg.header
                         outbag.write(topic, new_msg, t)
-                    else:
-                        outbag.write(topic, msg, t)
+
                     pbar.update(1)
 
         upload_bag(out_bag)
@@ -146,30 +151,27 @@ if __name__ == "__main__":
     calibration_data = load_calibration_data()
 
     # Step 2: Match calibration data to based on mission timestamp
-    reference_bag_path = get_bag("*_jetson_utils.bag")
+    reference_bag_path = get_bag("*_jetson_adis.bag")
     reference_date = reference_bag_path.split("/")[-1].split("_")[0]
     reference_date = datetime.strptime(reference_date, "%Y-%m-%d-%H-%M-%S")
 
-    closest_date = None
     calibration = None
+    best_date = None
+    best_s = np.inf
     for date, v in calibration_data.items():
-
-        print("CURRENTLY NOT MATCHING IS PERFORMED!!!! ")
         calibration = v
-
         current_date = datetime.strptime(date, "%Y-%m-%d-%H-%M-%S")
-        if (current_date - reference_date).total_seconds() > 0 and (
-            closest_date is None
-            or (reference_date - current_date).total_seconds() < (reference_date - closest_date).total_seconds()
-        ):
-            closest_date = current_date
+
+        delta_s = (reference_date - current_date).total_seconds()
+        if delta_s > 0 and (delta_s < best_s):
+            best_s = delta_s
             calibration = v
-    print(f"Closest date: {closest_date} to reference date: {reference_date}")
+            best_date = date
+    print(f"Closest date: {best_date} to reference date: {reference_date}")
 
     # Step 2: Update tf_static
     update_tf_static(calibration["tf_static"])
 
     # Step 3: Update camera intrinsics
     update_camera_info(calibration)
-
-    exit(0)
+    # exit(0)

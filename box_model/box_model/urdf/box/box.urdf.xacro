@@ -1,35 +1,25 @@
 <?xml version="1.0" ?>
-
 <robot name="box" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- Declare all arguments BEFORE any usage -->
+  <xacro:arg name="enable_visualizable_model" default="false"/>
+  <xacro:property name="enable_visualizable_model_arg" value="$(arg enable_visualizable_model)" />
 
 <!-- YAML file containing the default values from CAD -->
 <xacro:property name="calib_file" value="$(find box_calibration)/calibration/tf/calibration_latest.yaml" />
 <!-- load the YAML calibration file into a property -->
 <xacro:property name="calib" value="${xacro.load_yaml(calib_file)}"/>
 
-  <!-- Wrong export origins in CAD - the coorect ones are xyz="0.0764038 -0.0361 0.2802790" -->
-  <!-- 0.0764038 -0.0461 0.2602790 manually tuned values -->
+<!-- YAML file containing the default values from CAD -->
   <link name="base"/>
   <joint name="cpt7_to_robot_base" type="fixed">
     <origin xyz="0.0764038 -0.0361 0.2802790" rpy="3.1415126 0.0 0.0" />
     <parent link="base" />
     <child link="box_base" />
   </joint>
-<!-- 
-  <joint name="prism_to_prism_model" type="fixed">
-    <origin xyz=" ${calib['prism_to_prism_model']['x']}
-                  ${calib['prism_to_prism_model']['y']}
-                  ${calib['prism_to_prism_model']['z']}"
-            rpy=" ${calib['prism_to_prism_model']['roll']}
-                  ${calib['prism_to_prism_model']['pitch']}
-                  ${calib['prism_to_prism_model']['yaw']}" />
-    <parent link="prism" />
-    <child link="prism_model" />
-  </joint> -->
 
   <!-- Prism -->
   <link name="prism"/>
-  <!-- Box base -->
   <link name="box_base"/>
   <joint name="box_base_to_prism" type="fixed">
     <origin xyz=" ${calib['box_base_to_prism']['x']}
@@ -42,39 +32,37 @@
     <child link="prism" />
   </joint>
 
-  <!-- <joint name="box_base_to_prism" type="fixed">
-        <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
-        <parent link="box_base"/>
-        <child link="prism"/>
-  </joint> -->
-
-  <!-- Wrong export origins in CAD - the coorect ones are xyz="0 0 0" -->
+  <!-- Box model -->
   <joint name="box_base_to_box_base_model" type="fixed">
-        <origin xyz="0.00 -0.0 -0.00" rpy="0.0 0.0 0.0"/>
+        <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
         <parent link="box_base"/>
         <child link="box_base_model"/>
   </joint>
 
-  <!-- Wrong export origins in CAD - the coorect ones are xyz="0 0 0" -->
+  <!-- Prism model -->
   <joint name="box_base_to_prism_model" type="fixed">
-        <origin xyz="0.00 -0.0 -0.00" rpy="0.0 0.0 0.0"/>
+        <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
         <parent link="box_base"/>
         <child link="prism_model"/>
   </joint>
-  <!-- Wrong export origins in CAD - the coorect ones are xyz="0 0 0" -->
+  
+  <!-- Back antenna model -->
   <joint name="base_to_cpt7_antenna_back_model" type="fixed">
-        <origin xyz="0 0 0.03 " rpy="0.0 0.0 0.0"/>
+        <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
         <parent link="base"/>
         <child link="cpt7_antenna_back_model"/>
   </joint>
 
-  <!-- <joint name="base_to_cpt7_antenna_back_model" type="fixed">
-        <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
-        <parent link="base"/>
-        <child link="cpt7_antenna_back_model"/>
-  </joint> -->
+  <!-- Back antenna mesh -->
+  <link name="cpt7_antenna_back_model">
+    <visual>
+      <geometry>
+        <mesh filename="package://box_model/urdf/box/mesh/gps.dae" scale="1 1 1" />
+      </geometry>
+    </visual>
+  </link>
 
-  <!-- Model base -->
+  <!-- Box Model Mesh -->
   <link name="box_base_model">
     <visual>
       <geometry>
@@ -83,15 +71,7 @@
     </visual>
   </link>
 
-  <link name="cpt7_antenna_back_model">
-    <visual>
-      <geometry>
-        <mesh filename="package://box_model/urdf/box/mesh/gps.dae" scale="1 1 1" />
-      </geometry>
-    </visual>
-  </link>
-   
-
+  <!-- Leica Mini prism model -->
   <link name="prism_model">
     <visual>
       <geometry>
@@ -100,8 +80,15 @@
     </visual>
   </link> 
 
+  <!-- Sensors -->
+  <!-- Sensor meshes are baked into the box mesh. -->
   <xacro:include filename="$(find box_model)/urdf/cameras/cameras.urdf.xacro" />
+  <xacro:viz_param_cameras enable_visualizable_model="${enable_visualizable_model_arg}"/>
+
   <xacro:include filename="$(find box_model)/urdf/lidars/lidars.urdf.xacro" />
+  <xacro:viz_param_lidars enable_visualizable_model="${enable_visualizable_model_arg}"/>
+
   <xacro:include filename="$(find box_model)/urdf/imus/imus.urdf.xacro" />
+  <xacro:viz_param_imus enable_visualizable_model="${enable_visualizable_model_arg}"/>
 
 </robot>
