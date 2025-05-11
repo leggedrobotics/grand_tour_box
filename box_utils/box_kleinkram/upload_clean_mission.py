@@ -15,7 +15,7 @@ uuid_mappings = get_uuid_mapping()
 SPREADSHEET_ID = "1mENfskg_jO_vJGFM5yonqPuf-wYUNmg26IPv3pOu3gg"
 # Read the data and print the list
 topic_data, mission_data = read_sheet_data(SPREADSHEET_ID)
-LIST_OF_OUTPUT_BAGS = ["zed2i_vio.bag"]  # supports ["*"] for full mission
+LIST_OF_OUTPUT_BAGS = ["anymal_state.bag"]  # supports ["*"] for full mission
 SKIP_IF_MISSION_HAS_34_BAGS = False
 
 
@@ -49,7 +49,7 @@ for name, data in uuid_mappings.items():
             "/gt_box/inertial_explorer/tc/navsatfix_origin",
         ]
 
-        tmp_folder = Path("/data") / (name + "_release_imu")
+        tmp_folder = Path("/data") / (name + "_release")
         tmp_folder.mkdir(parents=True, exist_ok=True)
 
         out_dir_bag = tmp_folder / "publish_bags"
