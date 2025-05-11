@@ -8,12 +8,15 @@ import subprocess
 import kleinkram
 import os
 import shutil
+import fnmatch
 
 uuid_mappings = get_uuid_mapping()
 # Define the spreadsheet ID and sheet name
 SPREADSHEET_ID = "1mENfskg_jO_vJGFM5yonqPuf-wYUNmg26IPv3pOu3gg"
 # Read the data and print the list
 topic_data, mission_data = read_sheet_data(SPREADSHEET_ID)
+LIST_OF_OUTPUT_BAGS = ["zed2i_vio.bag"]  # supports ["*"] for full mission
+SKIP_IF_MISSION_HAS_34_BAGS = False
 
 
 for name, data in uuid_mappings.items():
@@ -29,9 +32,10 @@ for name, data in uuid_mappings.items():
             continue
 
         res = kleinkram.list_files(mission_ids=[data["uuid_release"]])
-        # if len(res) == 34:
-        #    print("Skip processing mission - already uploaded")
-        #    continue
+
+        if len(res) == 34 and SKIP_IF_MISSION_HAS_34_BAGS:
+            print("Skip processing mission - already uploaded 34 bags")
+            continue
 
         exit_code = 0
 
@@ -51,17 +55,20 @@ for name, data in uuid_mappings.items():
         out_dir_bag = tmp_folder / "publish_bags"
         out_dir_bag.mkdir(exist_ok=True, parents=True)
 
-        # data_dict_by_bag_name = {k: v for k, v in data_dict_by_bag_name.items() if k == "cpt7_imu.bag"}
-
         ls = []
+        data_dict_by_bag_name_filtered = {}
         for k, v in data_dict_by_bag_name.items():
-            for topic_config in v:
-                if "*" + topic_config["bag_name_orig"] not in ls:
-                    if "zed2i_image" not in topic_config["bag_name_orig"]:
-                        continue
+            if not any(fnmatch.fnmatch(k, pattern) for pattern in LIST_OF_OUTPUT_BAGS):
+                print(f"Skipping {k} as it does not match any pattern in list_of_output_bags")
+                continue
+            else:
+                print(f"Processing {k} as it matches a pattern in list_of_output_bags")
 
-                    # else:
-                    ls.append("*" + topic_config["bag_name_orig"])
+            data_dict_by_bag_name_filtered[k] = v
+            for topic_config in v:
+                ls.append("*" + topic_config["bag_name_orig"])
+
+        ls = list(set(ls))
 
         kleinkram.download(
             mission_ids=[data["uuid_pub"]],
@@ -69,25 +76,15 @@ for name, data in uuid_mappings.items():
             dest=tmp_folder,
             verbose=True,
         )
-        for output_bag_name, topic_configs in data_dict_by_bag_name.items():
-            for topic_config in topic_configs:
-                if topic_config["frame_id_out"] != "":
-                    print(topic_config["frame_id_out"])
 
         # Do a quick sorting operation
         bags_to_upload = []
 
-        for output_bag_name, topic_configs in data_dict_by_bag_name.items():
+        for output_bag_name, topic_configs in data_dict_by_bag_name_filtered.items():
             bag_path_out = out_dir_bag / (name + "_" + output_bag_name)
 
-            if "zed2i_images" not in bag_path_out:
-                continue
-            # open bag with fzf compression
-            # if ("zed" not in str(bag_path_out)) or ("adis" not in str(bag_path_out)) or ("cpt7" not in str(bag_path_out)):
-            # continue
-
             with rosbag.Bag(bag_path_out, "w") as bag_out:
-                print(output_bag_name)
+                print("Writing to bag: ", output_bag_name)
                 for topic_config in topic_configs:
                     print(
                         "   process: ",
@@ -137,6 +134,10 @@ for name, data in uuid_mappings.items():
                                     t = desired_start_time
                                     for transform in msg.transforms:
                                         transform.header.stamp = t
+
+                                if topic_config["topic_name_out"] == "/boxi/zed2i_vio/odom":
+                                    # Fix for #issues/1124
+                                    msg.child_frame_id = "zed2i_base"
 
                                 bag_out.write(topic_config["topic_name_out"], msg, t)
 
