@@ -10,7 +10,7 @@ from typing import cast
 
 import numpy as np
 from anymal_msgs.msg import AnymalState  # type: ignore
-from anymal_msgs.msg import Contact      # type: ignore
+from anymal_msgs.msg import Contact  # type: ignore
 from anymal_msgs.msg import ExtendedJointState  # type: ignore
 from geometry_msgs.msg import Point
 from geometry_msgs.msg import PointStamped
@@ -25,9 +25,9 @@ from gps_common.msg import GPSFix  # type: ignore
 from nav_msgs.msg import Odometry
 from ros_numpy import numpify
 from anymal_msgs.msg import SeActuatorReadings  # type: ignore
-from anymal_msgs.msg import SeActuatorReading   # type: ignore
-from anymal_msgs.msg import SeActuatorCommand   # type: ignore
-from anymal_msgs.msg import SeActuatorState     # type: ignore
+from anymal_msgs.msg import SeActuatorReading  # type: ignore
+from anymal_msgs.msg import SeActuatorCommand  # type: ignore
+from anymal_msgs.msg import SeActuatorState  # type: ignore
 from sensor_msgs.msg import CameraInfo
 from sensor_msgs.msg import FluidPressure
 from sensor_msgs.msg import Imu
@@ -119,9 +119,7 @@ def _parse_actuator_state(msg: SeActuatorState) -> Dict[str, BasicType]:
     return ret
 
 
-def _parse_single_actuator_reading(
-    msg: SeActuatorReading, idx: int
-) -> Dict[str, BasicType]:
+def _parse_single_actuator_reading(msg: SeActuatorReading, idx: int) -> Dict[str, BasicType]:
     cdata = _parse_actuator_command(msg.commanded)
     sdata = _parse_actuator_state(msg.state)
 
@@ -132,9 +130,7 @@ def _parse_single_actuator_reading(
     return ret
 
 
-def _parse_actuator_readings(
-    msg: SeActuatorReadings, topic_desc: ActuatorReadingsTopic
-) -> Dict[str, BasicType]:
+def _parse_actuator_readings(msg: SeActuatorReadings, topic_desc: ActuatorReadingsTopic) -> Dict[str, BasicType]:
     assert len(msg.readings) == topic_desc.number_of_actuators
 
     ret: Dict[str, BasicType] = {}
@@ -193,9 +189,7 @@ def _parse_contact(msg: Optional[Contact]) -> Tuple[Dict[str, BasicType], str]:
     return data, msg.name if msg else ""
 
 
-def _parse_contacts(
-    contacts: List[Contact], topic_desc: AnymalStateTopic
-) -> Dict[str, BasicType]:
+def _parse_contacts(contacts: List[Contact], topic_desc: AnymalStateTopic) -> Dict[str, BasicType]:
     # extract all existing contacts
     contacts_by_foot_name: Dict[str, Dict[str, BasicType]] = {}
     for contact in contacts:
@@ -215,9 +209,7 @@ def _parse_contacts(
     return ret
 
 
-def _parse_anymal_state(
-    msg: AnymalState, topic_desc: AnymalStateTopic
-) -> Dict[str, BasicType]:
+def _parse_anymal_state(msg: AnymalState, topic_desc: AnymalStateTopic) -> Dict[str, BasicType]:
     ret: Dict[str, BasicType] = {
         "pose_pos": _parse_vector3(msg.pose.pose.position),
         "pose_orien": _parse_quaternion(msg.pose.pose.orientation),
@@ -247,9 +239,7 @@ def _fix_dlio_point_cloud2_msg(msg: PointCloud2) -> PointCloud2:
     return msg
 
 
-def _parse_point_cloud2(
-    msg: PointCloud2, topic_desc: LidarTopic
-) -> Dict[str, BasicType]:
+def _parse_point_cloud2(msg: PointCloud2, topic_desc: LidarTopic) -> Dict[str, BasicType]:
     msg = _fix_dlio_point_cloud2_msg(msg)
     structured_array = numpify(msg)
     assert structured_array is not None
@@ -257,17 +247,14 @@ def _parse_point_cloud2(
     coordinates = ["x", "y", "z"]
     points = np.array([structured_array[c] for c in coordinates])
     ret = {
-        "point_cloud_points": _pad_point_cloud(
-            points.transpose(1, 0), topic_desc.max_points
-        )
+        "points": _pad_point_cloud(points.transpose(1, 0), topic_desc.max_points),
+        "valid": np.array([min(points.shape[1], topic_desc.max_points)], dtype=np.uint32),
     }
 
     for name in structured_array.dtype.names:
         if name in coordinates:
             continue
-        ret[f"point_cloud_{name}"] = _pad_point_cloud(
-            np.array(structured_array[name]), topic_desc.max_points
-        )
+        ret[f"{name}"] = _pad_point_cloud(np.array(structured_array[name]), topic_desc.max_points)
     return ret  # type: ignore
 
 
@@ -312,9 +299,7 @@ def _parse_odometry(msg: Odometry, _: Any) -> Dict[str, BasicType]:
     }
 
 
-def _parse_pose(
-    msg: Union[PoseStamped, PoseWithCovarianceStamped], topic_desc: PoseTopic
-) -> Dict[str, BasicType]:
+def _parse_pose(msg: Union[PoseStamped, PoseWithCovarianceStamped], topic_desc: PoseTopic) -> Dict[str, BasicType]:
     ret = {}
     if topic_desc.covariance:
         msg = cast(PoseWithCovarianceStamped, msg)
@@ -458,14 +443,10 @@ def _extract_header(msg: Any, topic_desc: Topic) -> Header:
     return _extract_default_header(msg)
 
 
-def _extract_header_data_from_deserialized_message(
-    msg: Any, topic_desc: Topic
-) -> Dict[str, BasicType]:
+def _extract_header_data_from_deserialized_message(msg: Any, topic_desc: Topic) -> Dict[str, BasicType]:
     header = _extract_header(msg, topic_desc)
     if isinstance(header, list):  # since there can be multiple transforms in a TFMessage
-        return {
-            f"frame_id_{i}": h.frame_id for i, h in enumerate(header)
-        }
+        return {f"frame_id_{i}": h.frame_id for i, h in enumerate(header)}
     return {
         "timestamp": header.stamp.to_sec(),  # type: ignore
         "sequence_id": header.seq,  # type: ignore
@@ -495,9 +476,7 @@ MESSAGE_PARSING_FUNCTIONS = [
 ]
 
 
-def _parse_message_data_from_deserialized_message(
-    msg: Any, topic_desc: Topic
-) -> Dict[str, BasicType]:
+def _parse_message_data_from_deserialized_message(msg: Any, topic_desc: Topic) -> Dict[str, BasicType]:
     for topic_type, parser in MESSAGE_PARSING_FUNCTIONS:
         if isinstance(topic_desc, topic_type):
             return parser(msg, topic_desc)
@@ -520,18 +499,14 @@ def _extract_region_of_interest_metadata(msg: RegionOfInterest) -> Dict[str, Any
     }
 
 
-def extract_header_metadata_from_deserialized_message(
-    msg: Any, topic_desc: Topic
-) -> Dict[str, Any]:
+def extract_header_metadata_from_deserialized_message(msg: Any, topic_desc: Topic) -> Dict[str, Any]:
     header = _extract_header(msg, topic_desc)
     return {
         "frame_id": header.frame_id,
     }
 
 
-def extract_camera_info_metadata_from_deserialized_message(
-    msg: CameraInfo, topic_desc: Topic
-) -> Dict[str, Any]:
+def extract_camera_info_metadata_from_deserialized_message(msg: CameraInfo, topic_desc: Topic) -> Dict[str, Any]:
     ret = extract_header_metadata_from_deserialized_message(msg, topic_desc)
     ret["distortion_model"] = msg.distortion_model
     ret["width"] = msg.width

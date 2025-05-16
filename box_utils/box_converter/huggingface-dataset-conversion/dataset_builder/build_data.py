@@ -22,12 +22,14 @@ from cv_bridge import CvBridge
 from sensor_msgs.msg import CompressedImage
 from sensor_msgs.msg import Image
 from tqdm import tqdm
+from imageio import imwrite
 
 from dataset_builder.dataset_config import ArrayType
 from dataset_builder.dataset_config import AttributeTypes
 from dataset_builder.dataset_config import ImageTopic
 from dataset_builder.dataset_config import Topic
 from dataset_builder.dataset_config import TopicRegistry
+from dataset_builder.dataset_config import MetadataConfig
 from dataset_builder.message_parsing import BasicType
 from dataset_builder.message_parsing import parse_deserialized_message
 from dataset_builder.utils import messages_in_bag_with_topic
@@ -35,9 +37,8 @@ from dataset_builder.utils import messages_in_bag_with_topic
 DATA_PREFIX = "data"
 IMAGE_PREFIX = "images"
 
-ImageExtractorCallback = Callable[
-    [Union[CompressedImage, Image], int, ImageTopic], None
-]
+ImageExtractorCallback = Callable[[Union[CompressedImage, Image], int, ImageTopic], None]
+
 
 def _extract_and_save_image_from_message(
     msg: Union[CompressedImage, Image],
@@ -50,10 +51,16 @@ def _extract_and_save_image_from_message(
 ) -> None:
     if topic_desc.compressed:
         image = cv_bridge.compressed_imgmsg_to_cv2(msg)
+
+    elif topic_desc.depth:
+        buffer16 = np.frombuffer(msg.data, np.uint16)
+        image = buffer16.reshape(msg.height, msg.width)
+
     else:
         image = cv_bridge.imgmsg_to_cv2(msg)
     file_path = image_dir / f"{image_index:06d}.{topic_desc.format}"
-    cv2.imwrite(str(file_path), image)
+
+    imwrite(str(file_path), image)
 
 
 def _np_arrays_from_buffered_messages(
@@ -71,15 +78,11 @@ def _np_arrays_from_buffered_messages(
         for key, value in record.items():
             data[key].append(value)
 
-    array_data = {
-        key: np.array(data[key], dtype=attr.dtype) for key, attr in attr_tps.items()
-    }
+    array_data = {key: np.array(data[key], dtype=attr.dtype) for key, attr in attr_tps.items()}
 
     for key, attr in attr_tps.items():
-        assert (
-            array_data[key].shape[1:] == attr.shape
-        ), f"{key}: {array_data[key].shape[1:]} != {attr.shape}"
-    
+        assert array_data[key].shape[1:] == attr.shape, f"{key}: {array_data[key].shape[1:]} != {attr.shape}"
+
     return array_data
 
 
@@ -103,9 +106,7 @@ def _data_chunks_from_bag_topic(
         raise ValueError("image_extractor must not be provided for non-image topics")
 
     buffer = []
-    for idx, message in enumerate(
-        messages_in_bag_with_topic(path, topic=topic_desc.topic)
-    ):
+    for idx, message in enumerate(messages_in_bag_with_topic(path, topic=topic_desc.topic)):
         # handle data to store in zarr format
         buffer.append(parse_deserialized_message(message, topic_desc=topic_desc))
         if image_extractor is not None:
@@ -148,12 +149,10 @@ def _compute_zarr_array_chunk_size(tp: ArrayType) -> Tuple[int, ...]:
 
     n_slices = 2 ** max(slice_exponent, 0)
     size = (n_slices,) + tp.shape
-    return size 
+    return size
 
 
-def _create_zarr_arrays_for_topic(
-    attributes: AttributeTypes, zarr_group: zarr.Group
-) -> int:
+def _create_zarr_arrays_for_topic(attributes: AttributeTypes, zarr_group: zarr.Group) -> int:
     """\
     initializes zarr arrays for all attributes with appropriate
     shapes, dtypes, and chunk sizes
@@ -191,11 +190,7 @@ def _create_jpeg_topic_folder(jpeg_root: Path, topic_alias: str) -> Path:
 
 
 def _generate_dataset_from_topic_description_and_attribute_types(
-    dataset_root: Path,
-    path: Path,
-    *,
-    topic_desc: Topic,
-    attribute_types: AttributeTypes,
+    dataset_root: Path, path: Path, *, topic_desc: Topic, attribute_types: AttributeTypes, metadata
 ) -> None:
     """\
     generate dataset for specified topic inside specified file, we generally assume
@@ -209,6 +204,21 @@ def _generate_dataset_from_topic_description_and_attribute_types(
 
     topic_zarr_group = _create_zarr_group_for_topic(zarr_root_path, topic_desc.alias)
     chunk_size = _create_zarr_arrays_for_topic(attribute_types, topic_zarr_group)
+
+    # Set metadata for the topic
+    topic_zarr_group.attrs["description"] = topic_desc.description
+    topic_zarr_group.attrs["topic"] = topic_desc.topic
+
+    # Storing standard extracted metdata
+    topic_metadata = metadata[topic_desc.alias]
+    for key, value in topic_metadata.items():
+        topic_zarr_group.attrs[key] = value
+
+    # Storing camera intrinsics if the topic is an image topic
+    if isinstance(topic_desc, ImageTopic):
+        camera_info_metadata = metadata[topic_desc.camera_intrinsics]
+        for key, value in camera_info_metadata.items():
+            topic_zarr_group.attrs[key] = value
 
     # create image saving callback to save images to disk while parsing the remaining data
     image_extractor = None
@@ -231,30 +241,37 @@ def _generate_dataset_from_topic_description_and_attribute_types(
             topic_zarr_group[key].append(data, axis=0)  # type: ignore
 
 
-def _tar_ball_dirs_in_dir(dir: Path) -> None:
+def _tar_ball_dirs_in_dir(dir: Path, remove: bool) -> None:
     assert dir.is_dir()
     for folder in os.listdir(dir):
         if not os.path.isdir(dir / folder):
             continue
         with tarfile.open(dir / f"{folder}.tar", "w") as tar:
             tar.add(dir / folder, arcname=os.path.basename(folder))
-        shutil.rmtree(dir / folder)
+        if remove:
+            shutil.rmtree(dir / folder)
 
 
-def _tar_ball_dataset(base_dataset_path: Path) -> None:
+def _tar_ball_dataset(base_dataset_path: Path, remove: bool) -> None:
     """\
     tarball topic folders of the dataset, we make sure to only tar folders and not files
     also we dont add any compression - for performance and also because its not needed
     """
     data_files = base_dataset_path / DATA_PREFIX
     if data_files.exists():
-        _tar_ball_dirs_in_dir(data_files)
+        _tar_ball_dirs_in_dir(data_files, remove)
     image_files = base_dataset_path / IMAGE_PREFIX
     if image_files.exists():
-        _tar_ball_dirs_in_dir(image_files)
+        _tar_ball_dirs_in_dir(image_files, remove)
+
 
 def build_data_part(
-    *, bags_path: Path, dataset_base_path: Path, topic_registry: TopicRegistry
+    *,
+    bags_path: Path,
+    dataset_base_path: Path,
+    metadata_config: MetadataConfig,
+    topic_registry: TopicRegistry,
+    metadata,
 ) -> None:
     # progressbar
     progress = tqdm(topic_registry.values())
@@ -264,11 +281,11 @@ def build_data_part(
 
         bag_file = bags_path / topic_desc.file
 
-
         _generate_dataset_from_topic_description_and_attribute_types(
             dataset_base_path,
             bag_file,
             topic_desc=topic_desc,
             attribute_types=attribute_types,
+            metadata=metadata,
         )
-    _tar_ball_dataset(dataset_base_path)
+    _tar_ball_dataset(dataset_base_path, remove=False)

@@ -40,12 +40,10 @@ def _load_metadata_from_bag_file_and_topic(
     """
     Load metadata from a bag file and a topic description
     """
-    for message in messages_in_bag_with_topic(
-        bag_path, topic_desc.topic, progress_bar=False
-    ):
+    for message in messages_in_bag_with_topic(bag_path, topic_desc.topic, progress_bar=False):
         # i.e. {'frame_id': 'zed2i_left_camera_optical_frame'}
         return extract_header_metadata_from_deserialized_message(message, topic_desc)
-    
+
     raise ValueError(f"no messages found in topic {topic_desc.topic}")
 
 
@@ -53,22 +51,16 @@ def _load_camera_info_metadata_from_bag_file_and_topic(
     bag_path: Path,
     topic_desc: CameraInfoTopic,
 ) -> Dict[str, Any]:
-    for message in messages_in_bag_with_topic(
-        bag_path, topic_desc.topic, progress_bar=False
-    ):
-        assert isinstance(
-            message, CameraInfo
-        ), f"topic {topic_desc.topic} does not contain CameraInfo messages"
+    for message in messages_in_bag_with_topic(bag_path, topic_desc.topic, progress_bar=False):
+        assert isinstance(message, CameraInfo), f"topic {topic_desc.topic} does not contain CameraInfo messages"
 
-        return extract_camera_info_metadata_from_deserialized_message(
-            message, topic_desc
-        )
+        return extract_camera_info_metadata_from_deserialized_message(message, topic_desc)
     raise ValueError(f"no messages found in topic {topic_desc.topic}")
 
 
 def _load_tf_metadata_from_bag_file_and_topic(
     bag_path: Path,
-    frame_transform_config: FrameTransformConfig,   
+    frame_transform_config: FrameTransformConfig,
 ) -> Dict[str, Any]:
     # TODO: integrate frame_transform_config
     """
@@ -77,15 +69,15 @@ def _load_tf_metadata_from_bag_file_and_topic(
     Args:
         bag_path (Path):                                Path to the bag file.
         frame_transform_config (FrameTransformConfig):  Frame transform configuration.
-                                                         i.e. { 'alphasense_base': {'base_frame_id': 'base', 
-                                                                                'frame_id': 'alphasense_base', 
-                                                                                'translation': {...}, ...}, 
-                                                                'box_base': {'base_frame_id': 'base', 
-                                                                        'frame_id': 'box_base', 
-                                                                        'translation': {...}, ...}}, 
-                                                                'alphasense_front_left': {'base_frame_id': 'base', 
-                                                                                        'frame_id': 'alphasense_front_left', 
-                                                                                        'translation': {...}, 
+                                                         i.e. { 'alphasense_base': {'base_frame_id': 'base',
+                                                                                'frame_id': 'alphasense_base',
+                                                                                'translation': {...}, ...},
+                                                                'box_base': {'base_frame_id': 'base',
+                                                                        'frame_id': 'box_base',
+                                                                        'translation': {...}, ...}},
+                                                                'alphasense_front_left': {'base_frame_id': 'base',
+                                                                                        'frame_id': 'alphasense_front_left',
+                                                                                        'translation': {...},
                                                                                         'rotation': {...}, ...},
                                                                                         ...}
     Raises:
@@ -93,9 +85,9 @@ def _load_tf_metadata_from_bag_file_and_topic(
 
     Returns:
         Dict[str, Any]: Conversion beween frames i.e.
-                        {'cam2_sensor_frame': {'base_frame_id': 'base', 
-                                               'frame_id': 'cam2_sensor_frame', 
-                                               'translation': {'x': ..., 'y': ..., 'z': ...}, 
+                        {'cam2_sensor_frame': {'base_frame_id': 'base',
+                                               'frame_id': 'cam2_sensor_frame',
+                                               'translation': {'x': ..., 'y': ..., 'z': ...},
                                                'rotation': {...}},...}
 
     """
@@ -132,26 +124,24 @@ def _get_frame_id_from_topic(bags_path: Path, topic_desc: Topic) -> Dict[str, st
     bag_path = bags_path / topic_desc.file
 
     return _load_metadata_from_bag_file_and_topic(bag_path, topic_desc)
- 
 
-def _get_camera_info_from_topic(
-    bags_path: Path, topic_desc: CameraInfoTopic
-) -> Dict[str, Any]:
+
+def _get_camera_info_from_topic(bags_path: Path, topic_desc: CameraInfoTopic) -> Dict[str, Any]:
     """
-    Get camera info metadata from a bag file 
+    Get camera info metadata from a bag file
     (deserialized msg) and a topic
 
     Args:
         bags_path (Path):               Path to all ROS bag files.
-        topic_desc (CameraInfoTopic):   Camera info topic description. 
+        topic_desc (CameraInfoTopic):   Camera info topic description.
                                         i.e. {'topic': '/zed2i/zed_node/rgb/camera_info',
 
     Returns:
-        Dict[str, Any]:  Metadata from Msg: i.e. {'frame_id': 'zed2i_left_camera_optical_frame', 
-                                                  'distortion_model': 'plumb_bob', 
-                                                  'width': 1920, 
-                                                  'height': 1080, 
-                                                  'D': [...], 
+        Dict[str, Any]:  Metadata from Msg: i.e. {'frame_id': 'zed2i_left_camera_optical_frame',
+                                                  'distortion_model': 'plumb_bob',
+                                                  'width': 1920,
+                                                  'height': 1080,
+                                                  'D': [...],
                                                   'K': [...], 'R': [...], .
                                                   ...}}
     """
@@ -169,11 +159,11 @@ def _get_frame_ids(bags_path: Path, topic_reg: TopicRegistry) -> Dict[str, Any]:
     Args:
         bags_path (Path):               Path to all ROS bag files.
         topic_reg (TopicRegistry):      Topic registry. i.e. {
-                                            'zed2i_depth':({'timestamp': ArrayType(shape=(), dtype=<class 'numpy.uint64'>), 
+                                            'zed2i_depth':({'timestamp': ArrayType(shape=(), dtype=<class 'numpy.uint64'>),
                                             'sequence_id': ArrayType(shape=(), dtype=<class 'numpy.uint64'>)}
 
     Returns:
-        Dict[str, Any]: i.e. {'zed2i_depth': {'frame_id': 'zed2i_left_camera_optical_frame'}, 
+        Dict[str, Any]: i.e. {'zed2i_depth': {'frame_id': 'zed2i_left_camera_optical_frame'},
                               'cpt7_odometry': {'frame_id': 'cpt7_odom'}, ...}
     """
 
@@ -186,30 +176,28 @@ def _get_frame_ids(bags_path: Path, topic_reg: TopicRegistry) -> Dict[str, Any]:
         print(f"no messages found in topic {topic_desc.topic}")
 
 
-def _get_camera_infos(
-    bags_path: Path, metadata_config: MetadataConfig
-) -> Dict[str, Any]:
+def _get_camera_infos(bags_path: Path, metadata_config: MetadataConfig) -> Dict[str, Any]:
     """
-    Get camera info metadata (parameters etc.) 
+    Get camera info metadata (parameters etc.)
     from all camera_info topics
 
     Args:
         bags_path (Path):                   Path to all ROS bag files.
-        metadata_config (MetadataConfig):   Metadata configuration. 
-                                            i.e. MetadataConfig(frame_transforms=FrameTransformConfig( topic='/tf_static', 
-                                                                                                       file='2024-11-11-12-42-47_tf_static.bag', 
-                                                                                                       base_frame='base'), 
-                                                                camera_intrinsics=[CameraInfoTopic( alias='zed2i_depth_caminfo', 
-                                                                                                    topic='/gt_box/zed2i/zed_node/depth/camera_info', 
-                                                                                                    file='2024-11-11-12-42-47_jetson_zed2i_depth.bag'), 
-                                                                                    CameraInfoTopic( alias='zed2i_left_caminfo', 
-                                                                                                     topic='/gt_box/zed2i/zed_node/left/camera_info', 
+        metadata_config (MetadataConfig):   Metadata configuration.
+                                            i.e. MetadataConfig(frame_transforms=FrameTransformConfig( topic='/tf_static',
+                                                                                                       file='2024-11-11-12-42-47_tf_static.bag',
+                                                                                                       base_frame='base'),
+                                                                camera_intrinsics=[CameraInfoTopic( alias='zed2i_depth_caminfo',
+                                                                                                    topic='/gt_box/zed2i/zed_node/depth/camera_info',
+                                                                                                    file='2024-11-11-12-42-47_jetson_zed2i_depth.bag'),
+                                                                                    CameraInfoTopic( alias='zed2i_left_caminfo',
+                                                                                                     topic='/gt_box/zed2i/zed_node/left/camera_info',
                                                                                                      file='2024-11-11-12-42-47_jetson_zed2i_images.bag')
 
     Returns:
-        Dict[str, Any]:     i.e. {'zed2i_depth_caminfo': 
-                                    {'frame_id': 'zed2i_left_camera_optical_frame', 
-                                     'distortion_model': 'plumb_bob', 
+        Dict[str, Any]:     i.e. {'zed2i_depth_caminfo':
+                                    {'frame_id': 'zed2i_left_camera_optical_frame',
+                                     'distortion_model': 'plumb_bob',
                                     ...}}
     """
     ret = {}
@@ -219,9 +207,7 @@ def _get_camera_infos(
     return ret
 
 
-def _get_frame_transform_metadata(
-    bags_path: Path, frame_transform_config: FrameTransformConfig
-) -> Dict[str, Any]:
+def _get_frame_transform_metadata(bags_path: Path, frame_transform_config: FrameTransformConfig) -> Dict[str, Any]:
     """
     Reads all the frame transform metadata from the bag files
     and the frame transform configuration
@@ -232,9 +218,9 @@ def _get_frame_transform_metadata(
 
     Returns:
         Dict[str, Any]: Dictionary with frame transform metadata. i.e.
-                            {'stim320_imu': {'base_frame_id': 'base', 
-                                            'frame_id': 'stim320_imu', 
-                                            'translation': {'x': 0.0, y': 0.0, 'z': 0.0}, 
+                            {'stim320_imu': {'base_frame_id': 'base',
+                                            'frame_id': 'stim320_imu',
+                                            'translation': {'x': 0.0, y': 0.0, 'z': 0.0},
                                             'rotation': {'x': 0.0, 'y': 0.0, 'z': 0.0, 'w': 0.0,}}
     """
     tf_metadata = {}
@@ -245,11 +231,9 @@ def _get_frame_transform_metadata(
         if not (bag_path.exists() and bag_path.is_file() and bag_path.suffix == ".bag"):
             raise ValueError(f"Invalid bag file: {bag_path}")
 
-        tf_metadata.update(
-            _load_tf_metadata_from_bag_file_and_topic(bag_path, frame_transform)
-        )
+        tf_metadata.update(_load_tf_metadata_from_bag_file_and_topic(bag_path, frame_transform))
     return tf_metadata
-    
+
 
 def _write_metadata_files(metadata_dct: Dict[str, Any], metadata_dir: Path) -> None:
     for alias, topic_metadata in metadata_dct.items():
@@ -267,27 +251,21 @@ def build_metadata_part(
     # TODO: fix Nonetype error
     frame_id_metadata = _get_frame_ids(bags_path, topic_registry)
     cam_info_metadata = _get_camera_infos(bags_path, metadata_config)
-    transform_metadata = _get_frame_transform_metadata(
-        bags_path, metadata_config.frame_transforms
-    )
+    transform_metadata = _get_frame_transform_metadata(bags_path, metadata_config.frame_transforms)
 
     # add frame metadata to dict and split by topic
     try:
         metadata = {}
         for alias, frame_id in tqdm(frame_id_metadata.items(), desc="Processing frame IDs"):
             metadata[alias] = {**frame_id, "topic": alias}
-            # i.e. {'zed2i_depth': {'frame_id': 'zed2i_left_camera_optical_frame', 
+            # i.e. {'zed2i_depth': {'frame_id': 'zed2i_left_camera_optical_frame',
             #                       'topic': 'zed2i_depth'}}
     except ValueError as e:
-        print(
-            f"no messages found in topic {frame_id_metadata[alias].get('topic')}"
-        )
-     
+        print(f"no messages found in topic {frame_id_metadata[alias].get('topic')}")
+
     # add camera specific metadata to dict and split by topic
     for alias, cam_info in tqdm(cam_info_metadata.items(), desc="Processing camera infos"):
-        assert (
-            alias not in metadata
-        ), f"alias {alias} for camera_info topic is not unique"
+        assert alias not in metadata, f"alias {alias} for camera_info topic is not unique"
         metadata[alias] = {"camera_info": cam_info}
         # add the camera metadata (i.e. camera intrinsics) with alias i.e. zed2i_left_caminfo
 
@@ -300,7 +278,7 @@ def build_metadata_part(
         transform = transform_metadata.get(frame_id)
         if transform is None:
             logger.warning(f"no transform found for frame_id {frame_id!r}")
-            
+
         else:
             alias_metadata.update({"transform": transform})
 
@@ -309,3 +287,5 @@ def build_metadata_part(
 
     # save metadata to yaml files per alias
     _write_metadata_files(metadata, metadata_dir)
+
+    return metadata

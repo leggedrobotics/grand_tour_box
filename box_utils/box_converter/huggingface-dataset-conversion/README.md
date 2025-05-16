@@ -14,12 +14,15 @@ build the container
 
 ```bash
 docker build --ssh default -t grand-tour-dataset .
+
+# For older docker version added legacy support
+DOCKER_BUILDKIT=1 docker build --ssh default -t grand-tour-dataset .
 ```
 
 run the container
 
 ```bash
-docker run -v "$(pwd):/app" --env KLEINKRAM_CONFIG="$(cat ~/.kleinkram.json)" --rm -it grand-tour-dataset
+docker run -v "$(pwd):/app" -v /data/GrandTour/huggingface:/tmp_disk  --env KLEINKRAM_CONFIG="$(cat ~/.kleinkram.json)" --rm -it grand-tour-dataset
 
 ```
 
@@ -27,8 +30,9 @@ run the converter inside the container
 build the tf_bag first and source the catkin workspace befor debugging in VSCode!
 
 ```
-cd ../catkin_ws/src; catkin build tf_bag; cd ../../app; source /catkin_ws/devel/setup.bash; python -m dataset_builder
+python -m dataset_builder --mission_name=2024-10-01-11-29-55
 ```
+
 
 ## Configuring the Converter
 
