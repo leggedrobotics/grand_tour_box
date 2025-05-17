@@ -263,24 +263,26 @@ def main():
         # /out = $SCRACTH temporary storage
 
         if args.mission_uuid != "":
-            mn = kleinkram.list_files(mission_ids=["e97e35ad-dd7b-49c4-a158-95aba246520e"])[0].mission_name
-            args.mission_name = mn.replace("release_", "")
+            mn = kleinkram.list_files(mission_ids=[args.mission_uuid])[0].mission_name
+            MISSION_NAME = mn.replace("release_", "")
             uuid_release = args.mission_uuid
         else:
             uuid_release = get_uuid_mapping()[args.mission_name]["uuid_release"]
+            MISSION_NAME = args.mission_name
 
         os.environ["KLEINKRAM_ACTIVE"] = "ACTIVE"
         os.environ["MISSION_UUID"] = uuid_release
+        print(os.environ["MISSION_UUID"])
         res = kleinkram.list_files(mission_ids=[uuid_release])
         if len(res) != 34:
-            print("Skip processing mission - not released yet", args.mission_name, len(res))
+            print("Skip processing mission - not released yet", MISSION_NAME, len(res))
             exit(8)
-        print("Processing of mission started", args.mission_name)
+        print("Processing of mission started", MISSION_NAME)
 
-        data_folder = Path(MISSION_DATA) / f"{args.mission_name}_nerfstudio"
+        data_folder = Path(MISSION_DATA) / f"{MISSION_NAME}_nerfstudio"
 
     else:
-        data_folder = f"/data/{args.mission_name}_nerfstudio"
+        data_folder = f"/data/{MISSION_NAME}_nerfstudio"
 
     with open(args.config_file, "r") as f:
         config = yaml.safe_load(f)
@@ -310,7 +312,7 @@ def main():
     tf_listener = BagTfTransformer(tf_bag_path)
 
     # Initialize ImageSaver
-    image_saver = ImageSaver(camera_infos, camera_keys, tf_listener, config, data_folder, args.mission_name, args.head)
+    image_saver = ImageSaver(camera_infos, camera_keys, tf_listener, config, data_folder, MISSION_NAME, args.head)
 
     # Process image messages
     for _, camera in enumerate(config["cameras"]):
@@ -332,10 +334,9 @@ def main():
 
     # TAR files for cluster
     if args.cluster:
-        mission_name = args.mission_name
         out_dir = Path(image_saver.output_folder).stem
         parent_folder = Path(image_saver.output_folder).parent
-        tar_file = Path(ARTIFACT_FOLDER) / "nerfstudio_scratch" / f"{mission_name}_nerfstudio.tar"
+        tar_file = Path(ARTIFACT_FOLDER) / "nerfstudio_scratch" / f"{MISSION_NAME}_nerfstudio.tar"
         tar_file.parent.mkdir(parents=True, exist_ok=True)
         print("Creating tar file", tar_file)
         os.system(f"cd {parent_folder}; tar -cvf {tar_file} {out_dir}")

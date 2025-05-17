@@ -34,10 +34,31 @@ from dataset_builder.message_parsing import BasicType
 from dataset_builder.message_parsing import parse_deserialized_message
 from dataset_builder.utils import messages_in_bag_with_topic
 
+import sys
+
+sys.path.insert(0, "/app/rvl_compression")
+import compressed_depth
+
 DATA_PREFIX = "data"
 IMAGE_PREFIX = "images"
 
 ImageExtractorCallback = Callable[[Union[CompressedImage, Image], int, ImageTopic], None]
+
+
+def _decode_depth_message(msg):
+    payload = np.frombuffer(msg.data, dtype=np.uint8).copy()
+    if payload.size < 20:
+        raise ValueError("Message too small (need 20+ bytes)")
+
+    # header = payload[12:20]
+    # cols, rows = np.frombuffer(header, dtype=np.uint32)
+    depth = compressed_depth.decode(payload, msg.format)
+
+    if not depth.flags["C_CONTIGUOUS"]:
+        depth = np.ascontiguousarray(depth)
+    if not depth.flags["ALIGNED"]:
+        depth = np.copy(depth)
+    return depth
 
 
 def _extract_and_save_image_from_message(
@@ -50,7 +71,10 @@ def _extract_and_save_image_from_message(
     cv_bridge: CvBridge,
 ) -> None:
     if topic_desc.compressed:
-        image = cv_bridge.compressed_imgmsg_to_cv2(msg)
+        if topic_desc.rvl:
+            image = _decode_depth_message(msg)
+        else:
+            image = cv_bridge.compressed_imgmsg_to_cv2(msg)
 
     elif topic_desc.depth:
         buffer16 = np.frombuffer(msg.data, np.uint16)

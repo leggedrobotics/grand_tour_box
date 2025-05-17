@@ -16,7 +16,7 @@ from dataset_builder.dataset_config import load_config
 
 parser = ArgumentParser(description="Dataset Builder Script")
 parser.add_argument("--mission_name", type=str, default="2024-10-01-11-29-55", help="Specify the mission name to use.")
-parser.add_argument("--config_file", type=str, default="grandtour_single_lidar", help="Specify the config file to use.")
+parser.add_argument("--config_file", type=str, default="grandtour_depth_zed", help="Specify the config file to use.")
 parser.add_argument("--skip_download", action="store_true", help="Skip the download of the mission data.")
 args = parser.parse_args()
 DOWNLOAD_FLAG = not args.skip_download

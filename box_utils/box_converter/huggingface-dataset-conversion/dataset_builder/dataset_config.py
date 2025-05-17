@@ -43,6 +43,7 @@ class ImageTopic(Topic):
     format: str = "jpeg"
     compressed: bool = True
     depth: bool = False
+    rvl: bool = False
     camera_intrinsics: str = ""
 
 
@@ -358,7 +359,6 @@ def _build_anymal_state_single_topic_attributes(
 def _build_anymal_state_topics_attributes(
     anymal_state_topics: Sequence[AnymalStateTopic],
 ) -> TopicRegistry:
-
     return {topic.alias: (_build_anymal_state_single_topic_attributes(topic), topic) for topic in anymal_state_topics}
 
 
@@ -394,7 +394,6 @@ def _build_nav_sat_fix_topics_attributes(
 def _build_magnetic_field_topics_attributes(
     magnetic_field_topics: Sequence[MagneticFieldTopic],
 ) -> TopicRegistry:
-
     topic_tp = {
         "b_field": ArrayType((3,), np.float64),
         "b_field_cov": ArrayType((3, 3), np.float64),
@@ -591,14 +590,12 @@ def _load_metadata_config(metadata_config_object: Mapping[str, Any], mission_nam
     try:
         camera_intrinsics = [CameraInfoTopic(**topic_obj) for topic_obj in camera_intrinsics_object]
     except Exception as e:
-
         raise ValueError(f"error parsing {CAMERA_INTRISICS_KEY!r} part of config file: {e}") from e
 
     try:
         frame_transforms_object = metadata_config_object.get(FRAME_TRANSFORMS_KEY, {})
         frame_transforms = [FrameTransformConfig(**transform_obj) for transform_obj in frame_transforms_object]
     except Exception as e:
-
         raise ValueError(f"error parsing {FRAME_TRANSFORMS_KEY!r} part of config file: {e}") from e
 
     # format file names
@@ -612,7 +609,6 @@ def _load_metadata_config(metadata_config_object: Mapping[str, Any], mission_nam
 
 
 def load_config(config_path: Path, mission_name: str) -> Tuple[TopicRegistry, MetadataConfig]:
-
     with open(config_path, "r") as f:
         yaml_data = yaml.safe_load(f)
 
@@ -622,7 +618,6 @@ def load_config(config_path: Path, mission_name: str) -> Tuple[TopicRegistry, Me
         data_config_object = config_object[DATA_KEY]
         metadata_config_object = config_object[METADATA_KEY]
     except KeyError as e:
-
         raise ValueError(f"config {config_path!r} does not contain keys {DATA_KEY!r} or {METADATA_KEY!r}") from e
 
     return (

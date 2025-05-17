@@ -66,6 +66,10 @@ RUN . /opt/ros/$ROS_DISTRO/setup.sh && catkin build \
 
 RUN mkdir /tmp_disk
 
+# RVL compression extension
+RUN apt install libopencv-dev -y
+RUN cd /app/rvl_compression/compressed_depth; pip install -e . --no-build-isolation --verbose
+
 # entrypoint
 WORKDIR /app
 COPY ./entrypoint.sh /

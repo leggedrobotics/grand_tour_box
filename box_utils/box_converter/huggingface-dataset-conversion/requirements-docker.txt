@@ -9,3 +9,6 @@ kleinkram
 huggingface-hub
 imageio
 open3d
+nanobind
+scikit-build-core
+cmake
