@@ -70,8 +70,8 @@ RUN mkdir /tmp_disk
 RUN pip3 install nanobind scikit-build-core cmake
 RUN apt install libopencv-dev -y
 
-WORKDIR /catkin_ws/src/grand_tour_box/box_utils/box_converter/huggingface-dataset-conversion/rvl_compression/compressed_depth
-RUN source /catkin_ws/devel/setup.bash; pip install -e . --no-build-isolation --verbose
+
+RUN /bin/bash -c "cd /catkin_ws/src/grand_tour_box/box_utils/box_converter/huggingface-dataset-conversion/rvl_compression/compressed_depth; source /catkin_ws/devel/setup.bash; pip install . --no-build-isolation --verbose"
 
 WORKDIR /catkin_ws/src
 # entrypoint
