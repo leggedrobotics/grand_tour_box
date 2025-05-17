@@ -5,5 +5,10 @@ zarr
 tqdm
 cv_bridge
 scipy
-kleinkram==0.44.1.dev20250409111712
+kleinkram
 huggingface-hub
+imageio
+open3d
+nanobind
+scikit-build-core
+cmake

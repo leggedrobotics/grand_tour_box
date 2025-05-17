@@ -1,43 +1,3 @@
-# listed bag files --> klein list files -m "release_"*"
-# ┏━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━┓
-# ┃ project   ┃ mission                     ┃ name                                           ┃ id                                   ┃ state ┃ size       ┃ categories ┃
-# ┡━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━┩
-# │ GrandTour │ release_"* │ "*_adis.bag"                   │ 0e71888b-44b1-4229-9358-48e248d9afd9 │ OK    │ 24.48 MB   │            │
-# │ GrandTour │ release_"* │ "*_alphasense.bag"             │ e6a04446-afb2-499a-83e3-f43160a5ea84 │ OK    │ 5.90 GB    │            │
-# │ GrandTour │ release_"* │ "*_alphasense_imu.bag"         │ 9ab1a1f5-2012-418c-ab18-7cde384167ab │ OK    │ 4.02 KB    │            │
-# │ GrandTour │ release_"* │ "*_anymal_command.bag"         │ 0c9214bb-77dd-4450-b453-27910977ee8d │ OK    │ 625.90 KB  │            │
-# │ GrandTour │ release_"* │ "*_anymal_depth_cameras.bag"   │ f5af8bd5-35fa-4bb0-b58e-ee7ea62dca30 │ OK    │ 15.93 GB   │            │
-# │ GrandTour │ release_"* │ "*_anymal_elevation.bag"       │ 98b272b8-d500-4245-a6b9-5945573a3fa0 │ OK    │ 1.55 GB    │            │
-# │ GrandTour │ release_"* │ "*_anymal_imu.bag"             │ ebf18cac-bc35-4363-a0ac-6b1803dc7207 │ OK    │ 50.68 MB   │            │
-# │ GrandTour │ release_"* │ "*_anymal_locomotion.bag"      │ 7001c8b1-d334-42a5-8c21-c23685f64782 │ OK    │ 25.46 MB   │            │
-# │ GrandTour │ release_"* │ "*_anymal_state.bag"           │ f26ffe0c-e21d-4db7-9521-65c9d5cd8ed3 │ OK    │ 975.18 MB  │            │
-# │ GrandTour │ release_"* │ "*_anymal_velodyne.bag"        │ 3ca2976d-a36e-4518-af3d-13ae5f26220e │ OK    │ 4.02 KB    │            │
-# │ GrandTour │ release_"* │ "*_anymal_velodyne_packets.b… │ 19200808-304c-4500-8cdb-6b7b0db2cade │ OK    │ 4.02 KB    │            │
-# │ GrandTour │ release_"* │ "*_anymal_velodyne_undist.bag" │ a3a81e23-107a-40dc-9064-1893a6e673f2 │ OK    │ 4.02 KB    │            │
-# │ GrandTour │ release_"* │ "*_ap20_imu.bag"               │ d6f08bbe-2aeb-412d-961d-97cfd40d10b6 │ OK    │ 23.78 MB   │            │
-# │ GrandTour │ release_"* │ "*_ap20_prism_position.bag"    │ ca66482f-8ab6-41b8-b246-d72b19900a1c │ OK    │ 526.00 KB  │            │
-# │ GrandTour │ release_"* │ "*_cpt7_ie_rt.bag"             │ 8bf0b2d8-a94c-4d9a-a5ee-3fe1a6a803ac │ OK    │ 10.37 MB   │            │
-# │ GrandTour │ release_"* │ "*_cpt7_ie_tc.bag"             │ 4a3f5919-ef5d-442f-b2f1-7c8ca560d96a │ OK    │ 104.41 MB  │            │
-# │ GrandTour │ release_"* │ "*_cpt7_imu.bag"               │ 52063d54-a812-47e0-8025-65115131948a │ OK    │ 4.02 KB    │            │
-# │ GrandTour │ release_"* │ "*_dlio.bag"                   │ ff4cfce2-ed38-4a8f-bff2-6ab326e61781 │ OK    │ 4.54 GB    │            │
-# │ GrandTour │ release_"* │ "*_hdr_front.bag"              │ 2e521503-80a4-4e28-94d6-9f4ed277f49e │ OK    │ 2.33 GB    │            │
-# │ GrandTour │ release_"* │ "*_hdr_left.bag"               │ 0696827f-eea2-4a5a-a6ae-7068a76def54 │ OK    │ 2.54 GB    │            │
-# │ GrandTour │ release_"* │ "*_hdr_right.bag"              │ d75d6c92-621d-4425-aa07-771d04a89527 │ OK    │ 2.60 GB    │            │
-# │ GrandTour │ release_"* │ "*_hesai.bag"                  │ 1b236ab3-d855-4e47-bcaa-6dace7fb7eba │ OK    │ 4.73 GB    │            │
-# │ GrandTour │ release_"* │ "*_hesai_packets.bag"          │ b7266c89-d6b9-4747-bec1-0df37b8dcf98 │ OK    │ 905.68 MB  │            │
-# │ GrandTour │ release_"* │ "*_hesai_undist.bag"           │ c6084bbb-5168-40a8-a9f6-73fc050deb49 │ OK    │ 4.02 KB    │            │
-# │ GrandTour │ release_"* │ "*_livox.bag"                  │ cd89b419-9cf6-4d09-bd53-41748c312d54 │ OK    │ 1015.06 MB │            │
-# │ GrandTour │ release_"* │ "*_livox_imu.bag"              │ 50fa47a4-5ef2-4214-982e-77384415c2a7 │ OK    │ 25.09 MB   │            │
-# │ GrandTour │ release_"* │ "*_livox_undist.bag"           │ d3e1e1fb-aff9-4fd3-8734-de46cd05a3b7 │ OK    │ 4.02 KB    │            │
-# │ GrandTour │ release_"* │ "*_stim320_imu.bag"            │ da4c534b-21e5-44be-926e-5e114e4f8817 │ OK    │ 92.77 MB   │            │
-# │ GrandTour │ release_"* │ "*_tf_minimal.bag"             │ 96864fca-8465-4cf0-b86f-33b481c6f81a │ OK    │ 61.85 MB   │            │
-# │ GrandTour │ release_"* │ "*_tf_model.bag"               │ 615e2fa9-9bc0-4cff-b2a9-e9f3400d268a │ OK    │ 62.24 MB   │            │
-# │ GrandTour │ release_"* │ "*_zed2i_depth.bag"            │ a0f2a7de-e36a-47e6-b80d-7d9fec16f98d │ OK    │ 4.02 KB    │            │
-# │ GrandTour │ release_"* │ "*_zed2i_images.bag"           │ 40dcc64e-6edf-4854-99e6-63733efc2712 │ OK    │ 4.02 KB    │            │
-# │ GrandTour │ release_"* │ "*_zed2i_prop.bag"             │ 4eab5a5d-2ace-4c00-b915-937a67c53434 │ OK    │ 4.02 KB    │            │
-# │ GrandTour │ release_"* │ "*_zed2i_vio.bag"              │ 308381af-9a14-4ace-92a0-179c1ba6c864 │ OK    │ 4.02 KB    │            │
-# └───────────┴─────────────────────────────┴────────────────────────────────────────────────┴──────────────────────────────────────┴───────┴────────────┴────────────┘
-
 metadata:
   camera_intrinsics:
     - alias: alphasense_front_center_caminfo
@@ -72,17 +32,17 @@ metadata:
       file: "*_hdr_right.bag"
       topic: "/boxi/hdr/right/camera_info"
 
-    - alias: zed2i_depth_caminfo
-      file: "*_zed2i_depth.bag"
-      topic: "/boxi/zed2i/depth/camera_info"
+    # - alias: zed2i_depth_caminfo
+    #   file: "*_zed2i_depth.bag"
+    #   topic: "/boxi/zed2i/depth/camera_info"
+ 
+    # - alias: zed2i_left_caminfo
+    #   file: "*_zed2i_images.bag"
+    #   topic: "/boxi/zed2i/left/camera_info"
 
-    - alias: zed2i_left_caminfo
-      file: "*_zed2i_images.bag"
-      topic: "/boxi/zed2i/left/camera_info"
-
-    - alias: zed2i_right_caminfo
-      file: "*_zed2i_images.bag"
-      topic: "/boxi/zed2i/right/camera_info"
+    # - alias: zed2i_right_caminfo
+    #   file: "*_zed2i_images.bag"
+    #   topic: "/boxi/zed2i/right/camera_info"
 
     # TODO: not apparent in the bag file
     # - alias: anymal_depth_camera_front_lower
@@ -111,20 +71,28 @@ metadata:
       topic: "/anymal/depth_camera/right/depth/camera_info"
 
   frame_transforms:
-  #   # frame_id: tf_static_minimal
-  #   # file: "*_tf_minimal.bag"
-  #   # topic: /tf_static
+    # Boxi to ANYmal
+    - frame_id: box_base
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: base
+    
+    - frame_id: base
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
 
+    # Cameras 
     - frame_id: alphasense_front_center
       file: "*_tf_minimal.bag"
       topic: /tf_static
       reference_frame_id: box_base
-
+    
     - frame_id: alphasense_front_left
       file: "*_tf_minimal.bag"
       topic: /tf_static
       reference_frame_id: box_base
-
+      
     - frame_id: alphasense_front_right
       file: "*_tf_minimal.bag"
       topic: /tf_static
@@ -136,6 +104,11 @@ metadata:
       reference_frame_id: box_base
 
     - frame_id: alphasense_right
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+    
+    - frame_id: alphasense_base
       file: "*_tf_minimal.bag"
       topic: /tf_static
       reference_frame_id: box_base
@@ -164,22 +137,44 @@ metadata:
       file: "*_tf_minimal.bag"
       topic: /tf_static
       reference_frame_id: box_base
-
-    - frame_id: depth_camera_rear_upper
+    
+    - frame_id: zed2i_base
       file: "*_tf_minimal.bag"
       topic: /tf_static
       reference_frame_id: box_base
+
+    # Depth cameras
+    - frame_id: depth_camera_rear_upper
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: base
+
+    - frame_id: depth_camera_front_upper
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: base
+
+    - frame_id: depth_camera_rear_lower
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: base
+      
+    - frame_id: depth_camera_front_lower
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: base
 
     - frame_id: depth_camera_left
       file: "*_tf_minimal.bag"
       topic: /tf_static
-      reference_frame_id: box_base
+      reference_frame_id: base
 
     - frame_id: depth_camera_right
       file: "*_tf_minimal.bag"
       topic: /tf_static
-      reference_frame_id: box_base
+      reference_frame_id: base
 
+    # LIDARS
     - frame_id: hesai_lidar
       file: "*_tf_minimal.bag"
       topic: /tf_static
@@ -190,16 +185,12 @@ metadata:
       topic: /tf_static
       reference_frame_id: box_base
 
-    - frame_id: dlio_map
+    - frame_id: velodyne_lidar
       file: "*_tf_minimal.bag"
       topic: /tf_static
-      reference_frame_id: box_base
-
-    - frame_id: zed2i_map
-      file: "*_tf_minimal.bag"
-      topic: /tf_static
-      reference_frame_id: box_base
-
+      reference_frame_id: base
+      
+    # IMUS
     - frame_id: adis16475_imu
       file: "*_tf_minimal.bag"
       topic: /tf_static
@@ -224,163 +215,193 @@ metadata:
       file: "*_tf_minimal.bag"
       topic: /tf_static
       reference_frame_id: box_base
-
-    - frame_id: enu_origin
+    
+    - frame_id: zed2i_imu
       file: "*_tf_minimal.bag"
       topic: /tf_static
       reference_frame_id: box_base
-
+    
     - frame_id: anymal_imu
       file: "*_tf_minimal.bag"
       topic: /tf_static
-      reference_frame_id: box_base
-
-    - frame_id: zed2i_odom
-      file: "*_tf_minimal.bag"
-      topic: /tf_static
-      reference_frame_id: box_base
-
-    - frame_id: odom
-      file: "*_tf_minimal.bag"
-      topic: /tf_static
-      reference_frame_id: box_base
-
-    - frame_id: zed2i_mag
-      file: "*_tf_minimal.bag"
-      topic: /tf_static
-      reference_frame_id: box_base
-
-    - frame_id: leica_total_station
-      file: "*_tf_minimal.bag"
-      topic: /tf_static
-      reference_frame_id: box_base
-
-    - frame_id: zed2i_baro
-      file: "*_tf_minimal.bag"
-      topic: /tf_static
-      reference_frame_id: box_base
-
-    # NOT USED since not relevant according to Jonas
-    # base_frame: tf_static_model
-    # file: "*_tf_model.bag"
-    # topic: /tf_static
-
-    # NOT USED since not relevant according to Jonas
-    # base_frame: tf_model
-    # file: "*_tf_model.bag"
-    # topic: /tf
+      reference_frame_id: base
 
 data:
   image_topics:
-
-    # TODO: Not appearant in the bag file
-    # - alias: depth_camera_front_lower
-    #   file: "*_anymal_depth_cameras.bag"
-    #   topic: "/anymal/depth_camera/front_lower/depth/image_rect_raw"
-    #   format: jpeg
-    #   compressed: false
-
-    # TODO: Not appearant in the bag file
-    # - alias: depth_camera_rear_lower
-    #   file: "*_anymal_depth_cameras.bag"
-    #   topic: "/anymal/depth_camera/rear_lower/depth/image_rect_raw"
-    #   format: jpeg
-    #   compressed: false
-
-    - alias: depth_camera_front_upper
-      file: "*_anymal_depth_cameras.bag"
-      topic: "/anymal/depth_camera/front_upper/depth/image_rect_raw"
+    - alias: alphasense_front_center
+      file: "*_alphasense.bag"
+      topic: "/boxi/alphasense/front_center/image_raw/compressed"
       format: jpeg
-      compressed: false
-
-    - alias: depth_camera_rear_upper
-      file: "*_anymal_depth_cameras.bag"
-      topic: "/anymal/depth_camera/rear_upper/depth/image_rect_raw"
+      compressed: true
+      camera_intrinsics: alphasense_front_center_caminfo
+      description: "10Hz - 1440x1080 - Sevensense Alphasense/CoreResearch front center (Sony IMX-273, Color, 1.6MP)"
+    
+    - alias: alphasense_front_left
+      file: "*_alphasense.bag"
+      topic: "/boxi/alphasense/front_left/image_raw/compressed"
       format: jpeg
-      compressed: false
-
-    - alias: depth_camera_left_image_rect_raw
-      file: "*_anymal_depth_cameras.bag"
-      topic: "/anymal/depth_camera/left/depth/image_rect_raw"
+      compressed: true
+      camera_intrinsics: alphasense_front_left_caminfo
+      description: "10Hz - 1440x1080 - Sevensense Alphasense/CoreResearch front left (Sony IMX-273, Mono, 1.6MP)"
+  
+    - alias: alphasense_front_right
+      file: "*_alphasense.bag"
+      topic: "/boxi/alphasense/front_right/image_raw/compressed"
       format: jpeg
-      compressed: false
-
-    - alias: depth_camera_right_image_rect_raw
-      file: "*_anymal_depth_cameras.bag"
-      topic: "/anymal/depth_camera/right/depth/image_rect_raw"
+      compressed: true
+      camera_intrinsics: alphasense_front_right_caminfo
+      description: "10Hz - 1440x1080 - Sevensense Alphasense/CoreResearch front right (Sony IMX-273, Mono, 1.6MP)"
+  
+    - alias: alphasense_left
+      file: "*_alphasense.bag"
+      topic: "/boxi/alphasense/left/image_raw/compressed"
       format: jpeg
-      compressed: false
-
+      compressed: true
+      camera_intrinsics: alphasense_left_caminfo
+      description: "10Hz - 1440x1080 - Sevensense Alphasense/CoreResearch left (Sony IMX-273, Color, 1.6MP)"
+  
+    - alias: alphasense_right
+      file: "*_alphasense.bag"
+      topic: "/boxi/alphasense/right/image_raw/compressed"
+      format: jpeg
+      compressed: true
+      camera_intrinsics: alphasense_right_caminfo
+      description: "10Hz - 1440x1080 - Sevensense Alphasense/CoreResearch right (Sony IMX-273, Color, 1.6MP)"
+  
     - alias: hdr_left
       file: "*_hdr_left.bag"
       topic: "/boxi/hdr/left/image_raw/compressed"
       format: jpeg
       compressed: true
-
+      camera_intrinsics: hdr_left_caminfo
+      description: "10Hz - 1920x1280 - TierIV C1 left (120dB, Color, 2.5MP)"
+  
     - alias: hdr_front
       file: "*_hdr_front.bag"
       topic: "/boxi/hdr/front/image_raw/compressed"
       format: jpeg
       compressed: true
+      camera_intrinsics: hdr_front_caminfo
+      description: "10Hz - 1920x1280 - TierIV C1 front (120dB, Color, 2.5MP)"
 
     - alias: hdr_right
       file: "*_hdr_right.bag"
       topic: "/boxi/hdr/right/image_raw/compressed"
       format: jpeg
       compressed: true
-
-    #TODO: not apparent in the bag file
-    # - alias: zed2i_depth_confidence_image
-    #   file: "*_zed2i_depth.bag"
-    #   topic: "/boxi/zed2i/confidence/image_raw/compressedDepth"
-    #   format: jpeg
-    #   compressed: true
-
-    #TODO: not apparent in the bag file
-    # - alias: zed2i_depth_image
-    #   file: "*_zed2i_depth.bag"
-    #   topic: "/boxi/zed2i/depth/image_raw/compressedDepth"
-    #   format: jpeg
-    #   compressed: true
+      camera_intrinsics: hdr_right_caminfo
+      description: "10Hz - 1920x1280 - TierIV C1 right (120dB, Color, 2.5MP)"
 
     - alias: zed2i_left_images
       file: "*_zed2i_images.bag"
       topic: "/boxi/zed2i/left/image_raw/compressed"
       format: jpeg
       compressed: true
+      camera_intrinsics: zed2i_left_caminfo
+      description: "15Hz - 1920x1080 - Stereolabs Zed2i left (Color, 4MP, mounted up-side-down / we flipped the naming of the left and right camera w.r.t. ZED2i driver)"
 
     - alias: zed2i_right_images
       file: "*_zed2i_images.bag"
       topic: "/boxi/zed2i/right/image_raw/compressed"
       format: jpeg
       compressed: true
+      camera_intrinsics: zed2i_left_caminfo
+      description: "15Hz - 1920x1080 - Stereolabs Zed2i right (Color, 4MP, mounted up-side-down / we flipped the naming of the left and right camera w.r.t. ZED2i driver)"
 
-    # No need for conversion since raw bag files are used
-    # - alias: hesai_packets
-    #   file: "*_hesai_packets.bag"
-    #   topic: "/boxi/hesai/packets"
+    - alias: zed2i_depth_confidence_image
+      file: "*_zed2i_depth.bag"
+      topic: "/boxi/zed2i/confidence/image_raw/compressedDepth"
+      format: png
+      compressed: false
+      depth: true
+      camera_intrinsics: zed2i_depth_caminfo
+      description: "15Hz - 1920x1080 - Stereolabs Zed2i - generated Stereolabs SDK 4.2 (mounted up-side-down / we flipped the naming of the left and right camera w.r.t. ZED2i driver)"
 
-    #   No need for conversion since raw bag files are used
-    # - alias: hesai_range_image
-    #   file: "*_hesai.bag"
-    #   topic: "/boxi/hesai/range_image"
+    - alias: zed2i_depth_image
+      file: "*_zed2i_depth.bag"
+      topic: "/boxi/zed2i/depth/image_raw/compressedDepth"
+      format: png
+      compressed: false
+      depth: true
+      camera_intrinsics: zed2i_depth_caminfo
+      description: "15Hz - 1920x1080 - Stereolabs Zed2i - generated Stereolabs SDK 4.2 (mounted up-side-down / we flipped the naming of the left and right camera w.r.t. ZED2i driver)"
 
-    #   No need for conversion since raw bag files are used 
-    # - alias: hesai_intensity_image
-    #   file: "*_hesai.bag"
-    #   topic: "/boxi/hesai/intensity_image"
+    - alias: depth_camera_front_lower
+      file: "*_anymal_depth_cameras.bag"
+      topic: "/anymal/depth_camera/front_lower/depth/image_rect_raw"
+      format: jpeg
+      compressed: false
+      depth: true
+      camera_intrinsics: depth_camera_front_lower_caminfo
+      description: "15Hz - 848x480 - IntelRealsense D435i front lower (Integrated in ANYbotics ANYmal D)"
+
+    - alias: depth_camera_rear_lower
+      file: "*_anymal_depth_cameras.bag"
+      topic: "/anymal/depth_camera/rear_lower/depth/image_rect_raw"
+      format: jpeg
+      compressed: false
+      depth: true
+      camera_intrinsics: depth_camera_rear_lower_caminfo
+      description: "15Hz - 848x480 - IntelRealsense D435i rear upper (Integrated in ANYbotics ANYmal D)"
+
+    - alias: depth_camera_front_upper
+      file: "*_anymal_depth_cameras.bag"
+      topic: "/anymal/depth_camera/front_upper/depth/image_rect_raw"
+      format: jpeg
+      compressed: false
+      depth: true
+      camera_intrinsics: depth_camera_front_upper_caminfo
+      description: "15Hz - 848x480 - IntelRealsense D435i front upper (Integrated in ANYbotics ANYmal D)"
+
+    - alias: depth_camera_rear_upper
+      file: "*_anymal_depth_cameras.bag"
+      topic: "/anymal/depth_camera/rear_upper/depth/image_rect_raw"
+      format: jpeg
+      compressed: false
+      depth: true
+      camera_intrinsics: depth_camera_rear_upper_caminfo
+      description: "15Hz - 848x480 - IntelRealsense D435i rear upper (Integrated in ANYbotics ANYmal D)"
+      
+    - alias: depth_camera_left
+      file: "*_anymal_depth_cameras.bag"
+      topic: "/anymal/depth_camera/left/depth/image_rect_raw"
+      format: jpeg
+      compressed: false
+      depth: true
+      camera_intrinsics: depth_camera_left_caminfo
+      description: "15Hz - 848x480 - IntelRealsense D435i left (Integrated in ANYbotics ANYmal D)"
+
+    - alias: depth_camera_right
+      file: "*_anymal_depth_cameras.bag"
+      topic: "/anymal/depth_camera/right/depth/image_rect_raw"
+      format: jpeg
+      depth: true
+      compressed: false
+      camera_intrinsics: depth_camera_right_caminfo
+      description: "15Hz - 848x480 - IntelRealsense D435i right (Integrated in ANYbotics ANYmal D)"
 
   lidar_topics:
-  # TODO: not yet ready
-    # - alias: anymal_velodyne
-    #   file: "*_anymal_velodyne.bag"
-    #   topic: "/anymal/velodyne/points"
-    #   max_points: 64000
-    #   attributes:
-    #     - intensity
-    #     - ring
-    #     - timestamp
+    - alias: velodyne
+      file: "*_anymal_velodyne.bag"
+      topic: "/anymal/velodyne/points"
+      max_points: 64000
+      attributes:
+        - intensity
+        - ring
+        - timestamp
+      description: "10Hz - Velodyne VLP-16 (Integrated in ANYbotics ANYmal D)"
 
+    - alias: velodyne_undist
+      file: "*_anymal_velodyne_undist.bag"
+      topic: "/anymal/velodyne/points_undistorted"
+      
+      attributes:
+        - intensity
+        - ring
+        - timestamp
+      description: "10Hz - Velodyne VLP-16 (Integrated in ANYbotics ANYmal D) - undistorted using Leg Interial Odometry"
+
+    
     - alias: hesai
       file: "*_hesai.bag"
       topic: "/boxi/hesai/points"
@@ -389,6 +410,7 @@ data:
         - intensity
         - ring
         - timestamp
+      description: "10Hz - Hesai XT-32"
 
     - alias: hesai_undistorted
       file: "*_hesai_undist.bag"
@@ -398,6 +420,7 @@ data:
         - intensity
         - ring
         - timestamp
+      description: "10Hz - Hesai XT-32 - undistorted using Leg Interial Odometry"
 
     - alias: livox_points
       file: "*_livox.bag"
@@ -408,6 +431,7 @@ data:
         - tag
         - line
         - timestamp
+      description: "10Hz - Livox Mid360 non-repetitive LiDAR (mounted up-side-down)"
 
     - alias: livox_points_undistorted
       file: "*_livox_undist.bag"
@@ -418,46 +442,49 @@ data:
         - tag
         - line
         - timestamp
+      description: "10Hz - Livox Mid360 non-repetitive LiDAR (mounted up-side-down)- undistorted using Leg Interial Odometry"
 
-    - alias: dlio_hesai_deskewed
+    - alias: dlio_hesai_points_undistorted
       file: "*_dlio.bag"
-      topic: "/boxi/dlio/hesai_deskewed"
+      topic: "/boxi/dlio/hesai_points_undistorted"
       max_points: 64000
       attributes:
         - intensity
         - timestamp
+      description: "10Hz - Hesai XT-32 - undistorted using Direct LiDAR Interial Odometry (DLIO)"
 
-  # TODO: not yet ready on the part of jonas 4.12KB
-    # - alias: anymal_velodyne_undist
-    #   file: "*_anymal_velodyne_undist.bag"
-    #   topic: "/anymal/velodyne/points_undistorted"
 
-  pose_topics:
-    - alias: zed2i_vio_map
-      file: "*_zed2i_vio.bag"
-      topic: "/boxi/zed2i_vio/map"
-      covariance: True
+  # pose_topics:
+  #   - alias: zed2i_vio_map
+  #     file: "*_zed2i_vio.bag"
+  #     topic: "/boxi/zed2i_vio/map"
+  #     covariance: True
 
   imu_topics:
     - alias: adis_imu
       file: "*_adis.bag"
       topic: "/boxi/adis/imu"
+      description: "Analog Devices ADIS16475-2 200Hz"
 
     - alias: alphasense_imu
       file: "*_alphasense_imu.bag"
       topic: "/boxi/alphasense/imu"
+      description: "Bosch BMI085 200Hz (Integrated in Sevensense CoreResearch/Alphasense camera unit)"
 
     - alias: ap20_imu
       file: "*_ap20_imu.bag"
       topic: "/boxi/ap20/imu"
+      description: "Leica Geosystems AP20 200Hz (data is only available while the bluetooth conntetion to the MS60 is active)"
 
     - alias: stim320_imu
       file: "*_stim320_imu.bag"
       topic: "/boxi/stim320/imu"
+      description: "Safran STIM320 500Hz"
 
-    - alias: livox_imu_si_compliant
+    - alias: livox_imu
       file: "*_livox_imu.bag"
       topic: "/boxi/livox/imu"
+      description: "TDK ICM40609 200Hz (integrated in Livox Mid360)"
 
     # not used according to Jonas
     # - alias: zed2i_imu
@@ -467,10 +494,12 @@ data:
     - alias: cpt7_imu
       file: "*_cpt7_imu.bag"
       topic: "/boxi/cpt7/imu"
+      description: "Honeywell HG4930 100Hz (integrated in Novatel CPT7)"
 
     - alias: anymal_imu
       file: "*_anymal_imu.bag"
       topic: "/anymal/imu"
+      description: "Epsoon 400HZ (integrated in ANYbotics ANYmal D)"
 
     # TODO: only includes /tf topic
     # - alias: cpt7_imu_acc_bias
@@ -482,24 +511,24 @@ data:
     #   file: "*_cpt7_ie_rt.bag"
     #   topic: "/boxi/inertial_explorer/rt/cpt7_imu_gyro_drift"
 
-  fluid_pressure_topics:
-    - alias: zed2i_pressure
-      file: "*_zed2i_prop.bag"
-      topic: "/boxi/zed2i/baro/pressure"
+  # fluid_pressure_topics:
+  #   - alias: zed2i_pressure
+  #     file: "*_zed2i_prop.bag"
+  #     topic: "/boxi/zed2i/baro/pressure"
 
-  magnetic_field_topics:
-    - alias: zed2i_magnetic_filed
-      file: "*_zed2i_prop.bag"
-      topic: "/boxi/zed2i/magnetic_field"
+  # magnetic_field_topics:
+  #   - alias: zed2i_magnetic_filed
+  #     file: "*_zed2i_prop.bag"
+  #     topic: "/boxi/zed2i/magnetic_field"
 
   odometry_topics:
     - alias: dlio_map_odometry
       file: "*_dlio.bag"
       topic: "/boxi/dlio/lidar_map_odometry"
       
-    - alias: zed2i_vio_odometry
-      file: "*_zed2i_vio.bag"
-      topic: "/boxi/zed2i_vio/odom"
+    # - alias: zed2i_vio_odometry
+    #  file: "*_zed2i_vio.bag"
+    #  topic: "/boxi/zed2i_vio/odom"
 
     # TODO: only includes /tf topic
     # - alias: cpt7_ie_rt_odometry

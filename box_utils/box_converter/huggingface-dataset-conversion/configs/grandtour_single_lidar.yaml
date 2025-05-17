@@ -1,0 +1,17 @@
+metadata:
+  frame_transforms:
+    - frame_id: hesai_lidar
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+data:
+  lidar_topics:
+    - alias: hesai
+      file: "*_hesai.bag"
+      topic: "/boxi/hesai/points"
+      max_points: 64000
+      attributes:
+        - intensity
+        - ring
+        - timestamp
+      description: "10Hz - Hesai XT32m"

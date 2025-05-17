@@ -5,7 +5,7 @@ import inspect
 import numpy as np
 
 # Automatically add box_binding to sys.path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "box_binding")))
+sys.path.insert(0, "/app/rvl_compression")
 
 import compressed_depth
 

@@ -1,0 +1,75 @@
+metadata:
+  frame_transforms:
+    # Boxi to ANYmal
+    - frame_id: box_base
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: base
+
+data:
+  imu_topics:
+    - alias: anymal_imu
+      file: "*_anymal_imu.bag"
+      topic: "/anymal/imu"
+      description: "Epsoon 400HZ (integrated in ANYbotics ANYmal D)"
+
+  odometry_topics:
+    - alias: dlio_map_odometry
+      file: "*_dlio.bag"
+      topic: "/boxi/dlio/lidar_map_odometry"
+
+  point_topics:
+    - alias: prism_position
+      file: "*_ap20_prism_position.bag" 
+      topic: "/boxi/ap20/prism_position"
+
+  singleton_transform_topics:
+    - alias: dlio_tf
+      file: "*_dlio.bag"
+      topic: "/tf"
+
+  gnss_raw_topics:
+    - alias: gnss_raw_cpt7_ie_tc
+      file: "*_cpt7_ie_tc.bag"
+      topic: "/boxi/inertial_explorer/tc/raw"
+
+  anymal_state_topics:
+    - alias: anymal_state_state_estimator
+      file: "*_anymal_state.bag"
+      topic: "/anymal/state_estimator/anymal_state"
+      number_of_joints: 12
+      feet: ["LF_FOOT", "RF_FOOT", "LH_FOOT", "RH_FOOT"]
+
+  temperature_topics:
+    - alias: stim320_gyroscope_temperature
+      file: "*_stim320_imu.bag"
+      topic: "/boxi/stim320/gyroscope_temperature"
+
+    - alias: stim320_acceletometer_temperature
+      file: "*_stim320_imu.bag"
+      topic: "/boxi/stim320/acceletometer_temperature"
+
+  battery_state_topics:
+    - alias: anymal_state_battery
+      file: "*_anymal_state.bag"
+      topic: "/anymal/battery_state"
+
+  actuator_readings_topics:
+    - alias: anymal_state_actuator
+      file: "*_anymal_state.bag"
+      topic: "/anymal/actuator_readings"
+      number_of_actuators: 12
+
+  imu_vector_topics:
+    - alias: cpt7_tc_imu_acc_bias
+      file: "*_cpt7_ie_tc.bag"
+      topic: "/boxi/inertial_explorer/tc/cpt7_imu_acc_bias"
+
+    - alias: cpt7_tc_imu_gyro_drift
+      file: "*_cpt7_ie_tc.bag"
+      topic: "/boxi/inertial_explorer/tc/cpt7_imu_gyro_drift"
+
+  anymal_twist_topics:
+      - alias: anymal_command_twist
+        file: "*_anymal_command.bag"
+        topic: "/anymal/twist_command"
