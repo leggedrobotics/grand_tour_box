@@ -99,3 +99,6 @@
 	path = box_applications/gtsam_catkin
 	url = git@github.com:leggedrobotics/gtsam_catkin.git
 	branch = grandtour
+[submodule "box_utils/box_binding/external/nanobind"]
+	path = box_utils/box_binding/external/nanobind
+	url = https://github.com/wjakob/nanobind
