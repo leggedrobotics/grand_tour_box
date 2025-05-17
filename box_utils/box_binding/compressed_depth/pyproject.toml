@@ -1,0 +1,17 @@
+[build-system]
+requires = ["scikit-build-core>=0.6", "nanobind"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "compressed_depth"
+version = "0.1.0"
+description = "PNG / RVL depth decompression"
+requires-python = ">=3.8"
+
+[tool.scikit-build]
+# This tells scikit-build-core that your Python package lives in the
+# directory named “compressed_depth”.
+wheel.packages = ["compressed_depth"]
+
+# Editable-mode section REMOVED ─ default (out-of-tree) editable build
+# keeps CMake/Ninja artefacts in _skbuild/ instead of inside the package.
