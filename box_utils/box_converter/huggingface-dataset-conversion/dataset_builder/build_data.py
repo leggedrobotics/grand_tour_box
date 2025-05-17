@@ -36,7 +36,10 @@ from dataset_builder.utils import messages_in_bag_with_topic
 
 import sys
 
-sys.path.insert(0, "/app/rvl_compression")
+sys.path.insert(
+    0,
+    "/catkin_ws/src/grand_tour_box/box_utils/box_converter/huggingface-dataset-conversion/rvl_compression/compressed_depth",
+)
 import compressed_depth
 
 DATA_PREFIX = "data"
