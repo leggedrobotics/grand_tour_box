@@ -67,9 +67,13 @@ RUN . /opt/ros/$ROS_DISTRO/setup.sh && catkin build \
 RUN mkdir /tmp_disk
 
 # RVL compression extension
+RUN pip3 install nanobind scikit-build-core cmake
 RUN apt install libopencv-dev -y
-RUN cd /app/rvl_compression/compressed_depth; pip install -e . --no-build-isolation --verbose
 
+WORKDIR /app/rvl_compression/compressed_depth
+RUN bash -c "cd /app/rvl_compression/compressed_depth; source /catkin_ws/devel/setup.bash; pip install -e . --no-build-isolation --verbose"
+
+WORKDIR /catkin_ws/src
 # entrypoint
 WORKDIR /app
 COPY ./entrypoint.sh /
