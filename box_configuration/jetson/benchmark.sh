@@ -7,7 +7,7 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 # Set duration for monitoring (in seconds)
-DURATION=120 #${1:-120}  # Default to 1800 seconds (30 minutes) if no argument is provided
+DURATION=120 #${1:-10}  # Default to 1800 seconds (30 minutes) if no argument is provided
 
 # Get the current date in YYYY-MM-DD format
 CURRENT_DATE=$(date +%Y-%m-%d)
@@ -19,22 +19,17 @@ mkdir -p "$OUTPUT_DIR"
 echo "Logs will be saved in: $OUTPUT_DIR"
 
 # Network profiling for interface enp45s0 (run in background)
-sudo iftop -t -i enp45s0 > "$OUTPUT_DIR/network_usage_nuc_enp45s0.txt" &
+sudo iftop -t -i mgbe0 > "$OUTPUT_DIR/network_usage_jetson_mgbe0.txt" &
 IFTOP_PID1=$!
-echo "Started network monitoring on enp45s0 (PID: $IFTOP_PID1)"
-
-# Network profiling for interface enp46s0 (run in background)
-sudo iftop -t -i enp46s0 > "$OUTPUT_DIR/network_usage_nuc_enp46s0.txt" &
-IFTOP_PID2=$!
-echo "Started network monitoring on enp46s0 (PID: $IFTOP_PID2)"
+echo "Started network monitoring on mgbe0 (PID: $IFTOP_PID1)"
 
 # CPU usage profiling using sar
-sar -u 1 "$DURATION" > "$OUTPUT_DIR/cpu_usage_nuc.log" &
+sar -u 1 "$DURATION" > "$OUTPUT_DIR/cpu_usage_jetson.log" &
 echo "Started CPU usage monitoring"
 
 # Disk write speed profiling using iostat
-iostat -dx nvme0n1 1 "$DURATION" > "$OUTPUT_DIR/disk_write_speed_nuc_nvme0n1.log" &
-echo "Started disk write speed monitoring for nvme0n1"
+iostat -dx nvme0n1p1 1 "$DURATION" > "$OUTPUT_DIR/disk_write_speed_jetson_nvme0n1p1.log" &
+echo "Started disk write speed monitoring for nvme0n1p1"
 
 sleep $DURATION
 
