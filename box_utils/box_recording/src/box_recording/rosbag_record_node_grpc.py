@@ -74,7 +74,7 @@ class StopRecordingServicer(stop_recording_pb2_grpc.StopRecordingServicer):
         if self.recorder_node.store_debug_logs:
             store_debug_logs_to_folder(
                 self.recorder_node.start_recording_time,
-                directory="/home/rsl/.ros",
+                directory="/home/integration/.ros",
                 copy_to=os.path.join(self.recorder_node.bag_base_path, "ros_logs_" + self.recorder_node.node),
             )
 
@@ -108,7 +108,8 @@ class RosbagRecordNodeGrpc(object):
         self.namespace = rospy.get_namespace()
 
         self.bag_running = False
-        default_path = rospkg.RosPack().get_path("box_recording") + "/data"
+        # default_path = rospkg.RosPack().get_path("box_recording") + "/data"
+        default_path = "/data"
         self.data_path = rospy.get_param("~data_path", default_path)
         self.port = rospy.get_param("~port")
 

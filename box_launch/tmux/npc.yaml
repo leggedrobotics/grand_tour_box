@@ -20,6 +20,6 @@ windows:
       - roslaunch box_recording rosbag_record_node_npc.launch
     - shell_command:
       - source /opt/ros/noetic/setup.bash
-      - source /home/integration/i_hate_docker_ws/devel/setup.bashs
+      - source /home/integration/i_hate_docker_ws/devel/setup.bash
       - df -h /data
       focus: true
