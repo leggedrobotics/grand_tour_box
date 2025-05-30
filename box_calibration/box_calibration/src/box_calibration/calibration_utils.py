@@ -66,6 +66,10 @@ def filter_yaml_by_rostopics(input_yaml_path, required_rostopics, output_yaml_pa
     filtered_content = {k: v for k, v in yaml_content.items() if
                         'rostopic' in v and v['rostopic'] in required_rostopics}
 
+    filtered_content = {
+        f"cam{i}": filtered_content[k] for i,k in enumerate(filtered_content)
+    }
+
     with open(output_yaml_path, 'w') as file:
         yaml.dump(filtered_content, file)
     return True

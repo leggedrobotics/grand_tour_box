@@ -137,6 +137,9 @@ std::map<std::string, CameraCovariance> ROSCameraCameraProgram::computeCovarianc
             continue;
         }
         diagonal_covariance_blocks.push_back(params.fxfycxcy);
+        if (!total_in_out_edges.contains(name)) {
+            continue;
+        }
         const bool compute_extrinsics_sigma = total_in_out_edges.at(name) > 0;
         if (compute_extrinsics_sigma) {
             diagonal_covariance_blocks.push_back(params.T_bundle_sensor);
@@ -546,7 +549,11 @@ std::map<std::string, int> ROSCameraCameraProgram::getTotalInAndOutExtrinsicEdge
     for (const auto &[name, other_cam_map]: camera_camera_adjacency_count) {
         for (const auto &[other_name, count]: other_cam_map) {
             total_edge_count[name] += count;
+            total_edge_count[other_name] += count;
         }
+    }
+    for (const auto &[name, other_cam_map]: camera_camera_adjacency_count) {
+        std::cout << "Camera count: " << name << " " << total_edge_count[name] << std::endl;
     }
     return total_edge_count;
 }

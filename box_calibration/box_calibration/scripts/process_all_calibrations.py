@@ -10,7 +10,8 @@ import numpy as np
 import rosbag
 import rospkg
 import yaml
-from box_calibration.calibration_utils import extract_image_topics, filter_yaml_by_rostopics, list_to_folder_name, move_files_to_folder
+from box_calibration.calibration_utils import extract_image_topics, filter_yaml_by_rostopics, list_to_folder_name, \
+    move_files_to_folder
 from rosbag import Bag
 from yaml import MappingNode, SequenceNode
 
@@ -24,16 +25,20 @@ if __name__ == "__main__":
     # Adding arguments with shorthands
     parser.add_argument('-cc', '--cameracamerafolderpath', type=str, required=True,
                         help='Path to the camera camera folder')
-    parser.add_argument('-cl', '--cameralidarfolderpath', type=str, required=True,
+    parser.add_argument('-cl', '--cameralidarfolderpath', type=str, required=False,
                         help='Path to the camera lidar folder')
-    parser.add_argument('-cp', '--cameraprismfolderpath', type=str, required=True,
+    parser.add_argument('-cp', '--cameraprismfolderpath', type=str, required=False,
                         help='Path to the camera prism folder')
     parser.add_argument('-pt', '--prismtopic', type=str,
-                        required=False, default="/gt_box/ap20/position_debug", help='The prism topic name')
+                        required=False, default="/gt_box/ap20/prism_position", help='The prism topic name')
     parser.add_argument('-ci', '--cameraimufolderpath', type=str, required=False, default='',
                         help='Path to the camera imu folder')
     parser.add_argument('--solve_ap20_time_offset', action='store_true',
-                        required=False, default=True, help='Solve AP20 time offset')
+                        required=False, default=False, help='Solve AP20 time offset')
+    parser.add_argument('--skip_camera', action='store_true',
+                        required=False, default=False, help='Calibrate camera')
+    parser.add_argument('--skip_lidar', action='store_true',
+                        required=False, default=False, help='Calibrate camera')
     parser.add_argument("--dry_run", action="store_true", help="If set, do not run commands, only print them.")
     parser.add_argument('-ho', '--hesai_output_dir', type=str,
                         required=False, default="./hesai_calib_output", help='Path to the Hesai output')
@@ -212,28 +217,32 @@ if __name__ == "__main__":
     bag_files = [os.path.join(camera_camera_folder_path, f) for f in os.listdir(camera_camera_folder_path) if
                  f.endswith('.bag')]
 
-    camcam_calibration_path = "cameracamera_calibration.yaml"
+    camcam_calibration_path = os.path.join(camera_camera_folder_path, "cameracamera_calibration.yaml")
     # Construct the command with all .bag files and the output path
     command = ["rosrun", "grand_tour_ceres_apps", "camera_camera_offline_calibration", "--bags"] + bag_files + [
         "--output_path", camcam_calibration_path]
 
     # Run the command
-    safe_subprocess_run(command)
+    if not args.skip_camera:
+        safe_subprocess_run(command)
     camcam_calibration_time_header = read_yaml_with_comment_header(camcam_calibration_path)
 
     # Run the second command using the output of the previous step
-    livox_camcam_calib_and_initial_guess_file = "kalibr_camcam_livox_initial_guess.yaml"
+    livox_camcam_calib_and_initial_guess_file = os.path.join(camera_lidar_folder_path,
+                                                             "kalibr_camcam_livox_initial_guess.yaml")
     convert_command = ["rosrun", "box_calibration", "convert_ceres_camera_output_to_kalibr_style.py",
                        camcam_calibration_path, livox_camcam_calib_and_initial_guess_file, "--livox"]
     safe_subprocess_run(convert_command, force=True)
 
     # Run the second command using the output of the previous step
-    hesai_camcam_calib_and_initial_guess_file = "kalibr_camcam_hesai_initial_guess.yaml"
+    hesai_camcam_calib_and_initial_guess_file = os.path.join(camera_lidar_folder_path,
+                                                             "kalibr_camcam_hesai_initial_guess.yaml")
     convert_command = ["rosrun", "box_calibration", "convert_ceres_camera_output_to_kalibr_style.py",
                        camcam_calibration_path, hesai_camcam_calib_and_initial_guess_file, "--hesai"]
     safe_subprocess_run(convert_command, force=True)
 
-    default_grand_tour_lidar_board_path = 'grand_tour_default_lidar_board.yaml'
+    default_grand_tour_lidar_board_path = os.path.join(camera_lidar_folder_path,
+                                                       'grand_tour_default_lidar_board.yaml')
 
     # Dump the YAML configuration to the file
     with open(default_grand_tour_lidar_board_path, 'w') as file:
@@ -244,7 +253,7 @@ if __name__ == "__main__":
                                                      'colSpacingMeters': 0.08}
         yaml.dump(default_grand_tour_camlidar_target_config, file)
 
-    hesai_calib_output_folder = args.hesai_output_dir
+    hesai_calib_output_folder = os.path.join(camera_lidar_folder_path, args.hesai_output_dir)
     # New configuration data for grand_tour_default_hesai_calib_config.yaml
     hesai_calib_config_data = {'logging_dir': hesai_calib_output_folder,
                                'stationarity': {'max_rotation_deg': 0.01, 'max_translation_m': 0.001,
@@ -259,13 +268,14 @@ if __name__ == "__main__":
                                }
 
     # Output file path for the new YAML configuration
-    hesai_calib_settings_path = 'grand_tour_default_hesai_calib_config.yaml'
+    hesai_calib_settings_path = os.path.join(camera_lidar_folder_path,
+                                             'grand_tour_default_hesai_calib_config.yaml')
 
     # Dump the new YAML configuration to the file
     with open(hesai_calib_settings_path, 'w') as file:
         yaml.dump(hesai_calib_config_data, file)
 
-    livox_calib_output_folder = args.livox_output_dir
+    livox_calib_output_folder = os.path.join(camera_lidar_folder_path, args.livox_output_dir)
     # New configuration data for grand_tour_default_livox_calib_config.yaml
     livox_calib_config_data = {'logging_dir': livox_calib_output_folder,
                                'stationarity': {'max_rotation_deg': 0.01, 'max_translation_m': 0.001,
@@ -280,7 +290,8 @@ if __name__ == "__main__":
                                }
 
     # Output file path for the new YAML configuration
-    livox_calib_settings_path = 'grand_tour_default_livox_calib_config.yaml'
+    livox_calib_settings_path = os.path.join(camera_lidar_folder_path,
+                                             'grand_tour_default_livox_calib_config.yaml')
 
     # Dump the new YAML configuration to the file
     with open(livox_calib_settings_path, 'w') as file:
@@ -324,7 +335,7 @@ if __name__ == "__main__":
     cam_lidar_merged_bag_path = os.path.join(camera_lidar_folder_path, 'cam_lidar_calib_merged.bag')
 
     # Check each bag file for validity and reindex if necessary
-    if not args.dry_run:
+    if not args.dry_run and not os.path.exists(cam_lidar_merged_bag_path):
         reindex_and_merge_bags(lidar_bag_files, cam_lidar_merged_bag_path)
 
     # Find a .bag file in the camera lidar folder path that matches the pattern "hesai"
@@ -345,7 +356,8 @@ if __name__ == "__main__":
                          application_parameters_path]
 
         # Run the command
-        safe_subprocess_run(hesai_command)
+        if not args.skip_lidar:
+            safe_subprocess_run(hesai_command)
 
     # Find a .bag file in the camera lidar folder path that matches the pattern "livox"
     livox_bag_file = cam_lidar_merged_bag_path
@@ -365,7 +377,8 @@ if __name__ == "__main__":
                          application_parameters_path]
 
         # Run the command
-        safe_subprocess_run(livox_command)
+        if not args.skip_lidar:
+            safe_subprocess_run(livox_command)
 
     reports = {"hesai": [hesai_calib_output_folder, "hesai_calib_report.pdf"],
                "livox": [livox_calib_output_folder, "livox_calib_report.pdf"], }
@@ -373,12 +386,13 @@ if __name__ == "__main__":
     from matplotlib.backends.backend_pdf import PdfPages
 
     T_cam_lidar_for_lidarname = dict()
-    with PdfPages('calibration_reports.pdf') as pdf:
+    with PdfPages(os.path.join(camera_lidar_folder_path, 'calibration_reports.pdf')) as pdf:
         for k, v in reports.items():
             calib_output_folder, output_report = v
 
             # Define the path to the reprojection_errors.txt file
-            reprojection_errors_path = os.path.join(calib_output_folder, '04_alignment', 'reprojection_errors.txt')
+            reprojection_errors_path = os.path.join(calib_output_folder, '04_alignment',
+                                                    'post-opt-reprojection_errors.txt')
 
             # Load the reprojection errors as a numpy array
             reprojection_errors = np.loadtxt(reprojection_errors_path)
@@ -434,7 +448,7 @@ if __name__ == "__main__":
 
             # Define the path to the homography-merged-cloud.txt file
             homography_merged_cloud_path = os.path.join(calib_output_folder, '04_alignment',
-                                                        'homography-merged-cloud.txt')
+                                                        'post-opt-homography-merged-cloud.txt')
             # Load the homography-merged-cloud data as a numpy array
             homography_merged_cloud = np.loadtxt(homography_merged_cloud_path)
             homography_merged_cloud = homography_merged_cloud[
@@ -478,12 +492,12 @@ if __name__ == "__main__":
 
     camcamlidar_calibration_data = camcam_calibration_data.copy()
 
+    camcamlidar_calibration_path = os.path.join(camera_lidar_folder_path,
+                                                "cameracameralidar_calibration.yaml")
     # Add the new fields for each key in reports
     for key in camcam_calibration_data.keys():
         camcamlidar_calibration_data[key]['T_bundle_hesai'] = T_cam_hesai.tolist()
         camcamlidar_calibration_data[key]['T_bundle_livox'] = T_cam_livox.tolist()
-
-    camcamlidar_calibration_path = "cameracameralidar_calibration.yaml"
 
     camlidar_calibration_time_header = extract_bag_start_time(hesai_bag_file)
     camlidar_calibration_comment = (f"#Camera Calibration Data Time: {camcam_calibration_time_header}\n"
@@ -494,19 +508,28 @@ if __name__ == "__main__":
     camera_prism_folder_bag_paths = [os.path.join(camera_prism_folder_path, x) for x in
                                      os.listdir(camera_prism_folder_path)
                                      if ".bag" in x]
-    camera_topics = [v["rostopic"] for v in camcamlidar_calibration_data.values()]
+    camera_topics = [v["rostopic"] for v in camcamlidar_calibration_data.values() for y in ["cam1", "cam2", "cam3"]
+                     if y in v["rostopic"]]
     camera_prism_camera_bag_paths = filter_for_bags_with_rostopics(camera_prism_folder_bag_paths, camera_topics)
     camera_prism_prism_bag_path = filter_for_bags_with_rostopics(camera_prism_folder_bag_paths, [prism_topic])[0]
 
-    camcamlidarprism_calibration_path = os.path.join(os.path.dirname(camcamlidar_calibration_path),
+    camcamlidarprism_calibration_path = os.path.join(camera_prism_folder_path,
                                                      "camcamlidarprism_calib.yaml")
 
     prism_calibration_time_header = extract_bag_start_time(camera_prism_prism_bag_path)
-    prism_command = ["rosrun", "grand_tour_ceres_apps", "camera_prism_offline_calibration", "-c",
-                     camcamlidar_calibration_path,
-                     "--camera_bags", *camera_prism_camera_bag_paths, "-p", camera_prism_prism_bag_path,
-                     "-t", prism_topic, "--solve_time_offset" if solve_ap20_time_offset else "",
-                     "-o", camcamlidarprism_calibration_path]
+    if solve_ap20_time_offset:
+        prism_command = ["rosrun", "grand_tour_ceres_apps", "camera_prism_offline_calibration", "-c",
+                         camcamlidar_calibration_path,
+                         "--camera_bags", *camera_prism_camera_bag_paths, "-p", camera_prism_prism_bag_path,
+                         "-t", prism_topic, "--solve_time_offset",
+                         "-o", camcamlidarprism_calibration_path]
+    else:
+
+        prism_command = ["rosrun", "grand_tour_ceres_apps", "camera_prism_offline_calibration", "-c",
+                         camcamlidar_calibration_path,
+                         "--camera_bags", *camera_prism_camera_bag_paths, "-p", camera_prism_prism_bag_path,
+                         "-t", prism_topic,
+                         "-o", camcamlidarprism_calibration_path]
     # Run the command
     safe_subprocess_run(prism_command, force=False)
 
@@ -538,6 +561,7 @@ if __name__ == "__main__":
         ["adis"],
         ["alphasense"],
         ["livox"],
+        ["ap20"],
     ]
 
     imu_topic_to_frame_mappings = {
@@ -548,12 +572,14 @@ if __name__ == "__main__":
         "/gt_box/livox/imu_si_compliant": "livox_imu",
         "/gt_box/zed2i_driver_node/imu/data_raw": "zed2i_imu_link",
         "/gt_box/stim320/imu": "stim320_imu",
+        "/gt_box/ap20/imu" : "ap20_imu",
     }
     camera_imu_calibration_data = {}
-    output_imu_calibration_path = "./imu_calibration.yaml"
+    output_imu_calibration_path = os.path.join(camera_imu_folder_path,
+                                               "./imu_calibration.yaml")
 
     if camera_imu_folder_path != "":
-        cam_imu_merged_name = "cam_imu_merged.bag"
+        cam_imu_merged_name = "cam_imu_merged_cropped.bag"
         cam_imu_bags = [x for x in os.listdir(camera_imu_folder_path) if x != cam_imu_merged_name and ".bag" in x]
         cam_imu_merged_bag_path = os.path.join(camera_imu_folder_path, cam_imu_merged_name)
         if not os.path.exists(cam_imu_merged_bag_path):
@@ -561,7 +587,7 @@ if __name__ == "__main__":
                                    cam_imu_merged_bag_path)
         camimu_image_topics = extract_image_topics(cam_imu_merged_bag_path)
         print("Camera IMU Image Topics:", camimu_image_topics)
-        
+
         for imu_names in imu_calibration_batches:
             imu_intrinsics_calibration_files = [os.path.join(allan_variances_root, f"{x}/imu.yaml") for x in imu_names]
             imu_calibration_files_by_topic = {}
@@ -569,12 +595,13 @@ if __name__ == "__main__":
                 with open(path, 'r') as file:
                     imu_calibration_data = yaml.load(file, Loader=yaml.FullLoader)
                 imu_calibration_files_by_topic[imu_calibration_data["rostopic"]] = path
-    
-                cam_imu_camerachain_path = "kalibr_camcam_chain.yaml"
+
+                cam_imu_camerachain_path = os.path.join(camera_imu_folder_path,
+                                                        "kalibr_camcam_chain.yaml")
                 filter_yaml_by_rostopics(hesai_camcam_calib_and_initial_guess_file,
                                          ["/gt_box/alphasense_driver_node/cam1"], #camimu_image_topics,
                                          cam_imu_camerachain_path)
-    
+
                 camera_imu_command = [
                     "rosrun", "kalibr", "kalibr_calibrate_imu_camera",
                     "--target", default_grand_tour_camera_board_path,
@@ -585,27 +612,38 @@ if __name__ == "__main__":
                     "--bag", cam_imu_merged_bag_path,
                     "--timeoffset-padding", "0.1",  # As per https://github.com/ethz-asl/kalibr/issues/41,
                     # "--recover-covariance",
+                    "--reprojection-sigma", "1.0",
                     "--export-poses",
                     "--max-iter", "1000",
                     "--imu-delay-by-correlation",
                     "--dont-show-report"
                 ]
-    
-                safe_subprocess_run(camera_imu_command, force=False)
 
-                cam_imu_merged_name_root = os.path.splitext(cam_imu_merged_bag_path)[0]
-                camchain_imu_path = cam_imu_merged_name_root + "-camchain-imucam.yaml"
-                imuchain_path = cam_imu_merged_name_root + "-imu.yaml"
-                
+                if not args.skip_lidar:
+                    safe_subprocess_run(camera_imu_command, force=False)
+
+                cam_imu_merged_name_root = os.path.splitext(os.path.basename(cam_imu_merged_bag_path))[0]
+
+                sub_folder_name = os.path.join(camera_imu_folder_path, list_to_folder_name(imu_names))
+                imu_calib_outputs = [os.path.join(camera_imu_folder_path, x) for x in os.listdir(camera_imu_folder_path)
+                                     if f"{cam_imu_merged_name_root}-" in x]
+                if not args.skip_lidar:
+                    move_files_to_folder(imu_calib_outputs, sub_folder_name)
+
+                camchain_imu_path = os.path.join(sub_folder_name,
+                                                 cam_imu_merged_name_root + "-camchain-imucam.yaml")
+                imuchain_path = os.path.join(sub_folder_name,
+                                             cam_imu_merged_name_root + "-imu.yaml")
+
                 with open(imuchain_path, 'r') as file:
                     imuchain_data = yaml.safe_load(file)
-    
+
                 for k, v in imuchain_data.items():
                     imuchain_data[k]["frame_id"] = imu_topic_to_frame_mappings[v["rostopic"]]
-    
+
                 imu0_frame_id = imuchain_data["imu0"]["frame_id"]
                 T_imus_imu0body = {v["frame_id"]: v["T_i_b"] for v in imuchain_data.values()}
-    
+
                 for k in imuchain_data.keys():
                     if imuchain_data[k]["model"] == "scale-misalignment-size-effect":
                         accelerometer_params = imuchain_data[k]["accelerometers"]
@@ -620,22 +658,17 @@ if __name__ == "__main__":
                             T_imanufacturer_b = T_ikalibr_b
                             T_imanufacturer_b[:3, -1] += np.array(input_rx_i) - rx_i
                             T_imus_imu0body[imuchain_data[k]["frame_id"]] = T_imanufacturer_b.tolist()
-    
+
                 with open(camchain_imu_path, 'r') as file:
                     camchain_imu_data = yaml.safe_load(file)
                 T_camerabundle_imu0 = np.array(camchain_imu_data["cam0"]["T_bundle_camera"]) @ np.array(
                     camchain_imu_data["cam0"]["T_cam_imu"])
                 T_imu0_camerabundle = np.linalg.inv(T_camerabundle_imu0)
-    
+
                 for frame_id, T_imu_imu0 in T_imus_imu0body.items():
                     camera_imu_calibration_data[frame_id] = {}
                     camera_imu_calibration_data[frame_id]["T_camerabundle_imu"] = np.linalg.inv(
                         T_imu_imu0 @ T_imu0_camerabundle).tolist()
-                    
-                sub_folder_name = list_to_folder_name(imu_names)
-                imu_calib_outputs = [os.path.join(camera_imu_folder_path, x) for x in os.listdir(camera_imu_folder_path)
-                                     if f"{cam_imu_merged_name_root}-" in x]
-                move_files_to_folder(imu_calib_outputs, sub_folder_name)
 
         camimu_calibration_time_header = extract_bag_start_time(cam_imu_merged_bag_path)
 

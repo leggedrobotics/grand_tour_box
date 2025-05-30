@@ -7,8 +7,6 @@ int main(int argc, char **argv) {
 
     ROSCameraPrismProgram program(parser);
     program.Solve();
-    program.ResetAndRepopulateProblem();
-    program.Solve();
     program.WriteOutputParameters();
     return 0;
 }
