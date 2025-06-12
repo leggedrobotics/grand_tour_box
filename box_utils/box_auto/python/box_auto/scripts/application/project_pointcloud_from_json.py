@@ -29,6 +29,13 @@ import os
 import cv2
 
 
+def transform_to_matrix(trans, quat):
+    matrix = np.eye(4)
+    matrix[:3, :3] = R.from_quat(quat).as_dcm()
+    matrix[:3, 3] = trans
+    return matrix
+
+
 class BagTfTransformer(object):
     """
     A transformer which transparently uses data recorded from rosbag on the /tf topic
@@ -98,7 +105,7 @@ class BagTfTransformer(object):
         ret = (self.tf_messages[i] for i in indices_in_range[0])
         return ret
 
-    def populateTransformerAtTime(self, target_time, buffer_length=10, lookahead=0.1):
+    def populateTransformerAtTime(self, target_time, buffer_length=10, lookahead=0.15):
         """
         Fills the buffer of the internal tf Transformer with the messages preceeding the given time
 
@@ -342,7 +349,9 @@ class BagTfTransformer(object):
             raise ValueError("Transform not found between {} and {}".format(orig_frame, dest_frame))
         return ret
 
-    def lookupTransform(self, orig_frame, dest_frame, time, method="simple", world_frame=None, latest=False):
+    def lookupTransform(
+        self, orig_frame, dest_frame, time, method="simple", world_frame=None, latest=False, return_se3=False
+    ):
         """
         Returns the transform between the two provided frames at the given time
 
@@ -365,23 +374,25 @@ class BagTfTransformer(object):
         if method == "simple":
             try:
                 common_time = self.transformer.getLatestCommonTime(orig_frame, dest_frame)
-                return self.transformer.lookupTransform(orig_frame, dest_frame, common_time)
+                res = self.transformer.lookupTransform(orig_frame, dest_frame, common_time)
             except:
                 print(
                     "Could not find the transformation {} -> {} in the 10 seconds before time {}".format(
                         orig_frame, dest_frame, time
                     )
                 )
+                if return_se3:
+                    return None
                 return (None, None)
 
         elif method == "interpolate_leg_odom":
             # Very inefficent way to fetch the previous world frame transform
             if world_frame == "dlio_odom":
-                dt = 0.01
+                dt = 0.015
             elif world_frame == "dlio_map":
-                dt = 0.1
+                dt = 0.15
             elif world_frame == "odom":
-                dt = 1 / 100
+                dt = 1 / 20
             else:
                 ValueError(
                     "Unknown world frame {}. Please set WORLD_FRAME to either 'dlio_odom' or 'dlio_map'".format(
@@ -393,10 +404,15 @@ class BagTfTransformer(object):
             res = [
                 f for f in self.getTransformMessagesWithFrame(world_frame, start_time=pre, end_time=post, reverse=False)
             ]
-
-            # If we have two messages, we can interpolate
-            if len(res) != 2:
-                print("Timestamp not nice to lookup LiDAR scans", res)
+            after_msg = None
+            for msg in res:
+                if msg.header.stamp <= time:
+                    before_msg = msg
+                elif msg.header.stamp > time and after_msg is None:
+                    after_msg = msg
+                    break
+            print("RES", len(res))
+            res = [before_msg, after_msg]
 
             # Get the base to odom
             tf1 = self.transformer.lookupTransform(orig_frame, dest_frame, res[0].header.stamp)
@@ -406,12 +422,6 @@ class BagTfTransformer(object):
             tf1 = self.transformer.lookupTransform(orig_frame, dest_frame, res[0].header.stamp)
             interpol_odom_start = self.transformer.lookupTransform("base", "odom", res[0].header.stamp)
             interpol_odom_dest = self.transformer.lookupTransform("base", "odom", time)
-
-            def transform_to_matrix(trans, quat):
-                matrix = np.eye(4)
-                matrix[:3, :3] = R.from_quat(quat).as_dcm()
-                matrix[:3, 3] = trans
-                return matrix
 
             odom_start_matrix = transform_to_matrix(interpol_odom_start[0], interpol_odom_start[1])
             odom_dest_matrix = transform_to_matrix(interpol_odom_dest[0], interpol_odom_dest[1])
@@ -430,14 +440,16 @@ class BagTfTransformer(object):
             tf1_corrected_quat = R.from_dcm(tf1_corrected_matrix[:3, :3]).as_quat()
 
             # Update tf1 with corrected values
-            return (tf1_corrected_trans, tf1_corrected_quat)
+            res = (tf1_corrected_trans, tf1_corrected_quat)
 
         elif method == "interpolate_linear":
             # Very inefficent way to fetch the previous world frame transform
             if world_frame == "dlio_odom":
-                dt = 0.01
+                dt = 0.015
             elif world_frame == "dlio_map":
-                dt = 0.1
+                dt = 0.15
+            elif world_frame == "odom":
+                dt = 1 / 50
             else:
                 ValueError(
                     "Unknown world frame {}. Please set WORLD_FRAME to either 'dlio_odom' or 'dlio_map'".format(
@@ -449,6 +461,14 @@ class BagTfTransformer(object):
             res = [
                 f for f in self.getTransformMessagesWithFrame(world_frame, start_time=pre, end_time=post, reverse=False)
             ]
+            after_msg = None
+            for msg in res:
+                if msg.header.stamp <= time:
+                    before_msg = msg
+                elif msg.header.stamp > time and after_msg is None:
+                    after_msg = msg
+                    break
+            res = [before_msg, after_msg]
 
             # If we have two messages, we can interpolate
             if len(res) != 2:
@@ -493,7 +513,11 @@ class BagTfTransformer(object):
             interpolated_translation = translation_interpolator([target_time])[0]
             interpolated_quat = interpolated_rotation.as_quat()
             print("Interpolated quat:", interpolated_quat)
-            return (interpolated_translation, interpolated_quat)
+            res = (interpolated_translation, interpolated_quat)
+
+        if return_se3:
+            return transform_to_matrix(res[0], res[1])
+        return res
 
     def lookupTransformWhenTransformUpdates(
         self, orig_frame, dest_frame, trigger_orig_frame=None, trigger_dest_frame=None, start_time=None, end_time=None
@@ -785,10 +809,10 @@ def overlay_depth_on_rgb(rgb_image_path, depth_image_path, output_path, tag):
     depth_normalized = (depth_image.clip(0, 10000) / 10000 * 255).astype(np.uint8)
 
     # Dilate the depth image to increase pixel width to 3
-    depth_normalized = scipy.ndimage.grey_dilation(depth_normalized, size=(5, 5))
+    depth_normalized = scipy.ndimage.grey_dilation(depth_normalized, size=(3, 3))
 
     # rgb_image H,W,3
-    alpha = 0.5
+    alpha = 0
 
     cmap = plt.get_cmap("turbo").reversed()
     color_depth = cmap(depth_normalized)  # H,W,4
@@ -801,8 +825,12 @@ def overlay_depth_on_rgb(rgb_image_path, depth_image_path, output_path, tag):
 
     # Use alpha channel for blending: where alpha==0, keep rgb_image pixel
     alpha_mask = color_depth[..., 3][..., None]
-    overlay = (alpha * rgb_image + (1 - alpha) * color_depth_rgb).astype(np.uint8)
-    overlay = np.where(alpha_mask == 0, rgb_image, overlay)
+    if len(rgb_image.shape) == 2:
+        overlay = (alpha * rgb_image[:, :, None].repeat(3, axis=2) + (1 - alpha) * color_depth_rgb).astype(np.uint8)
+        overlay = np.where(alpha_mask == 0, rgb_image[:, :, None].repeat(3, axis=2), overlay)
+    else:
+        overlay = (alpha * rgb_image + (1 - alpha) * color_depth_rgb).astype(np.uint8)
+        overlay = np.where(alpha_mask == 0, rgb_image, overlay)
 
     # Save the overlay image
     # Image.fromarray(overlay).save(output_path)
@@ -835,12 +863,13 @@ def overlay_depth_on_rgb(rgb_image_path, depth_image_path, output_path, tag):
 
 
 class Saver:
-    def __init__(self, folder):
+    def __init__(self, folder, mission_name):
         print("Saving to folder:", folder)
         self.folder = Path(folder)
         self.folder.mkdir(parents=True, exist_ok=True)
         self.bag = None
         self.count = 0
+        self.mission_name = mission_name
 
     def save_png(self, depth_image, prefix, idx_image, tag):
         depth_path = self.folder / f"{prefix}_{idx_image}_{tag}.png"
@@ -855,7 +884,7 @@ class Saver:
             mission_name = str(self.folder).split("/")[5].replace("_nerfstudio", "")
             # Path("/data/GrandTour/nerfstudio_meshing/nerfstudio_scratch/")
             rgb_image_path = (
-                Path("/tmp_disk/2024-11-14-13-45-37_nerfstudio")
+                Path(f"/tmp_disk/{self.mission_name}_nerfstudio")
                 / (mission_name + "_nerfstudio")
                 / "rgb"
                 / f"{prefix}_{idx_image}.png"
@@ -868,12 +897,12 @@ class Saver:
             self.bag.close()
 
 
-def get_camera_intrinsics(json_data):
+def get_camera_intrinsics(frame):
     """Extract camera intrinsics from nerfstudio JSON"""
-    fx = json_data["frames"][0]["fl_x"]
-    fy = json_data["frames"][0]["fl_y"]
-    cx = json_data["frames"][0]["cx"]
-    cy = json_data["frames"][0]["cy"]
+    fx = frame["fl_x"]
+    fy = frame["fl_y"]
+    cx = frame["cx"]
+    cy = frame["cy"]
 
     return np.array([[float(fx), 0, float(cx)], [0, float(fy), float(cy)], [0, 0, 1]], dtype=np.float32)
 
@@ -884,7 +913,7 @@ def find_closest_lidar_msg(target_timestamp, lidar_msgs):
     closest_msg = None
 
     for msg in lidar_msgs:
-        time_diff = abs(msg.header.stamp.to_sec() - target_timestamp)
+        time_diff = abs(msg.header.stamp.to_sec() - target_timestamp.to_sec())
         if time_diff < min_diff:
             min_diff = time_diff
             closest_msg = msg
@@ -961,13 +990,20 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Extract rectified depth maps from wavemap maps at given sensor poses."
     )
+    BAG_TAG = "*dlio.bag"  # "*dlio.bag" for dlio hesai_undist
+    WORLD_FRAME = "odom"
+    IN_FILE_PATH = "alphasense_front_left"
+    use_tf_static_lidar_to_cam = False
+    fixed_time_offset_in_ns = 0
+    methods = ["interpolate_linear"]  # , "interpolate_linear", "interpolate_leg_odom"]
+    MISSION_NAME = "2024-11-14-13-45-37"  # GRI-1: 2024-11-04-10-57-34, HEAP-1: 2024-11-14-13-45-37
+
     parser.add_argument(
         "--json_file",
         type=str,
-        default="/tmp_disk/2024-11-14-13-45-37_nerfstudio/2024-11-14-13-45-37_nerfstudio/transforms.json",  # 2024-11-04-10-57-34
+        default=f"/tmp_disk/{MISSION_NAME}_nerfstudio/{MISSION_NAME}_nerfstudio/transforms.json",
         help="Path to the nerfstudio file (.json)",
     )
-
     parser.add_argument(
         "--output_key",
         type=str,
@@ -977,14 +1013,10 @@ if __name__ == "__main__":
     parser.add_argument(
         "--lidar_topic",
         type=str,
-        default="/boxi/dlio/hesai_deskewed",  # "/boxi/dlio/hesai_deskewed",
+        default="/boxi/dlio/hesai_deskewed",  # "/boxi/dlio/hesai_deskewed" /boxi/hesai/points_undistorted
         help="LiDAR topic name in the bag file",
     )
-    WORLD_FRAME = "odom"
-    IN_FILE_PATH = "alphasense_left"
-    fixed_time_offset_in_ns = 0
-    # 160_000_000 # 160 ms offset of alphasense_right
-    # Process cameras (-60_000_000 ms was good for GRD) -65_000_000 good for heap front
+
     args = parser.parse_args()
 
     # Initialize TF transformer
@@ -996,52 +1028,43 @@ if __name__ == "__main__":
 
     json_data["frames"] = [f for f in json_data["frames"] if IN_FILE_PATH in f["file_path"]]
     # Extract mission name and set up output folder
-    mission_name = Path(args.json_file).parent.name.split("_nerfstudio")[0]
     folder_path = (
-        Path("/data/GrandTour/nerfstudio_meshing") / args.output_key / (mission_name + "_nerfstudio") / args.output_key
+        Path("/data/GrandTour/nerfstudio_meshing") / args.output_key / (MISSION_NAME + "_nerfstudio") / args.output_key
     )
     os.system(f"rm -rf {folder_path}")
 
-    saver = Saver(folder_path)
-    camera_intrinsics = get_camera_intrinsics(json_data)
+    saver = Saver(folder_path, MISSION_NAME)
 
     print("Loading LiDAR messages...")
     lidar_msgs = []
-    with rosbag.Bag(get_bag("*dlio.bag")) as lidar_bag:
+    with rosbag.Bag(get_bag(BAG_TAG)) as lidar_bag:
         for topic, msg, t in lidar_bag.read_messages(topics=[args.lidar_topic]):
             lidar_msgs.append(msg)
     print(f"Loaded {len(lidar_msgs)} LiDAR messages")
 
     # Remove skipping the first 50 frames - due to mission LIO information
-    for j, frame in enumerate(json_data["frames"][10:]):
+    for j, frame in enumerate(json_data["frames"][:]):
         image_width = int(frame["w"])
         image_height = int(frame["h"])
 
-        for m in ["simple", "interpolate_leg_odom", "interpolate_linear"]:
+        for m in methods:
             print(f"Using method: {m}")
-
-            # if True: #for fixed_time_offset_in_ns in range(-160_000_000, 50_000_000, 20_000_000):
             start = time.time()
 
             file_path = frame["file_path"]
-            timestamp = convert_timestamp_to_float(frame["timestamp"])
             tim = rospy.Time()
             tim.secs = int(frame["timestamp"].split("_")[0])
             tim.nsecs = int(frame["timestamp"].split("_")[1]) + fixed_time_offset_in_ns
 
-            print(f"Processing frame {j}: {file_path}, timestamp: {timestamp}")
+            print(f"Processing frame {j}: {file_path}, timestamp: {tim}")
 
             camera_frame_id = "_".join(frame["file_path"].split("/")[2].split("_")[:-1])
+            camera_intrinsics = get_camera_intrinsics(frame)
+            print(frame)
 
-            trans, quat_xyzw = tf_transformer.lookupTransform(
-                WORLD_FRAME, camera_frame_id, tim, method=m, world_frame=WORLD_FRAME
+            camera_to_world = tf_transformer.lookupTransform(
+                WORLD_FRAME, camera_frame_id, tim, method=m, world_frame=WORLD_FRAME, return_se3=True
             )
-
-            rot = R.from_quat(quat_xyzw).as_dcm()
-            camera_to_world = np.eye(4)
-            camera_to_world[:3, :3] = rot
-            camera_to_world[:3, 3] = trans
-
             # If you want to use the original transform matrix from nerfstudio, uncomment the following lines
             # camera_to_world = np.array(frame["transform_matrix"])
             # def gl_to_ros_transform(transform_gl):
@@ -1052,7 +1075,7 @@ if __name__ == "__main__":
             # camera_to_world = gl_to_ros_transform(camera_to_world)
 
             # Find closest LiDAR message
-            closest_lidar_msg = find_closest_lidar_msg(timestamp, lidar_msgs)
+            closest_lidar_msg = find_closest_lidar_msg(tim, lidar_msgs)
 
             if closest_lidar_msg is None:
                 print(f"No LiDAR data found for frame {j}")
@@ -1063,23 +1086,28 @@ if __name__ == "__main__":
             lidar_timestamp = closest_lidar_msg.header.stamp.to_sec()
 
             # Get transform from LiDAR to world
-            t_lidar_world, q_lidar_world = tf_transformer.lookupTransform(
-                WORLD_FRAME, lidar_frame_id, time=closest_lidar_msg.header.stamp, world_frame=WORLD_FRAME
+            lidar_to_world = tf_transformer.lookupTransform(
+                WORLD_FRAME,
+                lidar_frame_id,
+                time=closest_lidar_msg.header.stamp,
+                method=m,
+                world_frame=WORLD_FRAME,
+                return_se3=True,
             )
-
-            # Convert LiDAR to world transform to matrix
-            translation = np.array(t_lidar_world)  # Translation vector
-            rotation = R.from_quat(q_lidar_world).as_dcm()  # Convert quaternion to rotation matrix
-
-            # Construct the transformation matrix
-            lidar_to_world = np.eye(4)  # Initialize a 4x4 identity matrix
-            lidar_to_world[:3, :3] = rotation  # Set the rotation part
-            lidar_to_world[:3, 3] = translation  # Set the translation part
 
             # Camera to world transform (from nerfstudio JSON)
             world_to_camera = np.linalg.inv(camera_to_world)
-
             lidar_to_camera = world_to_camera @ lidar_to_world
+
+            if use_tf_static_lidar_to_cam:
+                lidar_to_camera = tf_transformer.lookupTransform(
+                    camera_frame_id,
+                    lidar_frame_id,
+                    time=closest_lidar_msg.header.stamp,
+                    method="simple",
+                    world_frame=WORLD_FRAME,
+                    return_se3=True,
+                )
 
             # Convert PointCloud2 to numpy array
             lidar_points = pointcloud2_to_xyz(closest_lidar_msg)
@@ -1104,6 +1132,8 @@ if __name__ == "__main__":
 
             # Save depth image
             tag = f"{m}__{int(fixed_time_offset_in_ns/1_000_000):+03d}ms"
+            if use_tf_static_lidar_to_cam:
+                tag += "__uses_static_tf_lidar_to_cam"
             saver.save_png(depth_image, camera_name, idx_image, tag)
 
             elapsed = time.time() - start
