@@ -56,6 +56,7 @@ RUN --mount=type=ssh git clone git@github.com:ros-drivers/gps_umd.git gps_umd
 RUN --mount=type=ssh git clone git@github.com:ANYbotics/signal_logger.git signal_logger
 RUN --mount=type=ssh git clone --recurse-submodules git@github.com:leggedrobotics/grand_tour_box.git grand_tour_box
 
+RUN apt-get update && apt-get install -y cmake
 RUN . /opt/ros/$ROS_DISTRO/setup.sh && catkin build \
     anymal_msgs \
     gps_common \
@@ -67,10 +68,8 @@ RUN . /opt/ros/$ROS_DISTRO/setup.sh && catkin build \
 RUN mkdir /tmp_disk
 
 # RVL compression extension
-RUN pip3 install nanobind scikit-build-core cmake
+RUN pip3 install nanobind scikit-build-core
 RUN apt install libopencv-dev -y
-
-
 RUN /bin/bash -c "cd /catkin_ws/src/grand_tour_box/box_utils/box_converter/huggingface-dataset-conversion/rvl_compression/compressed_depth; source /catkin_ws/devel/setup.bash; pip install . --no-build-isolation --verbose"
 
 WORKDIR /catkin_ws/src
