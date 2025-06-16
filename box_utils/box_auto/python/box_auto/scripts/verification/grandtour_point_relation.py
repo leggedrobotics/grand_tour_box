@@ -87,6 +87,17 @@ def run_eval(test_name, reference_file, estimated_file, params, output_path, fil
         print(
             f"\033[91mReference trajectory is not valid. Not throwing error but warning the user. Check this. : {ref_details}\033[0m"
         )
+    else:
+        if filter_config.get("ap20_velocity_rejection", False):
+            outliers_indices_to_remove = np.where(
+                traj_reference.speeds > filter_config.get("ap20_velocity_rejection_threshold", 3.0)
+            )[0]
+            if len(outliers_indices_to_remove) != 0:
+                print(f"\033[93mRemoving {len(outliers_indices_to_remove)} outlier points with speeds > 3.0 m/s\033[0m")
+                indices_to_keep_from_outliers = np.setdiff1d(
+                    np.arange(len(traj_reference.positions_xyz)), outliers_indices_to_remove
+                )
+                traj_reference.reduce_to_ids(indices_to_keep_from_outliers)
 
     if not est_valid:
 
@@ -185,6 +196,12 @@ def run_eval(test_name, reference_file, estimated_file, params, output_path, fil
 
         # Reduce the trajectory to the indices to keep
         traj_reference.reduce_to_ids(indices_to_keep)
+
+    # Save the filtered reference trajectory
+    reference_file_base = reference_file.replace(".tum", "")
+    file_interface.write_tum_trajectory_file(
+        os.path.join(output_path, reference_file_base + "_filtered.tum"), traj_reference, False
+    )
 
     # Check if reference or estimated has more elements
     if len(traj_reference.timestamps) <= len(traj_estimated.timestamps):
@@ -415,6 +432,8 @@ def process_directory(base_path, output_dir, config, disable_viz, prefix):
         "enable_no_motion_removal": config["remove_until_motion"],
         "distance_threshold": config["distance_threshold"],
         "ap20_peak_rejection": config["ap20_peak_rejection"],
+        "ap20_velocity_rejection": config["ap20_velocity_rejection"],
+        "ap20_velocity_rejection_threshold": config["ap20_velocity_rejection_threshold"],
         "ap20_peak_rejection_threshold": config["ap20_peak_rejection_threshold"],
         "ap20_peak_rejection_trailing_window": config["ap20_peak_rejection_trailing_window"],
         "project_to_plane": config["project_to_plane"],

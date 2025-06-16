@@ -220,6 +220,14 @@ void parseRosbagToTum(const std::string& bagPath, const std::string& topicName, 
   }
 
   rosbag::View view(bag, rosbag::TopicQuery(topicName));
+  if (view.size() == 0) {
+    std::string errorMsg = "No messages found for topic: " + topicName + " in bag: " + bagPath;
+    ROS_ERROR_STREAM(errorMsg);
+    bag.close();
+    tumFile.close();
+    possibleCovarianceFile.close();
+    throw std::runtime_error(errorMsg);
+  }
   for (const rosbag::MessageInstance& msg : view) {
     if (msg.getDataType() == "nav_msgs/Odometry") {
       nav_msgs::Odometry::ConstPtr odometry = msg.instantiate<nav_msgs::Odometry>();

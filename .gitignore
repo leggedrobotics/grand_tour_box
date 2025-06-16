@@ -3,6 +3,7 @@
 *.pdf
 *.PDF
 *.log
+*.zip
 *.urdf
 *.mcap
 *_pb2_grpc.py

@@ -14,7 +14,7 @@ def upload_simple(project_name, mission_name, path, delete=True):
                 print("File already uploaded - suc")
                 return True
             elif res[Path(path)] == "hash mismatch":
-                print("hash mismatch")
+                print("hash mismatch, deleting and re-uploading")
                 fileinfo = [
                     f
                     for f in kleinkram.list_files(project_names=[project_name], mission_names=[mission_name])

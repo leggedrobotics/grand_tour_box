@@ -9,7 +9,7 @@ import rosbag
 import kleinkram
 import yaml
 
-WS = os.environ.get("WS", "/home/catkin_ws")
+WS = os.environ.get("WS", f"/home/{os.getlogin()}/catkin_ws")
 PRE = f"source /opt/ros/noetic/setup.bash; source {WS}/devel/setup.bash; "
 MISSION_DATA = os.environ.get("MISSION_DATA", "/tmp_disk")
 BOX_AUTO_SCRIPTS_DIR = str(Path(__file__).parent.parent / "scripts")
