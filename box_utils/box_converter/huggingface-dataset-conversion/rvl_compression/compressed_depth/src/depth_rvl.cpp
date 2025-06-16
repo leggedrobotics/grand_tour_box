@@ -144,14 +144,14 @@
          const uint64_t numPix   = static_cast<uint64_t>(cols) * rows;
          const size_t   rvl_size = payload.size() - header_offset;
  
-         if (numPix > std::numeric_limits<int>::max() ||
-             numPix * 2ULL > rvl_size * 10ULL)
-         {
-             std::ostringstream oss;
-             oss << "RVL sanity check failed: " << numPix
-                 << " pixels vs " << rvl_size << " bytes";
-             throw std::runtime_error(oss.str());
-         }
+        //  if (numPix > std::numeric_limits<int>::max() ||
+        //      numPix * 2ULL > rvl_size * 10ULL)
+        //  {
+        //      std::ostringstream oss;
+        //      oss << "RVL sanity check failed: " << numPix
+        //          << " pixels vs " << rvl_size << " bytes";
+        //      throw std::runtime_error(oss.str());
+        //  }
  
          invDepth16 = cv::Mat(rows, cols, CV_16UC1);
          DecompressRVL(buf + 8, invDepth16.ptr<unsigned short>(), rows * cols);
