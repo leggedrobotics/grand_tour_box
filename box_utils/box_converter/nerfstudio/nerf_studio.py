@@ -135,7 +135,7 @@ class NerfstudioConverter:
 
         # Get transformation
         trans, quat_xyzw = self.tf_listener.lookupTransform(
-            self.config["base_frame"], img_msg.header.frame_id, img_msg.header.stamp
+            self.config["base_frame"], img_msg.header.frame_id, img_msg.header.stamp, method="interpolate_linear"
         )
 
         if trans is None or quat_xyzw is None:
@@ -269,7 +269,7 @@ class NerfstudioConverter:
 
 def main():
     parser = argparse.ArgumentParser(description="Process ROS bags and extract camera images and transformations.")
-    PATH = Path(WS) / "src/grand_tour_box/box_utils/box_converter/nerfstudio/cfg/grand_tour_all_cameras.yaml"
+    PATH = Path(WS) / "src/grand_tour_box/box_utils/box_converter/nerfstudio/cfg/grand_tour_release.yaml"
     parser.add_argument("--mission_name", type=str, default="2024-10-01-11-29-55", help="Mission Folder")
     parser.add_argument("--mission_uuid", type=str, default="", help="Mission UUID")
     parser.add_argument("--config_file", type=str, default=PATH, help="Path to the configuration YAML file")
