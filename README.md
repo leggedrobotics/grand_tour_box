@@ -34,7 +34,7 @@ Citation
 If you use this software or dataset, please cite our work:
 
 ```
-@INPROCEEDINGS{Tuna-Frey-RSS-25,
+@INPROCEEDINGS{Frey-Tuna-Fu-RSS-25,
     AUTHOR    = {Jonas Frey AND Turcan Tuna AND Lanke Frank Tarimo Fu AND Cedric Weibel AND Katharine Patterson AND Benjamin Krummenacher AND Matthias Müller AND Julian Nubert AND Maurice Fallon AND Cesar Cadena AND Marco Hutter},
     TITLE     = {{Boxi: Design Decisions in the Context of Algorithmic Performance for Robotics}},
     BOOKTITLE = {Proceedings of Robotics: Science and Systems},
