@@ -28,7 +28,7 @@ cameras:
 nerfstudio:
   blur_threshold: 0 # 80 is pretty good
   create_mask_based_on_semantics: False
-  store: True
+  store: False
 
 wavemap:
   log_odds_occupancy_threshold: 0.1

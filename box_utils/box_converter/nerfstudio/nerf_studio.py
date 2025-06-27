@@ -10,13 +10,37 @@ import rosbag
 from cv_bridge import CvBridge
 from tf_bag import BagTfTransformer
 from sensor_msgs.msg import CameraInfo, CompressedImage
-import tf.transformations
-from torchvision.io.image import read_image
-from torchvision.models.segmentation import fcn_resnet50, FCN_ResNet50_Weights
-from box_auto.utils import MISSION_DATA, get_bag, WS, ARTIFACT_FOLDER
 import os
-from box_auto.utils import get_uuid_mapping
 import kleinkram
+import torch
+from transformers import Mask2FormerImageProcessor, Mask2FormerForUniversalSegmentation
+from PIL import Image
+
+try:
+    from box_auto.utils import MISSION_DATA, WS, ARTIFACT_FOLDER
+    from box_auto.utils import get_uuid_mapping, get_bag
+
+    USE_KLEINKRAM = True
+
+except:
+    print("Failed to import box_auto.utils, using local paths")
+    print("Please ensure that the you have the files correctly downloaded")
+    MISSION_DATA = Path("/data")
+    WS = Path(__file__).parent.parent.parent.parent.parent
+    ARTIFACT_FOLDER = Path("/out")
+    USE_KLEINKRAM = False
+
+    def get_bag(pattern, directory, try_until_suc=False):
+        """
+        Get the first bag file matching the pattern in the specified directory.
+        If try_until_suc is True, it will keep trying until a bag file is found.
+        """
+        paths = [path for path in Path(directory).rglob(pattern)]
+        if len(paths) == 1:
+            return str(paths[0])
+        else:
+            print(f"Found {len(paths)} bag files matching {pattern} in {directory}")
+            raise FileNotFoundError(f"No bag file found matching {pattern} in {directory}. Found: {paths}")
 
 
 def undistort_image(image, camera_info, new_camera_info=None):
@@ -44,16 +68,19 @@ def undistort_image(image, camera_info, new_camera_info=None):
         new_camera_info.header = camera_info.header
         new_camera_matrix = np.array(new_camera_info.K).reshape((3, 3))
 
-    # Initialize undistortion map
     map1, map2 = cv2.fisheye.initUndistortRectifyMap(K, D, np.eye(3), new_camera_matrix, (w, h), cv2.CV_16SC2)
-
-    # Apply undistortion
     undistorted_image = cv2.remap(image, map1, map2, interpolation=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
-
     return undistorted_image, new_camera_info
 
 
-class ImageSaver:
+def ros_to_gl_transform(transform_ros):
+    cv_to_gl = np.eye(4)
+    cv_to_gl[1:3, 1:3] = np.array([[-1, 0], [0, -1]])
+    transform_gl = cv_to_gl @ transform_ros @ np.linalg.inv(cv_to_gl)
+    return transform_gl
+
+
+class NerfstudioConverter:
     def __init__(self, camera_infos, camera_keys, tf_listener, config, mission_data, mission_name, head):
         self.tf_listener = tf_listener
         self.camera_infos = camera_infos
@@ -66,10 +93,7 @@ class ImageSaver:
 
         self.output_folder = Path(mission_data) / f"{mission_name}_nerfstudio"
         self.output_folder.mkdir(parents=True, exist_ok=True)
-        if self.config["wavemap"]["ground"]:
-            self.frames_json_file = self.output_folder / "transforms_ground.json"
-        else:
-            self.frames_json_file = self.output_folder / "transforms.json"
+        self.frames_json_file = self.output_folder / "transforms.json"
 
         self.images_folder = self.output_folder / "rgb"
         self.images_folder.mkdir(parents=True, exist_ok=True)
@@ -78,29 +102,24 @@ class ImageSaver:
         self.image_counters = {key: 0 for key in camera_keys.keys()}
         self.image_last_stored = {key: 0 for key in camera_keys.keys()}
         self.bridge = CvBridge()
-
         self.last_trans = None
 
         if self.config["nerfstudio"]["create_mask_based_on_semantics"]:
-            # Step 1: Initialize model with the best available weights
-            self.weights = FCN_ResNet50_Weights.DEFAULT
-            self.model = fcn_resnet50(weights=self.weights)
+            # Generate masks using Mask2Former for humans
+            self.processor = Mask2FormerImageProcessor.from_pretrained("facebook/mask2former-swin-large-coco-panoptic")
+            self.model = Mask2FormerForUniversalSegmentation.from_pretrained(
+                "facebook/mask2former-swin-large-coco-panoptic"
+            )
+            self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            self.model.to(self.device)
             self.model.eval()
-            self.preprocess = self.weights.transforms()
-
             self.mask_folder = self.output_folder / "mask"
             self.mask_folder.mkdir(parents=True, exist_ok=True)
 
     def reset(self):
         self.last_trans = None
 
-    def ros_to_gl_transform(self, transform_ros):
-        cv_to_gl = np.eye(4)
-        cv_to_gl[1:3, 1:3] = np.array([[-1, 0], [0, -1]])
-        transform_gl = cv_to_gl @ transform_ros @ np.linalg.inv(cv_to_gl)
-        return transform_gl
-
-    def store_frame(self, img_msg, topic):
+    def process_frame(self, img_msg, topic):
         if self.image_counters[topic] >= self.config["num_images_per_topic"] or (
             self.head != -1 and self.image_counters[topic] >= self.head
         ):
@@ -132,20 +151,12 @@ class ImageSaver:
 
         self.last_trans = trans
 
-        print(img_msg.header.seq)
-
-        if self.config["wavemap"]["ground"]:
-            rot_so3 = tf.transformations.quaternion_matrix(quat_xyzw)[:3, :3]
-            yaw = np.arctan2(rot_so3[1, 0], rot_so3[0, 0])
-            quat_xyzw = (R.from_euler("z", yaw, degrees=True) * R.from_euler("y", -160, degrees=True)).as_quat()
-            trans[2] += 1.2
-
         self.image_counters[topic] += 1
-        print(topic, self.image_counters[topic])
         self.image_last_stored[topic] = img_msg.header.stamp.to_sec()
 
         image_filename = f"{camera_key}_{img_msg.header.seq:05d}.png"
         image_path = self.images_folder / image_filename
+        print(topic, self.image_counters[topic], image_path)
 
         if (
             self.config["nerfstudio"]["store"]
@@ -180,28 +191,34 @@ class ImageSaver:
             cv2.imwrite(str(image_path), cv_image)
 
             if self.config["nerfstudio"]["create_mask_based_on_semantics"]:
-                # Pretty bad implementaion
-                img = read_image(str(image_path))
-                batch = self.preprocess(img).unsqueeze(0)
-                prediction = self.model(batch)["out"]
-                normalized_masks = prediction.softmax(dim=1)
-                class_to_idx = {cls: idx for (idx, cls) in enumerate(self.weights.meta["categories"])}
-                mask = normalized_masks[0, class_to_idx["person"]]
-                humans = mask > 0.5
-                output = humans.cpu().numpy()
+                mask_file_path = str(image_path).replace("/rgb/", "/mask/")
+                image = cv2.imread(str(image_path))
+                image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+                pil_image = Image.fromarray(image_rgb)
 
-                # Resize the output mask to the original image size
-                _, original_height, original_width = img.shape
-                resized_output = cv2.resize(output.astype(np.float32), (original_width, original_height))
+                # Process image with Mask2Former
+                inputs = self.processor(images=pil_image, return_tensors="pt")
+                inputs = {k: v.to(self.device) for k, v in inputs.items()}
 
-                # Invert the mask: 1 where there is no human, 0 where there is a human
-                inverted_mask = 1 - resized_output
+                with torch.no_grad():
+                    outputs = self.model(**inputs)
 
-                # Scale the mask to 0-255 range and convert to uint8
-                mask_image = (inverted_mask * 255).astype(np.uint8)
+                # Post-process the outputs to get segmentation maps
+                predicted_segmentation_maps = self.processor.post_process_semantic_segmentation(
+                    outputs, target_sizes=[pil_image.size[::-1]]
+                )
+                segmentation_map = predicted_segmentation_maps[0]
+                human_mask = (segmentation_map == 0).cpu().numpy()  # Person class is 0
+                binary_mask = human_mask.astype(np.uint8) * 255
 
-                # Save the mask image
-                cv2.imwrite(str(image_path).replace("/rgb/", "/mask/"), mask_image)
+                # Save the binary mask as PNG
+                Image.fromarray(binary_mask, mode="L").save(mask_file_path)
+
+                # Logging percentage human pixels
+                human_pixel_count = np.sum(human_mask)
+                total_pixels = human_mask.size
+                coverage_percent = (human_pixel_count / total_pixels) * 100
+                print(f"Human coverage in frame: {coverage_percent:.2f}%")
 
         else:
             if "_rect" not in topic:
@@ -220,11 +237,13 @@ class ImageSaver:
         transform_matrix[:3, 3] = trans
 
         # Convert to OpenGL convention
-        transform_matrix = self.ros_to_gl_transform(transform_matrix)
+        transform_matrix = ros_to_gl_transform(transform_matrix)
 
         # Add frame data
         frame_data = {
             "file_path": f"./rgb/{image_filename}",
+            "depth_file_path": f"./depth/{image_filename}",
+            "mask_file_path": f"./mask/{image_filename}",
             "transform_matrix": transform_matrix.tolist(),
             "fl_x": str(camera_info.K[0]),
             "fl_y": str(camera_info.K[4]),
@@ -236,6 +255,7 @@ class ImageSaver:
             "k2": str(camera_info.D[1]),
             "p1": str(camera_info.D[2]),
             "p2": str(camera_info.D[3]),
+            "timestamp": str(img_msg.header.stamp.secs) + "_" + str(img_msg.header.stamp.nsecs),
         }
         if self.config["nerfstudio"]["create_mask_based_on_semantics"]:
             frame_data["mask_path"] = f"./mask/{image_filename}"
@@ -249,13 +269,13 @@ class ImageSaver:
 
 def main():
     parser = argparse.ArgumentParser(description="Process ROS bags and extract camera images and transformations.")
-
-    PATH = Path(WS) / "src/grand_tour_box/box_utils/box_converter/nerfstudio/cfg/grand_tour_release.yaml"
+    PATH = Path(WS) / "src/grand_tour_box/box_utils/box_converter/nerfstudio/cfg/grand_tour_all_cameras.yaml"
     parser.add_argument("--mission_name", type=str, default="2024-10-01-11-29-55", help="Mission Folder")
     parser.add_argument("--mission_uuid", type=str, default="", help="Mission UUID")
     parser.add_argument("--config_file", type=str, default=PATH, help="Path to the configuration YAML file")
     parser.add_argument("--cluster", default=True, help="Flag to indicate if on or off")
     parser.add_argument("--head", type=int, default=-1, help="Number of images")
+
     args = parser.parse_args()
 
     if args.cluster:
@@ -273,12 +293,7 @@ def main():
         os.environ["KLEINKRAM_ACTIVE"] = "ACTIVE"
         os.environ["MISSION_UUID"] = uuid_release
         print(os.environ["MISSION_UUID"])
-        res = kleinkram.list_files(mission_ids=[uuid_release])
-        if len(res) != 34:
-            print("Skip processing mission - not released yet", MISSION_NAME, len(res))
-            exit(8)
         print("Processing of mission started", MISSION_NAME)
-
         data_folder = Path(MISSION_DATA) / f"{MISSION_NAME}_nerfstudio"
 
     else:
@@ -311,8 +326,10 @@ def main():
     # Initialize TF listener
     tf_listener = BagTfTransformer(tf_bag_path)
 
-    # Initialize ImageSaver
-    image_saver = ImageSaver(camera_infos, camera_keys, tf_listener, config, data_folder, MISSION_NAME, args.head)
+    # Initialize NerfstudioConverter
+    converter = NerfstudioConverter(
+        camera_infos, camera_keys, tf_listener, config, data_folder, MISSION_NAME, args.head
+    )
 
     # Process image messages
     for _, camera in enumerate(config["cameras"]):
@@ -323,22 +340,22 @@ def main():
             for topic, msg, t in bag.read_messages(
                 topics=[camera["image_topic"]], start_time=rospy.Time(start), end_time=rospy.Time(end)
             ):
-                suc = image_saver.store_frame(msg, topic)
+                suc = converter.process_frame(msg, topic)
                 if not suc:
                     print(f"Finished processing {camera['name']}")
                     break
-            image_saver.reset()
+            converter.reset()
 
     # Save JSON file
-    image_saver.save_json()
+    converter.save_json()
 
     # TAR files for cluster
     if args.cluster:
-        out_dir = Path(image_saver.output_folder).stem
-        parent_folder = Path(image_saver.output_folder).parent
+        out_dir = Path(converter.output_folder).stem
+        parent_folder = Path(converter.output_folder).parent
         tar_file = Path(ARTIFACT_FOLDER) / "nerfstudio_scratch" / f"{MISSION_NAME}_nerfstudio.tar"
         tar_file.parent.mkdir(parents=True, exist_ok=True)
-        print("Creating tar file", tar_file)
+        print("Creating tar file", tar_file, " from ", out_dir, " in ", parent_folder)
         os.system(f"cd {parent_folder}; tar -cvf {tar_file} {out_dir}")
 
     # shutil.rmtree(data_folder, ignore_errors=True)
