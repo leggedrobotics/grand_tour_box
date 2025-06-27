@@ -34,7 +34,7 @@ Citation
 If you use this software or dataset, please cite our work:
 
 ```
-@INPROCEEDINGS{Tuna-Frey-RSS-25,
+@INPROCEEDINGS{Tuna-Frey-Fu-RSS-25,
     AUTHOR    = {Jonas Frey AND Turcan Tuna AND Lanke Frank Tarimo Fu AND Cedric Weibel AND Katharine Patterson AND Benjamin Krummenacher AND Matthias Müller AND Julian Nubert AND Maurice Fallon AND Cesar Cadena AND Marco Hutter},
     TITLE     = {{Boxi: Design Decisions in the Context of Algorithmic Performance for Robotics}},
     BOOKTITLE = {Proceedings of Robotics: Science and Systems},
@@ -43,6 +43,8 @@ If you use this software or dataset, please cite our work:
     MONTH     = {June}
 }
 ```
+
+*shared first author: Tuna, Frey, Fu. 
 
 <img align="right" width="60" height="60" src="https://github.com/leggedrobotics/grand_tour_box/blob/main/box_documentation/images/icon.png" alt="ANYmal">
 <h2 id="contributing">
