@@ -15,6 +15,11 @@ import kleinkram
 import torch
 from transformers import Mask2FormerImageProcessor, Mask2FormerForUniversalSegmentation
 from PIL import Image
+import sensor_msgs.point_cloud2 as pc2
+
+# Required for visualization of depth
+from scipy.ndimage import grey_dilation
+import matplotlib.pyplot as plt
 
 try:
     from box_auto.utils import MISSION_DATA, WS, ARTIFACT_FOLDER
@@ -80,8 +85,219 @@ def ros_to_gl_transform(transform_ros):
     return transform_gl
 
 
+def gl_to_ros_transform(transform_gl):
+    cv_to_gl = np.eye(4)
+    cv_to_gl[1:3, 1:3] = np.array([[-1, 0], [0, -1]])
+    transform_ros = np.linalg.inv(cv_to_gl) @ transform_gl @ cv_to_gl
+    return transform_ros
+
+
+class DepthProcessor:
+    def __init__(self, config, tf_listener, output_folder, bag_folder):
+        self.debug = True
+        self.config = config
+        self.sub_key = "depth"
+        self.lidar_topic = config["nerfstudio"]["depth_processor"]["lidar_topic"]
+        lidar_bag_path = get_bag(
+            config["nerfstudio"]["depth_processor"]["bag_pattern_lidar"], directory=bag_folder, try_until_suc=False
+        )
+
+        self.lidar_msgs = []
+        with rosbag.Bag(lidar_bag_path) as lidar_bag:
+            for _, msg, _ in lidar_bag.read_messages(topics=[self.lidar_topic]):
+                self.lidar_msgs.append(msg)
+
+        self.tf_listener = tf_listener
+        self.depth_folder = output_folder / self.sub_key
+        self.depth_folder.mkdir(parents=True, exist_ok=True)
+        self.output_folder = output_folder
+
+    def process(self, frame):
+        camera_to_world = gl_to_ros_transform(np.array(frame["transform_matrix"]))
+        tim = rospy.Time()
+        tim.secs = int(frame["timestamp"].split("_")[0])
+        tim.nsecs = int(frame["timestamp"].split("_")[1])
+
+        closest_lidar_msg = self.find_closest_lidar_msg(tim, self.lidar_msgs)
+        if closest_lidar_msg is None:
+            print("No LiDAR data found")
+            return False
+
+        # Get LiDAR frame ID
+        lidar_frame_id = closest_lidar_msg.header.frame_id
+
+        # Get transform from LiDAR to world
+        lidar_to_world = self.tf_listener.lookupTransform(
+            self.config["tf_config"]["world_frame"],
+            lidar_frame_id,
+            time=closest_lidar_msg.header.stamp,
+            method=self.config["tf_config"]["tf_lookup_method"],
+            odom_world=self.config["tf_config"]["odom_world"],
+            odom_body=self.config["tf_config"]["odom_body"],
+            return_se3=True,
+        )
+
+        # Camera to world transform (from nerfstudio JSON)
+        world_to_camera = np.linalg.inv(camera_to_world)
+        lidar_to_camera = world_to_camera @ lidar_to_world
+        # Convert PointCloud2 to numpy array
+        lidar_points = self.pointcloud2_to_xyz(closest_lidar_msg)
+        if len(lidar_points) == 0:
+            print("No valid points in LiDAR message for frame")
+            return False
+
+        camera_intrinsics = self.get_camera_intrinsics(frame)
+
+        # TODO: Very slow implementation
+        # Project LiDAR points onto camera image
+        depth_image = self.project_lidar_to_camera(
+            lidar_points, camera_intrinsics, lidar_to_camera, int(frame["w"]), int(frame["h"])
+        )
+
+        invalid = depth_image == -1
+        depth_image = depth_image.clip(0, (2**16 - 1) / 1000)
+        depth_image = (depth_image * 1000).astype(np.uint16)  # Scale and convert to uint16
+        depth_image[invalid] = 0
+
+        # Save depth image
+        frame["depth_file_path"] = frame["file_path"].replace("rgb", self.sub_key).replace(".jpg", ".png")
+        Image.fromarray(depth_image).save(str(self.output_folder / frame["depth_file_path"]))
+
+        if self.debug:
+            self.overlay_depth_on_rgb(frame)
+
+        return frame
+
+    def overlay_depth_on_rgb(self, frame):
+        rgb_image = np.array(Image.open(self.output_folder / frame["file_path"]))
+        depth_image = np.array(Image.open(self.output_folder / frame["depth_file_path"]))
+        # Normalize depth image for visualization - max range 10m
+        depth_normalized = (depth_image.clip(0, 10000) / 10000 * 255).astype(np.uint8)
+
+        # Dilate the depth image to increase pixel width to 3
+        depth_normalized = grey_dilation(depth_normalized, size=(3, 3))
+
+        # rgb_image H,W,3
+        alpha = 0
+
+        cmap = plt.get_cmap("turbo").reversed()
+        color_depth = cmap(depth_normalized)  # H,W,4
+
+        # Set alpha to 0 where depth is 0
+        color_depth[..., 3] = np.where(depth_normalized == 0, 0, color_depth[..., 3])
+
+        # Convert color_depth from float [0,1] to uint8 [0,255] and remove alpha channel
+        color_depth_rgb = (color_depth[..., :3] * 255).astype(np.uint8)
+
+        # Use alpha channel for blending: where alpha==0, keep rgb_image pixel
+        alpha_mask = color_depth[..., 3][..., None]
+        if len(rgb_image.shape) == 2:
+            overlay = (alpha * rgb_image[:, :, None].repeat(3, axis=2) + (1 - alpha) * color_depth_rgb).astype(np.uint8)
+            overlay = np.where(alpha_mask == 0, rgb_image[:, :, None].repeat(3, axis=2), overlay)
+        else:
+            overlay = (alpha * rgb_image + (1 - alpha) * color_depth_rgb).astype(np.uint8)
+            overlay = np.where(alpha_mask == 0, rgb_image, overlay)
+
+        # Convert overlay to BGR for cv2 if needed
+        overlay_bgr = cv2.cvtColor(overlay, cv2.COLOR_RGB2BGR)
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        font_scale = 1.0
+        font_thickness = 2
+        tag = "Depth Overlay"
+        text_size, _ = cv2.getTextSize(tag, font, font_scale, font_thickness)
+        text_x = overlay_bgr.shape[1] - text_size[0] - 10
+        text_y = text_size[1] + 10
+        cv2.putText(
+            overlay_bgr,
+            tag,
+            (text_x, text_y),
+            font,
+            font_scale,
+            (255, 255, 255),
+            font_thickness,
+            cv2.LINE_AA,
+        )
+        # Save again with tag
+        output_path = str(self.output_folder / frame["depth_file_path"]).replace(".png", "_overlay.png")
+        cv2.imwrite(output_path, overlay_bgr)
+
+    def project_lidar_to_camera(
+        self, lidar_points, camera_intrinsics, lidar_to_camera_transform, image_width, image_height
+    ):
+        """Project LiDAR points onto camera image plane"""
+        # Transform points from LiDAR frame to camera frame
+        lidar_points_homo = np.hstack([lidar_points, np.ones((lidar_points.shape[0], 1))])
+        camera_points_homo = (lidar_to_camera_transform @ lidar_points_homo.T).T
+        camera_points = camera_points_homo[:, :3]
+
+        # Filter points behind the camera
+        valid_points = camera_points[:, 2] > 0
+        camera_points = camera_points[valid_points]
+
+        if len(camera_points) == 0:
+            return np.full((image_height, image_width), -1, dtype=np.float32)
+
+        # Project to image plane
+        image_points = (camera_intrinsics @ camera_points.T).T
+        image_points[:, 0] /= image_points[:, 2]
+        image_points[:, 1] /= image_points[:, 2]
+
+        # Filter points within image bounds
+        valid_pixels = (
+            (image_points[:, 0] >= 0)
+            & (image_points[:, 0] < image_width)
+            & (image_points[:, 1] >= 0)
+            & (image_points[:, 1] < image_height)
+        )
+
+        valid_image_points = image_points[valid_pixels]
+        valid_depths = camera_points[valid_pixels, 2]
+
+        # Create depth image
+        depth_image = np.full((image_height, image_width), -1, dtype=np.float32)
+
+        if len(valid_image_points) > 0:
+            pixel_coords = valid_image_points[:, :2].astype(int)
+            for i, (x, y) in enumerate(pixel_coords):
+                if 0 <= x < image_width and 0 <= y < image_height:
+                    # Use closest depth if multiple points project to same pixel
+                    if depth_image[y, x] == -1 or valid_depths[i] < depth_image[y, x]:
+                        depth_image[y, x] = valid_depths[i]
+
+        return depth_image
+
+    def pointcloud2_to_xyz(self, pointcloud_msg):
+        """Convert PointCloud2 message to numpy array of XYZ points"""
+        points = []
+        for point in pc2.read_points(pointcloud_msg, field_names=("x", "y", "z"), skip_nans=True):
+            points.append([point[0], point[1], point[2]])
+        return np.array(points)
+
+    def find_closest_lidar_msg(self, target_timestamp, lidar_msgs):
+        """Find the closest LiDAR message to the target timestamp"""
+        min_diff = float("inf")
+        closest_msg = None
+
+        for msg in lidar_msgs:
+            time_diff = abs(msg.header.stamp.to_sec() - target_timestamp.to_sec())
+            if time_diff < min_diff:
+                min_diff = time_diff
+                closest_msg = msg
+
+        return closest_msg
+
+    def get_camera_intrinsics(self, frame):
+        """Extract camera intrinsics from nerfstudio JSON"""
+        fx = frame["fl_x"]
+        fy = frame["fl_y"]
+        cx = frame["cx"]
+        cy = frame["cy"]
+
+        return np.array([[float(fx), 0, float(cx)], [0, float(fy), float(cy)], [0, 0, 1]], dtype=np.float32)
+
+
 class NerfstudioConverter:
-    def __init__(self, camera_infos, camera_keys, tf_listener, config, mission_data, mission_name, head):
+    def __init__(self, camera_infos, camera_keys, tf_listener, config, data_folder, mission_name, head):
         self.tf_listener = tf_listener
         self.camera_infos = camera_infos
         self.camera_keys = camera_keys
@@ -91,7 +307,7 @@ class NerfstudioConverter:
 
         self.taget_camera_infos = {k: None for k in camera_infos.keys()}
 
-        self.output_folder = Path(mission_data) / f"{mission_name}_nerfstudio"
+        self.output_folder = Path(data_folder) / f"{mission_name}_nerfstudio"
         self.output_folder.mkdir(parents=True, exist_ok=True)
         self.frames_json_file = self.output_folder / "transforms.json"
 
@@ -116,6 +332,9 @@ class NerfstudioConverter:
             self.mask_folder = self.output_folder / "mask"
             self.mask_folder.mkdir(parents=True, exist_ok=True)
 
+        if self.config["nerfstudio"]["create_depth_based_on_lidar"]:
+            self.depth_processor = DepthProcessor(self.config, self.tf_listener, self.output_folder, data_folder)
+
     def reset(self):
         self.last_trans = None
 
@@ -135,7 +354,12 @@ class NerfstudioConverter:
 
         # Get transformation
         trans, quat_xyzw = self.tf_listener.lookupTransform(
-            self.config["base_frame"], img_msg.header.frame_id, img_msg.header.stamp, method="interpolate_linear"
+            self.config["tf_config"]["world_frame"],
+            img_msg.header.frame_id,
+            img_msg.header.stamp,
+            method=self.config["tf_config"]["tf_lookup_method"],
+            odom_world=self.config["tf_config"]["odom_world"],
+            odom_body=self.config["tf_config"]["odom_body"],
         )
 
         if trans is None or quat_xyzw is None:
@@ -239,12 +463,14 @@ class NerfstudioConverter:
         # Convert to OpenGL convention
         transform_matrix = ros_to_gl_transform(transform_matrix)
 
+        # TODO check if these here need to be saved as strings or float and int is also good
+
         # Add frame data
         frame_data = {
             "file_path": f"./rgb/{image_filename}",
-            "depth_file_path": f"./depth/{image_filename}",
             "mask_file_path": f"./mask/{image_filename}",
             "transform_matrix": transform_matrix.tolist(),
+            "camera_frame_id": img_msg.header.frame_id,
             "fl_x": str(camera_info.K[0]),
             "fl_y": str(camera_info.K[4]),
             "cx": str(camera_info.K[2]),
@@ -257,8 +483,13 @@ class NerfstudioConverter:
             "p2": str(camera_info.D[3]),
             "timestamp": str(img_msg.header.stamp.secs) + "_" + str(img_msg.header.stamp.nsecs),
         }
+
+        if self.config["nerfstudio"]["create_depth_based_on_lidar"]:
+            frame_data = self.depth_processor.process(frame_data)
+
         if self.config["nerfstudio"]["create_mask_based_on_semantics"]:
             frame_data["mask_path"] = f"./mask/{image_filename}"
+
         self.frame_data["frames"].append(frame_data)
         return True
 
@@ -270,8 +501,13 @@ class NerfstudioConverter:
 def main():
     parser = argparse.ArgumentParser(description="Process ROS bags and extract camera images and transformations.")
     PATH = Path(WS) / "src/grand_tour_box/box_utils/box_converter/nerfstudio/cfg/grand_tour_release.yaml"
-    parser.add_argument("--mission_name", type=str, default="2024-10-01-11-29-55", help="Mission Folder")
-    parser.add_argument("--mission_uuid", type=str, default="", help="Mission UUID")
+    parser.add_argument("--mission_name", type=str, default="2024-11-04-10-57-34", help="Mission Folder")
+    parser.add_argument(
+        "--mission_uuid",
+        type=str,
+        default="34c04ec5-c1b7-4674-9d64-99ade50f71d0",
+        help="Mission UUID (uses GRI-1_release UUID if empty)",
+    )
     parser.add_argument("--config_file", type=str, default=PATH, help="Path to the configuration YAML file")
     parser.add_argument("--cluster", default=True, help="Flag to indicate if on or off")
     parser.add_argument("--head", type=int, default=-1, help="Number of images")
@@ -297,7 +533,8 @@ def main():
         data_folder = Path(MISSION_DATA) / f"{MISSION_NAME}_nerfstudio"
 
     else:
-        data_folder = f"/data/{MISSION_NAME}_nerfstudio"
+        MISSION_NAME = args.mission_name
+        data_folder = f"/tmp_disk/{MISSION_NAME}_nerfstudio"
 
     with open(args.config_file, "r") as f:
         config = yaml.safe_load(f)
@@ -305,6 +542,7 @@ def main():
     Path(data_folder).mkdir(exist_ok=True, parents=True)
 
     try:
+        print("Loading camera_info from for all images.")
         tf_bag_path = get_bag("*_tf_minimal.bag", directory=data_folder, try_until_suc=False)
 
         # Load camera infos

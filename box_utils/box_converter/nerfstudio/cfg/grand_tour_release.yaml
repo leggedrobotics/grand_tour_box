@@ -1,24 +1,30 @@
-base_frame: dlio_map
 num_images_per_topic: 100000
 skip_start_seconds: 0
 skip_end_seconds: 0
 hz: 4
 distance_threshold: 0.25 # -1
 
+tf_config:
+  tf_lookup_method: interpolate_linear # simple interpolate_linear interpolate_odom_frame
+  world_frame: dlio_map
+  odom_world: odom # only are used for odom
+  odom_body: base
+
+
 cameras:
-  - name: front
+  - name: hdr_front
     image_topic: /boxi/hdr/front/image_raw/compressed
     info_topic: /boxi/hdr/front/camera_info
     bag_pattern_image: "*_hdr_front.bag"
     bag_pattern_info: "*_hdr_front.bag"
     depth_topic_out: /gt_box/hdr_front/depth
-  - name: left
+  - name: hdr_left
     image_topic: /boxi/hdr/left/image_raw/compressed
     info_topic: /boxi/hdr/left/camera_info
     bag_pattern_image: "*_hdr_left.bag"
     bag_pattern_info: "*_hdr_left.bag"
     depth_topic_out: /gt_box/hdr_left/depth
-  - name: right
+  - name: hdr_right
     image_topic: /boxi/hdr/right/image_raw/compressed
     info_topic: /boxi/hdr/right/camera_info
     bag_pattern_image: "*_hdr_right.bag"
@@ -27,8 +33,14 @@ cameras:
 
 nerfstudio:
   blur_threshold: 0 # 80 is pretty good
-  create_mask_based_on_semantics: False
-  store: False
+  create_mask_based_on_semantics: True
+  create_depth_based_on_lidar: True
+  store: True
+
+  depth_processor:
+    lidar_topic: "/boxi/dlio/hesai_deskewed"
+    bag_pattern_lidar: "*dlio.bag"
+
 
 wavemap:
   log_odds_occupancy_threshold: 0.1
