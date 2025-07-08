@@ -97,20 +97,64 @@ class DepthProcessor:
         self.debug = True
         self.config = config
         self.sub_key = "depth"
-        self.lidar_topic = config["nerfstudio"]["depth_processor"]["lidar_topic"]
-        lidar_bag_path = get_bag(
-            config["nerfstudio"]["depth_processor"]["bag_pattern_lidar"], directory=bag_folder, try_until_suc=False
-        )
 
-        self.lidar_msgs = []
-        with rosbag.Bag(lidar_bag_path) as lidar_bag:
-            for _, msg, _ in lidar_bag.read_messages(topics=[self.lidar_topic]):
-                self.lidar_msgs.append(msg)
+        self.lidar_msgs = {}
+        self.lidar_accumulate_scans = {}
+        for lidar_cfg in config["nerfstudio"]["depth_processor"]["lidars"]:
+            lidar_bag_path = get_bag(lidar_cfg["bag_pattern_lidar"], directory=bag_folder, try_until_suc=False)
+            self.lidar_msgs[lidar_cfg["lidar_topic"]] = []
+            self.lidar_accumulate_scans[lidar_cfg["lidar_topic"]] = lidar_cfg["accumulate_scans"]
+
+            with rosbag.Bag(lidar_bag_path) as lidar_bag:
+                for _, msg, _ in lidar_bag.read_messages(topics=[lidar_cfg["lidar_topic"]]):
+                    self.lidar_msgs[lidar_cfg["lidar_topic"]].append(msg)
 
         self.tf_listener = tf_listener
         self.depth_folder = output_folder / self.sub_key
         self.depth_folder.mkdir(parents=True, exist_ok=True)
         self.output_folder = output_folder
+
+    def transform_lidar_msgs_to_single_frame(self, closest_lidar_msgs):
+        # TODO
+        msg_0 = closest_lidar_msgs[0]
+        # Get transform from LiDAR to world
+        msg0_to_world = self.tf_listener.lookupTransform(
+            self.config["tf_config"]["world_frame"],
+            msg_0.header.frame_id,
+            time=msg_0.header.stamp,
+            method=self.config["tf_config"]["tf_lookup_method"],
+            odom_world=self.config["tf_config"]["odom_world"],
+            odom_body=self.config["tf_config"]["odom_body"],
+            return_se3=True,
+        )
+        world_to_msg0 = np.linalg.inv(msg0_to_world)
+
+        lidar_points = self.pointcloud2_to_xyz(msg_0)
+
+        def transform_points(points, transform_matrix):
+            points_homo = np.hstack([points, np.ones((points.shape[0], 1))])
+            return (transform_matrix @ points_homo.T).T[:, :3]
+
+        if len(closest_lidar_msgs) > 1:
+            # If there are multiple LiDAR messages, accumulate points
+            for msg in closest_lidar_msgs[1:]:
+                lidar_to_world_msg = self.tf_listener.lookupTransform(
+                    self.config["tf_config"]["world_frame"],
+                    msg.header.frame_id,
+                    time=msg.header.stamp,
+                    method=self.config["tf_config"]["tf_lookup_method"],
+                    odom_world=self.config["tf_config"]["odom_world"],
+                    odom_body=self.config["tf_config"]["odom_body"],
+                    return_se3=True,
+                )
+                lidar_points_msg = self.pointcloud2_to_xyz(msg)
+
+                # Transform points to world frame and the to msg0 frame
+                lidar_points_world = transform_points(lidar_points_msg, lidar_to_world_msg)
+                lidar_points_msg_in_msg0_frame = transform_points(lidar_points_world, world_to_msg0)
+                lidar_points = np.vstack((lidar_points, lidar_points_msg_in_msg0_frame))
+
+        return lidar_points, msg0_to_world
 
     def process(self, frame):
         camera_to_world = gl_to_ros_transform(np.array(frame["transform_matrix"]))
@@ -118,33 +162,22 @@ class DepthProcessor:
         tim.secs = int(frame["timestamp"].split("_")[0])
         tim.nsecs = int(frame["timestamp"].split("_")[1])
 
-        closest_lidar_msg = self.find_closest_lidar_msg(tim, self.lidar_msgs)
-        if closest_lidar_msg is None:
+        closest_lidar_msgs = self.find_closest_lidar_msgs(tim)
+
+        if closest_lidar_msgs is None or len(closest_lidar_msgs) == 0:
             print("No LiDAR data found")
             return False
 
-        # Get LiDAR frame ID
-        lidar_frame_id = closest_lidar_msg.header.frame_id
+        lidar_points, lidar_to_world = self.transform_lidar_msgs_to_single_frame(closest_lidar_msgs)
 
-        # Get transform from LiDAR to world
-        lidar_to_world = self.tf_listener.lookupTransform(
-            self.config["tf_config"]["world_frame"],
-            lidar_frame_id,
-            time=closest_lidar_msg.header.stamp,
-            method=self.config["tf_config"]["tf_lookup_method"],
-            odom_world=self.config["tf_config"]["odom_world"],
-            odom_body=self.config["tf_config"]["odom_body"],
-            return_se3=True,
-        )
+        if len(lidar_points) == 0:
+            print("No valid points in LiDAR message for frame")
+            return False
 
         # Camera to world transform (from nerfstudio JSON)
         world_to_camera = np.linalg.inv(camera_to_world)
         lidar_to_camera = world_to_camera @ lidar_to_world
         # Convert PointCloud2 to numpy array
-        lidar_points = self.pointcloud2_to_xyz(closest_lidar_msg)
-        if len(lidar_points) == 0:
-            print("No valid points in LiDAR message for frame")
-            return False
 
         camera_intrinsics = self.get_camera_intrinsics(frame)
 
@@ -155,13 +188,15 @@ class DepthProcessor:
         )
 
         invalid = depth_image == -1
-        depth_image = depth_image.clip(0, (2**16 - 1) / 1000)
-        depth_image = (depth_image * 1000).astype(np.uint16)  # Scale and convert to uint16
-        depth_image[invalid] = 0
+
+        depth_image = depth_image.clip(0, 300)  # Clip to a reasonable max depth in meters
+        depth_image = depth_image.astype(np.float32)
+        depth_image[invalid] = 0.0
 
         # Save depth image
         frame["depth_file_path"] = frame["file_path"].replace("rgb", self.sub_key).replace(".jpg", ".png")
-        Image.fromarray(depth_image).save(str(self.output_folder / frame["depth_file_path"]))
+
+        cv2.imwrite(str(self.output_folder / frame["depth_file_path"]), depth_image.astype(np.float32))
 
         if self.debug:
             self.overlay_depth_on_rgb(frame)
@@ -170,9 +205,9 @@ class DepthProcessor:
 
     def overlay_depth_on_rgb(self, frame):
         rgb_image = np.array(Image.open(self.output_folder / frame["file_path"]))
-        depth_image = np.array(Image.open(self.output_folder / frame["depth_file_path"]))
+        depth_image = cv2.imread(str(self.output_folder / frame["depth_file_path"]), cv2.IMREAD_UNCHANGED)
         # Normalize depth image for visualization - max range 10m
-        depth_normalized = (depth_image.clip(0, 10000) / 10000 * 255).astype(np.uint8)
+        depth_normalized = (depth_image.clip(0, 10.0) / 10.0 * 255).astype(np.uint8)
 
         # Dilate the depth image to increase pixel width to 3
         depth_normalized = grey_dilation(depth_normalized, size=(3, 3))
@@ -273,18 +308,19 @@ class DepthProcessor:
             points.append([point[0], point[1], point[2]])
         return np.array(points)
 
-    def find_closest_lidar_msg(self, target_timestamp, lidar_msgs):
-        """Find the closest LiDAR message to the target timestamp"""
-        min_diff = float("inf")
-        closest_msg = None
+    def find_closest_lidar_msgs(self, target_timestamp):
+        closest_msgs = []
+        for topic, lidar_msgs in self.lidar_msgs.items():
+            n = self.lidar_accumulate_scans[topic]
+            closest_msgs += self.find_n_closest_lidar_msg(target_timestamp, lidar_msgs, n=n)
+        return closest_msgs
 
-        for msg in lidar_msgs:
-            time_diff = abs(msg.header.stamp.to_sec() - target_timestamp.to_sec())
-            if time_diff < min_diff:
-                min_diff = time_diff
-                closest_msg = msg
-
-        return closest_msg
+    def find_n_closest_lidar_msg(self, target_timestamp, lidar_msgs, n):
+        """Find the n closestest LiDAR message to the target timestamp"""
+        time_diffs = [abs(msg.header.stamp.to_sec() - target_timestamp.to_sec()) for msg in lidar_msgs]
+        # return top n closest messages
+        sorted_indices = np.argsort(time_diffs)[:n]
+        return [lidar_msgs[i] for i in sorted_indices]
 
     def get_camera_intrinsics(self, frame):
         """Extract camera intrinsics from nerfstudio JSON"""
@@ -433,7 +469,7 @@ class NerfstudioConverter:
                 )
                 segmentation_map = predicted_segmentation_maps[0]
                 human_mask = (segmentation_map == 0).cpu().numpy()  # Person class is 0
-                binary_mask = human_mask.astype(np.uint8) * 255
+                binary_mask = (~human_mask * 255).astype(np.uint8)
 
                 # Save the binary mask as PNG
                 Image.fromarray(binary_mask, mode="L").save(mask_file_path)
@@ -509,7 +545,7 @@ def main():
         help="Mission UUID (uses GRI-1_release UUID if empty)",
     )
     parser.add_argument("--config_file", type=str, default=PATH, help="Path to the configuration YAML file")
-    parser.add_argument("--cluster", default=True, help="Flag to indicate if on or off")
+    parser.add_argument("--cluster", default=False, help="Flag to indicate if on or off")
     parser.add_argument("--head", type=int, default=-1, help="Number of images")
 
     args = parser.parse_args()

@@ -38,8 +38,13 @@ nerfstudio:
   store: True
 
   depth_processor:
-    lidar_topic: "/boxi/dlio/hesai_deskewed"
-    bag_pattern_lidar: "*dlio.bag"
+    lidars:
+      - lidar_topic: "/boxi/dlio/hesai_deskewed"
+        bag_pattern_lidar: "*dlio.bag"
+        accumulate_scans: 1
+      - lidar_topic: "/boxi/livox/points_undistorted"
+        bag_pattern_lidar: "*livox_undist.bag"
+        accumulate_scans: 3
 
 
 wavemap:
