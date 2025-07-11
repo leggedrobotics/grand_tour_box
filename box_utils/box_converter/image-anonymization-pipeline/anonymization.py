@@ -310,10 +310,10 @@ def save_image_to_bag(
     """\
     writes images with corresponding metadata to an open bagfile
     """
-
     # write the image
     msg = save_image_to_ros1_message(image, cv_bridge, compressed=compressed, grayscale=grayscale)
     msg.header = header
+    bag.write(topic, msg, bag_time)
 
     # write number of detections
     n_dets_msg = Int32()
@@ -496,11 +496,11 @@ def upload_simple(mission_id, path, delete=True):
                 project_name="GrandTour",
                 files=[path],
                 create=False,
+                verbose=True,
             )
             res = kleinkram.verify(project_name=project_name, mission_name=mission_name, files=[path])
 
             break
-            print("File uploaded - (suc ?)")
         except Exception as e:
             print("Something went wrong - ", e)
 
