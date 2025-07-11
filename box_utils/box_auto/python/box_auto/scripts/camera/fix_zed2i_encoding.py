@@ -14,11 +14,11 @@ from box_auto.utils import upload_simple
 
 import pathlib
 
-for parent in pathlib.Path(__file__).resolve().parents:
-    bb = parent / "box_binding"
-    if (bb / "compressed_depth").is_dir():
-        sys.path.insert(0, str(bb))
-        break
+compressed_depth_path = pathlib.Path(
+    "/home/tutuna/box_ws/src/grand_tour_box/box_utils/box_converter/huggingface-dataset-conversion/rvl_compression/compressed_depth"
+)
+if compressed_depth_path.is_dir():
+    sys.path.insert(0, str(compressed_depth_path.parent))
 
 import compressed_depth
 
@@ -59,12 +59,12 @@ def decode_depth_message(msg, verbose_payload=False):
 # This changes to simply png encoding
 
 SPREADSHEET_ID = "1mENfskg_jO_vJGFM5yonqPuf-wYUNmg26IPv3pOu3gg"
-_, MISSION_DATA = read_sheet_data(SPREADSHEET_ID)
+_, MISSION_DATA = read_sheet_data(SPREADSHEET_ID, sheet_name_mission="mission_overview")
 uuid_mappings = get_uuid_mapping()
 
 
 # TODO After debugging set to true
-OVERWRITE = True
+OVERWRITE = False
 topic_name = [
     "/boxi/zed2i/depth/image_raw/compressedDepth",
     "/boxi/zed2i/confidence/image_raw/compressedDepth",
@@ -78,16 +78,26 @@ for name, data in uuid_mappings.items():
 
         # Filter Good Missions.
         if MISSION_DATA[name]["GOOD_MISSION"] == "TRUE":
-            uuid_release = data["uuid_release"]
+            uuid_pub = data["uuid_pub"]
+            # if uuid_pub != "f59e3cf5-ba77-46e2-855b-d1d467a0d8c0":
+            #     continue
             res = kleinkram.list_files(
-                mission_ids=[uuid_release],
+                mission_ids=[uuid_pub],
                 file_names=["*zed2i_depth.bag"],
             )
+            if not res:
+                print(f"No zed2i_depth.bag found for mission {name}")
+                txt_file = tmp_dir / f"{name}.txt"
+                with open(txt_file, "w") as f:
+                    f.write(name)
+                print(f"Created file: {txt_file}")
+                continue
+
             ori_file = tmp_dir / res[0].name
             # Check if the original file exists, if not, download it
             if not ori_file.exists():
                 kleinkram.download(
-                    mission_ids=[uuid_release],
+                    mission_ids=[uuid_pub],
                     file_names=["*zed2i_depth.bag"],
                     dest=tmp_dir,
                     verbose=True,
@@ -111,7 +121,7 @@ for name, data in uuid_mappings.items():
 
             print(f"Processing mission: {name}")
             with rosbag.Bag(ori_file, "r") as original_bag:
-                with rosbag.Bag(out_file, "w") as out_bag:
+                with rosbag.Bag(out_file, "w", compression=rosbag.Compression.LZ4) as out_bag:
                     for topic, msg, t in tqdm.tqdm(
                         original_bag.read_messages(topics=topic_name),
                         total=total_msgs,
@@ -129,7 +139,9 @@ for name, data in uuid_mappings.items():
                                 depth_mm = np.nan_to_num(depth_np, nan=0.0, posinf=0.0, neginf=0.0)
                                 depth_mm = (depth_mm * 1000.0).astype(np.uint16)
                                 # PNG encode using OpenCV
-                                success, png_bytes = cv2.imencode(".png", depth_mm)
+                                # Use PNG compression with maximum compression level (9)
+                                # encode_params = [cv2.IMWRITE_PNG_COMPRESSION, 9]
+                                success, png_bytes = cv2.imencode(".png", depth_mm)  # , encode_params)
                                 if not success:
                                     raise RuntimeError("PNG encoding failed")
                                 png_bytes = png_bytes.tobytes()
@@ -143,7 +155,7 @@ for name, data in uuid_mappings.items():
                                 # Write to the appropriate topic (you may want to adjust this)
                                 out_bag.write(topic, new_msg, t)
                             else:
-                                # If the message is not in RlVL format, write it unchanged
+                                # If the message is not in RVL format, write it unchanged
                                 # This is useful for camera_info or other messages that are not depth images
                                 out_bag.write(topic, msg, t)
 
@@ -152,10 +164,11 @@ for name, data in uuid_mappings.items():
                             out_bag.write(topic, msg, t)
 
             # ONLY USE THIS if you are really certain you want to overwrite the existing file
+            d = 5
             if True:
                 upload_simple(
                     project_name="GrandTour",
-                    mission_name="release_" + name,
+                    mission_name="pub_" + name,
                     path=str(out_file),
                 )
                 print(f"Finished processing mission: {name}")
