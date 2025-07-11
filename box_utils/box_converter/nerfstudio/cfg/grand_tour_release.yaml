@@ -12,25 +12,37 @@ tf_config:
 
 
 cameras:
-  - name: hdr_front
-    image_topic: /boxi/hdr/front/image_raw/compressed
-    info_topic: /boxi/hdr/front/camera_info
-    bag_pattern_image: "*_hdr_front.bag"
-    bag_pattern_info: "*_hdr_front.bag"
-    depth_topic_out: /gt_box/hdr_front/depth
-  - name: hdr_left
-    image_topic: /boxi/hdr/left/image_raw/compressed
-    info_topic: /boxi/hdr/left/camera_info
-    bag_pattern_image: "*_hdr_left.bag"
-    bag_pattern_info: "*_hdr_left.bag"
-    depth_topic_out: /gt_box/hdr_left/depth
-  - name: hdr_right
-    image_topic: /boxi/hdr/right/image_raw/compressed
-    info_topic: /boxi/hdr/right/camera_info
-    bag_pattern_image: "*_hdr_right.bag"
-    bag_pattern_info: "*_hdr_right.bag"
-    depth_topic_out: /gt_box/hdr_right/depth
-
+  # - name: hdr_front
+  #   image_topic: /boxi/hdr/front/image_raw/compressed
+  #   info_topic: /boxi/hdr/front/camera_info
+  #   bag_pattern_image: "*_hdr_front.bag"
+  #   bag_pattern_info: "*_hdr_front.bag"
+  # - name: hdr_left
+  #   image_topic: /boxi/hdr/left/image_raw/compressed
+  #   info_topic: /boxi/hdr/left/camera_info
+  #   bag_pattern_image: "*_hdr_left.bag"
+  #   bag_pattern_info: "*_hdr_left.bag"
+  # - name: hdr_right
+  #   image_topic: /boxi/hdr/right/image_raw/compressed
+  #   info_topic: /boxi/hdr/right/camera_info
+  #   bag_pattern_image: "*_hdr_right.bag"
+  #   bag_pattern_info: "*_hdr_right.bag"
+  - name: zed2i_left
+    image_topic: /boxi/zed2i/left/image_raw/compressed
+    info_topic: /boxi/zed2i/left/camera_info
+    bag_pattern_image: "*_zed2i_images.bag"
+    bag_pattern_info: "*_zed2i_images.bag"
+    use_depth_image : False
+    bag_pattern_depth_image: "*_zed2i_depth.bag"
+    bag_pattern_depth_info: "*_zed2i_depth.bag"
+    depth_image_topic: /boxi/zed2i/depth/image_raw/compressed
+    depth_info_topic: /boxi/zed2i/depth/camera_info
+  # - name: zed2i_right
+  #   image_topic: /boxi/zed2i/right/image_raw/compressed
+  #   info_topic: /boxi/zed2i/right/camera_info
+  #   bag_pattern_image: "*_zed2i_images.bag"
+  #   bag_pattern_info: "*_zed2i_images.bag"
+    
 nerfstudio:
   blur_threshold: 0 # 80 is pretty good
   create_mask_based_on_semantics: True

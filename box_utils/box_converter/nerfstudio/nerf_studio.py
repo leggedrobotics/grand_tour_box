@@ -48,34 +48,46 @@ except:
             raise FileNotFoundError(f"No bag file found matching {pattern} in {directory}. Found: {paths}")
 
 
-def undistort_image(image, camera_info, new_camera_info=None):
+def undistort_image(image, camera_info, new_camera_info, map1, map2, fisheye=True):
     K = np.array(camera_info.K).reshape((3, 3))
     D = np.array(camera_info.D)
-
     h, w = image.shape[:2]
 
     if new_camera_info is None:
-        new_camera_matrix = cv2.fisheye.estimateNewCameraMatrixForUndistortRectify(
-            K, D, (w, h), np.eye(3), balance=0.0, fov_scale=1.0
-        )
+        if fisheye:
+            new_camera_matrix = cv2.fisheye.estimateNewCameraMatrixForUndistortRectify(
+                K, D, (w, h), np.eye(3), balance=0.0, fov_scale=1.0
+            )
+            D_new = [0, 0, 0, 0]
+            map1, map2 = cv2.fisheye.initUndistortRectifyMap(K, D, np.eye(3), new_camera_matrix, (w, h), cv2.CV_16SC2)
+
+        else:
+            new_camera_matrix, _ = cv2.getOptimalNewCameraMatrix(K, D, (w, h), 1, (w, h))
+            D_new = [0, 0, 0, 0, 0]
+            map1, map2 = cv2.initUndistortRectifyMap(K, D, None, new_camera_matrix, (w, h), cv2.CV_16SC2)
 
         new_camera_info = CameraInfo()
         new_camera_info.header = camera_info.header
         new_camera_info.width = camera_info.width
         new_camera_info.height = camera_info.height
         new_camera_info.K = new_camera_matrix.flatten().tolist()
-        new_camera_info.D = [0, 0, 0, 0]  # Fisheye distortion coefficients
+        new_camera_info.D = D_new
         new_camera_info.R = camera_info.R
         new_P = np.eye(4)
         new_P[:3, :3] = new_camera_matrix
         new_camera_info.P = new_P.flatten().tolist()
     else:
         new_camera_info.header = camera_info.header
-        new_camera_matrix = np.array(new_camera_info.K).reshape((3, 3))
 
-    map1, map2 = cv2.fisheye.initUndistortRectifyMap(K, D, np.eye(3), new_camera_matrix, (w, h), cv2.CV_16SC2)
-    undistorted_image = cv2.remap(image, map1, map2, interpolation=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
-    return undistorted_image, new_camera_info
+    if not fisheye:
+        # HACKY way to deal with wrong camera info of zed2i
+        image = cv2.flip(image, 0)
+        undistorted_image = cv2.remap(image, map1, map2, interpolation=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
+        undistorted_image = cv2.flip(undistorted_image, 0)
+    else:
+        undistorted_image = cv2.remap(image, map1, map2, interpolation=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
+
+    return undistorted_image, new_camera_info, map1, map2
 
 
 def ros_to_gl_transform(transform_ros):
@@ -342,6 +354,8 @@ class NerfstudioConverter:
         self.blur_threshold = config["nerfstudio"]["blur_threshold"]
 
         self.taget_camera_infos = {k: None for k in camera_infos.keys()}
+        self.map1 = {k: None for k in camera_infos.keys()}
+        self.map2 = {k: None for k in camera_infos.keys()}
 
         self.output_folder = Path(data_folder) / f"{mission_name}_nerfstudio"
         self.output_folder.mkdir(parents=True, exist_ok=True)
@@ -373,6 +387,30 @@ class NerfstudioConverter:
 
     def reset(self):
         self.last_trans = None
+
+    def set_depth_config(self, active, camera=None, data_folder=None):
+        self.use_depth_image = active
+        if not active:
+            return
+
+        depth_img_bag_path = get_bag(camera["bag_pattern_depth_image"], directory=data_folder, try_until_suc=False)
+        depth_info_bag_path = get_bag(camera["bag_pattern_depth_info"], directory=data_folder, try_until_suc=False)
+
+        self.depth_info = None
+        with rosbag.Bag(depth_info_bag_path, "r") as bag:
+            for _, msg, _ in bag.read_messages(topics=[camera["depth_info_topic"]]):
+                self.depth_info = msg
+                break
+        if self.depth_info is None:
+            print(f"Failed to find depth info in bag {depth_info_bag_path}")
+            exit(-1)
+
+        self.depth_image_bag = rosbag.Bag(depth_img_bag_path, "r")
+        self.depth_image_iterator = self.depth_image_bag.read_messages(topics=[camera["depth_image_topic"]])
+
+    def __exit__(self, exc_type=None, exc_value=None, traceback=None):
+        if hasattr(self, "depth_image_bag"):
+            self.depth_image_bag.close()
 
     def process_frame(self, img_msg, topic):
         if self.image_counters[topic] >= self.config["num_images_per_topic"] or (
@@ -410,8 +448,12 @@ class NerfstudioConverter:
             return True
 
         self.last_trans = trans
-
         self.image_counters[topic] += 1
+
+        if self.image_counters[topic] < 10:
+            return True
+        print("Skipping for first 10 is still active remove before production")
+
         self.image_last_stored[topic] = img_msg.header.stamp.to_sec()
 
         image_filename = f"{camera_key}_{img_msg.header.seq:05d}.png"
@@ -420,7 +462,7 @@ class NerfstudioConverter:
 
         if (
             self.config["nerfstudio"]["store"]
-            or ("_rect" not in topic and self.taget_camera_infos[topic] is None)
+            or (not ("_rect" in topic) and self.taget_camera_infos[topic] is None)
             or ("_rect" in topic and self.camera_infos[topic] is None)
         ):
             # Convert and save image
@@ -434,13 +476,22 @@ class NerfstudioConverter:
 
             # Undistort image if needed
             if "_rect" not in topic:
-                cv_image, self.taget_camera_infos[topic] = undistort_image(
-                    cv_image, self.camera_infos[topic], self.taget_camera_infos[topic]
+                # TODO add fisheye undistortion as paramter in cfg!
+                cv_image, self.taget_camera_infos[topic], self.map1[topic], self.map2[topic] = undistort_image(
+                    cv_image,
+                    self.camera_infos[topic],
+                    self.taget_camera_infos[topic],
+                    self.map1[topic],
+                    self.map2[topic],
+                    fisheye="zed2i" not in topic,
                 )
                 camera_info = self.taget_camera_infos[topic]
             else:
                 camera_info = self.camera_infos[topic]
-                camera_info.D = [0, 0, 0, 0]
+                if "zed2i" not in topic:
+                    camera_info.D = [0, 0, 0, 0]
+                else:
+                    camera_info.D = [0, 0, 0, 0, 0]
 
             # Check blur and save image
             blur = cv2.Laplacian(cv_image, cv2.CV_64F).var()
@@ -485,7 +536,10 @@ class NerfstudioConverter:
                 camera_info = self.taget_camera_infos[topic]
             else:
                 camera_info = self.camera_infos[topic]
+            if "zed2i" not in topic:
                 camera_info.D = [0, 0, 0, 0]
+            else:
+                camera_info.D = [0, 0, 0, 0, 0]
 
         # Create transformation matrix using scipy Rotation
         try:
@@ -519,6 +573,25 @@ class NerfstudioConverter:
             "p2": str(camera_info.D[3]),
             "timestamp": str(img_msg.header.stamp.secs) + "_" + str(img_msg.header.stamp.nsecs),
         }
+
+        if self.use_depth_image:
+            while True:
+                try:
+                    depth_msg = next(self.depth_image_iterator)[1]
+                    if depth_msg.header.seq == img_msg.header.seq:
+                        break
+                except StopIteration:
+                    print("No more depth images available")
+                    return True
+            arr = np.frombuffer(depth_msg.data, dtype=np.uint8)
+            png_bytes = arr[12:]  # skip 12-byte header
+            depth_image = cv2.imdecode(png_bytes, cv2.IMREAD_UNCHANGED)
+            depth_image_float = depth_image.astype(np.float32) / 1000.0  # Convert to meters
+            depth_image_float[depth_image_float == 0] = 0
+            stereo_depth_file_path = str(image_path).replace("/rgb/", "/stereo_depth/")
+            stereo_depth_file_path = stereo_depth_file_path.replace(".jpg", ".png")
+            frame_data["mask_path"] = f"./stereo_depth/{image_filename}"
+            cv2.imwrite(stereo_depth_file_path, depth_image_float)
 
         if self.config["nerfstudio"]["create_depth_based_on_lidar"]:
             frame_data = self.depth_processor.process(frame_data)
@@ -611,6 +684,11 @@ def main():
         with rosbag.Bag(bag_file, "r") as bag:
             start = bag.get_start_time() + config["skip_start_seconds"]
             end = bag.get_end_time() - config["skip_end_seconds"]
+            if camera.get("use_depth_image", False):
+                converter.set_depth_config(True, camera, data_folder)
+            else:
+                converter.set_depth_config(False)
+
             for topic, msg, t in bag.read_messages(
                 topics=[camera["image_topic"]], start_time=rospy.Time(start), end_time=rospy.Time(end)
             ):
