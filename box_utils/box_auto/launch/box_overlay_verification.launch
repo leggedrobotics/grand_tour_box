@@ -77,6 +77,43 @@
             <param name="dynamic_range" value="false" />
             <param name="autosize" value="true" />
       </node> 
+
+      <!-- Uncompress the compressed topic -->
+      <node name="hdr_front_republish"
+            pkg="image_transport"
+            type="republish"
+            args="compressed in:=/gt_box/hdr_front/image_raw/compressed raw out:=/gt_box/hdr_front/image_raw"
+            required="true" />
+
+      <!-- View rectified/compressed image from new bag -->
+      <node name="hdr_front_image_rect_view"
+            pkg="image_view"
+            type="image_view"
+            respawn="false"
+            required="true"
+            output="screen">
+      <remap from="image" to="/gt_box/hdr_front/image_rect"/>
+      <param name="image_transport" value="compressed" />
+      </node>
+
+      <!-- Uncompress the compressed topic -->
+      <node name="alph_front_republish"
+            pkg="image_transport"
+            type="republish"
+            args="compressed in:=/boxi/alphasense/front_center/image_raw/compressed raw out:=/boxi/alphasense/front_center/image_raw"
+            required="true" />
+
+      <!-- View rectified/compressed image from new bag -->
+      <node name="alpha_front_image_rect_view"
+            pkg="image_view"
+            type="image_view"
+            respawn="false"
+            required="true"
+            output="screen">
+      <remap from="image" to="/boxi/alphasense/front_center/image_rect"/>
+      <param name="image_transport" value="compressed" />
+      </node>
+
       </group>
 
       <!-- Rosbag player -->
@@ -86,6 +123,6 @@
             output="screen"
             required="true"
             launch-prefix="xterm -bg lightblue -fg darkslategrey -bd plum -bw 10 -geometry 80x40-50+250 -e" 
-            args="--clock -r 1 $(arg data_containing_rosbag_paths)" />
+            args="--clock -s 0 -r 1 $(arg data_containing_rosbag_paths)" />
 
 </launch>

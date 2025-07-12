@@ -6,6 +6,7 @@ import subprocess
 import shlex
 import logging
 import shutil
+import getpass
 
 # Set up logging to a file (or configure as needed)
 logging.basicConfig(filename="process_output.log", level=logging.INFO)
@@ -90,9 +91,12 @@ def main():
 
                 print(f"\033[32m[{PROCMODE}] Attempt {attempt} | procint = {procInterval:.5f}\033[0m")
 
-                # os.chdir(Path(WS) / "src/grand_tour_box/box_applications/waypoint_ie_10_00_1206/bin")
-                # os.chdir("/home/tutuna/Documents/IE_CLI_10/Inertial Explorer/waypoint_ie_10_00_1206/bin")
-                os.chdir("/home/jonfrey/ie_turcan/waypoint_ie_10_00_1206/bin")
+                username = getpass.getuser()
+                if username == "tutuna":
+                    os.chdir(f"/home/{username}/Documents/IE_CLI_10/Inertial Explorer/waypoint_ie_10_00_1206/bin")
+                else:
+                    os.chdir(f"/home/{username}/ie_turcan/waypoint_ie_10_00_1206/bin")
+
                 print(cmd)
                 results = subprocess.run(
                     shlex.split(cmd),

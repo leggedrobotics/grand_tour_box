@@ -137,13 +137,22 @@ if __name__ == "__main__":
 
     # Ground truth
     ENABLE_VIZ = False
-    USE_IE = False
-    USE_GMSF = True
+    # Set the ground truth source: 'IE', 'GMSF', or 'TPS'
+    GT_SOURCE = "TPS"
 
-    if USE_IE:
-        GT_PATTERN = "*_cpt7_ie_tc.bag"
-    elif USE_GMSF:
-        GT_PATTERN = "*_gt_pose.bag"
+    # Boolean flag for TPS ground truth source
+    IS_TPS_GT = GT_SOURCE == "TPS"
+
+    # Map the ground truth source to the appropriate bag pattern
+    gt_patterns = {"IE": "*_cpt7_ie_tc.bag", "GMSF": "*_gt_pose.bag", "TPS": "*_ap20_prism_position.bag"}
+
+    # Get the appropriate pattern based on the selected source
+    GT_PATTERN = gt_patterns.get(GT_SOURCE)
+
+    if not GT_PATTERN:
+        raise ValueError(
+            f"Invalid ground truth source: {GT_SOURCE}. Valid options are: {', '.join(gt_patterns.keys())}"
+        )
 
     path = Path(WS) / "src/grand_tour_box/box_utils/box_auto/cfg" / (args.config_name + ".yaml")
 
@@ -174,7 +183,6 @@ if __name__ == "__main__":
         f"roslaunch box_auto evo_preparation.launch bag_file_directory:={MISSION_DATA} output_folder_path:={p} config_path:={evaluation_config_path} prefix:={time_as_string}",
         background=False,
     )
-    print("\033[92mEVO preparation finished.\033[0m")
     sleep(1)
 
     EVALUATION_PATTERN = []
@@ -193,23 +201,27 @@ if __name__ == "__main__":
         get_bag(pattern=pattern, auto_download=False, rglob=False, directory=p)
 
     # Create the output folder for the evo evaluations.
-    p_ape = Path(p) / f"{time_as_string}_ape_results"
-    p_ape.mkdir()
-    p_ape = str(p_ape)
+    p_ape = None
+    p_rpe = None
 
-    run_ros_command(
-        f"python3 {BOX_AUTO_SCRIPTS_DIR}/verification/grandtour_SE3_APE.py --config={evaluation_config_path} --input_folder_path={p} --output_dir_name={p_ape} --prefix={time_as_string} --disable_viz"
-    )
-    sleep(1)
+    if not IS_TPS_GT:
+        p_ape = Path(p) / f"{time_as_string}_ape_results"
+        p_ape.mkdir()
+        p_ape = str(p_ape)
 
-    p_rpe = Path(p) / f"{time_as_string}_rpe_results"
-    p_rpe.mkdir()
-    p_rpe = str(p_rpe)
+        run_ros_command(
+            f"python3 {BOX_AUTO_SCRIPTS_DIR}/verification/grandtour_SE3_APE.py --config={evaluation_config_path} --input_folder_path={p} --output_dir_name={p_ape} --prefix={time_as_string} --disable_viz"
+        )
+        sleep(1)
 
-    run_ros_command(
-        f"python3 {BOX_AUTO_SCRIPTS_DIR}/verification/grandtour_SE3_RPE.py  --config={evaluation_config_path} --input_folder_path={p} --output_dir_name={p_rpe} --prefix={time_as_string} --disable_viz"
-    )
-    sleep(1)
+        p_rpe = Path(p) / f"{time_as_string}_rpe_results"
+        p_rpe.mkdir()
+        p_rpe = str(p_rpe)
+
+        run_ros_command(
+            f"python3 {BOX_AUTO_SCRIPTS_DIR}/verification/grandtour_SE3_RPE.py  --config={evaluation_config_path} --input_folder_path={p} --output_dir_name={p_rpe} --prefix={time_as_string} --disable_viz"
+        )
+        sleep(1)
 
     if IS_POINT_DISTANCES_SUPPORTED:
         p_point_relation = Path(p) / f"{time_as_string}_point_relation_results"
@@ -222,6 +234,8 @@ if __name__ == "__main__":
     results_summary = []
     DIRECTORIES = [p_point_relation, p_ape, p_rpe]
     for dir in DIRECTORIES:
+        if dir is None:
+            continue
         res_paths = get_bag(
             pattern="*.zip", auto_download=False, rglob=True, return_list=True, directory=dir, return_upon_no_files=True
         )
@@ -240,9 +254,9 @@ if __name__ == "__main__":
             results_summary.append(
                 {
                     "Result Name": res_name,
-                    "Mean": round(res.stats["mean"], 4),
+                    "Mean(m)": round(res.stats["mean"], 4),
                     "STD": round(res.stats["std"], 4),
-                    "RMSE": round(res.stats["rmse"], 4),
+                    "RMSE(m)": round(res.stats["rmse"], 4),
                 }
             )
 
