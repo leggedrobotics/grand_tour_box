@@ -32,15 +32,7 @@ for name, data in uuid_mappings.items():
         exit_code = 0
 
         error_list = {}
-        secret_gnss_topics = [
-            "/gt_box/inertial_explorer/tc/raw",
-            "/gt_box/inertial_explorer/tc/origin"
-            "/gt_box/inertial_explorer/tc/navsatfix_origin"
-            "/gt_box/inertial_explorer/tc/raw"
-            "/gt_box/inertial_explorer/tc/origin"
-            "/gt_box/inertial_explorer/tc/navsatfix_origin",
-        ]
-
+        secret_gnss_bags_out = ["cpt7_ie_tc.bag", "cpt7_ie_rt.bag"]
         tmp_folder = Path("/data") / (name + "_release")
         tmp_folder.mkdir(parents=True, exist_ok=True)
 
@@ -74,12 +66,13 @@ for name, data in uuid_mappings.items():
         bags_to_upload = []
 
         for output_bag_name, topic_configs in data_dict_by_bag_name_filtered.items():
-            bag_path_out = out_dir_bag / (name + "_" + output_bag_name)
-            if "zed2i_depth" in output_bag_name:
-                print("Skipping mission with zed2i_depth in output_bag_name")
-                continue
 
+            bag_path_out = out_dir_bag / (name + "_" + output_bag_name)
             with rosbag.Bag(bag_path_out, "w", compression="lz4") as bag_out:
+                if mission_data[name]["publish_gnss"] == "FALSE" and output_bag_name in secret_gnss_bags_out:
+                    print(f"Skipping {output_bag_name} as publish_gnss is FALSE")
+                    continue
+
                 print("Writing to bag: ", output_bag_name)
                 for topic_config in topic_configs:
                     print(
@@ -122,9 +115,6 @@ for name, data in uuid_mappings.items():
 
                                 if topic_config["frame_id_out"] != "":
                                     msg.header.frame_id = topic_config["frame_id_out"]
-
-                                if mission_data[name]["publish_gnss"] == "FALSE" and topic in secret_gnss_topics:
-                                    continue
 
                                 if topic_config["topic_name_orig"] == "/tf_static" and t < desired_start_time:
                                     t = desired_start_time
