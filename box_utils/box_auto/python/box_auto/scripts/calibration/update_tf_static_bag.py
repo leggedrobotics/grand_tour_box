@@ -158,6 +158,7 @@ for p in [str(s) for s in p.glob("*tf_static_metadata_*.bag") if "new" not in st
                 ):
                     cfg = yaml.safe_load(msg.data)
                     width, height = cfg["image_width"], cfg["image_height"]
+                    height = 1080  # We always use 1080p for the ZED2i
                     cx, cy = cfg["camera_matrix"]["data"][2], cfg["camera_matrix"]["data"][5]
                     cfg["camera_matrix"]["data"][2] = width - cx - 1
                     cfg["camera_matrix"]["data"][5] = height - cy - 1
