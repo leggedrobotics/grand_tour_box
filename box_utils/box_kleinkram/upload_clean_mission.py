@@ -15,40 +15,24 @@ uuid_mappings = get_uuid_mapping()
 SPREADSHEET_ID = "1mENfskg_jO_vJGFM5yonqPuf-wYUNmg26IPv3pOu3gg"
 # Read the data and print the list
 topic_data, mission_data = read_sheet_data(SPREADSHEET_ID)
-LIST_OF_OUTPUT_BAGS = ["anymal_state.bag"]  # supports ["*"] for full mission
-SKIP_IF_MISSION_HAS_34_BAGS = False
-
+LIST_OF_OUTPUT_BAGS = ["*"]  # supports ["*"] for full mission
 
 for name, data in uuid_mappings.items():
-    # Create a dictionary with bag_name_out as the key and a list of missions as the value
     try:
         data_dict_by_bag_name = defaultdict(list)
         for entry in topic_data:
             data_dict_by_bag_name[entry["bag_name_out"]].append(entry)
 
-        print(name)
         if mission_data[name]["GOOD_MISSION"] != "TRUE":
             print("Skip processing mission - no good mission")
             continue
 
         res = kleinkram.list_files(mission_ids=[data["uuid_release"]])
 
-        if len(res) == 34 and SKIP_IF_MISSION_HAS_34_BAGS:
-            print("Skip processing mission - already uploaded 34 bags")
-            continue
-
         exit_code = 0
 
         error_list = {}
-        secret_gnss_topics = [
-            "/gt_box/inertial_explorer/tc/raw",
-            "/gt_box/inertial_explorer/tc/origin"
-            "/gt_box/inertial_explorer/tc/navsatfix_origin"
-            "/gt_box/inertial_explorer/tc/raw"
-            "/gt_box/inertial_explorer/tc/origin"
-            "/gt_box/inertial_explorer/tc/navsatfix_origin",
-        ]
-
+        secret_gnss_bags_out = ["cpt7_ie_tc.bag", "cpt7_ie_rt.bag"]
         tmp_folder = Path("/data") / (name + "_release")
         tmp_folder.mkdir(parents=True, exist_ok=True)
 
@@ -75,15 +59,20 @@ for name, data in uuid_mappings.items():
             file_names=ls,
             dest=tmp_folder,
             verbose=True,
+            overwrite=True,
         )
 
         # Do a quick sorting operation
         bags_to_upload = []
 
         for output_bag_name, topic_configs in data_dict_by_bag_name_filtered.items():
-            bag_path_out = out_dir_bag / (name + "_" + output_bag_name)
 
-            with rosbag.Bag(bag_path_out, "w") as bag_out:
+            bag_path_out = out_dir_bag / (name + "_" + output_bag_name)
+            with rosbag.Bag(bag_path_out, "w", compression="lz4") as bag_out:
+                if mission_data[name]["publish_gnss"] == "FALSE" and output_bag_name in secret_gnss_bags_out:
+                    print(f"Skipping {output_bag_name} as publish_gnss is FALSE")
+                    continue
+
                 print("Writing to bag: ", output_bag_name)
                 for topic_config in topic_configs:
                     print(
@@ -96,7 +85,7 @@ for name, data in uuid_mappings.items():
                     )
                     try:
                         bag_path_in = get_bag("*" + topic_config["bag_name_orig"], directory=tmp_folder)
-                        with rosbag.Bag(bag_path_in, "r", compression="lz4") as bag_in:
+                        with rosbag.Bag(bag_path_in, "r") as bag_in:
                             desired_start_time = rospy.Time.from_sec(float(mission_data[name]["mission_start_time"]))
                             desired_stop_time = rospy.Time.from_sec(float(mission_data[name]["mission_stop_time"]))
 
@@ -127,9 +116,6 @@ for name, data in uuid_mappings.items():
                                 if topic_config["frame_id_out"] != "":
                                     msg.header.frame_id = topic_config["frame_id_out"]
 
-                                if mission_data[name]["publish_gnss"] == "FALSE" and topic in secret_gnss_topics:
-                                    continue
-
                                 if topic_config["topic_name_orig"] == "/tf_static" and t < desired_start_time:
                                     t = desired_start_time
                                     for transform in msg.transforms:
@@ -158,7 +144,7 @@ for name, data in uuid_mappings.items():
             bags_to_upload.append(str(bag_path_out))
 
         for bag_path_out in bags_to_upload:
-            upload_simple("GrandTour", "release_" + name, str(bag_path_out))
+            upload_simple("GrandTourDataset", "release_" + name, str(bag_path_out))
 
         print(error_list)
     except Exception as e:

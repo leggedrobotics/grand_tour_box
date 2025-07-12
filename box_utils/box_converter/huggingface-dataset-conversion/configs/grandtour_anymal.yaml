@@ -1,0 +1,142 @@
+metadata:
+  camera_intrinsics:
+    - alias: hdr_left_caminfo
+      file: "*_hdr_left.bag"
+      topic: "/boxi/hdr/left/camera_info"
+
+    - alias: hdr_front_caminfo
+      file: "*_hdr_front.bag"
+      topic: "/boxi/hdr/front/camera_info"
+
+    - alias: hdr_right_caminfo
+      file: "*_hdr_right.bag"
+      topic: "/boxi/hdr/right/camera_info"
+
+    - alias: depth_camera_front_upper_caminfo
+      file: "*_anymal_depth_cameras.bag"
+      topic: "/anymal/depth_camera/front_upper/depth/camera_info"
+
+    - alias: depth_camera_rear_upper_caminfo
+      file: "*_anymal_depth_cameras.bag"
+      topic: "/anymal/depth_camera/rear_upper/depth/camera_info"
+
+    - alias: depth_camera_left_caminfo
+      file: "*_anymal_depth_cameras.bag"
+      topic: "/anymal/depth_camera/left/depth/camera_info"
+
+    - alias: depth_camera_right_caminfo
+      file: "*_anymal_depth_cameras.bag"
+      topic: "/anymal/depth_camera/right/depth/camera_info"
+
+  frame_transforms:
+    - frame_id: depth_camera_front_upper
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: hdr_right
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: hdr_left
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: hdr_front
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: depth_camera_rear_upper
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: depth_camera_front_upper
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: depth_camera_left
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: depth_camera_right
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: hesai_lidar
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: livox_lidar
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+data:
+  image_topics:
+    - alias: hdr_left
+      file: "*_hdr_left.bag"
+      topic: "/boxi/hdr/left/image_raw/compressed"
+      format: jpeg
+      compressed: true
+      camera_intrinsics: hdr_left_caminfo
+      description: "10Hz - 1920x1280 - TierIV C1 left (120dB, Color, 2.5MP)"
+
+    - alias: hdr_front
+      file: "*_hdr_front.bag"
+      topic: "/boxi/hdr/front/image_raw/compressed"
+      format: jpeg
+      compressed: true
+      camera_intrinsics: hdr_front_caminfo
+      description: "10Hz - 1920x1280 - TierIV C1 front (120dB, Color, 2.5MP)"
+
+    - alias: hdr_right
+      file: "*_hdr_right.bag"
+      topic: "/boxi/hdr/right/image_raw/compressed"
+      format: jpeg
+      compressed: true
+      camera_intrinsics: hdr_right_caminfo
+      description: "10Hz - 1920x1280 - TierIV C1 right (120dB, Color, 2.5MP)"
+
+    - alias: depth_camera_front_upper
+      file: "*_anymal_depth_cameras.bag"
+      topic: "/anymal/depth_camera/front_upper/depth/image_rect_raw"
+      format: png
+      compressed: false
+      depth: true
+      camera_intrinsics: depth_camera_front_upper_caminfo
+      description: "15Hz - 848x480 - IntelRealsense D435i front upper (Integrated in ANYbotics ANYmal D)"
+
+    - alias: depth_camera_rear_upper
+      file: "*_anymal_depth_cameras.bag"
+      topic: "/anymal/depth_camera/rear_upper/depth/image_rect_raw"
+      format: png
+      compressed: false
+      depth: true
+      camera_intrinsics: depth_camera_rear_upper_caminfo
+      description: "15Hz - 848x480 - IntelRealsense D435i rear upper (Integrated in ANYbotics ANYmal D)"
+
+    - alias: depth_camera_left
+      file: "*_anymal_depth_cameras.bag"
+      topic: "/anymal/depth_camera/left/depth/image_rect_raw"
+      format: png
+      compressed: false
+      depth: true
+      camera_intrinsics: depth_camera_left_caminfo
+      description: "15Hz - 848x480 - IntelRealsense D435i left (Integrated in ANYbotics ANYmal D)"
+
+    - alias: depth_camera_right
+      file: "*_anymal_depth_cameras.bag"
+      topic: "/anymal/depth_camera/right/depth/image_rect_raw"
+      format: png
+      depth: true
+      compressed: false
+      camera_intrinsics: depth_camera_right_caminfo
+      description: "15Hz - 848x480 - IntelRealsense D435i right (Integrated in ANYbotics ANYmal D)"

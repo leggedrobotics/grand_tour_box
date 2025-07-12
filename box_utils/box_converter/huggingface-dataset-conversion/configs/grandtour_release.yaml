@@ -35,7 +35,7 @@ metadata:
     # - alias: zed2i_depth_caminfo
     #   file: "*_zed2i_depth.bag"
     #   topic: "/boxi/zed2i/depth/camera_info"
- 
+
     # - alias: zed2i_left_caminfo
     #   file: "*_zed2i_images.bag"
     #   topic: "/boxi/zed2i/left/camera_info"
@@ -45,28 +45,28 @@ metadata:
     #   topic: "/boxi/zed2i/right/camera_info"
 
     # TODO: not apparent in the bag file
-    # - alias: anymal_depth_camera_front_lower
+    # - alias: anymal_depth_camera_front_lower_caminfo
     #   file: "*_anymal_depth_cameras.bag"
     #   topic: "/anymal/depth_camera/front_lower/depth/camera_info"
 
     # TODO: not apparent in the bag file
-    # - alias: anymal_depth_camera_rear_lower
+    # - alias: anymal_depth_camera_rear_lower_caminfo
     #   file: "*_anymal_depth_cameras.bag"
     #   topic: "/anymal/depth_camera/rear_lower/depth/camera_info"
 
-    - alias: anymal_depth_camera_front_upper
+    - alias: depth_camera_front_upper_caminfo
       file: "*_anymal_depth_cameras.bag"
       topic: "/anymal/depth_camera/front_upper/depth/camera_info"
 
-    - alias: anymal_depth_camera_rear_upper
+    - alias: depth_camera_rear_upper_caminfo
       file: "*_anymal_depth_cameras.bag"
       topic: "/anymal/depth_camera/rear_upper/depth/camera_info"
 
-    - alias: depth_camera_left
+    - alias: depth_camera_left_caminfo
       file: "*_anymal_depth_cameras.bag"
       topic: "/anymal/depth_camera/left/depth/camera_info"
 
-    - alias: depth_camera_right
+    - alias: depth_camera_right_caminfo
       file: "*_anymal_depth_cameras.bag"
       topic: "/anymal/depth_camera/right/depth/camera_info"
 
@@ -76,23 +76,23 @@ metadata:
       file: "*_tf_minimal.bag"
       topic: /tf_static
       reference_frame_id: base
-    
+
     - frame_id: base
       file: "*_tf_minimal.bag"
       topic: /tf_static
       reference_frame_id: box_base
 
-    # Cameras 
+    # Cameras
     - frame_id: alphasense_front_center
       file: "*_tf_minimal.bag"
       topic: /tf_static
       reference_frame_id: box_base
-    
+
     - frame_id: alphasense_front_left
       file: "*_tf_minimal.bag"
       topic: /tf_static
       reference_frame_id: box_base
-      
+
     - frame_id: alphasense_front_right
       file: "*_tf_minimal.bag"
       topic: /tf_static
@@ -107,7 +107,7 @@ metadata:
       file: "*_tf_minimal.bag"
       topic: /tf_static
       reference_frame_id: box_base
-    
+
     - frame_id: alphasense_base
       file: "*_tf_minimal.bag"
       topic: /tf_static
@@ -137,7 +137,7 @@ metadata:
       file: "*_tf_minimal.bag"
       topic: /tf_static
       reference_frame_id: box_base
-    
+
     - frame_id: zed2i_base
       file: "*_tf_minimal.bag"
       topic: /tf_static
@@ -158,7 +158,7 @@ metadata:
       file: "*_tf_minimal.bag"
       topic: /tf_static
       reference_frame_id: base
-      
+
     - frame_id: depth_camera_front_lower
       file: "*_tf_minimal.bag"
       topic: /tf_static
@@ -189,7 +189,7 @@ metadata:
       file: "*_tf_minimal.bag"
       topic: /tf_static
       reference_frame_id: base
-      
+
     # IMUS
     - frame_id: adis16475_imu
       file: "*_tf_minimal.bag"
@@ -215,12 +215,12 @@ metadata:
       file: "*_tf_minimal.bag"
       topic: /tf_static
       reference_frame_id: box_base
-    
+
     - frame_id: zed2i_imu
       file: "*_tf_minimal.bag"
       topic: /tf_static
       reference_frame_id: box_base
-    
+
     - frame_id: anymal_imu
       file: "*_tf_minimal.bag"
       topic: /tf_static
@@ -235,7 +235,7 @@ data:
       compressed: true
       camera_intrinsics: alphasense_front_center_caminfo
       description: "10Hz - 1440x1080 - Sevensense Alphasense/CoreResearch front center (Sony IMX-273, Color, 1.6MP)"
-    
+
     - alias: alphasense_front_left
       file: "*_alphasense.bag"
       topic: "/boxi/alphasense/front_left/image_raw/compressed"
@@ -243,7 +243,7 @@ data:
       compressed: true
       camera_intrinsics: alphasense_front_left_caminfo
       description: "10Hz - 1440x1080 - Sevensense Alphasense/CoreResearch front left (Sony IMX-273, Mono, 1.6MP)"
-  
+
     - alias: alphasense_front_right
       file: "*_alphasense.bag"
       topic: "/boxi/alphasense/front_right/image_raw/compressed"
@@ -251,7 +251,7 @@ data:
       compressed: true
       camera_intrinsics: alphasense_front_right_caminfo
       description: "10Hz - 1440x1080 - Sevensense Alphasense/CoreResearch front right (Sony IMX-273, Mono, 1.6MP)"
-  
+
     - alias: alphasense_left
       file: "*_alphasense.bag"
       topic: "/boxi/alphasense/left/image_raw/compressed"
@@ -259,7 +259,7 @@ data:
       compressed: true
       camera_intrinsics: alphasense_left_caminfo
       description: "10Hz - 1440x1080 - Sevensense Alphasense/CoreResearch left (Sony IMX-273, Color, 1.6MP)"
-  
+
     - alias: alphasense_right
       file: "*_alphasense.bag"
       topic: "/boxi/alphasense/right/image_raw/compressed"
@@ -267,7 +267,7 @@ data:
       compressed: true
       camera_intrinsics: alphasense_right_caminfo
       description: "10Hz - 1440x1080 - Sevensense Alphasense/CoreResearch right (Sony IMX-273, Color, 1.6MP)"
-  
+
     - alias: hdr_left
       file: "*_hdr_left.bag"
       topic: "/boxi/hdr/left/image_raw/compressed"
@@ -275,7 +275,7 @@ data:
       compressed: true
       camera_intrinsics: hdr_left_caminfo
       description: "10Hz - 1920x1280 - TierIV C1 left (120dB, Color, 2.5MP)"
-  
+
     - alias: hdr_front
       file: "*_hdr_front.bag"
       topic: "/boxi/hdr/front/image_raw/compressed"
@@ -361,7 +361,7 @@ data:
       depth: true
       camera_intrinsics: depth_camera_rear_upper_caminfo
       description: "15Hz - 848x480 - IntelRealsense D435i rear upper (Integrated in ANYbotics ANYmal D)"
-      
+
     - alias: depth_camera_left
       file: "*_anymal_depth_cameras.bag"
       topic: "/anymal/depth_camera/left/depth/image_rect_raw"
@@ -394,14 +394,13 @@ data:
     - alias: velodyne_undist
       file: "*_anymal_velodyne_undist.bag"
       topic: "/anymal/velodyne/points_undistorted"
-      
+
       attributes:
         - intensity
         - ring
         - timestamp
       description: "10Hz - Velodyne VLP-16 (Integrated in ANYbotics ANYmal D) - undistorted using Leg Interial Odometry"
 
-    
     - alias: hesai
       file: "*_hesai.bag"
       topic: "/boxi/hesai/points"
@@ -452,7 +451,6 @@ data:
         - intensity
         - timestamp
       description: "10Hz - Hesai XT-32 - undistorted using Direct LiDAR Interial Odometry (DLIO)"
-
 
   # pose_topics:
   #   - alias: zed2i_vio_map
@@ -525,7 +523,7 @@ data:
     - alias: dlio_map_odometry
       file: "*_dlio.bag"
       topic: "/boxi/dlio/lidar_map_odometry"
-      
+
     # - alias: zed2i_vio_odometry
     #  file: "*_zed2i_vio.bag"
     #  topic: "/boxi/zed2i_vio/odom"
@@ -545,7 +543,7 @@ data:
 
   point_topics:
     - alias: prism_position
-      file: "*_ap20_prism_position.bag" 
+      file: "*_ap20_prism_position.bag"
       topic: "/boxi/ap20/prism_position"
 
   singleton_transform_topics:
@@ -582,20 +580,20 @@ data:
     #   topic: "/boxi/inertial_explorer/tc/navsatfix_origin"
 
   gnss_raw_topics:
-  #   # TODO: only includes /tf topic
-  #   # - alias: gnss_origin_cpt7_ie_rt
-  #   #   file: "*_cpt7_ie_rt.bag"
-  #   #   topic: "/boxi/inertial_explorer/rt/origin"
+    #   # TODO: only includes /tf topic
+    #   # - alias: gnss_origin_cpt7_ie_rt
+    #   #   file: "*_cpt7_ie_rt.bag"
+    #   #   topic: "/boxi/inertial_explorer/rt/origin"
 
-  #   # TODO: only includes /tf topic
-  #   # - alias: gnss_raw_cpt7_ie_rt
-  #   #   file: "*_cpt7_ie_rt.bag"
-  #   #   topic: "/boxi/inertial_explorer/rt/raw"
+    #   # TODO: only includes /tf topic
+    #   # - alias: gnss_raw_cpt7_ie_rt
+    #   #   file: "*_cpt7_ie_rt.bag"
+    #   #   topic: "/boxi/inertial_explorer/rt/raw"
 
-  #   # TODO: not included in the bag file
-  #   # - alias: gnss_origin_cpt7_ie_tc
-  #   #   file: "*_cpt7_ie_tc.bag"
-  #   #   topic: "/boxi/inertial_explorer/tc/origin"
+    #   # TODO: not included in the bag file
+    #   # - alias: gnss_origin_cpt7_ie_tc
+    #   #   file: "*_cpt7_ie_tc.bag"
+    #   #   topic: "/boxi/inertial_explorer/tc/origin"
 
     - alias: gnss_raw_cpt7_ie_tc
       file: "*_cpt7_ie_tc.bag"
@@ -638,24 +636,22 @@ data:
       topic: "/boxi/inertial_explorer/tc/cpt7_imu_gyro_drift"
 
   anymal_twist_topics:
-      - alias: anymal_command_twist
-        file: "*_anymal_command.bag"
-        topic: "/anymal/twist_command"
-
+    - alias: anymal_command_twist
+      file: "*_anymal_command.bag"
+      topic: "/anymal/twist_command"
 # TODO: Debug
-  # anymal_debug_topics:
-  #   - alias: anymal_locomotion
-  #     file: "*_anymal_locomotion.bag"
-  #     topic: "/anymal/locomotion_policy/debug_info"
-
+# anymal_debug_topics:
+#   - alias: anymal_locomotion
+#     file: "*_anymal_locomotion.bag"
+#     topic: "/anymal/locomotion_policy/debug_info"
 
 #### TODO: Not yet implemented!  ###################################################
 
 # TODO: implement topic of type any_velodyne_msgs/VelodyneScan
 # only generate the topic_name and frame_id no conversion needed
-  #   - alias: anymal_velodyne_packets
-  #     file: "*_anymal_velodyne_packets.bag"
-  #     topic: "/anymal/velodyne/packets"
+#   - alias: anymal_velodyne_packets
+#     file: "*_anymal_velodyne_packets.bag"
+#     topic: "/anymal/velodyne/packets"
 
 # TODO: implement topic of type grid_map_msgs/GridMap
 # only generate the topic_name and frame_id no conversion needed
