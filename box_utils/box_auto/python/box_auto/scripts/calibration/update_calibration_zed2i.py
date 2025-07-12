@@ -35,7 +35,6 @@ def load_calibration_data(pattern="*tf_static_metadata_new_*.bag") -> Dict[str, 
                     # Parse YAML and transform to CameraInfo message
                     cal_data = yaml.safe_load(msg.data)
                     msg = CameraInfo()
-                    msg.height = cal_data["image_height"]
                     msg.width = cal_data["image_width"]
                     msg.distortion_model = cal_data["distortion_model"]
                     msg.D = cal_data["distortion_coefficients"]["data"]
@@ -100,7 +99,7 @@ if __name__ == "__main__":
             tmp_folder.mkdir(parents=True, exist_ok=True)
 
             if mission_data[name]["GOOD_MISSION"] != "TRUE":
-                # print("Skip processing mission - no good mission")
+                print("Skip processing mission - no good mission")
                 continue
 
             res = kleinkram.list_files(
@@ -155,5 +154,8 @@ if __name__ == "__main__":
             raise RuntimeError(f"Error processing mission {name}: {e}") from e
         finally:
             # Clean up temporary folder
-            if tmp_folder.exists():
-                shutil.rmtree(tmp_folder)
+            try:
+                if tmp_folder.exists():
+                    shutil.rmtree(tmp_folder)
+            except Exception as e:
+                print(e)
