@@ -17,6 +17,7 @@ from transformers import Mask2FormerImageProcessor, Mask2FormerForUniversalSegme
 from PIL import Image
 import sensor_msgs.point_cloud2 as pc2
 
+
 # Required for visualization of depth
 from scipy.ndimage import grey_dilation
 import matplotlib.pyplot as plt
@@ -106,7 +107,7 @@ def gl_to_ros_transform(transform_gl):
 
 class DepthProcessor:
     def __init__(self, config, tf_listener, output_folder, bag_folder):
-        self.debug = True
+        self.debug = config["nerfstudio"]["debug"]
         self.config = config
         self.sub_key = "depth"
 
@@ -168,7 +169,7 @@ class DepthProcessor:
 
         return lidar_points, msg0_to_world
 
-    def process(self, frame):
+    def process(self, frame, debug_tag):
         camera_to_world = gl_to_ros_transform(np.array(frame["transform_matrix"]))
         tim = rospy.Time()
         tim.secs = int(frame["timestamp"].split("_")[0])
@@ -211,11 +212,11 @@ class DepthProcessor:
         cv2.imwrite(str(self.output_folder / frame["depth_file_path"]), depth_image.astype(np.float32))
 
         if self.debug:
-            self.overlay_depth_on_rgb(frame)
+            self.overlay_depth_on_rgb(frame, debug_tag)
 
         return frame
 
-    def overlay_depth_on_rgb(self, frame):
+    def overlay_depth_on_rgb(self, frame, debug_tag):
         rgb_image = np.array(Image.open(self.output_folder / frame["file_path"]))
         depth_image = cv2.imread(str(self.output_folder / frame["depth_file_path"]), cv2.IMREAD_UNCHANGED)
         # Normalize depth image for visualization - max range 10m
@@ -265,7 +266,7 @@ class DepthProcessor:
             cv2.LINE_AA,
         )
         # Save again with tag
-        output_path = str(self.output_folder / frame["depth_file_path"]).replace(".png", "_overlay.png")
+        output_path = str(self.output_folder / frame["depth_file_path"]).replace(".png", f"_overlay_{debug_tag}.png")
         cv2.imwrite(output_path, overlay_bgr)
 
     def project_lidar_to_camera(
@@ -412,7 +413,7 @@ class NerfstudioConverter:
         if hasattr(self, "depth_image_bag"):
             self.depth_image_bag.close()
 
-    def process_frame(self, img_msg, topic):
+    def process_frame(self, img_msg, topic, debug_tag):
         if self.image_counters[topic] >= self.config["num_images_per_topic"] or (
             self.head != -1 and self.image_counters[topic] >= self.head
         ):
@@ -449,11 +450,6 @@ class NerfstudioConverter:
 
         self.last_trans = trans
         self.image_counters[topic] += 1
-
-        if self.image_counters[topic] < 10:
-            return True
-        print("Skipping for first 10 is still active remove before production")
-
         self.image_last_stored[topic] = img_msg.header.stamp.to_sec()
 
         image_filename = f"{camera_key}_{img_msg.header.seq:05d}.png"
@@ -555,6 +551,8 @@ class NerfstudioConverter:
 
         # TODO check if these here need to be saved as strings or float and int is also good
 
+        if "zed2i" in topic:
+            camera_info.height = 1080
         # Add frame data
         frame_data = {
             "file_path": f"./rgb/{image_filename}",
@@ -594,7 +592,7 @@ class NerfstudioConverter:
             cv2.imwrite(stereo_depth_file_path, depth_image_float)
 
         if self.config["nerfstudio"]["create_depth_based_on_lidar"]:
-            frame_data = self.depth_processor.process(frame_data)
+            frame_data = self.depth_processor.process(frame_data, debug_tag)
 
         if self.config["nerfstudio"]["create_mask_based_on_semantics"]:
             frame_data["mask_path"] = f"./mask/{image_filename}"
@@ -614,11 +612,13 @@ def main():
     parser.add_argument(
         "--mission_uuid",
         type=str,
-        default="34c04ec5-c1b7-4674-9d64-99ade50f71d0",
+        default="10aa8311-2487-4e5c-9136-91b1d9ae4efa",
         help="Mission UUID (uses GRI-1_release UUID if empty)",
     )
+    # GRI-1 34c04ec5-c1b7-4674-9d64-99ade50f71d0
+    # HAUS-1 10aa8311-2487-4e5c-9136-91b1d9ae4efa
     parser.add_argument("--config_file", type=str, default=PATH, help="Path to the configuration YAML file")
-    parser.add_argument("--cluster", default=False, help="Flag to indicate if on or off")
+    parser.add_argument("--cluster", default=True, help="Flag to indicate if on or off")
     parser.add_argument("--head", type=int, default=-1, help="Number of images")
 
     args = parser.parse_args()
@@ -692,7 +692,15 @@ def main():
             for topic, msg, t in bag.read_messages(
                 topics=[camera["image_topic"]], start_time=rospy.Time(start), end_time=rospy.Time(end)
             ):
-                suc = converter.process_frame(msg, topic)
+                # if msg.header.seq not in [619, 630, 1692, 226, 2332, 2869, 3610, 3728, 3850, 4675, 5862]:
+                #     continue
+                # store = copy.deepcopy(msg.header.stamp)
+                # offset_in_ms = 0
+                # for offset_in_ms in range(-100,100, 5):
+                offset_in_ms = camera.get("offset_in_ms", 0.0)
+                msg.header.stamp = msg.header.stamp + rospy.Duration.from_sec(offset_in_ms * 0.001)
+                debug_tag = f"offset_{offset_in_ms}_ms"
+                suc = converter.process_frame(msg, topic, debug_tag)
                 if not suc:
                     print(f"Finished processing {camera['name']}")
                     break
