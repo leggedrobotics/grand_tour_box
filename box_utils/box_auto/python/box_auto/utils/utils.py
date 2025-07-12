@@ -89,12 +89,7 @@ def get_bag(
         # Download pattern matched files from Kleinkram
         if (auto_download) and (os.environ.get("KLEINKRAM_ACTIVE", False) == "ACTIVE"):
             uuid = os.environ["MISSION_UUID"]
-            kleinkram.download(
-                mission_ids=[uuid],
-                file_names=[pattern],
-                dest=directory,
-                verbose=True,
-            )
+            kleinkram.download(mission_ids=[uuid], file_names=[pattern], dest=directory, verbose=True, overwrite=True)
 
         if rglob:
             # Get reference bag path
