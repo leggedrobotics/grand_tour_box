@@ -8,7 +8,6 @@ import shutil
 SPREADSHEET_ID = "1mENfskg_jO_vJGFM5yonqPuf-wYUNmg26IPv3pOu3gg"
 # Read the data and print the list
 topic_data, mission_data = read_sheet_data(SPREADSHEET_ID)
-
 UUID_MAPPING = get_uuid_mapping()
 
 
@@ -66,7 +65,7 @@ def run_and_upload(ori_files, mission_name):
     except Exception as e:
         print(f"{mission_name}: Error: {e}")
     finally:
-        print("CleanUp tmp folder:")
+        print("Clean up tmp folder:")
         shutil.rmtree(tmp_folder)
 
 
