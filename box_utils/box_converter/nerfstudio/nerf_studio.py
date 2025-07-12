@@ -347,12 +347,12 @@ class DepthProcessor:
 
 class NerfstudioConverter:
     def __init__(self, camera_infos, camera_keys, tf_listener, config, data_folder, mission_name, head):
+        self.blur_score = {}
         self.tf_listener = tf_listener
         self.camera_infos = camera_infos
         self.camera_keys = camera_keys
         self.config = config
         self.head = head
-        self.blur_threshold = config["nerfstudio"]["blur_threshold"]
 
         self.taget_camera_infos = {k: None for k in camera_infos.keys()}
         self.map1 = {k: None for k in camera_infos.keys()}
@@ -413,7 +413,7 @@ class NerfstudioConverter:
         if hasattr(self, "depth_image_bag"):
             self.depth_image_bag.close()
 
-    def process_frame(self, img_msg, topic, debug_tag):
+    def process_frame(self, img_msg, topic, debug_tag, cfg):
         if self.image_counters[topic] >= self.config["num_images_per_topic"] or (
             self.head != -1 and self.image_counters[topic] >= self.head
         ):
@@ -491,7 +491,9 @@ class NerfstudioConverter:
 
             # Check blur and save image
             blur = cv2.Laplacian(cv_image, cv2.CV_64F).var()
-            if blur < self.blur_threshold:
+
+            self.blur_score[image_filename] = blur
+            if blur < cfg["blur_threshold"]:
                 print(f"Warning: Image too blurry (blur value: {blur}). Skipping.")
                 return True
 
@@ -700,7 +702,7 @@ def main():
                 offset_in_ms = camera.get("offset_in_ms", 0.0)
                 msg.header.stamp = msg.header.stamp + rospy.Duration.from_sec(offset_in_ms * 0.001)
                 debug_tag = f"offset_{offset_in_ms}_ms"
-                suc = converter.process_frame(msg, topic, debug_tag)
+                suc = converter.process_frame(msg, topic, debug_tag, camera)
                 if not suc:
                     print(f"Finished processing {camera['name']}")
                     break
