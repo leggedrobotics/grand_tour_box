@@ -42,7 +42,14 @@ def _load_metadata_from_bag_file_and_topic(
     """
     for message in messages_in_bag_with_topic(bag_path, topic_desc.topic, progress_bar=False):
         # i.e. {'frame_id': 'zed2i_left_camera_optical_frame'}
-        return extract_header_metadata_from_deserialized_message(message, topic_desc)
+
+        try:
+            return extract_header_metadata_from_deserialized_message(message, topic_desc)
+        except Exception as e:
+            if topic_desc.optional:
+                print(f"Warning: {e}. Skipping optional topic {topic_desc.topic}.")
+                continue
+            raise ValueError(f"Error processing topic {topic_desc.topic}: {e}")
 
     raise ValueError(f"no messages found in topic {topic_desc.topic}")
 
@@ -53,13 +60,17 @@ def _load_camera_info_metadata_from_bag_file_and_topic(
 ) -> Dict[str, Any]:
     for message in messages_in_bag_with_topic(bag_path, topic_desc.topic, progress_bar=False):
         assert isinstance(message, CameraInfo), f"topic {topic_desc.topic} does not contain CameraInfo messages"
-
-        return extract_camera_info_metadata_from_deserialized_message(message, topic_desc)
-    raise ValueError(f"no messages found in topic {topic_desc.topic}")
+        try:
+            return extract_camera_info_metadata_from_deserialized_message(message, topic_desc)
+        except Exception as e:
+            if topic_desc.optional:
+                print(f"Warning: {e}. Skipping optional topic {topic_desc.topic}.")
+                continue
+            raise ValueError(f"Error processing topic {topic_desc.topic}: {e}")
 
 
 def _load_tf_metadata_from_bag_file_and_topic(
-    bag_path: Path,
+    tf_listener: BagTfTransformer,
     frame_transform_config: FrameTransformConfig,
 ) -> Dict[str, Any]:
     # TODO: integrate frame_transform_config
@@ -91,31 +102,29 @@ def _load_tf_metadata_from_bag_file_and_topic(
                                                'rotation': {...}},...}
 
     """
-    with rosbag.Bag(bag_path) as bag:
-        tf_listener = BagTfTransformer(bag)
 
-        orig_frame = frame_transform_config.reference_frame_id
-        child_frame_id = frame_transform_config.frame_id
+    orig_frame = frame_transform_config.reference_frame_id
+    child_frame_id = frame_transform_config.frame_id
 
-        if not tf_listener.tf_static_messages:
-            raise ValueError("No TF messages found in the bag file.")
+    if not tf_listener.tf_static_messages:
+        raise ValueError("No TF messages found in the bag file.")
 
-        metadata_dict = {}
-        for message in tf_listener.tf_static_messages:
-            if message.child_frame_id != child_frame_id:
-                continue
+    metadata_dict = {}
+    for message in tf_listener.tf_static_messages:
+        if message.child_frame_id != child_frame_id:
+            continue
 
-            try:
-                trans, quat = tf_listener.lookupTransform(child_frame_id, orig_frame, None, latest=True)
-                metadata_dict[child_frame_id] = {
-                    "base_frame_id": orig_frame,
-                    "child_frame_id": child_frame_id,
-                    "translation": {"x": trans[0], "y": trans[1], "z": trans[2]},
-                    "rotation": {"x": quat[0], "y": quat[1], "z": quat[2], "w": quat[3]},
-                }
-                break  # Exit loop early since the desired transform is found
-            except Exception as e:
-                logger.warning(f"Failed to lookup transform for {orig_frame} to {child_frame_id}: {e}")
+        try:
+            trans, quat = tf_listener.lookupTransform(child_frame_id, orig_frame, None, latest=True)
+            metadata_dict[child_frame_id] = {
+                "base_frame_id": orig_frame,
+                "child_frame_id": child_frame_id,
+                "translation": {"x": trans[0], "y": trans[1], "z": trans[2]},
+                "rotation": {"x": quat[0], "y": quat[1], "z": quat[2], "w": quat[3]},
+            }
+            break  # Exit loop early since the desired transform is found
+        except Exception as e:
+            logger.warning(f"Failed to lookup transform for {orig_frame} to {child_frame_id}: {e}")
 
     return metadata_dict
 
@@ -168,12 +177,16 @@ def _get_frame_ids(bags_path: Path, topic_reg: TopicRegistry) -> Dict[str, Any]:
     """
 
     ret = {}
-    try:
-        for _, topic_desc in tqdm(topic_reg.values(), desc="Processing topics"):
+    for _, topic_desc in tqdm(topic_reg.values(), desc="Processing topics"):
+        try:
             ret[topic_desc.alias] = _get_frame_id_from_topic(bags_path, topic_desc)
-        return ret
-    except ValueError as e:
-        print(f"no messages found in topic {topic_desc.topic}")
+        except ValueError as e:
+            if hasattr(topic_desc, "optional"):
+                if topic_desc.optional:
+                    print(f"Warning: {e}. Skipping optional topic {topic_desc.topic}.")
+                    continue
+                raise ValueError(f"Error processing topic {topic_desc.topic}: {e}")
+    return ret
 
 
 def _get_camera_infos(bags_path: Path, metadata_config: MetadataConfig) -> Dict[str, Any]:
@@ -225,13 +238,14 @@ def _get_frame_transform_metadata(bags_path: Path, frame_transform_config: Frame
     """
     tf_metadata = {}
 
+    unique_bags = list(set([c.file for c in frame_transform_config]))
+    tf_listeners = {}
+    for bag_name in unique_bags:
+        with rosbag.Bag(bags_path / bag_name, "r") as bag:
+            tf_listeners[bag_name] = BagTfTransformer(bag)
+
     for frame_transform in tqdm(frame_transform_config, desc="Processing frame transforms"):
-        bag_path = bags_path / frame_transform.file
-
-        if not (bag_path.exists() and bag_path.is_file() and bag_path.suffix == ".bag"):
-            raise ValueError(f"Invalid bag file: {bag_path}")
-
-        tf_metadata.update(_load_tf_metadata_from_bag_file_and_topic(bag_path, frame_transform))
+        tf_metadata.update(_load_tf_metadata_from_bag_file_and_topic(tf_listeners[bag_name], frame_transform))
     return tf_metadata
 
 

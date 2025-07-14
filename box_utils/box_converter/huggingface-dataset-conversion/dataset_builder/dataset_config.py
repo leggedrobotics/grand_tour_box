@@ -40,17 +40,17 @@ class Topic:
 
 @dataclass
 class ImageTopic(Topic):
+    parsing: str = "cv_bridge"
     format: str = "jpeg"
-    compressed: bool = True
-    depth: bool = False
-    rvl: bool = False
     camera_intrinsics: str = ""
+    optional: bool = False
 
 
 @dataclass
 class LidarTopic(Topic):
     max_points: int
     attributes: List[str] = field(default_factory=list)
+    optional: bool = False
 
 
 @dataclass
@@ -59,7 +59,8 @@ class PoseTopic(Topic):
 
 
 @dataclass
-class ImuTopic(Topic): ...
+class ImuTopic(Topic):
+    optional: bool = False
 
 
 @dataclass
@@ -78,7 +79,8 @@ class AnymalDebugTopic(Topic): ...
 
 
 @dataclass
-class NavSatFixTopic(Topic): ...
+class NavSatFixTopic(Topic):
+    optional: bool = False
 
 
 @dataclass
@@ -86,7 +88,8 @@ class MagneticFieldTopic(Topic): ...
 
 
 @dataclass
-class PointTopic(Topic): ...
+class PointTopic(Topic):
+    optional: bool = False
 
 
 @dataclass
@@ -114,11 +117,13 @@ class ImuVector(Topic): ...
 
 
 @dataclass
-class GPSFixTopic(Topic): ...
+class GPSFixTopic(Topic):
+    optional: bool = False
 
 
 @dataclass
-class GnssRawTopic(Topic): ...
+class GnssRawTopic(Topic):
+    optional: bool = False
 
 
 @dataclass
@@ -133,6 +138,7 @@ class BatteryStateTopic(Topic): ...
 @dataclass
 class CameraInfoTopic(Topic):
     description: str = ""
+    optional: bool = False
 
 
 @dataclass

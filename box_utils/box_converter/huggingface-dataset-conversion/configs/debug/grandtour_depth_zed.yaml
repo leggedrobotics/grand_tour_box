@@ -1,0 +1,38 @@
+metadata:
+  camera_intrinsics:
+    - alias: zed2i_depth_caminfo
+      file: "*_zed2i_depth.bag"
+      topic: "/boxi/zed2i/depth/camera_info"
+
+  frame_transforms:
+    - frame_id: zed2i_left
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: zed2i_right
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: zed2i_base
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+data:
+  image_topics:
+    # - alias: zed2i_depth_image
+    #   file: "*_zed2i_depth.bag"
+    #   topic: "/boxi/zed2i/depth/image_raw/compressed"
+    #   format: png
+    #   parsing: "depth_zed2i"
+    #   camera_intrinsics: zed2i_depth_caminfo
+    #   description: "15Hz - 1920x1080 - Stereolabs Zed2i - generated Stereolabs SDK 4.2 (mounted up-side-down / we flipped the naming of the left and right camera w.r.t. ZED2i driver)"
+    - alias: zed2i_depth_confidence_image
+      file: "*_zed2i_depth.bag"
+      topic: "/boxi/zed2i/confidence/image_raw/compressed"
+      format: png
+      parsing: "zed2i_confidence"
+      camera_intrinsics: zed2i_depth_caminfo
+      description: "15Hz - 1920x1080 - Stereolabs Zed2i - generated Stereolabs SDK 4.2 (mounted up-side-down / we flipped the naming of the left and right camera w.r.t. ZED2i driver)."

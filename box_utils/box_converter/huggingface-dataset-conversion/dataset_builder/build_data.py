@@ -34,13 +34,6 @@ from dataset_builder.message_parsing import BasicType
 from dataset_builder.message_parsing import parse_deserialized_message
 from dataset_builder.utils import messages_in_bag_with_topic
 
-import sys
-
-sys.path.insert(
-    0,
-    "/catkin_ws/src/grand_tour_box/box_utils/box_converter/huggingface-dataset-conversion/rvl_compression/compressed_depth",
-)
-import compressed_depth
 
 DATA_PREFIX = "data"
 IMAGE_PREFIX = "images"
@@ -55,7 +48,6 @@ def _decode_depth_message(msg):
 
     # header = payload[12:20]
     # cols, rows = np.frombuffer(header, dtype=np.uint32)
-    depth = compressed_depth.decode(payload, msg.format)
 
     if not depth.flags["C_CONTIGUOUS"]:
         depth = np.ascontiguousarray(depth)
@@ -73,18 +65,27 @@ def _extract_and_save_image_from_message(
     image_dir: Path,
     cv_bridge: CvBridge,
 ) -> None:
-    if topic_desc.compressed:
-        if topic_desc.rvl:
-            image = _decode_depth_message(msg)
-        else:
-            image = cv_bridge.compressed_imgmsg_to_cv2(msg)
+    if topic_desc.parsing == "cv_bridge_compressed":
+        image = cv_bridge.compressed_imgmsg_to_cv2(msg)
 
-    elif topic_desc.depth:
-        buffer16 = np.frombuffer(msg.data, np.uint16)
-        image = buffer16.reshape(msg.height, msg.width)
+    elif topic_desc.parsing == "depth_zed2i":
+        arr = np.frombuffer(msg.data, dtype=np.uint8)
+        png_bytes = arr[12:]  # skip 12-byte header
+        image = cv2.imdecode(png_bytes, cv2.IMREAD_UNCHANGED)
+
+    elif topic_desc.parsing == "zed2i_confidence":
+        arr = np.frombuffer(msg.data, dtype=np.uint8)
+        png_bytes = arr[12:]  # skip 12-byte header
+        image = cv2.imdecode(png_bytes, cv2.IMREAD_UNCHANGED)
+
+    elif topic_desc.parsing == "depth_realsense":
+        image = cv_bridge.imgmsg_to_cv2(msg)
+
+    elif topic_desc.parsing == "cv_bridge":
+        image = cv_bridge.imgmsg_to_cv2(msg)
 
     else:
-        image = cv_bridge.imgmsg_to_cv2(msg)
+        raise ValueError(f"Unsupported parsing type: {topic_desc.parsing}")
     file_path = image_dir / f"{image_index:06d}.{topic_desc.format}"
 
     imwrite(str(file_path), image)
@@ -228,6 +229,12 @@ def _generate_dataset_from_topic_description_and_attribute_types(
 
     # images of the dataset
     jpeg_root_path = dataset_root / IMAGE_PREFIX
+
+    # to account for optional topics
+    if topic_desc.alias not in metadata:
+        if hasattr(topic_desc, "optional") and topic_desc.optional:
+            return
+        raise ValueError(f"topic {topic_desc.alias} not found in metadata")
 
     topic_zarr_group = _create_zarr_group_for_topic(zarr_root_path, topic_desc.alias)
     chunk_size = _create_zarr_arrays_for_topic(attribute_types, topic_zarr_group)
