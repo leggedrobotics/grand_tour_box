@@ -31,7 +31,7 @@ data:
     #   description: "15Hz - 1920x1080 - Stereolabs Zed2i - generated Stereolabs SDK 4.2 (mounted up-side-down / we flipped the naming of the left and right camera w.r.t. ZED2i driver)"
     - alias: zed2i_depth_confidence_image
       file: "*_zed2i_depth.bag"
-      topic: "/boxi/zed2i/confidence/image_raw/compressed"
+      topic: "/boxi/zed2i/confidence/image_raw/compressedDepth"
       format: png
       parsing: "zed2i_confidence"
       camera_intrinsics: zed2i_depth_caminfo

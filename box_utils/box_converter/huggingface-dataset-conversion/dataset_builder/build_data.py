@@ -69,14 +69,16 @@ def _extract_and_save_image_from_message(
         image = cv_bridge.compressed_imgmsg_to_cv2(msg)
 
     elif topic_desc.parsing == "depth_zed2i":
-        arr = np.frombuffer(msg.data, dtype=np.uint8)
-        png_bytes = arr[12:]  # skip 12-byte header
-        image = cv2.imdecode(png_bytes, cv2.IMREAD_UNCHANGED)
+        # arr = np.frombuffer(msg.data, dtype=np.uint8)
+        # png_bytes = arr[12:]  # skip 12-byte header
+        # image = cv2.imdecode(png_bytes, cv2.IMREAD_UNCHANGED)
+        image = cv_bridge.compressed_imgmsg_to_cv2(msg, desired_encoding="passthrough")
 
     elif topic_desc.parsing == "zed2i_confidence":
-        arr = np.frombuffer(msg.data, dtype=np.uint8)
-        png_bytes = arr[12:]  # skip 12-byte header
-        image = cv2.imdecode(png_bytes, cv2.IMREAD_UNCHANGED)
+        # arr = np.frombuffer(msg.data, dtype=np.uint8)
+        # png_bytes = arr[12:]  # skip 12-byte header
+        # image = cv2.imdecode(png_bytes, cv2.IMREAD_UNCHANGED)
+        image = cv_bridge.compressed_imgmsg_to_cv2(msg, desired_encoding="passthrough")
 
     elif topic_desc.parsing == "depth_realsense":
         image = cv_bridge.imgmsg_to_cv2(msg)

@@ -8,7 +8,7 @@ import kleinkram
 
 BAG_PATTERNS = [
     "*_jetson_zed2i_calib.bag",
-    "*_jetson_zed2i_depth_new.bag",
+    "*_jetson_zed2i_depth.bag",
 ]
 
 
@@ -25,7 +25,7 @@ def update_depth_camera_info(tmp_folder, mission_name):
         camera_info_msg = next(inbag.read_messages(topics=["/boxi/zed2i/left/camera_info"]))
 
     with rosbag.Bag(bag_path_depth, "r") as inbag:
-        out_bag = bag_path_depth.replace("_jetson_zed2i_depth_new.bag", "_jetson_zed2i_depth_calib.bag")
+        out_bag = bag_path_depth.replace("_jetson_zed2i_depth.bag", "_jetson_zed2i_depth_calib.bag")
 
         with rosbag.Bag(out_bag, "w", compression="lz4") as outbag:
             for topic, msg, t in inbag.read_messages(topics=["/boxi/zed2i/depth/camera_info"]):

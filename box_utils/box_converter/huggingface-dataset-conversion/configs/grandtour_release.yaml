@@ -310,7 +310,7 @@ data:
 
     - alias: zed2i_depth_confidence_image
       file: "*_zed2i_depth.bag"
-      topic: "/boxi/zed2i/confidence/image_raw/compressed"
+      topic: "/boxi/zed2i/confidence/image_raw/compressedDepth"
       format: png
       parsing: "zed2i_confidence"
       camera_intrinsics: zed2i_depth_caminfo
@@ -318,7 +318,7 @@ data:
 
     - alias: zed2i_depth_image
       file: "*_zed2i_depth.bag"
-      topic: "/boxi/zed2i/depth/image_raw/compressed"
+      topic: "/boxi/zed2i/depth/image_raw/compressedDepth"
       format: png
       parsing: "depth_zed2i"
       camera_intrinsics: zed2i_depth_caminfo
