@@ -40,6 +40,9 @@ def _load_metadata_from_bag_file_and_topic(
     """
     Load metadata from a bag file and a topic description
     """
+    if not bag_path.exists() and topic_desc.optional:
+        return {}
+
     for message in messages_in_bag_with_topic(bag_path, topic_desc.topic, progress_bar=False):
         # i.e. {'frame_id': 'zed2i_left_camera_optical_frame'}
 

@@ -15,27 +15,31 @@ from dataset_builder.dataset_config import load_config
 
 
 parser = ArgumentParser(description="Dataset Builder Script")
-parser.add_argument("--mission_name", type=str, default="2024-10-01-11-29-55", help="Specify the mission name to use.")
+parser.add_argument("--mission_name", type=str, default="2024-11-15-14-43-52", help="Specify the mission name to use.")
 parser.add_argument("--config_file", type=str, default="grandtour_release", help="Specify the config file to use.")
 parser.add_argument("--skip_download", action="store_true", help="Skip the download of the mission data.")
+parser.add_argument("--max_messages", default=-1, help="Maximum number of messages to process, -1 for all messages.")
+
+
 args = parser.parse_args()
 DOWNLOAD_FLAG = not args.skip_download
 print(f"Download flag: {DOWNLOAD_FLAG}")
+MAX_MESSAGES = int(args.max_messages)
 CONFIG_FILE_NAME = args.config_file
-MISSION_NAME = args.mission_name
 DEFAULT_CONFIG_PATH = Path(__file__).parent.parent / "configs" / f"{CONFIG_FILE_NAME}.yaml"
-DATA_PATH = Path(f"/tmp_disk/dataset_builder_{MISSION_NAME}")
+DATA_PATH = Path(f"/tmp_disk")
 
+MISSION_NAME = args.mission_name
 INPUT_PATH = DATA_PATH / "files" / MISSION_NAME
 DATASET_PATH = DATA_PATH / "dataset" / MISSION_NAME
 LOG_FILE_PATH = DATASET_PATH / "generation_report.txt"
 
-HUGGINGFACE_DATASET_NAME = f"leggedrobotics/{MISSION_NAME}"
+HUGGINGFACE_DATASET_NAME = f"leggedrobotics/grand_tour_dataset"
 USERTOKEN_PATH = Path(__file__).parent.parent / "configs" / "user_token.txt"
 
 # TODO: check how this is needed in the end
 
-PUSHDATASET_FLAG = False
+PUSHDATASET_FLAG = True
 
 
 class Tee:
@@ -85,7 +89,7 @@ def redirect_output_to_file(log_file_path: Path):
 
 def download_mission(mission_id: UUID, input_path: Path) -> None:
     input_path.mkdir(parents=True, exist_ok=True)
-    kleinkram.download(mission_ids=[mission_id], file_names=["*.bag"], dest=input_path, verbose=True)
+    kleinkram.download(mission_ids=[mission_id], file_names=["*.bag"], dest=input_path, verbose=True, overwrite=True)
 
 
 def push_dataset_to_huggingface_api(dataset_repo: str, dataset_path: str = ".", token_path: str = USERTOKEN_PATH):
@@ -114,14 +118,25 @@ def push_dataset_to_huggingface_api(dataset_repo: str, dataset_path: str = ".", 
         raise RuntimeError(f"Error creating repository: {e}")
 
     try:
+
+        ignore_folders = [
+            str(folder) + "/*" for folder in dataset_path.parent.iterdir() if folder.is_dir() and folder != dataset_path
+        ]
+
         # Use upload_large_folder for large datasets
         api.upload_large_folder(
-            folder_path=dataset_path,
+            folder_path=dataset_path.parent,
             repo_id=dataset_repo,
             repo_type="dataset",
             private=True,
             print_report=True,
             print_report_every=1,
+            allow_patterns=[
+                f"*/data/.zgroup",
+                "*.yaml",
+                "*.tar",
+            ],
+            ignore_patterns=ignore_folders,
         )
         print("Dataset uploaded successfully.")
 
@@ -148,29 +163,45 @@ def run_converter(input_path: Path, output_path: Path, *, config_path: Path, mis
         metadata_config=metadata_config,
         dataset_base_path=output_path,
         metadata=metadata,
+        max_messages=MAX_MESSAGES,
     )
 
 
-@redirect_output_to_file(LOG_FILE_PATH)
 def main() -> int:
-    missions = kleinkram.list_missions(mission_names=["release_" + MISSION_NAME])
-    assert len(missions) == 1
-    mission = missions[0]
+    ALL = True
+    if ALL:
+        missions = [m.name.replace("release_", "") for m in kleinkram.list_missions(mission_names=["release_*"])]
+    else:
+        missions = [MISSION_NAME]
 
-    if DOWNLOAD_FLAG:
-        download_mission(mission_id=mission.id, input_path=INPUT_PATH)
+    for mission in missions:
+        INPUT_PATH = DATA_PATH / "files" / mission
+        DATASET_PATH = DATA_PATH / "dataset" / mission
+        LOG_FILE_PATH = DATASET_PATH / "generation_report.txt"
 
-    run_converter(
-        input_path=INPUT_PATH,
-        output_path=DATASET_PATH,
-        config_path=DEFAULT_CONFIG_PATH,
-        mission_prefix=MISSION_NAME,
-    )
+        @redirect_output_to_file(LOG_FILE_PATH)
+        def run_mission(mission):
+            missions_kk = kleinkram.list_missions(mission_names=["release_" + mission])
 
-    if PUSHDATASET_FLAG:
-        push_dataset_to_huggingface_api(
-            dataset_repo=HUGGINGFACE_DATASET_NAME, dataset_path=DATASET_PATH, token_path=USERTOKEN_PATH
-        )
+            assert len(missions_kk) == 1
+            mission_kk = missions_kk[0]
+
+            if DOWNLOAD_FLAG:
+                download_mission(mission_id=mission_kk.id, input_path=INPUT_PATH)
+
+            run_converter(
+                input_path=INPUT_PATH,
+                output_path=DATASET_PATH,
+                config_path=DEFAULT_CONFIG_PATH,
+                mission_prefix=mission_kk.name.replace("release_", ""),
+            )
+
+            if PUSHDATASET_FLAG:
+                push_dataset_to_huggingface_api(
+                    dataset_repo=HUGGINGFACE_DATASET_NAME, dataset_path=DATASET_PATH, token_path=USERTOKEN_PATH
+                )
+
+        run_mission(mission)
 
     return 0
 

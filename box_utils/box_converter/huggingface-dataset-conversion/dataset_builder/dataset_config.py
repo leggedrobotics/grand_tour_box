@@ -245,6 +245,7 @@ def _build_point_cloud_attr_types(properties: Sequence[str], max_points: int) ->
         "tag": ArrayType((max_points,), np.uint8),
         "line": ArrayType((max_points,), np.uint16),
         "ring": ArrayType((max_points,), np.uint16),
+        "time": ArrayType((max_points,), np.float64),
     }
 
     column_types: Dict[str, ArrayType] = {

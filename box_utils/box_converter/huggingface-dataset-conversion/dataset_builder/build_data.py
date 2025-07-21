@@ -67,6 +67,7 @@ def _extract_and_save_image_from_message(
 ) -> None:
     if topic_desc.parsing == "cv_bridge_compressed":
         image = cv_bridge.compressed_imgmsg_to_cv2(msg)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
     elif topic_desc.parsing == "depth_zed2i":
         arr = np.frombuffer(msg.data, dtype=np.uint8)
@@ -121,6 +122,7 @@ def _data_chunks_from_bag_topic(
     attribute_types: AttributeTypes,
     chunk_size: int,
     image_extractor: Optional[ImageExtractorCallback],
+    max_messages: int = -1,
 ) -> Generator[Dict[str, np.ndarray], None, None]:
     """\
     read messages from bag file and topic yielding chunks of data that can
@@ -134,7 +136,13 @@ def _data_chunks_from_bag_topic(
         raise ValueError("image_extractor must not be provided for non-image topics")
 
     buffer = []
+
+    j = 0
     for idx, message in enumerate(messages_in_bag_with_topic(path, topic=topic_desc.topic)):
+        if max_messages > 0 and j >= max_messages:
+            break
+        j += 1
+
         # handle data to store in zarr format
         buffer.append(parse_deserialized_message(message, topic_desc=topic_desc))
         if image_extractor is not None:
@@ -218,7 +226,7 @@ def _create_jpeg_topic_folder(jpeg_root: Path, topic_alias: str) -> Path:
 
 
 def _generate_dataset_from_topic_description_and_attribute_types(
-    dataset_root: Path, path: Path, *, topic_desc: Topic, attribute_types: AttributeTypes, metadata
+    dataset_root: Path, path: Path, *, topic_desc: Topic, attribute_types: AttributeTypes, metadata, max_messages: int
 ) -> None:
     """\
     generate dataset for specified topic inside specified file, we generally assume
@@ -233,7 +241,8 @@ def _generate_dataset_from_topic_description_and_attribute_types(
     # to account for optional topics
     if topic_desc.alias not in metadata:
         if hasattr(topic_desc, "optional") and topic_desc.optional:
-            return
+            return "Not found but optional so its fine"
+
         raise ValueError(f"topic {topic_desc.alias} not found in metadata")
 
     topic_zarr_group = _create_zarr_group_for_topic(zarr_root_path, topic_desc.alias)
@@ -264,15 +273,19 @@ def _generate_dataset_from_topic_description_and_attribute_types(
             cv_bridge=CvBridge(),
         )
 
+    count = 0
     for chunk in _data_chunks_from_bag_topic(
         path,
         topic_desc=topic_desc,
         attribute_types=attribute_types,
         chunk_size=chunk_size,
         image_extractor=image_extractor,
+        max_messages=max_messages,
     ):
         for key, data in chunk.items():
             topic_zarr_group[key].append(data, axis=0)  # type: ignore
+            count += 1
+    return f"Successfully generated dataset: {count}"
 
 
 def _tar_ball_dirs_in_dir(dir: Path, remove: bool) -> None:
@@ -306,20 +319,21 @@ def build_data_part(
     metadata_config: MetadataConfig,
     topic_registry: TopicRegistry,
     metadata,
+    max_messages,
 ) -> None:
-    # progressbar
-    progress = tqdm(topic_registry.values())
 
-    for attribute_types, topic_desc in progress:
-        progress.set_description(f"Processing {topic_desc.alias}")
-
+    for j, val in enumerate(topic_registry.values()):
+        attribute_types, topic_desc = val
         bag_file = bags_path / topic_desc.file
-
-        _generate_dataset_from_topic_description_and_attribute_types(
+        print(f"\n{j} - Processing topic: {topic_desc.alias} using bag file: {bag_file}")
+        message = _generate_dataset_from_topic_description_and_attribute_types(
             dataset_base_path,
             bag_file,
             topic_desc=topic_desc,
             attribute_types=attribute_types,
             metadata=metadata,
+            max_messages=max_messages,
         )
+        print(f"{j} - {message}")
+
     _tar_ball_dataset(dataset_base_path, remove=False)

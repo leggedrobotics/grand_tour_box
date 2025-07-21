@@ -44,12 +44,12 @@ metadata:
       file: "*_zed2i_images.bag"
       topic: "/boxi/zed2i/right/camera_info"
 
-    - alias: anymal_depth_camera_front_lower_caminfo
+    - alias: depth_camera_front_lower_caminfo
       file: "*_anymal_depth_cameras.bag"
       topic: "/anymal/depth_camera/front_lower/depth/camera_info"
       optional: True
 
-    - alias: anymal_depth_camera_rear_lower_caminfo
+    - alias: depth_camera_rear_lower_caminfo
       file: "*_anymal_depth_cameras.bag"
       topic: "/anymal/depth_camera/rear_lower/depth/camera_info"
       optional: True
@@ -109,6 +109,11 @@ metadata:
       reference_frame_id: box_base
 
     - frame_id: alphasense_base
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: alphasense_imu
       file: "*_tf_minimal.bag"
       topic: /tf_static
       reference_frame_id: box_base
@@ -383,7 +388,7 @@ data:
       attributes:
         - intensity
         - ring
-        - timestamp
+        - time
       description: "10Hz - Velodyne VLP-16 (Integrated in ANYbotics ANYmal D)"
       optional: True
 
@@ -394,7 +399,7 @@ data:
       attributes:
         - intensity
         - ring
-        - timestamp
+        - time
       description: "10Hz - Velodyne VLP-16 (Integrated in ANYbotics ANYmal D) - undistorted using Leg Interial Odometry"
       optional: True
 
@@ -454,6 +459,7 @@ data:
   #     file: "*_zed2i_vio.bag"
   #     topic: "/boxi/zed2i_vio/map"
   #     covariance: True
+  #     description: "VIO provided by Stereolabs SDK"
 
   imu_topics:
     - alias: adis_imu
