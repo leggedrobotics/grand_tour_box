@@ -49,7 +49,7 @@ except:
             raise FileNotFoundError(f"No bag file found matching {pattern} in {directory}. Found: {paths}")
 
 
-def undistort_image(image, camera_info, new_camera_info, map1, map2, fisheye=True):
+def undistort_image(image, camera_info, new_camera_info, map1, map2, invalid_mask, fisheye=True):
     K = np.array(camera_info.K).reshape((3, 3))
     D = np.array(camera_info.D)
     h, w = image.shape[:2]
@@ -57,7 +57,7 @@ def undistort_image(image, camera_info, new_camera_info, map1, map2, fisheye=Tru
     if new_camera_info is None:
         if fisheye:
             new_camera_matrix = cv2.fisheye.estimateNewCameraMatrixForUndistortRectify(
-                K, D, (w, h), np.eye(3), balance=0.0, fov_scale=1.0
+                K, D, (w, h), np.eye(3), balance=1.0, fov_scale=1.0
             )
             D_new = [0, 0, 0, 0]
             map1, map2 = cv2.fisheye.initUndistortRectifyMap(K, D, np.eye(3), new_camera_matrix, (w, h), cv2.CV_16SC2)
@@ -77,6 +77,15 @@ def undistort_image(image, camera_info, new_camera_info, map1, map2, fisheye=Tru
         new_P = np.eye(4)
         new_P[:3, :3] = new_camera_matrix
         new_camera_info.P = new_P.flatten().tolist()
+        valid_mask = cv2.remap(
+            np.ones(image.shape[:2], dtype=np.uint8),
+            map1,
+            map2,
+            interpolation=cv2.INTER_NEAREST,
+            borderMode=cv2.BORDER_CONSTANT,
+        )
+        invalid_mask = valid_mask == 0
+
     else:
         new_camera_info.header = camera_info.header
 
@@ -88,7 +97,7 @@ def undistort_image(image, camera_info, new_camera_info, map1, map2, fisheye=Tru
     else:
         undistorted_image = cv2.remap(image, map1, map2, interpolation=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
 
-    return undistorted_image, new_camera_info, map1, map2
+    return undistorted_image, new_camera_info, map1, map2, invalid_mask
 
 
 def ros_to_gl_transform(transform_ros):
@@ -357,6 +366,7 @@ class NerfstudioConverter:
         self.taget_camera_infos = {k: None for k in camera_infos.keys()}
         self.map1 = {k: None for k in camera_infos.keys()}
         self.map2 = {k: None for k in camera_infos.keys()}
+        self.invalid_mask = {k: None for k in camera_infos.keys()}
 
         self.output_folder = Path(data_folder) / f"{mission_name}_nerfstudio"
         self.output_folder.mkdir(parents=True, exist_ok=True)
@@ -421,7 +431,8 @@ class NerfstudioConverter:
         if img_msg.header.seq == 0:
             img_msg.header.seq = self.image_counters[topic]
 
-        if img_msg.header.stamp.to_sec() - self.image_last_stored[topic] < (1 / self.config["hz"]) - 0.001:
+        hz = cfg.get("hz", self.config["hz"])
+        if img_msg.header.stamp.to_sec() - self.image_last_stored[topic] < (1 / hz) - 0.001:
             print(img_msg.header.seq, "freq")
             return True
 
@@ -444,7 +455,9 @@ class NerfstudioConverter:
         if self.last_trans is None:
             self.last_trans = trans
 
-        if np.linalg.norm(np.array(self.last_trans[:2]) - np.array(trans[:2])) < self.config["distance_threshold"]:
+        if np.linalg.norm(np.array(self.last_trans[:2]) - np.array(trans[:2])) < cfg.get(
+            "distance_threshold", self.config["distance_threshold"]
+        ):
             print(img_msg.header.seq, "distance")
             return True
 
@@ -473,12 +486,19 @@ class NerfstudioConverter:
             # Undistort image if needed
             if "_rect" not in topic:
                 # TODO add fisheye undistortion as paramter in cfg!
-                cv_image, self.taget_camera_infos[topic], self.map1[topic], self.map2[topic] = undistort_image(
+                (
+                    cv_image,
+                    self.taget_camera_infos[topic],
+                    self.map1[topic],
+                    self.map2[topic],
+                    self.invalid_mask[topic],
+                ) = undistort_image(
                     cv_image,
                     self.camera_infos[topic],
                     self.taget_camera_infos[topic],
                     self.map1[topic],
                     self.map2[topic],
+                    self.invalid_mask[topic],
                     fisheye="zed2i" not in topic,
                 )
                 camera_info = self.taget_camera_infos[topic]
@@ -520,6 +540,8 @@ class NerfstudioConverter:
                 human_mask = (segmentation_map == 0).cpu().numpy()  # Person class is 0
                 binary_mask = (~human_mask * 255).astype(np.uint8)
 
+                # Apply the mask from the rectification
+                binary_mask[self.invalid_mask[topic]] = 0
                 # Save the binary mask as PNG
                 Image.fromarray(binary_mask, mode="L").save(mask_file_path)
 
@@ -552,9 +574,6 @@ class NerfstudioConverter:
         transform_matrix = ros_to_gl_transform(transform_matrix)
 
         # TODO check if these here need to be saved as strings or float and int is also good
-
-        if "zed2i" in topic:
-            camera_info.height = 1080
         # Add frame data
         frame_data = {
             "file_path": f"./rgb/{image_filename}",
@@ -591,6 +610,7 @@ class NerfstudioConverter:
             stereo_depth_file_path = str(image_path).replace("/rgb/", "/stereo_depth/")
             stereo_depth_file_path = stereo_depth_file_path.replace(".jpg", ".png")
             frame_data["mask_path"] = f"./stereo_depth/{image_filename}"
+            Path(stereo_depth_file_path).parent.mkdir(parents=True, exist_ok=True)
             cv2.imwrite(stereo_depth_file_path, depth_image_float)
 
         if self.config["nerfstudio"]["create_depth_based_on_lidar"]:
@@ -614,7 +634,7 @@ def main():
     parser.add_argument(
         "--mission_uuid",
         type=str,
-        default="10aa8311-2487-4e5c-9136-91b1d9ae4efa",
+        default="34c04ec5-c1b7-4674-9d64-99ade50f71d0",
         help="Mission UUID (uses GRI-1_release UUID if empty)",
     )
     # GRI-1 34c04ec5-c1b7-4674-9d64-99ade50f71d0
