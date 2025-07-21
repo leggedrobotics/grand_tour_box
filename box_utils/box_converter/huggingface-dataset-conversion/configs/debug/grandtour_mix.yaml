@@ -1,0 +1,233 @@
+metadata:
+  frame_transforms:
+    # Boxi to ANYmal
+    - frame_id: box_base
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: base
+
+    - frame_id: base
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    # Cameras
+    - frame_id: alphasense_front_center
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: alphasense_front_left
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: alphasense_front_right
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: alphasense_left
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: alphasense_right
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: alphasense_base
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: hdr_right
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: hdr_left
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: hdr_front
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: zed2i_left
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: zed2i_right
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: zed2i_base
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    # Depth cameras
+    - frame_id: depth_camera_rear_upper
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: base
+
+    - frame_id: depth_camera_front_upper
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: base
+
+    - frame_id: depth_camera_rear_lower
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: base
+
+    - frame_id: depth_camera_front_lower
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: base
+
+    - frame_id: depth_camera_left
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: base
+
+    - frame_id: depth_camera_right
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: base
+
+    # LIDARS
+    - frame_id: hesai_lidar
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: livox_lidar
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: velodyne_lidar
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: base
+
+    # IMUS
+    - frame_id: adis16475_imu
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: ap20_imu
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: stim320_imu
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: livox_imu
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: cpt7_imu
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: zed2i_imu
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: anymal_imu
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: base
+data:
+  imu_topics:
+    - alias: anymal_imu
+      file: "*_anymal_imu.bag"
+      topic: "/anymal/imu"
+      description: "Epsoon 400HZ (integrated in ANYbotics ANYmal D)"
+
+  odometry_topics:
+    - alias: dlio_map_odometry
+      file: "*_dlio.bag"
+      topic: "/boxi/dlio/lidar_map_odometry"
+      description: "Odometry provided by DLIO (Hesai XT32 and HG4930 IMU)"
+
+  point_topics:
+    - alias: prism_position
+      file: "*_ap20_prism_position.bag" 
+      topic: "/boxi/ap20/prism_position"
+      description: "Position of prim with respect to stationary Leica Geosystems MS60 Totalstation."
+
+  singleton_transform_topics:
+    - alias: dlio_tf
+      file: "*_dlio.bag"
+      topic: "/tf"
+      description: "DLIO pose estimation,"
+
+  gnss_raw_topics:
+    - alias: gnss_raw_cpt7_ie_tc
+      file: "*_cpt7_ie_tc.bag"
+      topic: "/boxi/inertial_explorer/tc/raw"
+      description: "Dual RTK GNSS solution computed by Novatel Intertial Explorer using Tightly Coupled mode."
+
+  anymal_state_topics:
+    - alias: anymal_state_state_estimator
+      file: "*_anymal_state.bag"
+      topic: "/anymal/state_estimator/anymal_state"
+      number_of_joints: 12
+      feet: ["LF_FOOT", "RF_FOOT", "LH_FOOT", "RH_FOOT"]
+      description: "ANYmal State provide by ANYbotics. Feet Nameing: ['LF_FOOT', 'RF_FOOT', 'LH_FOOT', 'RH_FOOT']. Joint Nameing: ['LF_HAA', 'LF_HFE', 'LF_KFE', 'RF_HAA', 'RF_HFE', 'RF_KFE', 'LH_HAA', 'LH_HFE', 'LH_KFE', 'RH_HAA', 'RH_HFE', 'RH_KFE']"
+
+  temperature_topics:
+    - alias: stim320_gyroscope_temperature
+      file: "*_stim320_imu.bag"
+      topic: "/boxi/stim320/gyroscope_temperature"
+      description: "STIM320 Gyro temperature readings."
+
+    - alias: stim320_accelerometer_temperature
+      file: "*_stim320_imu.bag"
+      topic: "/boxi/stim320/accelerometer_temperature"
+      description: "STIM320 accelerometer temperature readings."
+
+  battery_state_topics:
+    - alias: anymal_state_battery
+      file: "*_anymal_state.bag"
+      topic: "/anymal/battery_state"
+      description: "ANYmal Battery State."
+
+  actuator_readings_topics:
+    - alias: anymal_state_actuator
+      file: "*_anymal_state.bag"
+      topic: "/anymal/actuator_readings"
+      number_of_actuators: 12
+      description: "ANYmal Actuator State."
+
+  # imu_vector_topics:
+  #   - alias: cpt7_tc_imu_acc_bias
+  #     file: "*_cpt7_ie_tc.bag"
+  #     topic: "/boxi/inertial_explorer/tc/cpt7_imu_acc_bias"
+
+  #   - alias: cpt7_tc_imu_gyro_drift
+  #     file: "*_cpt7_ie_tc.bag"
+  #     topic: "/boxi/inertial_explorer/tc/cpt7_imu_gyro_drift"
+
+  anymal_twist_topics:
+    - alias: anymal_command_twist
+      file: "*_anymal_command.bag"
+      topic: "/anymal/twist_command"
+      description: "ANYmal Twist Command."

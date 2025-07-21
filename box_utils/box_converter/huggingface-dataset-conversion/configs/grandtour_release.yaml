@@ -32,27 +32,27 @@ metadata:
       file: "*_hdr_right.bag"
       topic: "/boxi/hdr/right/camera_info"
 
-    # - alias: zed2i_depth_caminfo
-    #   file: "*_zed2i_depth.bag"
-    #   topic: "/boxi/zed2i/depth/camera_info"
+    - alias: zed2i_depth_caminfo
+      file: "*_zed2i_depth.bag"
+      topic: "/boxi/zed2i/depth/camera_info"
 
-    # - alias: zed2i_left_caminfo
-    #   file: "*_zed2i_images.bag"
-    #   topic: "/boxi/zed2i/left/camera_info"
+    - alias: zed2i_left_caminfo
+      file: "*_zed2i_images.bag"
+      topic: "/boxi/zed2i/left/camera_info"
 
-    # - alias: zed2i_right_caminfo
-    #   file: "*_zed2i_images.bag"
-    #   topic: "/boxi/zed2i/right/camera_info"
+    - alias: zed2i_right_caminfo
+      file: "*_zed2i_images.bag"
+      topic: "/boxi/zed2i/right/camera_info"
 
-    # TODO: not apparent in the bag file
-    # - alias: anymal_depth_camera_front_lower_caminfo
-    #   file: "*_anymal_depth_cameras.bag"
-    #   topic: "/anymal/depth_camera/front_lower/depth/camera_info"
+    - alias: depth_camera_front_lower_caminfo
+      file: "*_anymal_depth_cameras.bag"
+      topic: "/anymal/depth_camera/front_lower/depth/camera_info"
+      optional: True
 
-    # TODO: not apparent in the bag file
-    # - alias: anymal_depth_camera_rear_lower_caminfo
-    #   file: "*_anymal_depth_cameras.bag"
-    #   topic: "/anymal/depth_camera/rear_lower/depth/camera_info"
+    - alias: depth_camera_rear_lower_caminfo
+      file: "*_anymal_depth_cameras.bag"
+      topic: "/anymal/depth_camera/rear_lower/depth/camera_info"
+      optional: True
 
     - alias: depth_camera_front_upper_caminfo
       file: "*_anymal_depth_cameras.bag"
@@ -109,6 +109,11 @@ metadata:
       reference_frame_id: box_base
 
     - frame_id: alphasense_base
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: box_base
+
+    - frame_id: alphasense_imu
       file: "*_tf_minimal.bag"
       topic: /tf_static
       reference_frame_id: box_base
@@ -216,10 +221,10 @@ metadata:
       topic: /tf_static
       reference_frame_id: box_base
 
-    - frame_id: zed2i_imu
-      file: "*_tf_minimal.bag"
-      topic: /tf_static
-      reference_frame_id: box_base
+    # - frame_id: zed2i_imu
+    #   file: "*_tf_minimal.bag"
+    #   topic: /tf_static
+    #   reference_frame_id: box_base
 
     - frame_id: anymal_imu
       file: "*_tf_minimal.bag"
@@ -232,7 +237,7 @@ data:
       file: "*_alphasense.bag"
       topic: "/boxi/alphasense/front_center/image_raw/compressed"
       format: jpeg
-      compressed: true
+      parsing: "cv_bridge_compressed"
       camera_intrinsics: alphasense_front_center_caminfo
       description: "10Hz - 1440x1080 - Sevensense Alphasense/CoreResearch front center (Sony IMX-273, Color, 1.6MP)"
 
@@ -240,7 +245,7 @@ data:
       file: "*_alphasense.bag"
       topic: "/boxi/alphasense/front_left/image_raw/compressed"
       format: jpeg
-      compressed: true
+      parsing: "cv_bridge_compressed"
       camera_intrinsics: alphasense_front_left_caminfo
       description: "10Hz - 1440x1080 - Sevensense Alphasense/CoreResearch front left (Sony IMX-273, Mono, 1.6MP)"
 
@@ -248,7 +253,7 @@ data:
       file: "*_alphasense.bag"
       topic: "/boxi/alphasense/front_right/image_raw/compressed"
       format: jpeg
-      compressed: true
+      parsing: "cv_bridge_compressed"
       camera_intrinsics: alphasense_front_right_caminfo
       description: "10Hz - 1440x1080 - Sevensense Alphasense/CoreResearch front right (Sony IMX-273, Mono, 1.6MP)"
 
@@ -256,7 +261,7 @@ data:
       file: "*_alphasense.bag"
       topic: "/boxi/alphasense/left/image_raw/compressed"
       format: jpeg
-      compressed: true
+      parsing: "cv_bridge_compressed"
       camera_intrinsics: alphasense_left_caminfo
       description: "10Hz - 1440x1080 - Sevensense Alphasense/CoreResearch left (Sony IMX-273, Color, 1.6MP)"
 
@@ -264,7 +269,7 @@ data:
       file: "*_alphasense.bag"
       topic: "/boxi/alphasense/right/image_raw/compressed"
       format: jpeg
-      compressed: true
+      parsing: "cv_bridge_compressed"
       camera_intrinsics: alphasense_right_caminfo
       description: "10Hz - 1440x1080 - Sevensense Alphasense/CoreResearch right (Sony IMX-273, Color, 1.6MP)"
 
@@ -272,7 +277,7 @@ data:
       file: "*_hdr_left.bag"
       topic: "/boxi/hdr/left/image_raw/compressed"
       format: jpeg
-      compressed: true
+      parsing: "cv_bridge_compressed"
       camera_intrinsics: hdr_left_caminfo
       description: "10Hz - 1920x1280 - TierIV C1 left (120dB, Color, 2.5MP)"
 
@@ -280,7 +285,7 @@ data:
       file: "*_hdr_front.bag"
       topic: "/boxi/hdr/front/image_raw/compressed"
       format: jpeg
-      compressed: true
+      parsing: "cv_bridge_compressed"
       camera_intrinsics: hdr_front_caminfo
       description: "10Hz - 1920x1280 - TierIV C1 front (120dB, Color, 2.5MP)"
 
@@ -288,7 +293,7 @@ data:
       file: "*_hdr_right.bag"
       topic: "/boxi/hdr/right/image_raw/compressed"
       format: jpeg
-      compressed: true
+      parsing: "cv_bridge_compressed"
       camera_intrinsics: hdr_right_caminfo
       description: "10Hz - 1920x1280 - TierIV C1 right (120dB, Color, 2.5MP)"
 
@@ -296,7 +301,7 @@ data:
       file: "*_zed2i_images.bag"
       topic: "/boxi/zed2i/left/image_raw/compressed"
       format: jpeg
-      compressed: true
+      parsing: "cv_bridge_compressed"
       camera_intrinsics: zed2i_left_caminfo
       description: "15Hz - 1920x1080 - Stereolabs Zed2i left (Color, 4MP, mounted up-side-down / we flipped the naming of the left and right camera w.r.t. ZED2i driver)"
 
@@ -304,52 +309,49 @@ data:
       file: "*_zed2i_images.bag"
       topic: "/boxi/zed2i/right/image_raw/compressed"
       format: jpeg
-      compressed: true
+      parsing: "cv_bridge_compressed"
       camera_intrinsics: zed2i_left_caminfo
       description: "15Hz - 1920x1080 - Stereolabs Zed2i right (Color, 4MP, mounted up-side-down / we flipped the naming of the left and right camera w.r.t. ZED2i driver)"
 
     - alias: zed2i_depth_confidence_image
       file: "*_zed2i_depth.bag"
-      topic: "/boxi/zed2i/confidence/image_raw/compressedDepth"
+      topic: "/boxi/zed2i/confidence/image_raw/compressed"
       format: png
-      compressed: false
-      depth: true
+      parsing: "zed2i_confidence"
       camera_intrinsics: zed2i_depth_caminfo
-      description: "15Hz - 1920x1080 - Stereolabs Zed2i - generated Stereolabs SDK 4.2 (mounted up-side-down / we flipped the naming of the left and right camera w.r.t. ZED2i driver)"
+      description: "15Hz - 1920x1080 - Stereolabs Zed2i - generated Stereolabs SDK 4.2 (mounted up-side-down / we flipped the naming of the left and right camera w.r.t. ZED2i driver)."
 
     - alias: zed2i_depth_image
       file: "*_zed2i_depth.bag"
-      topic: "/boxi/zed2i/depth/image_raw/compressedDepth"
+      topic: "/boxi/zed2i/depth/image_raw/compressed"
       format: png
-      compressed: false
-      depth: true
+      parsing: "depth_zed2i"
       camera_intrinsics: zed2i_depth_caminfo
-      description: "15Hz - 1920x1080 - Stereolabs Zed2i - generated Stereolabs SDK 4.2 (mounted up-side-down / we flipped the naming of the left and right camera w.r.t. ZED2i driver)"
+      description: "15Hz - 1920x1080 - Stereolabs Zed2i - generated Stereolabs SDK 4.2 (mounted up-side-down / we flipped the naming of the left and right camera w.r.t. ZED2i driver) - The depth images correspondes to the zed2i_right_images in our convention. Be aware that depth image and right camera image use different intrinsics. "
 
     - alias: depth_camera_front_lower
       file: "*_anymal_depth_cameras.bag"
       topic: "/anymal/depth_camera/front_lower/depth/image_rect_raw"
       format: jpeg
-      compressed: false
-      depth: true
+      parsing: "depth_realsense"
       camera_intrinsics: depth_camera_front_lower_caminfo
       description: "15Hz - 848x480 - IntelRealsense D435i front lower (Integrated in ANYbotics ANYmal D)"
+      optional: True
 
     - alias: depth_camera_rear_lower
       file: "*_anymal_depth_cameras.bag"
       topic: "/anymal/depth_camera/rear_lower/depth/image_rect_raw"
       format: jpeg
-      compressed: false
-      depth: true
+      parsing: "depth_realsense"
       camera_intrinsics: depth_camera_rear_lower_caminfo
       description: "15Hz - 848x480 - IntelRealsense D435i rear upper (Integrated in ANYbotics ANYmal D)"
+      optional: True
 
     - alias: depth_camera_front_upper
       file: "*_anymal_depth_cameras.bag"
       topic: "/anymal/depth_camera/front_upper/depth/image_rect_raw"
       format: jpeg
-      compressed: false
-      depth: true
+      parsing: "depth_realsense"
       camera_intrinsics: depth_camera_front_upper_caminfo
       description: "15Hz - 848x480 - IntelRealsense D435i front upper (Integrated in ANYbotics ANYmal D)"
 
@@ -357,8 +359,7 @@ data:
       file: "*_anymal_depth_cameras.bag"
       topic: "/anymal/depth_camera/rear_upper/depth/image_rect_raw"
       format: jpeg
-      compressed: false
-      depth: true
+      parsing: "depth_realsense"
       camera_intrinsics: depth_camera_rear_upper_caminfo
       description: "15Hz - 848x480 - IntelRealsense D435i rear upper (Integrated in ANYbotics ANYmal D)"
 
@@ -366,8 +367,7 @@ data:
       file: "*_anymal_depth_cameras.bag"
       topic: "/anymal/depth_camera/left/depth/image_rect_raw"
       format: jpeg
-      compressed: false
-      depth: true
+      parsing: "depth_realsense"
       camera_intrinsics: depth_camera_left_caminfo
       description: "15Hz - 848x480 - IntelRealsense D435i left (Integrated in ANYbotics ANYmal D)"
 
@@ -375,10 +375,10 @@ data:
       file: "*_anymal_depth_cameras.bag"
       topic: "/anymal/depth_camera/right/depth/image_rect_raw"
       format: jpeg
-      depth: true
-      compressed: false
+      parsing: "depth_realsense"
       camera_intrinsics: depth_camera_right_caminfo
       description: "15Hz - 848x480 - IntelRealsense D435i right (Integrated in ANYbotics ANYmal D)"
+
 
   lidar_topics:
     - alias: velodyne
@@ -388,18 +388,20 @@ data:
       attributes:
         - intensity
         - ring
-        - timestamp
+        - time
       description: "10Hz - Velodyne VLP-16 (Integrated in ANYbotics ANYmal D)"
+      optional: True
 
     - alias: velodyne_undist
       file: "*_anymal_velodyne_undist.bag"
       topic: "/anymal/velodyne/points_undistorted"
-
+      max_points: 64000
       attributes:
         - intensity
         - ring
-        - timestamp
+        - time
       description: "10Hz - Velodyne VLP-16 (Integrated in ANYbotics ANYmal D) - undistorted using Leg Interial Odometry"
+      optional: True
 
     - alias: hesai
       file: "*_hesai.bag"
@@ -441,7 +443,7 @@ data:
         - tag
         - line
         - timestamp
-      description: "10Hz - Livox Mid360 non-repetitive LiDAR (mounted up-side-down)- undistorted using Leg Interial Odometry"
+      description: "10Hz - Livox Mid360 non-repetitive LiDAR (mounted up-side-down)- undistorted using Leg Intgerial Odometry"
 
     - alias: dlio_hesai_points_undistorted
       file: "*_dlio.bag"
@@ -457,6 +459,7 @@ data:
   #     file: "*_zed2i_vio.bag"
   #     topic: "/boxi/zed2i_vio/map"
   #     covariance: True
+  #     description: "VIO provided by Stereolabs SDK"
 
   imu_topics:
     - alias: adis_imu
@@ -484,15 +487,16 @@ data:
       topic: "/boxi/livox/imu"
       description: "TDK ICM40609 200Hz (integrated in Livox Mid360)"
 
-    # not used according to Jonas
     # - alias: zed2i_imu
     #   file: "*_zed2i_prop.bag"
     #   topic: "/boxi/zed2i/imu"
+    #   description: "Stereolabs ZED2i internal IMU 45Hz. Recorded via SVO files. At the time of data collection the SVO2 serialized recording only allowed retrieval of IMU data at 45Hz. A newer ZED-SDK version might improve this."
 
     - alias: cpt7_imu
       file: "*_cpt7_imu.bag"
       topic: "/boxi/cpt7/imu"
       description: "Honeywell HG4930 100Hz (integrated in Novatel CPT7)"
+      optional: True
 
     - alias: anymal_imu
       file: "*_anymal_imu.bag"
@@ -509,55 +513,55 @@ data:
     #   file: "*_cpt7_ie_rt.bag"
     #   topic: "/boxi/inertial_explorer/rt/cpt7_imu_gyro_drift"
 
-  # fluid_pressure_topics:
-  #   - alias: zed2i_pressure
-  #     file: "*_zed2i_prop.bag"
-  #     topic: "/boxi/zed2i/baro/pressure"
-
-  # magnetic_field_topics:
-  #   - alias: zed2i_magnetic_filed
-  #     file: "*_zed2i_prop.bag"
-  #     topic: "/boxi/zed2i/magnetic_field"
-
   odometry_topics:
     - alias: dlio_map_odometry
       file: "*_dlio.bag"
       topic: "/boxi/dlio/lidar_map_odometry"
+      description: "Direct LiDAR Interial Odometry (DLIO) using Hesai XT32 LiDAR and Honeywell HG4930 IMU."
 
     # - alias: zed2i_vio_odometry
     #  file: "*_zed2i_vio.bag"
     #  topic: "/boxi/zed2i_vio/odom"
 
-    # TODO: only includes /tf topic
-    # - alias: cpt7_ie_rt_odometry
-    #   file: "*_cpt7_ie_rt.bag"
-    #   topic: "/boxi/inertial_explorer/rt/odometry"
-
     - alias: cpt7_ie_tc_odometry
       file: "*_cpt7_ie_tc.bag"
-      topic: "//boxi/inertial_explorer/tc/odometry"
+      topic: "/boxi/inertial_explorer/tc/odometry"
+      description: "Novatel Inertial Explorer tightly coupled pose estimation (highest precision)."
+
+    - alias: cpt7_ie_rt_odometry
+      file: "*_cpt7_ie_rt.bag"
+      topic: "/boxi/inertial_explorer/rt/odometry"
+      description: "Novatel Inertial Explorer real-time pose estimation using PPP (lower precision)."
 
     - alias: anymal_state_odometry
       file: "*_anymal_state.bag"
       topic: "/anymal/state_estimator/odometry"
+      description: "ANYmal leg inertial odometry solution."
 
   point_topics:
     - alias: prism_position
       file: "*_ap20_prism_position.bag"
       topic: "/boxi/ap20/prism_position"
+      description: "Position of prism relative to stationary Leica Geosystems MS60 Total Station."
+      optional: True
 
   singleton_transform_topics:
     - alias: dlio_tf
       file: "*_dlio.bag"
       topic: "/tf"
+      description: "Direct LiDAR Interial Odometry (DLIO) using Hesai XT32 LiDAR and Honeywell HG4930."
 
     - alias: cpt7_ie_tc_tf
       file: "*_cpt7_ie_tc.bag"
       topic: "/tf"
+      description: "Novatel Inertial Explorer tightly coupled pose solution (highest precision)."
 
     - alias: cpt7_ie_rt_tf
       file: "*_cpt7_ie_rt.bag"
       topic: "/tf"
+      description: "Novatel Inertial Explorer real-time pose transforms using PPP (lower precision)."
+
+
 
   nav_sat_fix_topics:
     # TODO: only includes /tf topic
@@ -573,6 +577,14 @@ data:
     - alias: navsatfix_cpt7_ie_tc
       file: "*_cpt7_ie_tc.bag"
       topic: "/boxi/inertial_explorer/tc/navsatfix"
+      description: "Dual RTK GNSS solution computed by Novatel Intertial Explorer using Tightly-Coupled solution navsatfix info."
+      optional: true
+
+    - alias: navsatfix_cpt7_ie_rt
+      file: "*_cpt7_ie_rt.bag"
+      topic: "/boxi/inertial_explorer/tc/navsatfix"
+      description: "Dual RTK GNSS solution computed by Novatel Intertial Explorer using real-time PPP solution navsatfix info."
+      optional: true
 
     # TODO: not included in the bag file
     # - alias: navsatfix_origin_cpt7_ie_tc
@@ -580,65 +592,69 @@ data:
     #   topic: "/boxi/inertial_explorer/tc/navsatfix_origin"
 
   gnss_raw_topics:
-    #   # TODO: only includes /tf topic
-    #   # - alias: gnss_origin_cpt7_ie_rt
-    #   #   file: "*_cpt7_ie_rt.bag"
-    #   #   topic: "/boxi/inertial_explorer/rt/origin"
-
-    #   # TODO: only includes /tf topic
-    #   # - alias: gnss_raw_cpt7_ie_rt
-    #   #   file: "*_cpt7_ie_rt.bag"
-    #   #   topic: "/boxi/inertial_explorer/rt/raw"
-
-    #   # TODO: not included in the bag file
-    #   # - alias: gnss_origin_cpt7_ie_tc
-    #   #   file: "*_cpt7_ie_tc.bag"
-    #   #   topic: "/boxi/inertial_explorer/tc/origin"
-
     - alias: gnss_raw_cpt7_ie_tc
       file: "*_cpt7_ie_tc.bag"
       topic: "/boxi/inertial_explorer/tc/raw"
+      description: "Dual RTK GNSS solution computed by Novatel Intertial Explorer using Tightly-Coupled solution."
+      optional: True
+   
+    - alias: gnss_raw_cpt7_ie_rt
+      file: "*_cpt7_ie_rt.bag"
+      topic: "/boxi/inertial_explorer/rt/raw"
+      description: "Dual RTK GNSS solution computed by Novatel Intertial Explorer using real-time solution."
+      optional: True
 
   anymal_state_topics:
     - alias: anymal_state_state_estimator
       file: "*_anymal_state.bag"
       topic: "/anymal/state_estimator/anymal_state"
       number_of_joints: 12
-      feet: ["LF_FOOT", "RF_FOOT", "LH_FOOT", "RH_FOOT"]
-
-  temperature_topics:
-    - alias: stim320_gyroscope_temperature
-      file: "*_stim320_imu.bag"
-      topic: "/boxi/stim320/gyroscope_temperature"
-
-    - alias: stim320_acceletometer_temperature
-      file: "*_stim320_imu.bag"
-      topic: "/boxi/stim320/acceletometer_temperature"
-
-  battery_state_topics:
-    - alias: anymal_state_battery
-      file: "*_anymal_state.bag"
-      topic: "/anymal/battery_state"
-
+      feet: ["LF_FOOT", "RF_FOOT", "LH_FOOT", "RH_FOOT"]  
+      description: "ANYmal full state provided by ANYbotics. Feet Names 0-3: ['LF_FOOT', 'RF_FOOT', 'LH_FOOT', 'RH_FOOT']. Joint Naming 0-11: ['LF_HAA', 'LF_HFE', 'LF_KFE', 'RF_HAA', 'RF_HFE', 'RF_KFE', 'LH_HAA', 'LH_HFE', 'LH_KFE', 'RH_HAA', 'RH_HFE', 'RH_KFE']"
+      
   actuator_readings_topics:
     - alias: anymal_state_actuator
       file: "*_anymal_state.bag"
       topic: "/anymal/actuator_readings"
       number_of_actuators: 12
+      description: "ANYmal Joint State provide by ANYbotics. Feet Names 0-3: ['LF_FOOT', 'RF_FOOT', 'LH_FOOT', 'RH_FOOT']. Joint Naming 0-11: ['LF_HAA', 'LF_HFE', 'LF_KFE', 'RF_HAA', 'RF_HFE', 'RF_KFE', 'LH_HAA', 'LH_HFE', 'LH_KFE', 'RH_HAA', 'RH_HFE', 'RH_KFE']"
 
-  imu_vector_topics:
-    - alias: cpt7_tc_imu_acc_bias
-      file: "*_cpt7_ie_tc.bag"
-      topic: "/boxi/inertial_explorer/tc/cpt7_imu_acc_bias"
+  temperature_topics:
+    - alias: stim320_gyroscope_temperature
+      file: "*_stim320_imu.bag"
+      topic: "/boxi/stim320/gyroscope_temperature"
+      description: "STIM320 gyroscope temperature readings at 500Hz."
 
-    - alias: cpt7_tc_imu_gyro_drift
-      file: "*_cpt7_ie_tc.bag"
-      topic: "/boxi/inertial_explorer/tc/cpt7_imu_gyro_drift"
+    - alias: stim320_accelerometer_temperature
+      file: "*_stim320_imu.bag"
+      topic: "/boxi/stim320/accelerometer_temperature"
+      description: "STIM320 accelerometer temperature readings at 500Hz."
+
+  battery_state_topics:
+    - alias: anymal_state_battery
+      file: "*_anymal_state.bag"
+      topic: "/anymal/battery_state"
+      description: "ANYmal D battery state readings."
 
   anymal_twist_topics:
     - alias: anymal_command_twist
       file: "*_anymal_command.bag"
       topic: "/anymal/twist_command"
+      description: "Operator-issued twist command for ANYmal D."
+
+
+#### TODO: Not yet used!  ###################################################
+
+
+  # imu_vector_topics:
+  #   - alias: cpt7_tc_imu_acc_bias
+  #     file: "*_cpt7_ie_tc.bag"
+  #     topic: "/boxi/inertial_explorer/tc/cpt7_imu_acc_bias"
+
+  #   - alias: cpt7_tc_imu_gyro_drift
+  #     file: "*_cpt7_ie_tc.bag"
+  #     topic: "/boxi/inertial_explorer/tc/cpt7_imu_gyro_drift"
+
 # TODO: Debug
 # anymal_debug_topics:
 #   - alias: anymal_locomotion

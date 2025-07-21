@@ -15,10 +15,16 @@ uuid_mappings = get_uuid_mapping()
 SPREADSHEET_ID = "1mENfskg_jO_vJGFM5yonqPuf-wYUNmg26IPv3pOu3gg"
 # Read the data and print the list
 topic_data, mission_data = read_sheet_data(SPREADSHEET_ID)
-LIST_OF_OUTPUT_BAGS = ["*"]  # supports ["*"] for full mission
+LIST_OF_OUTPUT_BAGS = ["zed2i_depth.bag"]
+# "zed2i_prop.bag", "zed2i_vio.bag" supports ["*"] for full mission
+EXISTS_SKIP = False
 
 for name, data in uuid_mappings.items():
     try:
+
+        if name != "2024-12-09-11-53-11" and name != "2024-12-09-11-28-28":
+            continue
+
         data_dict_by_bag_name = defaultdict(list)
         for entry in topic_data:
             data_dict_by_bag_name[entry["bag_name_out"]].append(entry)
@@ -54,18 +60,28 @@ for name, data in uuid_mappings.items():
 
         ls = list(set(ls))
 
-        kleinkram.download(
-            mission_ids=[data["uuid_pub"]],
-            file_names=ls,
-            dest=tmp_folder,
-            verbose=True,
-            overwrite=True,
-        )
-
         # Do a quick sorting operation
         bags_to_upload = []
-
+        downloaded = False
         for output_bag_name, topic_configs in data_dict_by_bag_name_filtered.items():
+            if EXISTS_SKIP:
+                res = kleinkram.list_files(
+                    mission_ids=[data["uuid_release"]],
+                    file_names=["*" + output_bag_name],
+                )
+                if len(res) != 0:
+                    print(f"Skipping {output_bag_name} as it already exists")
+                    continue
+
+            if not downloaded:
+                kleinkram.download(
+                    mission_ids=[data["uuid_pub"]],
+                    file_names=ls,
+                    dest=tmp_folder,
+                    verbose=True,
+                    overwrite=True,
+                )
+                downloaded = True
 
             bag_path_out = out_dir_bag / (name + "_" + output_bag_name)
             with rosbag.Bag(bag_path_out, "w", compression="lz4") as bag_out:
