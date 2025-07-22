@@ -6,7 +6,7 @@
   <version>0.1.0</version>
   <description>Recording package for Grand Tour box.</description>
 
-  <license>Proprietary</license>
+  <license>MIT</license>
 
   <author email="jonfrey@ethz.ch">Jonas Frey</author>
   <author email="schmirob@ethz.ch">Robin Schmid</author>

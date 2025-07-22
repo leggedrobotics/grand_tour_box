@@ -6,6 +6,6 @@
 
   <maintainer email="bkrumme@ethz.ch">Benjamin Krummenacher</maintainer>
   <author email="bkrumme@ethz.ch">Benjamin Krummenacher</author>
-  <license>TODO</license>
+  <license>MIT</license>
   <buildtool_depend>catkin</buildtool_depend>
 </package>

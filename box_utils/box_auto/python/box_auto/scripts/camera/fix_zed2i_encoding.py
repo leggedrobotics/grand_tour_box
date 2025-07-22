@@ -6,7 +6,6 @@ import shutil
 import os
 import numpy as np
 import tqdm
-import struct
 import cv2
 from sensor_msgs.msg import CompressedImage
 import sys
@@ -136,21 +135,36 @@ for name, data in uuid_mappings.items():
                                 # topic = "/boxi/zed2i/depth/image_raw/compressedDepth"
                                 # Original format: '32FC1; compressedDepth rvl'
                                 depth_np = decode_depth_message(msg)
+                                if depth_np.dtype != np.float32:
+                                    raise ValueError(f"Decoded depth image is not 32FC1, got dtype {depth_np.dtype}")
+                                # Additional numerical check: values should be in a reasonable range (e.g., 0 <= depth < 15.0 meters)
+                                if not (
+                                    np.isfinite(depth_np).all() and (depth_np >= 0).all() and (depth_np <= 15.0).all()
+                                ):
+                                    raise ValueError(
+                                        f"Decoded depth image contains invalid values (min: {depth_np.min()}, max: {depth_np.max()})"
+                                    )
+                                if len(depth_np.shape) != 2:
+                                    raise ValueError(
+                                        f"Decoded depth image is not single channel, got shape {depth_np.shape}"
+                                    )
+
                                 depth_mm = np.nan_to_num(depth_np, nan=0.0, posinf=0.0, neginf=0.0)
                                 depth_mm = (depth_mm * 1000.0).astype(np.uint16)
                                 # PNG encode using OpenCV
                                 # Use PNG compression with maximum compression level (9)
-                                # encode_params = [cv2.IMWRITE_PNG_COMPRESSION, 9]
-                                success, png_bytes = cv2.imencode(".png", depth_mm)  # , encode_params)
+                                encode_params = [cv2.IMWRITE_PNG_COMPRESSION, 5]
+                                success, png_bytes = cv2.imencode(".png", depth_mm, encode_params)
                                 if not success:
                                     raise RuntimeError("PNG encoding failed")
                                 png_bytes = png_bytes.tobytes()
 
                                 new_msg = CompressedImage()
                                 new_msg.header = msg.header
-                                header = struct.pack("<IIf", depth_mm.shape[0], depth_mm.shape[1], 1000.0)
-                                new_msg.data = header + png_bytes  # prepend header
-                                new_msg.format = "16UC1; compressedDepth png"
+                                # header = struct.pack("<IIf", depth_mm.shape[0], depth_mm.shape[1], 1000.0)
+                                # new_msg.data = header + png_bytes  # prepend header
+                                new_msg.data = png_bytes  # prepend header
+                                new_msg.format = "png"
 
                                 # Write to the appropriate topic (you may want to adjust this)
                                 out_bag.write(topic, new_msg, t)

@@ -5,7 +5,7 @@
   <version>0.1.0</version>
   <description>Colorless uniform mapper. Uses an octree to create a point cloud map and dynamically save the data.</description>
 
-  <license>TODO</license>
+  <license>MIT</license>
   <author email="tutuna@leggedrobotics.com">Turcan Tuna</author>
   <maintainer email="tutuna@leggedrobotics.com">Turcan Tuna</maintainer>
   

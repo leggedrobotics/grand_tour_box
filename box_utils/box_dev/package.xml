@@ -4,8 +4,8 @@
   <version>0.0.1</version>
   <description>Development package for box utilities</description>
 
-  <maintainer email="your@email.com">Your Name</maintainer>
-  <license>TODO</license>
+  <maintainer email="tutuna@leggedrobotics.com">Turcan Tuna</maintainer>
+  <license>MIT</license>
 
   <buildtool_depend>catkin</buildtool_depend>
 

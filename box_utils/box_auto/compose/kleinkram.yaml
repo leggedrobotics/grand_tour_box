@@ -43,7 +43,7 @@ x-ros2-common-config: &ros2-common-config
     QT_X11_NO_MITSHM: "1"
     XAUTHORITY: "/root/.docker.xauth"
     DISPLAY: "$DISPLAY"
-    KLEINKRAM_ACTIVE: "False" # Added this line
+    KLEINKRAM_ACTIVE: "False"
   deploy:
     resources:
       reservations:

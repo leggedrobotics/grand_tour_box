@@ -1,6 +1,6 @@
 #=============================================================================
 
-# Copyright (C) 2023, Robotic Systems Lab, ETH Zurich
+# Copyright (C) 2023-2025, Robotic Systems Lab, ETH Zurich
 # All rights reserved.
 # http://www.rsl.ethz.ch
 #
@@ -16,16 +16,6 @@ project(launch_anymal)
 #==
 
 find_package(catkin REQUIRED)
-
-#==
-# Package Configuration
-#==
-
-catkin_package()
-
-#==
-# Package Configuration
-#==
 
 catkin_package()
 

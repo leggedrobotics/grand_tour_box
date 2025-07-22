@@ -4,7 +4,7 @@
   <version>0.0.0</version>
   <description>The bringup_wavemap package</description>
   <maintainer email="jonfrey@ethz.ch">Jonas Frey</maintainer>
-  <license>Proprietary</license>
+  <license>MIT</license>
   <buildtool_depend>catkin</buildtool_depend>
   <depend>wavemap_all</depend>
   <export>

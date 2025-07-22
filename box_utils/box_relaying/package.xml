@@ -6,6 +6,6 @@
 
   <maintainer email="kpatterson@ethz.ch">Kappi Patterson</maintainer>
   <author email="kpatterson@ethz.ch">Kappi Patterson</author>
-  <license>TODO</license>
+  <license>MIT</license>
   <buildtool_depend>catkin</buildtool_depend>
 </package>

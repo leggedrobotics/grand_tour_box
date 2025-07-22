@@ -4,7 +4,7 @@
   <version>0.0.0</version>
   <description>The bringup_open3d_slam package works out of the box!</description>
   <maintainer email="jonfrey@ethz.ch">Jonas Frey</maintainer>
-  <license>Proprietary</license>
+  <license>MIT</license>
   <depend>open3d_slam_ros</depend>
   <export>
   </export>

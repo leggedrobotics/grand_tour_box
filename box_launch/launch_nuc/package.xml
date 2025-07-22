@@ -3,7 +3,7 @@
   <name>launch_nuc</name>
   <version>1.0.0</version>
   <description>RSL's launch_nuc package.</description>
-  <license>Proprietary</license>
+  <license>MIT</license>
   <maintainer email="jonfrey@ethz.ch">Jonas Frey</maintainer>
   <author email="jonfrey@ethz.ch">Jonas Frey</author>
   <buildtool_depend>catkin</buildtool_depend>
