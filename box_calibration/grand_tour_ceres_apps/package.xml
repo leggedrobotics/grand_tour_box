@@ -4,8 +4,8 @@
     <version>0.0.1</version>
     <description>The grand_tour_ceres_apps package</description>
 
-    <maintainer email="user@example.com">Your Name</maintainer>
-    <license>BSD</license>
+   <maintainer email="fu@robots.ox.ac.uk">Lanke Fu</maintainer>
+   <license>MIT</license>
 
     <buildtool_depend>catkin</buildtool_depend>
 

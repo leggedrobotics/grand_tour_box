@@ -3,22 +3,22 @@
    <name>grand_tour_camera_detection_msgs</name>
    <version>0.0.0</version>
    <description>The grand_tour_camera_detection_msgs package</description>
-   <maintainer email="fu@todo.todo">fu</maintainer>
-   <license>TODO</license>
+   <maintainer email="fu@robots.ox.ac.uk">Lanke Fu</maintainer>
+   <license>MIT</license>
 
    <!-- Build tool dependencies -->
    <buildtool_depend>catkin</buildtool_depend>
-   
+
    <!-- Message generation -->
    <build_depend>message_generation</build_depend>
    <build_export_depend>message_generation</build_export_depend>
    <exec_depend>message_runtime</exec_depend>
-   
+
    <!-- Standard messages -->
    <build_depend>std_msgs</build_depend>
    <build_export_depend>std_msgs</build_export_depend>
    <exec_depend>std_msgs</exec_depend>
-   
+
    <!-- Geometry messages -->
    <build_depend>geometry_msgs</build_depend>
    <build_export_depend>geometry_msgs</build_export_depend>

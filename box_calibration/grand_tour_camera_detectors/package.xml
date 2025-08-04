@@ -3,14 +3,14 @@
   <name>grand_tour_camera_detectors</name>
   <version>0.0.0</version>
   <description>The grand_tour_camera_detectors package</description>
-  <maintainer email="fu@todo.todo">fu</maintainer>
-  <license>TODO</license>
+  <maintainer email="fu@robots.ox.ac.uk">Lanke Fu</maintainer>
+  <license>BSD with advertising clause (ASL and Skybotix)</license>
 
   <buildtool_depend>catkin</buildtool_depend>
-  
+
   <build_depend>roscpp</build_depend>
   <build_depend>grand_tour_camera_detection_msgs</build_depend>
-  
+
   <exec_depend>roscpp</exec_depend>
   <exec_depend>grand_tour_camera_detection_msgs</exec_depend>
 </package>
