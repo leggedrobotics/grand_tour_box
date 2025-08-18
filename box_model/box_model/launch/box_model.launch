@@ -1,22 +1,29 @@
 <launch>
-  <arg name="rviz" default="false" />
-  <arg name="model" default="$(find box_model)/urdf/box/box.urdf.xacro" />
-  <arg name="calibration_file" default="$(find box_calibration)/calibration/tf/calibration_latest.yaml" />
-  <arg name="use_sim_time" default="false" />
-  <arg name="description_name" default="boxi_description" />
+  <!-- Define command line arguments with default values -->
+  <arg name="rviz" default="false" />  <!-- Set to true to launch RViz visualization -->
+  <arg name="model" default="$(find box_model)/urdf/box/box.urdf.xacro" />  <!-- Path to the robot model file -->
+  <arg name="calibration_file" default="$(find box_calibration)/calibration/tf/calibration_latest.yaml" />  <!-- Path to calibration data -->
+  <arg name="use_sim_time" default="false" />  <!-- Set to true when using simulation time -->
+  <arg name="description_name" default="boxi_description" />  <!-- Parameter name for the robot description -->
+  
+  <!-- Configure ROS to use simulation time or real time -->
   <param name="/use_sim_time" value="$(arg use_sim_time)" />
 
+  <!-- Load the URDF/XACRO model into the parameter server -->
   <param name="$(arg description_name)" command="xacro $(arg model)" />
 
+  <!-- Launch the robot state publisher to publish TF frames -->
   <node name="boxi_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
     <param name="capability_group" value="Visualization"/>
     <remap from="robot_description" to="$(arg description_name)"/>
   </node> 
   
+  <!-- Launch the calibration publisher node -->
   <node name="calibration_metadata_publisher" pkg="box_model" type="publish_calibration_info.py">
     <param name="capability_group" value="Calibration"/>
     <param name="calibration_file" value="$(arg calibration_file)"/>
   </node>
 
+  <!-- Conditionally launch RViz if the rviz argument is true -->
   <node if="$(arg rviz)" name="box_rviz" pkg="rviz" type="rviz" required="true" args="-d $(find box_model)/config/display_urdf.rviz" />
 </launch>

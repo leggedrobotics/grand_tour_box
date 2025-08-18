@@ -9,7 +9,10 @@ from pathlib import Path
 if __name__ == "__main__":
     # Path to the rosbag file
 
-    rosbag_path = get_bag("*cpt7_ie_tc.bag")
+    # Define the suffix - can be changed to "tc", "tm", etc.
+    suffix = "tc"
+    bag_pattern = f"*cpt7_ie_{suffix}.bag"
+    rosbag_path = get_bag(bag_pattern)
     out = Path(ARTIFACT_FOLDER) / "plot_gnss"
     out.mkdir(exist_ok=True, parents=True)
     print(f"Plotting GNSS Data to : {out}")
@@ -109,9 +112,9 @@ if __name__ == "__main__":
     # PLOT RAW DATA
 
     # Path to the rosbag file
-rosbag_path = get_bag(pattern="*_cpt7_ie_tc.bag", auto_download=False, rglob=False)
+rosbag_path = get_bag(pattern=bag_pattern, auto_download=False, rglob=False)
 
-topic_name = "/gt_box/inertial_explorer/tc/raw"
+topic_name = f"/gt_box/inertial_explorer/{suffix}/raw"
 
 # Initialize storage
 timestamps = {"position": [], "position_std": [], "orientation": [], "orientation_std": []}

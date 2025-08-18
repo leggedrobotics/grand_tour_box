@@ -5,7 +5,7 @@
   <description>ROS messages for gnss IE export</description>
   <maintainer email="jonfrey@ethz.ch">Jonas Frey</maintainer>
   <author email="jonfrey@ethz.ch">Jonas Frey</author>
-  <license>Proprietary</license>
+  <license>MIT</license>
 
   <buildtool_depend>catkin</buildtool_depend>
   <depend>geometry_msgs</depend>

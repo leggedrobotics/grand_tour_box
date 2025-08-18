@@ -1,6 +1,6 @@
 #=============================================================================
 
-# Copyright (C) 2023, Robotic Systems Lab, ETH Zurich
+# Copyright (C) 2023-2025, Robotic Systems Lab, ETH Zurich
 # All rights reserved.
 # http://www.rsl.ethz.ch
 #

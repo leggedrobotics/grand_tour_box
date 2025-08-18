@@ -175,9 +175,21 @@ def write_stats_to_sheet(gs: dict, stats: dict) -> None:
 
 
 def load_stats(date_str: str) -> dict:
+    """Load statistics from JSON file or return placeholder if not found."""
     stats_file = Path(MISSION_DATA) / f"{date_str}_cpt7_ie_{MODE}_statistics.json"
-    with open(stats_file, "r") as fh:
-        return json.load(fh)
+    try:
+        with open(stats_file, "r") as fh:
+            return json.load(fh)
+    except FileNotFoundError:
+        print(f"Warning: Stats file not found: {stats_file}")
+        # Create placeholder stats
+        fake_stats = {"FILE_NOT_FOUND": "true"}
+        # Add placeholders for all required labels
+        for label in Q_LABELS:
+            fake_stats[label] = "N/A"
+        for label in STD_LABELS:
+            fake_stats[label] = "N/A"
+        return fake_stats
 
 
 def generate_gpx(bag_path: str) -> Tuple[gpxpy.gpx.GPX, List[Tuple]]:
@@ -340,6 +352,9 @@ def build_folium_map(
     if not points:
         raise ValueError("No points to plot.")
 
+    # Sort points by timestamp to ensure correct start/end order
+    points.sort(key=lambda p: p[3])  # Sort by timestamp (4th element)
+
     first_lat, first_lon = points[0][:2]
     m = folium.Map(
         location=(first_lat, first_lon),
@@ -376,7 +391,7 @@ def build_folium_map(
     folium.PolyLine(coords, color="blue", weight=3).add_to(m)
     HeatMap(coords).add_to(folium.FeatureGroup(name="Heat Map", show=True).add_to(m))
 
-    # Popup at first point
+    # Popup at first point (start of mission)
     elev0 = f"{points[0][2]:.2f} m" if points[0][2] is not None else "N/A"
     popup_html = (
         "<div style='font-family:Roboto;font-size:14px;'>"
@@ -391,7 +406,7 @@ def build_folium_map(
     folium.Marker(
         location=(first_lat, first_lon),
         popup=folium.Popup(popup_html, max_width=300),
-        tooltip="Mission info",
+        tooltip="Mission start",
         icon=folium.Icon(color="green"),
     ).add_to(m)
 
@@ -401,6 +416,7 @@ def build_folium_map(
     folium.Marker(
         location=(end_lat, end_lon),
         popup=f"End: {end_loc.address}",
+        tooltip="Mission end",
         icon=folium.Icon(color="red"),
     ).add_to(m)
 

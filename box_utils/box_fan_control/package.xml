@@ -6,7 +6,7 @@
   <version>0.1.0</version>
   <description>Fan conrol package for Grand Tour box.</description>
 
-  <license>Proprietary</license>
+  <license>MIT</license>
 
   <author email="jonfrey@ethz.ch">Jonas Frey</author>
   <maintainer email="jonfrey@ethz.ch">Jonas Frey</maintainer>
