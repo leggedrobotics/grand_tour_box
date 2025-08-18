@@ -39,6 +39,13 @@
         <child link="box_base_model"/>
   </joint>
 
+  <!-- Spider model -->
+  <joint name="box_base_to_spider" type="fixed">
+        <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+        <parent link="box_base"/>
+        <child link="spider"/>
+  </joint>
+
   <!-- Prism model -->
   <joint name="box_base_to_prism_model" type="fixed">
         <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
@@ -52,6 +59,15 @@
         <parent link="base"/>
         <child link="cpt7_antenna_back_model"/>
   </joint>
+
+  <!-- Spider -->
+  <link name="spider">
+    <visual>
+      <geometry>
+        <mesh filename="package://box_model/urdf/box/mesh/spider.dae" scale="1 1 1" />
+      </geometry>
+    </visual>
+  </link>
 
   <!-- Back antenna mesh -->
   <link name="cpt7_antenna_back_model">
