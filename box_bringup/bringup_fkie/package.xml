@@ -3,7 +3,7 @@
   <name>bringup_fkie</name>
   <version>1.0.0</version>
   <description>RSL's bringup fkie package.</description>
-  <license>Proprietary</license>
+  <license>MIT</license>
   <maintainer email="bkrumme@ethz.ch">Benjamin Krummenacher</maintainer>
   <author email="bkrumme@ethz.ch">Benjamin Krummenacher</author>
   <buildtool_depend>catkin</buildtool_depend>

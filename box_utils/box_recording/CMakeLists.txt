@@ -1,5 +1,5 @@
 #=============================================================================
-# Copyright (C) 2023, Robotic Systems Lab, ETH Zurich
+# Copyright (C) 2023-2025, Robotic Systems Lab, ETH Zurich
 # All rights reserved.
 # http://www.rsl.ethz.ch
 #
@@ -44,8 +44,6 @@ generate_messages(
 catkin_package(
     CATKIN_DEPENDS std_msgs
 )
-
-
 
 #==
 # Package installation

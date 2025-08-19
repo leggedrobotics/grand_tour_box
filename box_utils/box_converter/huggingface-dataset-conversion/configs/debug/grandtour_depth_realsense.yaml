@@ -1,0 +1,21 @@
+metadata:
+  camera_intrinsics:
+    - alias: depth_camera_rear_upper_caminfo
+      file: "*_anymal_depth_cameras.bag"
+      topic: "/anymal/depth_camera/rear_upper/depth/camera_info"
+
+  frame_transforms:
+    - frame_id: depth_camera_rear_upper
+      file: "*_tf_minimal.bag"
+      topic: /tf_static
+      reference_frame_id: base
+
+data:
+  image_topics:
+    - alias: depth_camera_rear_upper
+      file: "*_anymal_depth_cameras.bag"
+      topic: "/anymal/depth_camera/rear_upper/depth/image_rect_raw"
+      format: jpeg
+      parsing: "anymal_depth"
+      camera_intrinsics: depth_camera_rear_upper_caminfo
+      description: "15Hz - 848x480 - IntelRealsense D435i rear upper (Integrated in ANYbotics ANYmal D)"

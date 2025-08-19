@@ -4,7 +4,7 @@
   <version>0.0.0</version>
   <description>The bringup_elevation_mapping package for the linux driver</description>
   <maintainer email="jonfrey@ethz.ch">Jonas Frey</maintainer>
-  <license>Proprietary</license>
+  <license>MIT</license>
   <depend>elevation_mapping_cupy</depend>
   <depend>box_rviz</depend>
   <export>

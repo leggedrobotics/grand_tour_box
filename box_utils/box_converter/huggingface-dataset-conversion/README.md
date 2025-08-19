@@ -151,3 +151,20 @@ huggingface-cli login
 huggingface-cli upload leggedrobotics/GT-Testing-MLI . --repo-type=dataset
 ```
 
+```
+sudo apt install libopencv-dev
+
+# Already added to installation instructions
+
+pip3 install nanobind scikit-build-core cmake
+
+# Potentially also source the workspace not sure ?
+cd /app/rvl_compression/compressed_depth; pip install -e . --no-build-isolation --verbose
+
+
+
+
+pip3 install cmake
+pip install --upgrade scikit-build-core
+pip install . --no-build-isolation --verbose
+```

@@ -3,7 +3,7 @@
   <name>box_rviz</name>
   <version>1.0.0</version>
   <description>Box rviz</description>
-  <license>Proprietary</license>
+  <license>MIT</license>
   <author email="jonfrey@ethz.ch">Jonas Frey</author>
   <author email="schmirob@ethz.ch">Robin Schmid</author>
   <maintainer email="jonfrey@ethz.ch">Jonas Frey</maintainer>

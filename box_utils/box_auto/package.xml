@@ -5,7 +5,7 @@
     <name>box_auto</name>
     <version>0.1.0</version>
     <description>Automated post-processing package for Grand Tour box.</description>
-    <license>Proprietary</license>
+    <license>MIT</license>
     <author email="tutuna@ethz.ch">Turcan Tuna</author>
     <author email="jonfrey@ethz.ch">Jonas Frey</author>
     <maintainer email="jonfrey@ethz.ch">Jonas Frey</maintainer>

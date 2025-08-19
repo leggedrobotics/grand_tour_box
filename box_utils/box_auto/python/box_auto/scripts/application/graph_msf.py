@@ -15,20 +15,28 @@ from rosbag import Bag
 import matplotlib.pyplot as plt
 from tf2_msgs.msg import TFMessage
 from tf.transformations import euler_from_quaternion
+from pathlib import Path
 
 from box_auto.utils import (
     get_bag,
     upload_bag,
     MISSION_DATA,
-    BOX_AUTO_SCRIPTS_DIR,
     kill_roscore,
     get_file,
     start_roscore,
     run_ros_command,
-    ARTIFACT_FOLDER,
 )
 
-PATTERNS = ["*_jetson_ap20_robot.bag", "*_cpt7_raw_imu.bag", "*_cpt7_ie_tc.bag", "*_tf_static.bag"]
+
+# MISSION_DATA = os.environ.get("MISSION_DATA", "/tmp_disk")
+BOX_AUTO_SCRIPTS_DIR = str(Path(__file__).parent.parent)
+ARTIFACT_FOLDER = os.environ.get("ARTIFACT_FOLDER", MISSION_DATA)
+
+
+PATTERNS = ["*_ap20_prism_position.bag", "*_cpt7_imu.bag", "*_cpt7_ie_tc.bag", "*_tf_minimal.bag"]
+CPT7_IMU_TOPIC = "/boxi/cpt7/imu"
+CPT7_IE_TC_TOPIC = "/boxi/inertial_explorer/tc/odometry"
+AP20_PRISM_POSITION_TOPIC = "/boxi/ap20/prism_position"
 
 """
 Exit Codes:
@@ -38,17 +46,112 @@ EXIT CODE 1: Essential Bag for Conversion are Missing
 """
 
 
+def plot_ground_truth_data(pose_gt_path, output_folder):
+    """Plot ground truth pose and covariance data."""
+    # Initialize lists to store data
+    timestamps = []
+    positions = {"x": [], "y": [], "z": []}
+    position_covariances = []
+    orientations = {"roll": [], "pitch": [], "yaw": []}
+    orientation_covariances = []
+
+    # Read the rosbag
+    with rosbag.Bag(pose_gt_path, "r") as bag:
+        for _, msg, t in bag.read_messages(topics=["/boxi/ground_truth/pose_with_covariance"]):
+            # Extract timestamp
+            timestamps.append(t.to_sec())
+
+            # Extract position
+            positions["x"].append(msg.pose.pose.position.x)
+            positions["y"].append(msg.pose.pose.position.y)
+            positions["z"].append(msg.pose.pose.position.z)
+
+            # Extract covariance
+            cov = np.array(msg.pose.covariance).reshape(6, 6)
+            position_covariances.append([cov[0, 0], cov[1, 1], cov[2, 2]])
+
+            # Extract orientation
+            quat = msg.pose.pose.orientation
+            roll, pitch, yaw = euler_from_quaternion([quat.x, quat.y, quat.z, quat.w])
+            orientations["roll"].append(roll)
+            orientations["pitch"].append(pitch)
+            orientations["yaw"].append(yaw)
+
+            # Extract orientation covariance
+            orientation_covariances.append([cov[3, 3], cov[4, 4], cov[5, 5]])
+
+    # Convert to numpy arrays
+    timestamps = np.array(timestamps)
+    positions = {key: np.array(values) for key, values in positions.items()}
+    position_covariances = np.array(position_covariances)
+    orientations = {key: np.array(values) for key, values in orientations.items()}
+    orientation_covariances = np.array(orientation_covariances)
+    print(f"Extracted {len(timestamps)} data points from ground truth bag for analysis")
+
+    # Create plots
+    fig, axs = plt.subplots(4, 1, figsize=(10, 16))
+
+    # Plot 1: Positions
+    for key, color in zip(["x", "y", "z"], ["r", "g", "b"]):
+        axs[0].plot(timestamps, positions[key], label=f"{key} position", color=color)
+    axs[0].set_title("Position (x, y, z)")
+    axs[0].set_xlabel("Time (s)")
+    axs[0].set_ylabel("Position (m)")
+    axs[0].legend()
+
+    # Plot 2: Position covariances
+    for i, (key, color) in enumerate(zip(["x", "y", "z"], ["r", "g", "b"])):
+        axs[1].plot(timestamps, position_covariances[:, i], label=f"{key} covariance", color=color)
+    axs[1].set_title("Position Covariance (x, y, z)")
+    axs[1].set_xlabel("Time (s)")
+    axs[1].set_ylabel("Covariance (m²)")
+    axs[1].legend()
+
+    # Plot 3: Orientations
+    for key, color in zip(["roll", "pitch", "yaw"], ["r", "g", "b"]):
+        axs[2].plot(timestamps, orientations[key], label=f"{key}", color=color)
+    axs[2].set_title("Orientation (Roll, Pitch, Yaw)")
+    axs[2].set_xlabel("Time (s)")
+    axs[2].set_ylabel("Angle (rad)")
+    axs[2].legend()
+
+    # Plot 4: Orientation covariances
+    for i, (key, color) in enumerate(zip(["roll", "pitch", "yaw"], ["r", "g", "b"])):
+        axs[3].plot(timestamps, orientation_covariances[:, i], label=f"{key} covariance", color=color)
+    axs[3].set_title("Orientation Covariance (Roll, Pitch, Yaw)")
+    axs[3].set_xlabel("Time (s)")
+    axs[3].set_ylabel("Covariance (rad²)")
+    axs[3].legend()
+
+    plt.tight_layout()
+    plt.savefig(os.path.join(output_folder, "ground_truth_analysis.png"))
+    plt.close()
+    print(f"Saved ground truth analysis plot to {os.path.join(output_folder, 'ground_truth_analysis.png')}")
+
+
 def is_gnss_in_bag(bag_file_path):
     def get_bag_start_time(bag_file_path):
         try:
             with rosbag.Bag(bag_file_path, "r") as bag:
-                start_time = bag.get_start_time()
-                print(f"The start time of the bag is: {start_time} seconds (Unix epoch time).")
-                return start_time
+                min_time = None
+                for _, _, t in bag.read_messages():
+                    t_sec = t.to_sec() if hasattr(t, "to_sec") else float(t)
+                    if min_time is None or t_sec < min_time:
+                        min_time = t_sec
+
+                if min_time is not None:
+                    print(f"The start time of the bag is: {min_time} seconds (Unix epoch time).")
+                    return min_time
+                else:
+                    print("The bag contains no messages.")
+                    return None
+
         except rosbag.bag.ROSBagException as e:
             print(f"Error reading the rosbag file: {e}")
+            return None
         except FileNotFoundError:
             print("The specified rosbag file was not found.")
+            return None
 
     def check_topic_in_rosbag(bag_file_path, topic_name):
         try:
@@ -56,9 +159,16 @@ def is_gnss_in_bag(bag_file_path):
             with rosbag.Bag(bag_file_path, "r") as bag:
                 # Check if the topic is present
                 topic_first_appearance = None
-                for topic, _, t in bag.read_messages():
+                for topic, msg, t in bag.read_messages():
                     if topic == topic_name:
                         topic_first_appearance = t.to_sec()
+                        print(f"Found message for topic '{topic_name}' at {topic_first_appearance} seconds.")
+                        print(f"Message type: {type(msg).__name__}")
+                        # Process the actual message content
+                        try:
+                            print(f"Message content (sample): {str(msg)[:150]}...")
+                        except:
+                            print("Unable to display message content.")
                         break
 
                 if topic_first_appearance is not None:
@@ -73,9 +183,8 @@ def is_gnss_in_bag(bag_file_path):
         except FileNotFoundError:
             print("The specified rosbag file was not found.")
 
-    topic_name = "/gt_box/inertial_explorer/tc/odometry"
     # Check when the topic first appears in the bag
-    topic_first_appearance = check_topic_in_rosbag(bag_file_path, topic_name)
+    topic_first_appearance = check_topic_in_rosbag(bag_file_path, CPT7_IE_TC_TOPIC)
     if topic_first_appearance is None:
         print("The topic is not present in the bag.")
         return False
@@ -89,7 +198,7 @@ def is_gnss_in_bag(bag_file_path):
 
     # Compute relative time of first appearance of the topic
     relative_time = topic_first_appearance - bag_start_time
-    print(f"The topic '{topic_name}' first appears at {relative_time} seconds after the start of the bag.")
+    print(f"The topic '{CPT7_IE_TC_TOPIC}' first appears at {relative_time} seconds after the start of the bag.")
 
     # If it appears within the first 10 seconds, return exit code 0
     if relative_time < 10:
@@ -101,7 +210,6 @@ def is_gnss_in_bag(bag_file_path):
 
 
 def invert_transform(tf_msg):
-    # Invert the orientation and translation of a transform
     q_old = [
         tf_msg.transform.rotation.x,
         tf_msg.transform.rotation.y,
@@ -109,30 +217,30 @@ def invert_transform(tf_msg):
         tf_msg.transform.rotation.w,
     ]
     r_old = R.from_quat(q_old)
-    r_new = r_old.inv()
-    q_new = r_new.as_quat()
+    r_inv = r_old.inv()
+    q_inv = r_inv.as_quat()
 
     t_old = [
         tf_msg.transform.translation.x,
         tf_msg.transform.translation.y,
         tf_msg.transform.translation.z,
     ]
-    t_new = -r_new.apply(t_old)
+    t_inv = -r_inv.apply(t_old)
 
-    tf_msg_new = TransformStamped()
-    tf_msg_new.header = copy.deepcopy(tf_msg.header)
-    tf_msg_new.header.frame_id = tf_msg.child_frame_id
-    tf_msg_new.child_frame_id = tf_msg.header.frame_id
+    tf_inv = TransformStamped()
+    tf_inv.header = copy.deepcopy(tf_msg.header)
+    tf_inv.header.frame_id = tf_msg.child_frame_id
+    tf_inv.child_frame_id = tf_msg.header.frame_id
 
-    tf_msg_new.transform.translation.x = t_new[0]
-    tf_msg_new.transform.translation.y = t_new[1]
-    tf_msg_new.transform.translation.z = t_new[2]
-    tf_msg_new.transform.rotation.x = q_new[0]
-    tf_msg_new.transform.rotation.y = q_new[1]
-    tf_msg_new.transform.rotation.z = q_new[2]
-    tf_msg_new.transform.rotation.w = q_new[3]
+    tf_inv.transform.translation.x = t_inv[0]
+    tf_inv.transform.translation.y = t_inv[1]
+    tf_inv.transform.translation.z = t_inv[2]
+    tf_inv.transform.rotation.x = q_inv[0]
+    tf_inv.transform.rotation.y = q_inv[1]
+    tf_inv.transform.rotation.z = q_inv[2]
+    tf_inv.transform.rotation.w = q_inv[3]
 
-    return tf_msg_new
+    return tf_inv
 
 
 def create_transform_stamped(
@@ -326,20 +434,20 @@ def convert_csv_to_bag(
             pose_with_cov.pose.covariance = cov.flatten().tolist()
 
             # Write PoseWithCovarianceStamped to the bag
-            pose_gt_bag.write("/gt_box/ground_truth/pose_with_covariance", pose_with_cov, stamp)
+            pose_gt_bag.write("/boxi/ground_truth/pose_with_covariance", pose_with_cov, stamp)
 
             # Create and write PoseStamped message
             pose_stamped = PoseStamped()
             pose_stamped.header = pose_with_cov.header
             pose_stamped.pose = pose_with_cov.pose.pose
-            pose_gt_bag.write("/gt_box/ground_truth/pose_stamped", pose_stamped, stamp)
+            pose_gt_bag.write("/boxi/ground_truth/pose_stamped", pose_stamped, stamp)
 
             # Create and write nav_msgs/Odometry message
             odometry = Odometry()
             odometry.header = pose_with_cov.header
             odometry.pose.pose = pose_with_cov.pose.pose
             odometry.child_frame_id = child_frame_id
-            pose_gt_bag.write("/gt_box/ground_truth/odometry", odometry, stamp)
+            pose_gt_bag.write("/boxi/ground_truth/odometry", odometry, stamp)
 
             # Create and populate the TransformStamped message
             transform = TransformStamped()
@@ -395,9 +503,12 @@ def launch_nodes():
     # If the file exists, remove it to ensure a fresh merge
     if os.path.exists(merged_rosbag_path):
         print(f"Removing existing merged rosbag at {merged_rosbag_path}")
-        os.remove(merged_rosbag_path)
-
-    os.system(f"python3 {BOX_AUTO_SCRIPTS_DIR}/general/merge_bags.py --input={inputs} --output={merged_rosbag_path}")
+        # os.remove(merged_rosbag_path)
+    else:
+        print(f"Creating new merged rosbag at {merged_rosbag_path}")
+        os.system(
+            f"python3 {BOX_AUTO_SCRIPTS_DIR}/general/merge_bags.py --input={inputs} --output={merged_rosbag_path}"
+        )
 
     start_roscore()
     sleep(1)
@@ -406,7 +517,13 @@ def launch_nodes():
     print(f"Evaluate if initialize_using_gnss returns: {initialize_using_gnss}")
 
     run_ros_command(
-        f"roslaunch atn_position3_fuser position3_fuser_replay.launch  logging_dir_location:={GRAPH_MSF_ARTIFACT_FOLDER} initialize_using_gnss:={initialize_using_gnss}",
+        f"roslaunch atn_position3_fuser position3_fuser_replay_offline_grandtour.launch "
+        f"use_sim_time:=true "
+        f"logging_dir_location:={GRAPH_MSF_ARTIFACT_FOLDER} "
+        f"initialize_using_gnss:={initialize_using_gnss} "
+        f"imu_topic_name:='{CPT7_IMU_TOPIC}' "
+        f"prism_position_topic_name:='{AP20_PRISM_POSITION_TOPIC}' "
+        f"gnss_offline_pose_topic_name:='{CPT7_IE_TC_TOPIC}'",
         background=True,
     )
 
@@ -424,8 +541,8 @@ def launch_nodes():
     print("GMSF processing finished. Converting the data.")
 
     # Convert tf_statics to debug bag
-    tf_static_path = get_bag("*_tf_static.bag")
-    tf_static_gt_path = tf_static_path.replace("_tf_static.bag", "_tf_static_gt.bag")
+    tf_static_path = get_bag("*_tf_minimal.bag")
+    tf_static_gt_path = tf_static_path.replace("_tf_minimal.bag", "_tf_static_gt.bag")
     tf_statics = []
 
     GRAPH_MSF_ARTIFACT_FOLDER_SUBFOLDER = max(
@@ -437,7 +554,7 @@ def launch_nodes():
         key=os.path.getmtime,
     )
 
-    print(GRAPH_MSF_ARTIFACT_FOLDER_SUBFOLDER)
+    print(f"Found MSF artifact folder: {GRAPH_MSF_ARTIFACT_FOLDER_SUBFOLDER}")
     csv_R_6D_transform_world_to_leica_total_station, suc1 = get_file(
         "R_6D_transform_world_to_leica_total_station.csv", GRAPH_MSF_ARTIFACT_FOLDER_SUBFOLDER
     )
@@ -448,6 +565,8 @@ def launch_nodes():
         "R_6D_transform_world_to_enu_origin.csv", GRAPH_MSF_ARTIFACT_FOLDER_SUBFOLDER
     )
     assert suc1 and suc2, "Totalstation has to be available!"
+    print(f"CSV files retrieved. GPS available: {gps_is_available}")
+
     R_world_to_helper = csv_to_TransformStamped(
         csv_R_6D_transform_world_to_leica_total_station, "world", "leica_total_station_helper"
     )
@@ -460,6 +579,7 @@ def launch_nodes():
     if gps_is_available:
         R_world_to_enu_origin = csv_to_TransformStamped(csv_file_world_to_enu_orign, "world", "enu_origin")
         tf_statics.append(R_world_to_enu_origin)
+        print("Added world to ENU origin transform to tf_statics")
 
     # else:
     #     R_world_to_enu_origin = create_transform_stamped(
@@ -476,24 +596,28 @@ def launch_nodes():
     #     )
     #     gps_is_available = True
 
-    write_tf_static_bag(tf_static_gt_path, tf_statics)  # Important this bag cannot be replayed given
+    write_tf_static_bag(tf_static_gt_path, tf_statics)
+    print(f"Wrote {len(tf_statics)} transforms to tf_static_gt bag at {tf_static_gt_path}")
 
     # Convert world to box_base to rosbag
-    tf_gt_path = tf_static_path.replace("_tf_static.bag", "_gt_tf.bag")
-    pose_gt_path = tf_static_path.replace("_tf_static.bag", "_gt_pose.bag")
+    tf_gt_path = tf_static_path.replace("_tf_minimal", "_gt_tf.bag")
+    pose_gt_path = tf_static_path.replace("_tf_minimal.bag", "_gt_pose.bag")
     csv_cov_file, _ = get_file("X_state_6D_pose_covariance.csv", GRAPH_MSF_ARTIFACT_FOLDER_SUBFOLDER)
     csv_pose_file, _ = get_file("X_state_6D_pose.csv", GRAPH_MSF_ARTIFACT_FOLDER_SUBFOLDER)
     convert_csv_to_bag(csv_cov_file, csv_pose_file, tf_gt_path, pose_gt_path, "world", "box_base")
+    print(f"Converted CSV to bags: {tf_gt_path} and {pose_gt_path}")
 
     # Load all data from rosbags and plot it
     ap20_gps_bag = merged_rosbag_path
-    ap20 = np.array([t.point for _, t, _ in Bag(ap20_gps_bag).read_messages(topics="/gt_box/ap20/prism_position")])
+    ap20 = np.array([t.point for _, t, _ in Bag(ap20_gps_bag).read_messages(topics=AP20_PRISM_POSITION_TOPIC)])
     pose_gt = np.array(
-        [t.pose.pose for _, t, _ in Bag(pose_gt_path).read_messages(topics="/gt_box/ground_truth/pose_with_covariance")]
+        [t.pose.pose for _, t, _ in Bag(pose_gt_path).read_messages(topics="/boxi/ground_truth/pose_with_covariance")]
     )
+    print(f"Loaded {len(ap20)} AP20 messages and {len(pose_gt)} ground truth poses")
 
     tf_transformer = BagTfTransformer(tf_static_gt_path)
     t_prism_world, q_prism_world = tf_transformer.lookupTransform("prism", "world", 0, latest=True)
+    print(f"Looked up transform prism -> world: translation={t_prism_world}, rotation={q_prism_world}")
 
     if gps_is_available:
         t_enu_origin_world, q_enu_origin_world = tf_transformer.lookupTransform("enu_origin", "world", 0, latest=True)
@@ -501,23 +625,37 @@ def launch_nodes():
         T_enu_origin_world = np.eye(4)
         T_enu_origin_world[:3, :3] = R.from_quat(q_enu_origin_world).as_matrix()
         T_enu_origin_world[:3, 3] = np.array(t_enu_origin_world)
+        print("Created ENU origin -> world transform matrix")
 
         # Read in the full paths
         gps_ie = np.array(
             [
                 odom_msg.pose.pose  # Extract pose from odometry message
-                for _, odom_msg, _ in Bag(ap20_gps_bag).read_messages(topics="/gt_box/inertial_explorer/tc/odometry")
+                for _, odom_msg, _ in Bag(ap20_gps_bag).read_messages(topics=CPT7_IE_TC_TOPIC)
             ]
         )
+        print(f"Loaded {len(gps_ie)} GPS-IE messages")
 
-        gps_ie_path_arr = np.array([np.eye(4) for _ in range(len(gps_ie))])
+        # Extract positions and quaternions in one go
+        positions = np.array([[msg.position.x, msg.position.y, msg.position.z] for msg in gps_ie])
+        quats = np.array(
+            [[msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.orientation.w] for msg in gps_ie]
+        )
+
+        # Convert all quaternions to rotation matrices at once
+        rotmats = R.from_quat(quats).as_matrix()
+
+        # Create the transformation matrices more efficiently
+        gps_ie_path_world = np.zeros((len(gps_ie), 4, 4))
+        gps_ie_path_world[:, :3, :3] = rotmats
+        gps_ie_path_world[:, :3, 3] = positions
+        gps_ie_path_world[:, 3, 3] = 1.0
+
+        # Apply transformation to all points at once
         for i in range(len(gps_ie)):
-            gps_ie_path_arr[i, :3, :3] = R.from_quat(
-                [gps_ie[i].orientation.x, gps_ie[i].orientation.y, gps_ie[i].orientation.z, gps_ie[i].orientation.w]
-            ).as_matrix()
-            gps_ie_path_arr[i, :3, 3] = [gps_ie[i].position.x, gps_ie[i].position.y, gps_ie[i].position.z]
+            gps_ie_path_world[i] = T_enu_origin_world @ gps_ie_path_world[i]
 
-            gps_ie_path_world = T_enu_origin_world @ gps_ie_path_arr
+        print(f"Transformed {len(gps_ie)} GPS-IE poses to world frame")
 
     ap20_path_arr = np.array([np.eye(4) for _ in range(len(ap20))])
     pose_gt_path_arr = np.array([np.eye(4) for _ in range(len(pose_gt))])
@@ -530,6 +668,8 @@ def launch_nodes():
             [pose_gt[i].orientation.x, pose_gt[i].orientation.y, pose_gt[i].orientation.z, pose_gt[i].orientation.w]
         ).as_matrix()
         pose_gt_path_arr[i, :3, 3] = [pose_gt[i].position.x, pose_gt[i].position.y, pose_gt[i].position.z]
+    print("Created transformation arrays for AP20 and ground truth paths")
+
     T_prism_world = np.eye(4)
     T_prism_world[:3, :3] = R.from_quat(q_prism_world).as_matrix()
     T_prism_world[:3, 3] = np.array(t_prism_world)
@@ -545,9 +685,11 @@ def launch_nodes():
 
     ap20_path_world = np.linalg.inv(T_prism_world) @ ap20_path_arr
     pose_gt_path_world = pose_gt_path_arr
+    print("Transformed AP20 path to world frame")
 
     if not gps_is_available:
         gps_ie_path_world = np.copy(ap20_path_world)  # For debugging only
+        print("GPS not available, using AP20 path as GPS path for debugging")
 
     x_min = min(
         np.min(gps_ie_path_world[:, 0, 3]), np.min(ap20_path_world[:, 0, 3]), np.min(pose_gt_path_world[:, 0, 3])
@@ -561,6 +703,7 @@ def launch_nodes():
     y_max = max(
         np.max(gps_ie_path_world[:, 1, 3]), np.max(ap20_path_world[:, 1, 3]), np.max(pose_gt_path_world[:, 1, 3])
     )
+    print(f"Calculated plot bounds: X={x_min:.2f} to {x_max:.2f}, Y={y_min:.2f} to {y_max:.2f}")
 
     # Calculate aspect ratio based on data ranges
     x_range = x_max - x_min
@@ -573,6 +716,7 @@ def launch_nodes():
 
     # Create figure with computed size
     fig, ax = plt.subplots(figsize=(width, height))
+    print(f"Created plot with dimensions {width}x{height}")
 
     # Plot trajectories
 
@@ -585,6 +729,7 @@ def launch_nodes():
             label="GPS-IE",
             linewidth=2,
         )
+        print("Plotted GPS-IE trajectory")
 
     # Instead of single plot command, we'll plot segments
     MAX_DISTANCE = 0.2  # 10cm threshold
@@ -594,12 +739,15 @@ def launch_nodes():
     y_coords = ap20_path_world[:, 1, 3]
 
     # Find segments with distances less than threshold
+    segment_count = 0
     for i in range(len(x_coords) - 1):
         dist = np.sqrt((x_coords[i + 1] - x_coords[i]) ** 2 + (y_coords[i + 1] - y_coords[i]) ** 2)
         if dist < MAX_DISTANCE:
             ax.plot(
                 [x_coords[i], x_coords[i + 1]], [y_coords[i], y_coords[i + 1]], "-", color=colors["purple"], linewidth=2
             )
+            segment_count += 1
+    print(f"Plotted {segment_count} AP20 trajectory segments with distance < {MAX_DISTANCE}m")
 
     # Add a single entry for the legend
     ax.plot([], [], "-", color=colors["purple"], label="AP20", linewidth=3)
@@ -612,6 +760,7 @@ def launch_nodes():
         label="Ground Truth",
         linewidth=3,
     )
+    print("Plotted ground truth trajectory")
 
     # Style settings
     ax.set_xlabel("Distance in [m]", fontsize=12)
@@ -649,91 +798,15 @@ def launch_nodes():
     # Adjust layout
     plt.tight_layout()
     plt.savefig(os.path.join(GRAPH_MSF_ARTIFACT_FOLDER_SUBFOLDER, "graph_msf_result.png"))
-
-    def plot_ground_truth_data(pose_gt_path, output_folder):
-        """Plot ground truth pose and covariance data."""
-        # Initialize lists to store data
-        timestamps = []
-        positions = {"x": [], "y": [], "z": []}
-        position_covariances = []
-        orientations = {"roll": [], "pitch": [], "yaw": []}
-        orientation_covariances = []
-
-        # Read the rosbag
-        with rosbag.Bag(pose_gt_path, "r") as bag:
-            for _, msg, t in bag.read_messages(topics=["/gt_box/ground_truth/pose_with_covariance"]):
-                # Extract timestamp
-                timestamps.append(t.to_sec())
-
-                # Extract position
-                positions["x"].append(msg.pose.pose.position.x)
-                positions["y"].append(msg.pose.pose.position.y)
-                positions["z"].append(msg.pose.pose.position.z)
-
-                # Extract covariance
-                cov = np.array(msg.pose.covariance).reshape(6, 6)
-                position_covariances.append([cov[0, 0], cov[1, 1], cov[2, 2]])
-
-                # Extract orientation
-                quat = msg.pose.pose.orientation
-                roll, pitch, yaw = euler_from_quaternion([quat.x, quat.y, quat.z, quat.w])
-                orientations["roll"].append(roll)
-                orientations["pitch"].append(pitch)
-                orientations["yaw"].append(yaw)
-
-                # Extract orientation covariance
-                orientation_covariances.append([cov[3, 3], cov[4, 4], cov[5, 5]])
-
-        # Convert to numpy arrays
-        timestamps = np.array(timestamps)
-        positions = {key: np.array(values) for key, values in positions.items()}
-        position_covariances = np.array(position_covariances)
-        orientations = {key: np.array(values) for key, values in orientations.items()}
-        orientation_covariances = np.array(orientation_covariances)
-
-        # Create plots
-        fig, axs = plt.subplots(4, 1, figsize=(10, 16))
-
-        # Plot 1: Positions
-        for key, color in zip(["x", "y", "z"], ["r", "g", "b"]):
-            axs[0].plot(timestamps, positions[key], label=f"{key} position", color=color)
-        axs[0].set_title("Position (x, y, z)")
-        axs[0].set_xlabel("Time (s)")
-        axs[0].set_ylabel("Position (m)")
-        axs[0].legend()
-
-        # Plot 2: Position covariances
-        for i, (key, color) in enumerate(zip(["x", "y", "z"], ["r", "g", "b"])):
-            axs[1].plot(timestamps, position_covariances[:, i], label=f"{key} covariance", color=color)
-        axs[1].set_title("Position Covariance (x, y, z)")
-        axs[1].set_xlabel("Time (s)")
-        axs[1].set_ylabel("Covariance (m²)")
-        axs[1].legend()
-
-        # Plot 3: Orientations
-        for key, color in zip(["roll", "pitch", "yaw"], ["r", "g", "b"]):
-            axs[2].plot(timestamps, orientations[key], label=f"{key}", color=color)
-        axs[2].set_title("Orientation (Roll, Pitch, Yaw)")
-        axs[2].set_xlabel("Time (s)")
-        axs[2].set_ylabel("Angle (rad)")
-        axs[2].legend()
-
-        # Plot 4: Orientation covariances
-        for i, (key, color) in enumerate(zip(["roll", "pitch", "yaw"], ["r", "g", "b"])):
-            axs[3].plot(timestamps, orientation_covariances[:, i], label=f"{key} covariance", color=color)
-        axs[3].set_title("Orientation Covariance (Roll, Pitch, Yaw)")
-        axs[3].set_xlabel("Time (s)")
-        axs[3].set_ylabel("Covariance (rad²)")
-        axs[3].legend()
-
-        plt.tight_layout()
-        plt.savefig(os.path.join(output_folder, "ground_truth_analysis.png"))
-        plt.close()
+    print(
+        f"Saved trajectory comparison plot to {os.path.join(GRAPH_MSF_ARTIFACT_FOLDER_SUBFOLDER, 'graph_msf_result.png')}"
+    )
 
     plot_ground_truth_data(pose_gt_path, GRAPH_MSF_ARTIFACT_FOLDER_SUBFOLDER)
 
     # Upload results
     upload_bag([tf_gt_path, pose_gt_path, tf_static_gt_path])
+    print(f"Uploaded result bags: {tf_gt_path}, {pose_gt_path}, and {tf_static_gt_path}")
 
 
 if __name__ == "__main__":

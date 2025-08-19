@@ -300,8 +300,8 @@ def save_image_to_bag(
     image: np.ndarray,
     bag: rosbag.Bag,
     cv_bridge: CvBridge,
-    timestamp: int,
-    seq: int,
+    bag_time: Any,
+    header: Any,
     topic: str,
     compressed: bool,
     grayscale: bool,
@@ -310,17 +310,15 @@ def save_image_to_bag(
     """\
     writes images with corresponding metadata to an open bagfile
     """
-
     # write the image
     msg = save_image_to_ros1_message(image, cv_bridge, compressed=compressed, grayscale=grayscale)
-    msg.header.stamp = timestamp
-    msg.header.seq = seq
-    bag.write(topic, msg, timestamp)
+    msg.header = header
+    bag.write(topic, msg, bag_time)
 
     # write number of detections
     n_dets_msg = Int32()
     n_dets_msg.data = detections_count
-    bag.write(f"{topic}/n_detections", n_dets_msg, timestamp)
+    bag.write(f"{topic}/n_detections", n_dets_msg, bag_time)
 
 
 def anonymize_image_topics_in_bagfile(
@@ -334,7 +332,7 @@ def anonymize_image_topics_in_bagfile(
 ) -> None:
     cv_bridge = CvBridge()
     with rosbag.Bag(str(input_path), "r") as in_bag, rosbag.Bag(str(output_path), "w", compression="lz4") as out_bag:
-        for idx, (topic, msg, timestamp) in tqdm.tqdm(
+        for idx, (topic, msg, bag_time) in tqdm.tqdm(
             enumerate(in_bag.read_messages()),
             total=in_bag.get_message_count(),
             desc=f"processing {input_path} - {len(image_topics)} image topics",
@@ -342,7 +340,7 @@ def anonymize_image_topics_in_bagfile(
             if head is not None and idx >= head:
                 break
             if topic not in image_topics:
-                out_bag.write(topic, msg, timestamp)
+                out_bag.write(topic, msg, bag_time)
                 continue
 
             image, grayscale, compressed = load_image_from_ros1_message(msg, cv_bridge)
@@ -353,13 +351,12 @@ def anonymize_image_topics_in_bagfile(
                 flip_images_for_inference,
                 detectors,
             )
-
             save_image_to_bag(
                 blurred_image,
                 out_bag,
                 cv_bridge,
-                timestamp,
-                msg.header.seq,
+                bag_time,
+                msg.header,
                 topic,
                 compressed,
                 grayscale,
@@ -499,11 +496,11 @@ def upload_simple(mission_id, path, delete=True):
                 project_name="GrandTour",
                 files=[path],
                 create=False,
+                verbose=True,
             )
             res = kleinkram.verify(project_name=project_name, mission_name=mission_name, files=[path])
 
             break
-            print("File uploaded - (suc ?)")
         except Exception as e:
             print("Something went wrong - ", e)
 

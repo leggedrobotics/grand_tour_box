@@ -4,7 +4,7 @@ import rospy
 from grid_map_msgs.msg import GridMap
 import numpy as np
 from dynamic_reconfigure.server import Server
-from box_dev.cfg import FilterConfig  # You'll need to create this
+from box_dev.cfg import FilterConfig
 
 
 class ElevationMapAdjuster:

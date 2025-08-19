@@ -3,7 +3,7 @@ metadata:
     - alias: alphasense_front_center_caminfo
       file: "*_alphasense.bag"
       topic: "/boxi/alphasense/front_center/camera_info"
-  
+
   frame_transforms:
     - frame_id: alphasense_front_center
       file: "*_tf_minimal.bag"
@@ -20,8 +20,3 @@ data:
       camera_intrinsics: alphasense_front_center_caminfo
       description: "10Hz - 1440x1080 - Sevensense Alphasense/CoreResearch front center (Sony IMX-273, Color, 1.6MP)"
   
-  imu_topics:
-    - alias: alphasense_imu
-      file: "*_alphasense_imu.bag"
-      topic: "/boxi/alphasense/imu"
-      description: "Bosch BMI085 200Hz (Integrated int Sevensense CoreResearch/Alphasense camera unit)"

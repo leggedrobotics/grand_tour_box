@@ -7,7 +7,7 @@ SPREADSHEET_ID = "1mENfskg_jO_vJGFM5yonqPuf-wYUNmg26IPv3pOu3gg"
 topic_data, MISSION_DATA = read_sheet_data(SPREADSHEET_ID)
 
 SCHEDULE = True
-cameras = ["hdr", "alphasense", "zed2i"]
+cameras = ["zed2i"]  # "hdr", "zed2i", "alphasense"
 host = "euler.ethz.ch"
 info_scratch = {"hdr": 100000, "alphasense": 100000, "zed2i": 200000}
 info_time = {"hdr": "10:00:00", "alphasense": "10:00:00", "zed2i": "8:00:00"}
@@ -54,9 +54,14 @@ exit 0
                 file.write(content)
 
 os.system(f"scp -r {submit_dir} {host}:/cluster/scratch/jonfrey/")
+k = 0
 if SCHEDULE:
     for name, _ in uuid_mappings.items():
         if MISSION_DATA[name]["GOOD_MISSION"] == "TRUE":
             for camera in cameras:
                 os.system(f"ssh {host} sbatch /cluster/scratch/jonfrey/.submit/{name}_{camera}.sh")
-                time.sleep(60 * 2)
+                time.sleep(120)
+
+        k += 1
+        if k >= nr_of_missions:
+            break

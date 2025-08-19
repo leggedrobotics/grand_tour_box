@@ -15,6 +15,9 @@ PRE = f"source /opt/ros/noetic/setup.bash; source {WS}/devel/setup.bash;"
 
 
 def launch_undistorter(
+    run_camera_sync,
+    input_image_path,
+    input_image_topic,
     input_rosbag_path,
     input_trajectory_bag_path,
     input_tf_static_bag_path,
@@ -33,7 +36,10 @@ def launch_undistorter(
         f"bash -c '"
         f"{PRE} "
         f"roslaunch pointcloud_undistortion undistort_pointcloud.launch "
+        f"run_camera_sync:={run_camera_sync} "
         f"lidar_bag_path:={input_rosbag_path} "
+        f"image_bag_path:={input_image_path} "
+        f"input_image_topic:={input_image_topic} "
         f"trajectory_bag_path:={input_trajectory_bag_path} "
         f"tf_static_bag_path:={input_tf_static_bag_path} "
         f"output_bag_path:={output_bag_path} "
@@ -125,7 +131,10 @@ if __name__ == "__main__":
     input_trajectory_bag_path = get_bag("*tf_minimal.bag")
 
     # TF static
-    input_tf_static_path = get_bag("*_tf_static_start_end.bag")
+    input_tf_static_path = get_bag("*_tf_static_start_end.bag", return_upon_no_files=True)
+    if input_tf_static_path is None:
+        print("No static tf bag found. Using minimal tf bag instead.")
+        input_tf_static_path = get_bag("*_tf_static.bag")
 
     # Remove existing undistorted bags if they exist
     try:
@@ -143,9 +152,16 @@ if __name__ == "__main__":
         pass
 
     # Filtered Hesai bag
+    run_camera_sync = True  # Set to False if you want to use the existing camera sync
+    input_image_path = get_bag("*_nuc_alphasense_corrected.bag")
+    print(f"Input image path: {input_image_path}")
+    input_image_topic = "/gt_box/alphasense_driver_node/cam1/color/image"
     input_hesai_bag_path = get_bag("*_nuc_hesai_ready.bag")
     output_hesai_bag_path = input_hesai_bag_path.replace("_nuc_hesai_ready.bag", "_nuc_hesai_undist.bag")
     launch_undistorter(
+        run_camera_sync,
+        input_image_path,
+        input_image_topic,
         input_hesai_bag_path,
         input_trajectory_bag_path,
         input_tf_static_path,
@@ -169,4 +185,18 @@ if __name__ == "__main__":
         target_frame="odom",
         unified_undistortion=is_unified,
     )
+
+    # # Airy
+    # input_livox_bag_path = get_bag("*_gps.bag")
+    # output_livox_bag_path = input_livox_bag_path.replace("_gps.bag", "_gps_undist.bag")
+    # launch_undistorter(
+    #     input_livox_bag_path,
+    #     input_trajectory_bag_path,
+    #     input_tf_static_path,
+    #     output_livox_bag_path,
+    #     pcd_topic_in="/rslidar_points",
+    #     child_frame="base",  # Used if not unified
+    #     target_frame="odom",
+    #     unified_undistortion=is_unified,
+    # )
     kill_roscore()

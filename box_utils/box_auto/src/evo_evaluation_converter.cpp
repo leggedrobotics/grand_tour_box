@@ -1,3 +1,25 @@
+// MIT License
+
+// Copyright (c) 2023-2025 ETH Zurich, Robotic Systems Lab.
+
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 #include <XmlRpcValue.h>
 #include <geometry_msgs/PointStamped.h>
 #include <geometry_msgs/PoseStamped.h>
@@ -220,6 +242,14 @@ void parseRosbagToTum(const std::string& bagPath, const std::string& topicName, 
   }
 
   rosbag::View view(bag, rosbag::TopicQuery(topicName));
+  if (view.size() == 0) {
+    std::string errorMsg = "No messages found for topic: " + topicName + " in bag: " + bagPath;
+    ROS_ERROR_STREAM(errorMsg);
+    bag.close();
+    tumFile.close();
+    possibleCovarianceFile.close();
+    throw std::runtime_error(errorMsg);
+  }
   for (const rosbag::MessageInstance& msg : view) {
     if (msg.getDataType() == "nav_msgs/Odometry") {
       nav_msgs::Odometry::ConstPtr odometry = msg.instantiate<nav_msgs::Odometry>();

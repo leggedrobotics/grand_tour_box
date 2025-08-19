@@ -13,14 +13,16 @@ def upload_simple(project_name, mission_name, path, delete=True):
             elif res[Path(path)] == "uploaded":
                 print("File already uploaded - suc")
                 return True
-            elif res[Path(path)] == "hash mismatch":
-                print("hash mismatch")
+            elif res[Path(path)] == "hash mismatch" or res[Path(path)] == "uploading":
+                print("hash mismatch or uploading")
                 fileinfo = [
                     f
                     for f in kleinkram.list_files(project_names=[project_name], mission_names=[mission_name])
                     if Path(path).name in f.name
                 ]
+                print(fileinfo)
                 kleinkram.delete_file(fileinfo[0].id)
+                print("deleted file")
             else:
                 print("Something is odd after verification")
                 print(res[Path(path)])
@@ -50,9 +52,10 @@ def upload_simple(project_name, mission_name, path, delete=True):
                 mission_name=mission_name,
                 project_name="GrandTour",
                 files=[path],
-                create=False,
+                verbose=True,
             )
             res = kleinkram.verify(project_name=project_name, mission_name=mission_name, files=[path])
+            print("Upload result is", res)
 
             break
             print("File uploaded - (suc ?)")
