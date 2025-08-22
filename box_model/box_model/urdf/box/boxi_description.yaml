@@ -14,48 +14,54 @@
   prism\"/>\n  </joint>\n  <!-- Box model -->\n  <joint name=\"box_base_to_box_base_model\"\
   \ type=\"fixed\">\n    <origin rpy=\"0.0 0.0 0.0\" xyz=\"0.0 0.0 0.0\"/>\n    <parent\
   \ link=\"box_base\"/>\n    <child link=\"box_base_model\"/>\n  </joint>\n  <!--\
-  \ Prism model -->\n  <joint name=\"box_base_to_prism_model\" type=\"fixed\">\n \
-  \   <origin rpy=\"0.0 0.0 0.0\" xyz=\"0.0 0.0 0.0\"/>\n    <parent link=\"box_base\"\
-  />\n    <child link=\"prism_model\"/>\n  </joint>\n  <!-- Back antenna model -->\n\
-  \  <joint name=\"base_to_cpt7_antenna_back_model\" type=\"fixed\">\n    <origin\
-  \ rpy=\"0.0 0.0 0.0\" xyz=\"0.0 0.0 0.0\"/>\n    <parent link=\"base\"/>\n    <child\
-  \ link=\"cpt7_antenna_back_model\"/>\n  </joint>\n  <!-- Back antenna mesh -->\n\
-  \  <link name=\"cpt7_antenna_back_model\">\n    <visual>\n      <geometry>\n   \
-  \     <mesh filename=\"package://box_model/urdf/box/mesh/gps.dae\" scale=\"1 1 1\"\
-  />\n      </geometry>\n    </visual>\n  </link>\n  <!-- Box Model Mesh -->\n  <link\
-  \ name=\"box_base_model\">\n    <visual>\n      <geometry>\n        <mesh filename=\"\
-  package://box_model/urdf/box/mesh/box.dae\" scale=\"1 1 1\"/>\n      </geometry>\n\
-  \    </visual>\n  </link>\n  <!-- Leica Mini prism model -->\n  <link name=\"prism_model\"\
-  >\n    <visual>\n      <geometry>\n        <mesh filename=\"package://box_model/urdf/box/mesh/prism.dae\"\
-  \ scale=\"1 1 1\"/>\n      </geometry>\n    </visual>\n  </link>\n  <!-- //////////\
-  \ Alphasense ////////// -->\n  <!-- Alphasense base (coincides with alphasense Cam1/\
-  \ front center) -->\n  <link name=\"alphasense_base\"/>\n  <joint name=\"box_base_to_alphasense_base\"\
-  \ type=\"fixed\">\n    <origin rpy=\" 1.3941719992601669                   0.010250586182529497\
-  \                   1.5615060083917738\" xyz=\" 0.36687155943347416            \
-  \       -0.03830813086502131                   0.07453013261509792\"/>\n    <parent\
-  \ link=\"box_base\"/>\n    <child link=\"alphasense_base\"/>\n  </joint>\n  <!--\
-  \ ////////// HDR ////////// -->\n  <!-- HDR Base (coincides with front hdr cam)\
-  \ -->\n  <link name=\"hdr_base\"/>\n  <joint name=\"box_base_to_hdr_base\" type=\"\
-  fixed\">\n    <origin rpy=\" 1.566761382569578                   0.005968594292302232\
-  \                   1.5662772665523235\" xyz=\" 0.3684293699056733             \
-  \      -0.03772867663980787                   0.10901934198914183\"/>\n    <parent\
-  \ link=\"box_base\"/>\n    <child link=\"hdr_base\"/>\n  </joint>\n  <!-- HDR camera\
-  \ front (should be identity) -->\n  <link name=\"hdr_front\"/>\n  <joint name=\"\
-  hdr_base_to_hdr_front\" type=\"fixed\">\n    <origin rpy=\" 0.0                \
-  \   0.0                   0.0\" xyz=\" 0.0                   0.0               \
-  \    0.0\"/>\n    <parent link=\"hdr_base\"/>\n    <child link=\"hdr_front\"/>\n\
-  \  </joint>\n  <!-- HDR camera left -->\n  <link name=\"hdr_left\"/>\n  <joint name=\"\
-  hdr_base_to_hdr_left\" type=\"fixed\">\n    <origin rpy=\" 3.119939898381636   \
-  \                -1.3862302785271512                   -3.106441929114243\" xyz=\"\
-  \ -0.10262937623039327                   0.001666769368641803                  \
-  \ -0.07654582949182541\"/>\n    <parent link=\"hdr_base\"/>\n    <child link=\"\
-  hdr_left\"/>\n  </joint>\n  <!-- HDR camera right -->\n  <link name=\"hdr_right\"\
-  />\n  <joint name=\"hdr_base_to_hdr_right\" type=\"fixed\">\n    <origin rpy=\"\
-  \ -3.1318882190189763                   1.4011932837626668                   -3.128968871054785\"\
-  \ xyz=\" 0.10220167371954061                   0.0004468476554254988           \
-  \        -0.0768012729379894\"/>\n    <parent link=\"hdr_base\"/>\n    <child link=\"\
-  hdr_right\"/>\n  </joint>\n  <!-- ////////// ZED2i ////////// -->\n  <!-- when enable_visualizable_model_prop\
-  \ is true, it results to. -->\n  <!-- Visualization suppoted model enabled. zed2i_base->zed2i_left,\
+  \ Spider model -->\n  <joint name=\"box_base_to_spider\" type=\"fixed\">\n    <origin\
+  \ rpy=\"0.0 0.0 0.0\" xyz=\"0.0 0.0 0.0\"/>\n    <parent link=\"box_base\"/>\n \
+  \   <child link=\"spider\"/>\n  </joint>\n  <!-- Prism model -->\n  <joint name=\"\
+  box_base_to_prism_model\" type=\"fixed\">\n    <origin rpy=\"0.0 0.0 0.0\" xyz=\"\
+  0.0 0.0 0.0\"/>\n    <parent link=\"box_base\"/>\n    <child link=\"prism_model\"\
+  />\n  </joint>\n  <!-- Back antenna model -->\n  <joint name=\"base_to_cpt7_antenna_back_model\"\
+  \ type=\"fixed\">\n    <origin rpy=\"0.0 0.0 0.0\" xyz=\"0.0 0.0 0.0\"/>\n    <parent\
+  \ link=\"base\"/>\n    <child link=\"cpt7_antenna_back_model\"/>\n  </joint>\n \
+  \ <!-- Spider -->\n  <link name=\"spider\">\n    <visual>\n      <geometry>\n  \
+  \      <mesh filename=\"package://box_model/urdf/box/mesh/spider.dae\" scale=\"\
+  1 1 1\"/>\n      </geometry>\n    </visual>\n  </link>\n  <!-- Back antenna mesh\
+  \ -->\n  <link name=\"cpt7_antenna_back_model\">\n    <visual>\n      <geometry>\n\
+  \        <mesh filename=\"package://box_model/urdf/box/mesh/gps.dae\" scale=\"1\
+  \ 1 1\"/>\n      </geometry>\n    </visual>\n  </link>\n  <!-- Box Model Mesh -->\n\
+  \  <link name=\"box_base_model\">\n    <visual>\n      <geometry>\n        <mesh\
+  \ filename=\"package://box_model/urdf/box/mesh/box.dae\" scale=\"1 1 1\"/>\n   \
+  \   </geometry>\n    </visual>\n  </link>\n  <!-- Leica Mini prism model -->\n \
+  \ <link name=\"prism_model\">\n    <visual>\n      <geometry>\n        <mesh filename=\"\
+  package://box_model/urdf/box/mesh/prism.dae\" scale=\"1 1 1\"/>\n      </geometry>\n\
+  \    </visual>\n  </link>\n  <!-- ////////// Alphasense ////////// -->\n  <!-- Alphasense\
+  \ base (coincides with alphasense Cam1/ front center) -->\n  <link name=\"alphasense_base\"\
+  />\n  <joint name=\"box_base_to_alphasense_base\" type=\"fixed\">\n    <origin rpy=\"\
+  \ 1.3941719992601669                   0.010250586182529497                   1.5615060083917738\"\
+  \ xyz=\" 0.36687155943347416                   -0.03830813086502131            \
+  \       0.07453013261509792\"/>\n    <parent link=\"box_base\"/>\n    <child link=\"\
+  alphasense_base\"/>\n  </joint>\n  <!-- ////////// HDR ////////// -->\n  <!-- HDR\
+  \ Base (coincides with front hdr cam) -->\n  <link name=\"hdr_base\"/>\n  <joint\
+  \ name=\"box_base_to_hdr_base\" type=\"fixed\">\n    <origin rpy=\" 1.566761382569578\
+  \                   0.005968594292302232                   1.5662772665523235\"\
+  \ xyz=\" 0.3684293699056733                   -0.03772867663980787             \
+  \      0.10901934198914183\"/>\n    <parent link=\"box_base\"/>\n    <child link=\"\
+  hdr_base\"/>\n  </joint>\n  <!-- HDR camera front (should be identity) -->\n  <link\
+  \ name=\"hdr_front\"/>\n  <joint name=\"hdr_base_to_hdr_front\" type=\"fixed\">\n\
+  \    <origin rpy=\" 0.0                   0.0                   0.0\" xyz=\" 0.0\
+  \                   0.0                   0.0\"/>\n    <parent link=\"hdr_base\"\
+  />\n    <child link=\"hdr_front\"/>\n  </joint>\n  <!-- HDR camera left -->\n  <link\
+  \ name=\"hdr_left\"/>\n  <joint name=\"hdr_base_to_hdr_left\" type=\"fixed\">\n\
+  \    <origin rpy=\" 3.119939898381636                   -1.3862302785271512    \
+  \               -3.106441929114243\" xyz=\" -0.10262937623039327               \
+  \    0.001666769368641803                   -0.07654582949182541\"/>\n    <parent\
+  \ link=\"hdr_base\"/>\n    <child link=\"hdr_left\"/>\n  </joint>\n  <!-- HDR camera\
+  \ right -->\n  <link name=\"hdr_right\"/>\n  <joint name=\"hdr_base_to_hdr_right\"\
+  \ type=\"fixed\">\n    <origin rpy=\" -3.1318882190189763                   1.4011932837626668\
+  \                   -3.128968871054785\" xyz=\" 0.10220167371954061            \
+  \       0.0004468476554254988                   -0.0768012729379894\"/>\n    <parent\
+  \ link=\"hdr_base\"/>\n    <child link=\"hdr_right\"/>\n  </joint>\n  <!-- //////////\
+  \ ZED2i ////////// -->\n  <!-- when enable_visualizable_model_prop is true, it results\
+  \ to. -->\n  <!-- Visualization suppoted model enabled. zed2i_base->zed2i_left,\
   \ zed2i_right, zed2i_imu -->\n  <!-- hesai_lidar -->\n  <link name=\"hesai_lidar\"\
   />\n  <joint name=\"box_base_to_hesai_lidar\" type=\"fixed\">\n    <origin rpy=\"\
   \ -3.1369486215758                   0.0019805316850838306                   -1.5756556464922145\"\
