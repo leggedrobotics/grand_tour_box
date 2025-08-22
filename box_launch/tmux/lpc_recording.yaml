@@ -15,7 +15,7 @@ windows:
   panes:
     - shell_command:
       - source /opt/ros/noetic/setup.bash
-      - source ~/catkin_ws/devel/setup.bash
+      - source /home/${USER}/${BOX_WORKSPACE}/devel/setup.bash
       - roslaunch bringup_fkie fkie_lpc.launch
           autostart_launch_files:="
             $(rospack find box_recording)/launch/rosbag_record_node_lpc.launch
@@ -23,6 +23,6 @@ windows:
           use_gui:=false
     - shell_command:
       - source /opt/ros/noetic/setup.bash
-      - source ~/catkin_ws/devel/setup.bash
+      - source /home/${USER}/${BOX_WORKSPACE}/devel/setup.bash
       - df -h /data
       focus: true

@@ -442,7 +442,7 @@ void ROSCameraCameraProgram::setBoardPoseParametersVariable() {
 }
 
 fs::path ROSCameraCameraProgram::fetchOutputPath() {
-    if (output_path == "") {
+    // if (output_path == "") {
         std::string calib_package_name = "box_calibration";
         std::filesystem::path calib_root_path = ros::package::getPath(calib_package_name);
         if (calib_root_path.empty()) {
@@ -453,6 +453,6 @@ fs::path ROSCameraCameraProgram::fetchOutputPath() {
                 "calibration/raw_calibration_output/cameras-intrinsics-extrinsics_latest.yaml";
         std::filesystem::path path = calib_root_path / relative_output_path;
         return path;
-    }
-    return output_path;
+    // }
+    // return output_path;
 }

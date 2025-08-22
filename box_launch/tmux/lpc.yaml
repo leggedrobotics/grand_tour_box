@@ -15,10 +15,10 @@ windows:
   panes:
     - shell_command:
       - source /opt/ros/noetic/setup.bash
-      - source ~/catkin_ws/devel/setup.bash
+      - source /home/${USER}/${GRANDTOUR_WORKSPACE}/devel/setup.bash
       - roslaunch box_recording rosbag_record_node_lpc.launch
     - shell_command:
       - source /opt/ros/noetic/setup.bash
-      - source ~/catkin_ws/devel/setup.bash
+      - source /home/${USER}/${GRANDTOUR_WORKSPACE}/devel/setup.bash
       - df -h /data
       focus: true
