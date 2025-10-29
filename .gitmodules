@@ -99,3 +99,9 @@
 	path = box_applications/gtsam_catkin
 	url = git@github.com:leggedrobotics/gtsam_catkin.git
 	branch = grandtour
+[submodule "box_applications/glog_catkin"]
+	path = box_applications/glog_catkin
+	url = git@github.com:ethz-asl/glog_catkin.git
+[submodule "box_applications/catkin_simple"]
+	path = box_applications/catkin_simple
+	url = git@github.com:catkin/catkin_simple.git
