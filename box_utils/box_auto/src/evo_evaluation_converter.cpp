@@ -656,21 +656,44 @@ int main(int argc, char** argv) {
     return -1;
   }
 
-  rosbag::Bag exampleBag(tfContainingBags.front(), rosbag::bagmode::Read);
-  rosbag::View full_view(exampleBag);
-  ros::Time start_time = full_view.getBeginTime();
-  ros::Time end_time = full_view.getEndTime();
+  rosbag::Bag bag(tfContainingBags.front(), rosbag::bagmode::Read);
+  rosbag::View view(bag);
 
-  if (start_time == ros::TIME_MIN || end_time == ros::TIME_MIN) {
-    ROS_ERROR("Start time or end time is invalid (ros::TIME_MIN).");
+  if (view.size() == 0) {
+    ROS_ERROR("Bag '%s' contains no messages.", tfContainingBags.front().c_str());
     return -1;
   }
 
-  if (start_time == ros::TIME_MAX || end_time == ros::TIME_MAX) {
-    ROS_ERROR("Start time or end time is invalid (ros::TIME_MAX).");
+  ros::Time start_time = view.getBeginTime();
+  ros::Time end_time   = view.getEndTime();
+
+  if (!start_time.isValid() || !end_time.isValid()) {
+    ROS_ERROR("Bag '%s' has invalid timestamps (not valid ROS times).", tfContainingBags.front().c_str());
     return -1;
   }
+
+  if (start_time == ros::TIME_MIN || end_time == ros::TIME_MIN ||
+      start_time == ros::TIME_MAX || end_time == ros::TIME_MAX) {
+    ROS_ERROR("Bag '%s' start/end times are TIME_MIN or TIME_MAX.", tfContainingBags.front().c_str());
+    return -1;
+  }
+
+  if (end_time <= start_time) {
+    ROS_ERROR("Bag '%s' has non-increasing timestamps (start >= end).", tfContainingBags.front().c_str());
+    return -1;
+  }
+
   ros::Duration bag_duration = end_time - start_time;
+  if (bag_duration.toSec() <= 0.0) {
+    ROS_ERROR("Bag '%s' bag_duration is zero or negative.", tfContainingBags.front().c_str());
+    return -1;
+  }
+
+  ROS_INFO("Bag '%s': bag_duration %.3fs (%s → %s)",
+          tfContainingBags.front().c_str(),
+          bag_duration.toSec(),
+          std::to_string(start_time.toSec()).c_str(),
+          std::to_string(end_time.toSec()).c_str());
 
   tf2_ros::Buffer tf_buffer(bag_duration);
   tf2_ros::TransformListener tf_listener(tf_buffer);
