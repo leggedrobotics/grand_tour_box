@@ -30,6 +30,7 @@ from folium.plugins import (
 )
 from geopy.geocoders import Nominatim
 from geopy.extra.rate_limiter import RateLimiter
+import warnings, sys
 
 from box_auto.utils import (
     get_bag,
@@ -41,7 +42,7 @@ from box_auto.utils import (
 
 # ─── CONSTANTS ──────────────────────────────────────────────────────────────
 MODE = "tc"
-VALID_TOPIC = f"/gt_box/inertial_explorer/{MODE}/navsatfix"
+VALID_TOPIC = f"/boxi/inertial_explorer/{MODE}/navsatfix"
 GPS_PATTERN = f"*_cpt7_ie_{MODE}.bag"
 INFO_LINK = "https://grand-tour.leggedrobotics.com/"
 
@@ -181,7 +182,7 @@ def load_stats(date_str: str) -> dict:
         with open(stats_file, "r") as fh:
             return json.load(fh)
     except FileNotFoundError:
-        print(f"Warning: Stats file not found: {stats_file}")
+        print(f"\033[38;5;208mWarning! Stats file not found: {stats_file}\033[0m")
         # Create placeholder stats
         fake_stats = {"FILE_NOT_FOUND": "true"}
         # Add placeholders for all required labels
@@ -339,6 +340,135 @@ def get_city_name(lat: float, lon: float) -> str:
     except Exception as exc:
         return f"Error: {exc}"
 
+import math  # at top of file (or keep local imports inside functions)
+
+def haversine_m(p1: Tuple[float, float], p2: Tuple[float, float]) -> float:
+    """Great-circle distance between two (lat, lon) points in meters (WGS-84)."""
+    R = 6371000.0
+    lat1, lon1, lat2, lon2 = map(math.radians, (p1[0], p1[1], p2[0], p2[1]))
+    dlat = lat2 - lat1
+    dlon = lon2 - lon1
+    a = math.sin(dlat / 2) ** 2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2) ** 2
+    return R * 2 * math.asin(math.sqrt(a))
+
+def track_length_m(coords: List[Tuple[float, float]]) -> float:
+    """Total path length in meters."""
+    if len(coords) < 2:
+        return 0.0
+    s = 0.0
+    prev = coords[0]
+    for pt in coords[1:]:
+        s += haversine_m(prev, pt)
+        prev = pt
+    return s
+
+def filter_by_cum_distance(
+    coords: List[Tuple[float, float]], step_m: float
+) -> List[Tuple[float, float]]:
+    """
+    Keep original vertices but drop points until the path has advanced ≥ step_m
+    since the last kept vertex. Always keeps first and last.
+    """
+    if len(coords) < 2 or step_m <= 0:
+        return coords
+
+    out = [coords[0]]
+    prev = coords[0]              # previous raw sample
+    since_keep = 0.0              # distance since last kept vertex
+
+    for pt in coords[1:]:
+        seg = haversine_m(prev, pt)
+        since_keep += seg
+        if since_keep >= step_m:
+            out.append(pt)
+            since_keep = 0.0
+        prev = pt
+
+    if out[-1] != coords[-1]:
+        out.append(coords[-1])
+    return out
+
+def resample_every_meters(
+    coords: List[Tuple[float, float]], step_m: float
+) -> List[Tuple[float, float]]:
+    """
+    Optional exact resampling: inserts points approximately every step_m along the path.
+    Uses linear interpolation in (lat, lon); accurate for small steps.
+    """
+    if len(coords) < 2 or step_m <= 0:
+        return coords
+
+    out = [coords[0]]
+    prev = coords[0]
+    carry = 0.0  # leftover distance from last segment
+
+    for pt in coords[1:]:
+        seg_len = haversine_m(prev, pt)
+        if seg_len == 0.0:
+            prev = pt
+            continue
+
+        # Move along the segment placing points at fixed spacing
+        while carry + seg_len >= step_m:
+            need = step_m - carry
+            t = need / seg_len  # fraction along prev->pt
+            lat = prev[0] + t * (pt[0] - prev[0])
+            lon = prev[1] + t * (pt[1] - prev[1])
+            newp = (lat, lon)
+            out.append(newp)
+
+            # Start the next step from the newly placed point
+            seg_len -= need
+            prev = newp
+            carry = 0.0
+
+        # Whatever is left becomes carry into the next segment
+        carry += seg_len
+        prev = pt
+
+    if out[-1] != coords[-1]:
+        out.append(coords[-1])
+    return out
+
+
+def simplify_polyline(coords: List[Tuple[float, float]], tolerance: float = 1e-5) -> List[Tuple[float, float]]:
+    """Simplify a sequence of (lat, lon) points using the Douglas–Peucker algorithm."""
+    from shapely.geometry import LineString
+    if len(coords) < 3:
+        return coords
+    line = LineString(coords)
+    simplified = line.simplify(tolerance, preserve_topology=False)
+    return list(simplified.coords)
+
+def resample_by_distance(
+    coords: List[Tuple[float, float]],
+    min_distance_m: float = 2.0,
+) -> List[Tuple[float, float]]:
+    """
+    Downsample coordinates so that consecutive points are ≥ min_distance_m apart.
+    Uses the Haversine formula on WGS-84.
+    """
+    if len(coords) < 2:
+        return coords
+
+    def haversine(p1, p2):
+        R = 6371000.0  # meters
+        lat1, lon1, lat2, lon2 = map(np.radians, [p1[0], p1[1], p2[0], p2[1]])
+        dlat = lat2 - lat1
+        dlon = lon2 - lon1
+        a = np.sin(dlat / 2) ** 2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon / 2) ** 2
+        return R * 2 * np.arcsin(np.sqrt(a))
+
+    resampled = [coords[0]]
+    last = coords[0]
+    for pt in coords[1:]:
+        if haversine(last, pt) >= min_distance_m:
+            resampled.append(pt)
+            last = pt
+    if resampled[-1] != coords[-1]:
+        resampled.append(coords[-1])
+    return resampled
+
 
 def build_folium_map(
     points: List[Tuple],
@@ -369,27 +499,75 @@ def build_folium_map(
     (
         esri,
         esri_attr,
-        _,
-        _,
-        _,
-        _,
+        carto,
+        carto_attr,
+        osm,
+        osm_attr,
         g_hyb,
-        _,
+        g_rd,
         g_sat,
         g_attr,
     ) = basemap_layers()
 
     folium.TileLayer(esri, attr=esri_attr, name="ESRI World Imagery", max_zoom=24).add_to(m)
-    # folium.TileLayer(carto, attr=carto_attr, name="CartoDB Dark", max_zoom=24).add_to(m)
-    # folium.TileLayer(osm, attr=osm_attr, name="OpenStreetMap", max_zoom=24).add_to(m)
-    # folium.TileLayer(g_rd, attr=g_attr, name="Google Road", max_zoom=24).add_to(m)
-    folium.TileLayer(g_sat, attr=g_attr, name="Google Satellite", max_zoom=24).add_to(m)
-    folium.TileLayer(g_hyb, attr=g_attr, name="Google Hybrid", max_zoom=24, show=True).add_to(m)
+    folium.TileLayer(carto, attr=carto_attr, name="CartoDB Dark", max_zoom=24).add_to(m)
+    folium.TileLayer(osm, attr=osm_attr, name="OpenStreetMap", max_zoom=24).add_to(m)
+    folium.TileLayer(g_rd, attr=g_attr, name="Google Road", max_zoom=24).add_to(m)
+    folium.TileLayer(g_hyb, attr=g_attr, name="Google Hybrid", max_zoom=24).add_to(m)
+    folium.TileLayer(g_sat, attr=g_attr, name="Google Satellite", max_zoom=24, show=True).add_to(m)
 
     # Track & heatmap
     coords = [(lat, lon) for lat, lon, *_ in points]
-    folium.PolyLine(coords, color="blue", weight=3).add_to(m)
-    HeatMap(coords).add_to(folium.FeatureGroup(name="Heat Map", show=True).add_to(m))
+    # Adaptive spacing based on *path length* (not point count):
+    # Aim for ~1500 vertices, with a floor of 0.5 m spacing.
+    length_m = track_length_m(coords)
+    target_vertices = 1500
+    sample_spacing = max(0.5, length_m / max(2, target_vertices))
+
+    # resampled_coords = filter_by_cum_distance(coords, step_m=sample_spacing)
+    resampled_coords = resample_every_meters(coords, step_m=sample_spacing)
+
+    folium.PolyLine(
+        locations=resampled_coords,
+        popup=None,
+        tooltip=None,
+        color="red",
+        weight=4,
+        opacity=1.0,
+        dash_array=None,
+        line_cap="round",
+        line_join="round",
+        smooth_factor=None,
+        no_clip=False
+    ).add_to(m)
+
+    heatmap_group = folium.FeatureGroup(name="Heat Map", show=True)
+    HeatMap(
+            data=resampled_coords,
+            min_opacity=0.5,
+            max_zoom=18,
+            radius=15,
+            blur=15,
+            gradient=None,
+            overlay=True,
+            control=True,
+            show=True
+        ).add_to(heatmap_group)
+    heatmap_group.add_to(m)
+
+    # folium.plugins.HeatMap(
+    #     data=coords,
+    #     name="Heat Map",
+    #     min_opacity=0.5,
+    #     max_zoom=18,
+    #     radius=15,
+    #     blur=15,
+    #     gradient=None,
+    #     overlay=True,
+    #     control=True,
+    #     show=True
+    # ).add_to(folium.FeatureGroup(name="Heat Map", show=True).add_to(m))
+
 
     # Popup at first point (start of mission)
     elev0 = f"{points[0][2]:.2f} m" if points[0][2] is not None else "N/A"
@@ -682,7 +860,16 @@ def main() -> None:
     stats = load_stats(mission_id)
     write_stats_to_sheet(gs_info, stats)
 
+    print(f"Bag path: {bag_path}")
     gpx, points = generate_gpx(bag_path)
+
+    num_points = len(points)
+
+    if num_points < 1:
+        ORANGE = "\033[38;5;208m"
+        RESET = "\033[0m"
+        warnings.warn(f"{ORANGE}No GNSS points found in the bag. Is this a mission with GNSS data? Exiting.{RESET}")
+        sys.exit(1)
 
     # Save GPX next to bag
     gpx_path = Path(bag_path).with_suffix(".gpx")
@@ -701,6 +888,8 @@ def main() -> None:
 
     html_file = Path(MISSION_DATA) / f"{mission_id}_gps_map_{MODE}.html"
     fmap.save(str(html_file))
+    print(f"\033[92m{html_file.resolve()}\033[0m")
+    print("\033[92mScript succeeded.\033[0m")
     webbrowser.open(f"file://{html_file.resolve()}")
 
 
