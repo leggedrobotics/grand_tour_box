@@ -139,12 +139,14 @@ def find_and_extract_non_matching(directory, pattern):
         str: A string containing the non-matching part of the filename.
     """
 
-    matched_files = list(Path(directory).rglob(pattern))  # Find all files matching the pattern
+    matched_files = [p.resolve() for p in Path(directory).rglob(pattern)]  # Absolute paths of matches
 
     if len(matched_files) == 0:
-        raise ValueError(f"No files found matching the pattern '{pattern}' in directory '{directory}'.")
+        raise ValueError(f"No files found matching the pattern '{pattern}' in directory '{Path(directory).resolve()}'.")
     elif len(matched_files) > 1:
-        raise ValueError(f"Multiple files found matching the pattern '{pattern}': {[f.name for f in matched_files]}")
+        raise ValueError(
+            f"Multiple files found matching the pattern '{pattern}': {[str(p) for p in matched_files]}"
+        )
 
     filename = matched_files[0].name
 
