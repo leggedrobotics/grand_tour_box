@@ -32,7 +32,7 @@ def make_pbar(total: int):
 BATCH_MODE: bool = True
 # If None, uses parent directory of --inbag if it is a file,
 # or uses --inbag itself if it’s a directory.
-BATCH_DIR: Optional[str] = "/home/tutuna/ijrr_paper/src/lidar_dataset/2024-11-14-13-45-37/cocolic/test_conversion"
+BATCH_DIR: Optional[str] = ""
 # Glob used to pick bag files from BATCH_DIR
 BATCH_GLOB: str = "*.bag"
 
@@ -1713,7 +1713,7 @@ def convert_single_bag(bag_path: Path, args):
 # -------------------- CLI --------------------
 def main():
     ap = argparse.ArgumentParser(description="ROS1 .bag → MCAP (ROS 2 profile, CDR) with optional image decompression and message splitting")
-    ap.add_argument("--inbag", required=False, help="input ROS1 .bag or a directory (used if BATCH_MODE=True)", default="/home/tutuna/ijrr_paper/src/lidar_dataset/2024-11-14-13-45-37/2024-11-14-13-45-37_anymal_state.bag")
+    ap.add_argument("--inbag", required=False, help="input ROS1 .bag or a directory (used if BATCH_MODE=True)", default="2024-11-14-13-45-37_anymal_state.bag")
     ap.add_argument("--decompress-images", type=int, choices=[0, 1], default=0)
     ap.add_argument("--print-random-sample", type=int, choices=[0, 1], default=1)
     ap.add_argument("--sample-prefer",
