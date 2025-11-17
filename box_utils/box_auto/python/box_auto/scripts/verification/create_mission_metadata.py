@@ -12,6 +12,8 @@ def create_metadata():
     for deployment in deployments:
         for j, mission_name in enumerate(deployment["mission_names"]):
             p = os.path.join(deployment["data_folder"], mission_name)
+            if not os.path.exists(p):
+                continue
             print(p)
             bag_path = get_bag("*_lpc_state_estimator.bag", directory=str(p))
 
@@ -102,7 +104,8 @@ def create_metadata():
             }
 
     for mission_name in ["2024-10-29-09-08-34", "2024-11-04-14-55-02", "2024-11-18-16-45-27"]:
-        metadata[mission_name]["ap20_bag_available"] = False
+        if mission_name in metadata:
+            metadata[mission_name]["ap20_bag_available"] = False
         # Schanzengraben
         # Grindelwald Glacier Canyon - Walk out
         # 2024-11-18-16-45-27 -> Totalstation clearly moved [2.06177235e-02 2.38358483e-01 2.13384628e-05]
@@ -117,19 +120,20 @@ def create_metadata():
         "2024-12-09-11-28-28",
         "2024-11-04-14-19-11",
         "2024-10-29-09-53-44",
-        "2024-10-29-09-08-34",
-    ]:
-        metadata[mission_name]["prism"] = "Not at start and end"
+        "2024-10-29-09-08-34"]:
+        if mission_name in metadata:
+            metadata[mission_name]["prism"] = "Not at start and end"
 
     for mission_name in [
         "2024-11-03-07-52-45",
         "2024-11-03-08-17-23",
         "2024-11-11-12-42-47",
-        "2024-11-11-13-06-23",
-    ]:
-        metadata[mission_name]["prism"] = "Not at end"
+        "2024-11-11-13-06-23"]:
+        if mission_name in metadata:
+            metadata[mission_name]["prism"] = "Not at end"
 
-    print(metadata[mission_name])
+    if mission_name in metadata:
+        print(metadata[mission_name])
     # Sort the keys and dump to YAML file
     yaml_path = os.path.join(BOX_AUTO_DIR, "cfg/mission_metadata.yaml")
     with open(yaml_path, "w") as yaml_file:

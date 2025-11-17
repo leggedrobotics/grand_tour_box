@@ -2,22 +2,23 @@ import os
 import subprocess
 import shlex
 
+deployment_directory="/media/william/"
 deployments = [
     {
-        "data_folder": "/media/jonfrey/BoxiS4-2TB/deployment_day_1",
+        "data_folder": deployment_directory + "BoxiS4-2TB/deployment_day_1",
         "mission_names": ["2024-10-01-11-29-55", "2024-10-01-11-47-44", "2024-10-01-12-00-49"],
     },
-    # {"data_folder": "/media/jonfrey/BoxiS4-2TB/deployment_day_3", "mission_names": ["2024-10-18-12-50-31"], "prism_check": ['Yes']},
+    # {"data_folder": deployment_directory + "BoxiS4-2TB/deployment_day_3", "mission_names": ["2024-10-18-12-50-31"], "prism_check": ['Yes']},
     {
-        "data_folder": "/media/jonfrey/BoxiS4-2TB/deployment_day_5",
+        "data_folder": deployment_directory + "BoxiS4-2TB/deployment_day_5",
         "mission_names": ["2024-10-29-09-08-34", "2024-10-29-09-53-44", "2024-10-29-16-11-44"],
     },
     {
-        "data_folder": "/media/jonfrey/BoxiS4-2TB/deployment_day_6",
+        "data_folder": deployment_directory + "BoxiS4-2TB/deployment_day_6",
         "mission_names": ["2024-11-01-17-46-15"],
     },
     {
-        "data_folder": "/media/jonfrey/BoxiS2-2TB/deployment_day_7",
+        "data_folder": deployment_directory + "BoxiS2-2TB/deployment_day_7",
         "mission_names": [
             "2024-11-02-17-10-25",
             "2024-11-02-17-43-10",
@@ -29,7 +30,7 @@ deployments = [
         ],
     },
     {
-        "data_folder": "/media/jonfrey/BoxiS2-2TB/deployment_day_8",
+        "data_folder": deployment_directory + "BoxiS2-2TB/deployment_day_8",
         "mission_names": [
             "2024-11-03-07-52-45",
             "2024-11-03-07-57-34",
@@ -42,7 +43,7 @@ deployments = [
         ],
     },
     {
-        "data_folder": "/media/jonfrey/BoxiS2-2TB/deployment_day_9",
+        "data_folder": deployment_directory + "BoxiS2-2TB/deployment_day_9",
         "mission_names": [
             "2024-11-04-10-57-34",
             "2024-11-04-13-07-13",
@@ -56,12 +57,12 @@ deployments = [
         ],
     },
     # {
-    #     "data_folder": "/media/jonfrey/T7/deployment_day_10",
+    #     "data_folder": deployment_directory + "T7/deployment_day_10",
     #     "mission_names": ["2024-11-05-20-10-15", "2024-11-05-20-13-11", "2024-11-05-20-21-14", "2024-11-05-20-31-24"],
     #     "prism_check": ['Yes', 'Yes', 'Yes', 'Yes']
     # },
     {
-        "data_folder": "/media/jonfrey/T7/deployment_day_11",
+        "data_folder": deployment_directory + "T7/deployment_day_11",
         "mission_names": [
             "2024-11-11-12-42-47",
             "2024-11-11-14-29-44",
@@ -71,7 +72,7 @@ deployments = [
         ],
     },
     {
-        "data_folder": "/media/jonfrey/BoxiS4-2TB/deployment_day_12",
+        "data_folder": deployment_directory + "BoxiS4-2TB/deployment_day_12",
         "mission_names": [
             "2024-11-14-11-17-02",
             "2024-11-14-13-45-37",
@@ -82,7 +83,7 @@ deployments = [
         ],
     },
     {
-        "data_folder": "/media/jonfrey/T7/deployment_day_13",
+        "data_folder": deployment_directory + "T7/deployment_day_13",
         "mission_names": [
             "2024-11-15-10-16-35",
             "2024-11-15-12-06-03",
@@ -96,7 +97,7 @@ deployments = [
         ],
     },
     {
-        "data_folder": "/media/jonfrey/BoxiS1-1TB/deployment_day_14",
+        "data_folder": deployment_directory + "BoxiS1-1TB/deployment_day_14",
         "mission_names": [
             "2024-11-18-11-42-04",
             "2024-11-18-12-05-01",
@@ -109,10 +110,10 @@ deployments = [
             "2024-11-18-17-31-36",
         ],
     },
-    # {"data_folder": "/media/jonfrey/BoxiS4-2TB/deployment_day_15", "mission_names": ["2024-11-21-16-36-19"],"prism_check": ['Yes']},
+    # {"data_folder": deployment_directory + "BoxiS4-2TB/deployment_day_15", "mission_names": ["2024-11-21-16-36-19"],"prism_check": ['Yes']},
     # Removed the snow storm mission
     {
-        "data_folder": "/media/jonfrey/Data/deployment_day_16",
+        "data_folder": deployment_directory + "Data/deployment_day_16",
         "mission_names": [
             # "2024-11-25-11-44-05", # Lasertracker bags
             # "2024-11-25-11-56-26", # Lasertracker bags
@@ -124,13 +125,68 @@ deployments = [
         ],
     },
     {
-        "data_folder": "/media/jonfrey/Data/deployment_day_17",
+        "data_folder": deployment_directory + "Data/deployment_day_17",
         "mission_names": ["2024-12-03-13-15-38", "2024-12-03-13-26-40"],
     },
     {
-        "data_folder": "/media/jonfrey/Data/deployment_day_18",
+        "data_folder": deployment_directory + "Data/deployment_day_18",
         "mission_names": ["2024-12-09-09-34-43", "2024-12-09-09-41-46", "2024-12-09-11-53-11", "2024-12-09-11-28-28"],
-        "not_publish_gnss": True,
+    },
+    {
+        "data_folder": deployment_directory + "BoxiS4-2TB/luna_cologne/mission_0_seismology",
+        "mission_names": ["2025-11-06-10-33-34"],
+    },
+    {
+        "data_folder": deployment_directory + "BoxiS4-2TB/luna_cologne/mission_1",
+        "mission_names": ["2025-11-06-18-09-08"],
+    },
+    {
+        "data_folder": deployment_directory + "BoxiS4-2TB/luna_cologne/mission_2",
+        "mission_names": ["2025-11-06-18-25-59"],
+    },
+    {
+        "data_folder": deployment_directory + "BoxiS4-2TB/luna_cologne/mission_3",
+        "mission_names": ["2025-11-06-18-34-18"],
+    },
+    {
+        "data_folder": deployment_directory + "BoxiS4-2TB/luna_cologne/mission_4_crash",
+        "mission_names": ["2025-11-06-18-41-04"],
+    },
+    {
+        "data_folder": deployment_directory + "BoxiS4-2TB/luna_cologne/mission_5",
+        "mission_names": ["2025-11-07-10-18-32"],
+    },
+    {
+        "data_folder": deployment_directory + "BoxiS4-2TB/luna_cologne/mission_6",
+        "mission_names": ["2025-11-07-10-32-39"],
+    },
+    {
+        "data_folder": deployment_directory + "BoxiS4-2TB/luna_cologne/mission_7",
+        "mission_names": ["2025-11-07-11-31-48"],
+    },
+    {
+        "data_folder": deployment_directory + "BoxiS4-2TB/luna_cologne/mission_8",
+        "mission_names": ["2025-11-07-11-42-00"],
+    },
+    {
+        "data_folder": deployment_directory + "BoxiS4-2TB/luna_cologne/mission_9",
+        "mission_names": ["2025-11-07-12-49-06"],
+    },
+    {
+        "data_folder": deployment_directory + "BoxiS4-2TB/luna_cologne/mission_10",
+        "mission_names": ["2025-11-07-12-56-55"],
+    },
+    {
+        "data_folder": deployment_directory + "BoxiS4-2TB/luna_cologne/mission_11",
+        "mission_names": ["2025-11-07-13-09-37"],
+    },
+    {
+        "data_folder": deployment_directory + "BoxiS4-2TB/luna_cologne/mission_12",
+        "mission_names": ["2025-11-07-15-59-14"],
+    },
+    {
+        "data_folder": deployment_directory + "BoxiS4-2TB/luna_cologne/mission_13",
+        "mission_names": ["2025-11-07-16-33-53"],
     },
 ]
 
