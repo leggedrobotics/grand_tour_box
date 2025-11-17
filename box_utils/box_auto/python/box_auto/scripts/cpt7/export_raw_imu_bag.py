@@ -38,10 +38,10 @@ class RAWIMUDataParser:
         self.times = None
         self.expected_utc_offset = -18.0  # UTC time = GPS System Time + UTC offset
         self.expected_gps_offset = 0.0
-        self.weeks_to_seconds = 604_800.0
+        self.weeks_to_seconds = 604_800
         posix_start_in_utc = datetime(year=1970, month=1, day=1, hour=0, minute=0, second=0)
         gps_start_in_utc = datetime(year=1980, month=1, day=6, hour=0, minute=0, second=0)
-        self.gps_epoch_start_in_POSIX_seconds = (gps_start_in_utc - posix_start_in_utc).total_seconds()
+        self.gps_epoch_start_in_POSIX_seconds = int((gps_start_in_utc - posix_start_in_utc).total_seconds())
         self.x_accel = list()
         self.minusy_accel = list()
         self.z_accel = list()
@@ -83,15 +83,15 @@ class RAWIMUDataParser:
         else:
             self.logger.debug(f"IMU field name {imu_df.iloc[0, 0]} is correct {ColorLogger.GREEN_CHECK}")
         WEEK_INDEX = 4
-        SOW_INDEX = 5  # Seconds of week
-        week = imu_df.iloc[:, WEEK_INDEX]
+        week = imu_df.iloc[:, WEEK_INDEX].astype(int)
+        SOW_INDEX = 5
         seconds_of_week = imu_df.iloc[:, SOW_INDEX] - self.expected_gps_offset + self.expected_utc_offset
         ns_of_seconds_of_week = [int(round(int(math.modf(x)[0] * 1e9) / 1000, 0)) * 1000 for x in seconds_of_week]
         seconds_of_week_without_ns = seconds_of_week.astype(int)
         seconds_since_gps_start_in_utc = week * self.weeks_to_seconds + seconds_of_week_without_ns
         seconds_unix = seconds_since_gps_start_in_utc + self.gps_epoch_start_in_POSIX_seconds
         self.logger.info(f"Log time starts at {datetime.utcfromtimestamp(seconds_unix[0])}")
-        self.ros_times = [rospy.Time(secs=int(x), nsecs=y) for x, y in zip(seconds_unix, ns_of_seconds_of_week)]
+        self.ros_times = [rospy.Time(secs=x, nsecs=y) for x, y in zip(seconds_unix, ns_of_seconds_of_week)]
 
     def load_imu_data(self, imu_df: pd.DataFrame):
         """
