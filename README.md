@@ -33,7 +33,7 @@ This repository contains all drivers, real-time software, and post-processing to
   * Registration (ROS formats): [https://forms.gle/2qJkGYJ6oxnBvdNq9](https://forms.gle/2qJkGYJ6oxnBvdNq9)
   * Data overview: [https://grand-tour.leggedrobotics.com/dataset](https://grand-tour.leggedrobotics.com/dataset)
   * Hugging Face (ZARR): [https://huggingface.co/datasets/leggedrobotics/grand_tour_dataset](https://huggingface.co/datasets/leggedrobotics/grand_tour_dataset)
-* 📈 The **Localization Benchmark** is available at: [https://grand-tour.leggedrobotics.com/tasks/localization](https://grand-tour.leggedrobotics.com/tasks/localization)
+* 📈 The **Localization Benchmark** is (soon) going to be available at: [https://grand-tour.leggedrobotics.com/tasks/localization](https://grand-tour.leggedrobotics.com/tasks/localization)
 * 🔩 The **Hardware Specifications** are available at: [https://grand-tour.leggedrobotics.com/setup](https://grand-tour.leggedrobotics.com/setup)
 
 > ⚙️ **Note:** We are currently in the process of refactoring the repository to improve usability. ROS1 → ROS2 converters have been released, and native ROS2 dataset support (MCAP) is coming soon.
