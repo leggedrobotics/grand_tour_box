@@ -74,7 +74,8 @@ class StopRecordingServicer(stop_recording_pb2_grpc.StopRecordingServicer):
         if self.recorder_node.store_debug_logs:
             store_debug_logs_to_folder(
                 self.recorder_node.start_recording_time,
-                directory="/home/rsl/.ros",
+                rospy.Time.now(),
+                directory=os.path.expanduser("~/.ros"),
                 copy_to=os.path.join(self.recorder_node.bag_base_path, "ros_logs_" + self.recorder_node.node),
             )
 
@@ -108,22 +109,36 @@ class RosbagRecordNodeGrpc(object):
         self.namespace = rospy.get_namespace()
 
         self.bag_running = False
-        default_path = rospkg.RosPack().get_path("box_recording") + "/data"
+        default_path = "/data"
+        # TODO: maybe customizable better
+        # try:
+        #     default_path = rospkg.RosPack().get_path("box_recording") + "/data"
+        # except rospkg.ResourceNotFound:
+        #     # fallback path if package is not built/installed
+        #     rospy.logwarn("[RosbagRecordNode(" + self.node + ")] Package 'box_recording' not found. It may not be built or installed correctly.")
+        #     default_path = "/data"
+
         self.data_path = rospy.get_param("~data_path", default_path)
         self.port = rospy.get_param("~port")
 
         self.info_string = ""
 
         if not os.path.exists(self.data_path):
-            self.data_path = default_path
-            rospy.logwarn(
-                "[RosbagRecordNode("
-                + self.node
-                + ")] Data path "
-                + self.data_path
-                + " does not exist. Will write to "
-                + default_path
-            )
+            try:
+                os.makedirs(self.data_path, exist_ok=True)
+                rospy.loginfo("[RosbagRecordNodeGRPC(" + self.node + ")] Created data path: " + self.data_path)
+            except Exception as e:
+                rospy.logwarn(
+                    "[RosbagRecordNodeGRPC("
+                    + self.node
+                    + ")] Failed to create data path "
+                    + self.data_path
+                    + ": "
+                    + str(e)
+                    + ". Will write to "
+                    + default_path
+                )
+                self.data_path = default_path
 
         rp = rospkg.RosPack()
         self.rosbag_recorder_bash_script = os.path.join(rp.get_path("box_recording"), "bin/record_bag.sh")
@@ -137,11 +152,6 @@ class RosbagRecordNodeGrpc(object):
         server.start()
         rospy.spin()
         # server.wait_for_termination()
-
-
-# tomorrow start out by working on wrapping up the correct ports and addresses for the grpc server and client for lpc and npc.
-# push the code to a branch on boxi opc - use boxi opc to update the box.
-# change all of the fkie setting to the minimum.
 
 
 if __name__ == "__main__":
