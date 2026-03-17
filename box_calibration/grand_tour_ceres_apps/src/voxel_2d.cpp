@@ -39,7 +39,7 @@ std::vector<Voxel2D> VoxelMap2D::computeVoxels(const Eigen::Matrix2Xd &points) c
 bool VoxelMap2D::addToMapIfAnyIsBelowCapacity(const Eigen::Matrix2Xd &points, int max_capacity) {
     if (points.minCoeff() < 0) return false;
 
-    const auto voxels = computeVoxels(points);
+    const auto voxels = this->computeVoxels(points);
     const bool do_add = std::any_of(voxels.begin(), voxels.end(),
                                               [max_capacity, this](const auto voxel) {
                                                   return data_[voxel] < max_capacity;
