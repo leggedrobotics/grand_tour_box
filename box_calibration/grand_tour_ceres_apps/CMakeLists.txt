@@ -81,3 +81,26 @@ target_link_libraries(camera_prism_offline_calibration PRIVATE
         Ceres::ceres Eigen3::Eigen
         ${catkin_LIBRARIES})
 target_include_directories(camera_prism_offline_calibration PRIVATE ${catkin_INCLUDE_DIRS})
+
+if(CATKIN_ENABLE_TESTING)
+    catkin_add_gtest(test_utils tests/test_utils.cpp)
+    target_link_libraries(test_utils gtboxcalibration yaml-cpp)
+
+    catkin_add_gtest(test_interpolation3d tests/test_interpolation3d.cpp)
+    target_link_libraries(test_interpolation3d gtboxcalibration)
+
+    # Regression test — requires bag files on the external drive.
+    # Run with: catkin_make run_tests
+    catkin_add_gtest(test_calibration_regression
+            tests/test_calibration_regression.cpp
+            ros_camera_camera_program.cpp
+            ros_camera_camera_offline_program.cpp
+            ros_camera_camera_parser.cpp
+            ros_utils.cpp
+    )
+    target_link_libraries(test_calibration_regression gtboxcalibration ${catkin_LIBRARIES})
+    target_include_directories(test_calibration_regression PRIVATE
+            ${catkin_INCLUDE_DIRS}
+            ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+endif()
