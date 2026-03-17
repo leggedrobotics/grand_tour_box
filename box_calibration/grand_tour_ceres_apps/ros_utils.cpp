@@ -160,7 +160,7 @@ bool solvePnP(const CameraParameterPack &camera_parameters, const Eigen::Matrix2
                 cv::solvePnP(inlierModelPoints, inlierImagePoints, K, zero, rvec, tvec);
                 cv::solvePnPRefineLM(inlierModelPoints, inlierImagePoints, K, zero, rvec, tvec);
             } else {
-                std::cerr << "Not enough inliers for final PnP! Found: " << inlierModelPoints.size() << std::endl;
+//                std::cerr << "Not enough inliers for final PnP! Found: " << inlierModelPoints.size() << std::endl;
             }
         } else if (camera_parameters.distortion_type == Distortion::RadTan) {
             cv::solvePnP(modelpointsMat.t(), cornersMat.t(), K, D, rvec, tvec);

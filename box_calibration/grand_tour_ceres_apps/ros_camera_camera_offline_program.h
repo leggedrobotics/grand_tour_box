@@ -22,7 +22,7 @@
 struct ROSCameraCameraOfflineProgram : public ROSCameraCameraProgram {
     explicit ROSCameraCameraOfflineProgram(ROSCameraCameraParser);
 
-    void run();
+    bool run();
 
     bool loadRosbagsIntoProgram();
 

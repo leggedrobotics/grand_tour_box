@@ -114,9 +114,8 @@ bool ROSCameraCameraProgram::handleAddIntrinsicsCost(unsigned long long stamp,
                     new_observation.observations2d, 5);
     if (added_to_observation_voxel_map) {
         const auto tentative_residual_block =
-                CameraCameraProgram::addBoardPoseParameterAndCameraIntrinsicsResidualFromObservation(stamp,
-                                                                                                     new_observation);
-        CameraCameraProgram::intrinsics_residuals_of_camera_at_time[new_observation.sensor_name][stamp] = tentative_residual_block;
+                this->addBoardPoseParameterAndCameraIntrinsicsResidualFromObservation(stamp, new_observation);
+        intrinsics_residuals_of_camera_at_time[new_observation.sensor_name][stamp] = tentative_residual_block;
         return true;
     } else {
         return false;
@@ -342,16 +341,16 @@ ROSCameraCameraProgram::fetchIntersection(const std::vector<unsigned int> &a,
 }
 
 bool ROSCameraCameraProgram::resetProblem() {
-    CameraCameraProgram::parsed_alignment_data.unique_timestamps.clear();
-    CameraCameraProgram::parsed_alignment_data.observations.clear();
+    parsed_alignment_data.unique_timestamps.clear();
+    parsed_alignment_data.observations.clear();
     camera_camera_adjacency_count.clear();
     frame_id_to_vertex_mapping_.clear();
     vertex_to_frame_id_.clear();
-    CameraCameraProgram::extrinsics_residuals_of_cameras_at_time.clear();
-    CameraCameraProgram::intrinsics_residuals_of_camera_at_time.clear();
+    extrinsics_residuals_of_cameras_at_time.clear();
+    intrinsics_residuals_of_camera_at_time.clear();
     board_pose_in_sensor_at_time_.clear();
     n_samples_last_solve_ = 0;
-    CameraCameraProgram::board_pose_parameter_packs.clear();
+    board_pose_parameter_packs.clear();
     codetection_graph_.clear();
     this->problem_ = std::make_unique<CeresProblem>();
     this->resetCornerObservationVoxelMap();
@@ -360,8 +359,8 @@ bool ROSCameraCameraProgram::resetProblem() {
 
 bool ROSCameraCameraProgram::rebuildProblemFromLoggedROSAlignmentData() {
     // Compute covariance of board poses
-//    this->resetStateFromLoggedObservations();
-    this->filterOutOutliersFromLoggedObservations(2.0);
+    this->resetStateFromLoggedObservations();
+    this->filterOutOutliersFromLoggedObservations(5.0);
     this->resetStateFromLoggedObservations();
     return true;
 }
@@ -371,8 +370,8 @@ void ROSCameraCameraProgram::filterOutOutliersFromLoggedObservations(double max_
         for (auto it = data.begin(); it != data.end();) {
             auto msg = it->second;
             Eigen::Matrix2Xf residuals;
-            getReprojectionResiduals(CeresProgram::problem_->getProblem(),
-                                     CameraCameraProgram::intrinsics_residuals_of_camera_at_time.at(frame_id).at(
+            getReprojectionResiduals(this->problem_->getProblem(),
+                                     intrinsics_residuals_of_camera_at_time.at(frame_id).at(
                                              msg.header.stamp.toNSec()),
                                      residuals);
             const double max_residual = residuals.cwiseAbs().maxCoeff();
@@ -396,7 +395,7 @@ void ROSCameraCameraProgram::filterOutOutliersFromLoggedObservations(double max_
                     continue;
                 }
                 Eigen::Matrix2Xf residuals;
-                getReprojectionResiduals(CeresProgram::problem_->getProblem(),
+                getReprojectionResiduals(this->problem_->getProblem(),
                                          residual_block_at_time.at(msg.header.stamp.toNSec()),
                                          residuals);
                 const double max_residual = residuals.cwiseAbs().maxCoeff();
@@ -422,7 +421,7 @@ void ROSCameraCameraProgram::resetStateFromLoggedObservations() {
                              msg, true);
         }
     }
-    n_samples_last_solve_ = CameraCameraProgram::parsed_alignment_data.unique_timestamps.size();
+    n_samples_last_solve_ = parsed_alignment_data.unique_timestamps.size();
 }
 
 bool ROSCameraCameraProgram::setOriginCameraFrame(const std::string &frame_id) {

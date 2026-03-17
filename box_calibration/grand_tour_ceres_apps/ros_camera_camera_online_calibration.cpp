@@ -10,7 +10,7 @@ int main(int argc, char **argv) {
 
     // Initialize the ROS node
     ros::init(argc, argv, "camera_camera_online_calibration");
-    ROSCameraCameraParser parser("camera_camera_online_calibration", argc, argv);
+    ROSCameraCameraParser parser("camera_camera_online_calibration", argc, argv, true);
     if (!parser.is_valid) {
         return -1;
     }

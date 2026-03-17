@@ -63,7 +63,7 @@ def process_camera_data(camera_data, T_bundle_lidar):
         T_cam_lidar = compute_t_cam_lidar(T_bundle_cn, T_bundle_lidar)
         params['T_cam_lidar'] = T_cam_lidar
         params['camera_model'] = "pinhole"
-        print(f"  Computed T_cam_lidar for {camera}: {T_cam_lidar}")
+        # print(f"  Computed T_cam_lidar for {camera}: {T_cam_lidar}")
 
         # Update previous transform for the next iteration
         T_bundle_cnm1 = T_bundle_cn

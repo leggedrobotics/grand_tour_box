@@ -10,6 +10,7 @@
 
 struct ROSCameraCameraParser {
     ROSCameraCameraParser(std::string program_name, int argc, char **argv);
+    ROSCameraCameraParser(std::string program_name, int argc, char **argv, bool is_online);
     std::string initial_guess_path;
     std::string rostopic_frameid_mapping_path;
     std::vector<std::string> bag_paths;

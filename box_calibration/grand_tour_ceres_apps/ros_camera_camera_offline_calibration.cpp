@@ -36,7 +36,10 @@ int main(int argc, char** argv) {
         ROS_INFO_STREAM("Starting offline camera calibration...");
 
         ROSCameraCameraOfflineProgram program(parser);
-        program.run();
+
+        if (!program.run()) {
+            return EXIT_FAILURE;
+        }
 
         ROS_INFO_STREAM("Offline camera calibration finished.");
         return EXIT_SUCCESS;

@@ -62,7 +62,7 @@ class RoscoreEnvironment:
         time.sleep(2)  # Allow time for roscore to initialize
         if self.roscore_process.poll() is None:  # Check if roscore is still running
             print("roscore started successfully.")
-            time.sleep(2)
+            time.sleep(5)
             if self.use_sim_time is not None:
                 import rospy
                 rospy.set_param('use_sim_time', self.use_sim_time)
@@ -88,25 +88,21 @@ class RoscoreEnvironment:
 
 def main():
     # Define different -cc (camera calibration) and -cl (lidar calibration) paths
-    camera_lidar_calibrations = [("2024-10-31-19-28-44_camera_calibration_corrected", "2024-11-05-16-57-34_lidar_calibration", "all_calibrations/tf_static_metadata_0.bag", "2024-11-03-09-30-01"),
-                                 ("2024-11-03-09-30-01_camera_calibration_corrected", "2024-11-05-16-57-34_lidar_calibration", "all_calibrations/tf_static_metadata_1.bag", "2024-11-03-21-15-36"),
-                                 ("2024-11-03-21-15-36_camera_calibration_corrected", "2024-11-05-16-57-34_lidar_calibration", "all_calibrations/tf_static_metadata_2.bag", "2024-11-05-16-37-24"),
-                                 ("2024-11-05-16-37-24_camera_calibration_corrected", "2024-11-05-16-57-34_lidar_calibration", "all_calibrations/tf_static_metadata_3.bag", "2024-11-05-19-08-26"),
-                                 ("2024-11-05-19-08-26_camera_calibration_corrected", "2024-11-10-21-32-17_lidar_calibration", "all_calibrations/tf_static_metadata_4.bag", "2024-11-05-21-54-22"),
-                                 ("2024-11-05-21-54-22_camera_calibration_corrected", "2024-11-10-21-32-17_lidar_calibration", "all_calibrations/tf_static_metadata_5.bag", "2024-11-10-21-17-57"),
-                                 ("2024-11-10-21-17-57_camera_calibration_corrected", "2024-11-10-21-32-17_lidar_calibration", "all_calibrations/tf_static_metadata_6.bag", "2024-11-24-21-04-47"),
-                                 ("2024-11-10-21-17-57_camera_calibration_corrected", "2024-11-24-21-04-47_lidar_calibration", "all_calibrations/tf_static_metadata_7.bag", "2024-11-30-15-50-38"),
-                                 ("2024-11-30-15-50-38_camera_calibration", "2024-11-30-16-06-45_lidar_calibration", "all_calibrations/tf_static_metadata_8.bag", "2025-12-31-00-00-00")]
+    camera_lidar_calibrations = [
+        ("OXFORD_CALIBRATIONS/cam_cam_sunday_evening/2025-09-14-21-53-37_calibration",
+         "OXFORD_CALIBRATIONS/cam_lidar_tuesday/2025-09-17-00-15-01_calibration",
+         "tf_static_metadata_oxford.bag",
+         "2026-10-10-00-00-00"),]
 
     # Fixed paths
-    prism_calibration = "/media/fu/cloudster31/grand_tour_calibrations/2024-11-25-10-57-07_prism_calibration/"
+    prism_calibration = "/media/fu/cloudster31/GT-spires/calibrations/OXFORD_CALIBRATIONS/cam_prism_only"
     imu_calibration = "/media/fu/cloudster31/grand_tour_calibrations/2024-12-06_calibration_imu"
 
     # Iterate through all camera and lidar calibration pairs
-    for i , (cc_path, cl_path, output_bag_path, validity_end) in enumerate(camera_lidar_calibrations):
-        cc_path = os.path.join("/media/fu/cloudster31/grand_tour_calibrations", cc_path)
-        cl_path = os.path.join("/media/fu/cloudster31/grand_tour_calibrations", cl_path)
-        output_bag_path = os.path.join("/media/fu/cloudster31/grand_tour_calibrations", output_bag_path)
+    for i, (cc_path, cl_path, output_bag_path, validity_end) in enumerate(camera_lidar_calibrations):
+        cc_path = os.path.join("/media/fu/cloudster31/GT-spires/calibrations/", cc_path)
+        cl_path = os.path.join("/media/fu/cloudster31/GT-spires/calibrations/", cl_path)
+        output_bag_path = os.path.join("/media/fu/cloudster31/GT-spires/calibrations/", output_bag_path)
         with RoscoreEnvironment(use_sim_time=True):
             command = [
                 "rosrun", "box_calibration", "process_all_calibrations.py",
@@ -122,10 +118,13 @@ def main():
             run_non_blocking_command("roslaunch box_model box_model.launch rviz:=false")
             time.sleep(2)
             if i > 0:
-                run_blocking_command(f"rosrun box_calibration store_tf_static.py _bag_file:={output_bag_path} _validity_end:={validity_end}")
+                run_blocking_command(
+                    f"rosrun box_calibration store_tf_static.py _bag_file:={output_bag_path} _validity_end:={validity_end}")
             else:
-                run_blocking_command(f"rosrun box_calibration store_tf_static.py _bag_file:={output_bag_path} _validity_end:={validity_end} _validity_start:=0")
+                run_blocking_command(
+                    f"rosrun box_calibration store_tf_static.py _bag_file:={output_bag_path} _validity_end:={validity_end} _validity_start:=0")
             time.sleep(10)
+
 
 if __name__ == "__main__":
     main()

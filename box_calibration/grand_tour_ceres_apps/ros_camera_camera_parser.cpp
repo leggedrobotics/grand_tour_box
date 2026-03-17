@@ -10,7 +10,8 @@
 
 namespace fs = std::filesystem;
 
-ROSCameraCameraParser::ROSCameraCameraParser(std::string program_name, int argc, char **argv) {
+ROSCameraCameraParser::ROSCameraCameraParser(std::string program_name, int argc, char **argv,
+bool is_online) {
     const std::string package_name = "grand_tour_ceres_apps";
     std::string package_path = ros::package::getPath(package_name);
     std::string initial_guess_default_path = package_path + "/config/initial_guess.yaml";
@@ -53,8 +54,15 @@ ROSCameraCameraParser::ROSCameraCameraParser(std::string program_name, int argc,
     // Retrieve the list of bags
     std::vector<std::string> bags = program.get<std::vector<std::string>>("--bags");
     bag_paths = bags;
+    if (!is_online){
+        is_valid = is_valid && bag_paths.size() > 0;
+    }
     output_path = program.get<std::string>("--output_path");
 }
+
+ROSCameraCameraParser::ROSCameraCameraParser(std::string program_name, int argc, char **argv)
+: ROSCameraCameraParser(std::move(program_name), argc, argv, false)
+{}
 
 std::map<std::string, std::string> LoadRostopicFrameIDMapping(const std::string yaml_path) {
     const YAML::Node yaml_mapping = YAML::LoadFile(yaml_path);

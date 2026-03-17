@@ -3,6 +3,7 @@ import argparse
 import os
 import shutil
 import subprocess
+import sys
 from datetime import datetime
 
 import matplotlib.pyplot as plt
@@ -192,10 +193,26 @@ if __name__ == "__main__":
 
 
     def safe_subprocess_run(command, force=False):
+        """
+        Run a subprocess command safely with optional dry-run support.
+
+        Args:
+            command (list[str]): Command to execute.
+            force (bool): If True, run even in dry-run mode.
+
+        Returns:
+            subprocess.CompletedProcess | None
+        """
         if args.dry_run and not force:
-            print("Dry run mode: would run command:", ' '.join(command))
-        else:
-            subprocess.run(command)
+            print("[DRY RUN] Would run command:", " ".join(command))
+            return None
+
+        result = subprocess.run(command)
+        if result.returncode != 0:
+            print(f"[ERROR] Command failed with exit code {result.returncode}")
+            sys.exit(result.returncode)
+
+        return result
 
 
     # Parse the arguments
@@ -209,10 +226,6 @@ if __name__ == "__main__":
     camera_imu_folder_path = args.cameraimufolderpath
     solve_ap20_time_offset = args.solve_ap20_time_offset
 
-    # Access the folder paths
-    camera_camera_folder_path = args.cameracamerafolderpath
-    camera_lidar_folder_path = args.cameralidarfolderpath
-
     # Collect all .bag files in the camera camera folder
     bag_files = [os.path.join(camera_camera_folder_path, f) for f in os.listdir(camera_camera_folder_path) if
                  f.endswith('.bag')]
@@ -224,7 +237,16 @@ if __name__ == "__main__":
 
     # Run the command
     if not args.skip_camera:
-        safe_subprocess_run(command)
+        result = safe_subprocess_run(command)
+        if result.returncode != 0:
+            print(f"[ERROR] Command failed with code {result.returncode}")
+            print(f"stdout:\n{result.stdout}")
+            print(f"stderr:\n{result.stderr}")
+            sys.exit(result.returncode)
+
+        print("[INFO] Camera-camera calibration succeeded.")
+    else:
+        print(f"Skipping camera calibration")
     camcam_calibration_time_header = read_yaml_with_comment_header(camcam_calibration_path)
 
     # Run the second command using the output of the previous step
@@ -249,15 +271,15 @@ if __name__ == "__main__":
         # YAML configuration data
         default_grand_tour_camlidar_target_config = {'target_type': 'checkerboard',
                                                      'targetCols': 7, 'targetRows': 8,
-                                                     'rowSpacingMeters': 0.08,
-                                                     'colSpacingMeters': 0.08}
+                                                     'rowSpacingMeters': 0.05,
+                                                     'colSpacingMeters': 0.05}
         yaml.dump(default_grand_tour_camlidar_target_config, file)
 
     hesai_calib_output_folder = os.path.join(camera_lidar_folder_path, args.hesai_output_dir)
     # New configuration data for grand_tour_default_hesai_calib_config.yaml
     hesai_calib_config_data = {'logging_dir': hesai_calib_output_folder,
-                               'stationarity': {'max_rotation_deg': 0.01, 'max_translation_m': 0.001,
-                                                'longest_outage_secs': 0.50},
+                               'stationarity': {'max_rotation_deg': 0.1, 'max_translation_m': 0.01,
+                                                'longest_outage_secs': 2},
                                'lidar_topic': '/gt_box/hesai/points',
                                'pointcloud_plane_segmenter': {'board_inflation': 0.1, 'ksearch': 50,
                                                               'normal_distance_weight': 0.005,
@@ -350,14 +372,17 @@ if __name__ == "__main__":
 
         # Construct the command
         hesai_command = ["rosrun", "diffcal_gui_ros", "offline_calibrator.py", "--bag_path", hesai_bag_file,
-                         "--intrinsic_calibrations_path", intrinsic_calibrations_path, "--initial_guess_config_path",
+                         "--intrinsic_calibrations_path", intrinsic_calibrations_path, "--extrinsic_guess_config",
                          initial_guess_config_path, "--target_config_path", target_config_path,
                          "--application_parameters_path",
                          application_parameters_path]
 
         # Run the command
         if not args.skip_lidar:
-            safe_subprocess_run(hesai_command)
+            print(hesai_command)
+            # safe_subprocess_run(hesai_command)
+        else:
+            print(f"Skipping lidar calibration")
 
     # Find a .bag file in the camera lidar folder path that matches the pattern "livox"
     livox_bag_file = cam_lidar_merged_bag_path
@@ -371,72 +396,119 @@ if __name__ == "__main__":
 
         # Construct the command
         livox_command = ["rosrun", "diffcal_gui_ros", "offline_calibrator.py", "--bag_path", livox_bag_file,
-                         "--intrinsic_calibrations_path", intrinsic_calibrations_path, "--initial_guess_config_path",
+                         "--intrinsic_calibrations_path", intrinsic_calibrations_path, "--extrinsic_guess_config",
                          initial_guess_config_path, "--target_config_path", target_config_path,
                          "--application_parameters_path",
                          application_parameters_path]
 
         # Run the command
         if not args.skip_lidar:
+            # pass
             safe_subprocess_run(livox_command)
 
-    reports = {"hesai": [hesai_calib_output_folder, "hesai_calib_report.pdf"],
-               "livox": [livox_calib_output_folder, "livox_calib_report.pdf"], }
+    camlidar_calibration_time_header = extract_bag_start_time(hesai_bag_file)
+    camlidar_calibration_comment = (f"#Camera Calibration Data Time: {camcam_calibration_time_header}\n"
+                                    f"#LiDAR Calibration Data Time: {camlidar_calibration_time_header}")
 
-    from matplotlib.backends.backend_pdf import PdfPages
+    report_lidar = False
+    if report_lidar:
+        reports = {"hesai": [hesai_calib_output_folder, "hesai_calib_report.pdf"],
+                   "livox": [livox_calib_output_folder, "livox_calib_report.pdf"], }
 
-    T_cam_lidar_for_lidarname = dict()
-    with PdfPages(os.path.join(camera_lidar_folder_path, 'calibration_reports.pdf')) as pdf:
-        for k, v in reports.items():
-            calib_output_folder, output_report = v
+        from matplotlib.backends.backend_pdf import PdfPages
 
-            # Define the path to the reprojection_errors.txt file
-            reprojection_errors_path = os.path.join(calib_output_folder, '04_alignment',
-                                                    'post-opt-reprojection_errors.txt')
+        T_cam_lidar_for_lidarname = dict()
+        with PdfPages(os.path.join(camera_lidar_folder_path, 'calibration_reports.pdf')) as pdf:
+            for k, v in reports.items():
+                calib_output_folder, output_report = v
 
-            # Load the reprojection errors as a numpy array
-            reprojection_errors = np.loadtxt(reprojection_errors_path)
+                # Define the path to the reprojection_errors.txt file
+                reprojection_errors_path = os.path.join(calib_output_folder, '04_alignment',
+                                                        'post-opt-reprojection_errors.txt')
 
-            # Create a scatter plot of the reprojection errors
-            plt.scatter(reprojection_errors[:, 0], reprojection_errors[:, 1])
-            plt.xlabel('X Error (m)')
-            plt.ylabel('Y Error (m)')
-            plt.title(f'{k} Calibration Reprojection Errors')
-            plt.grid(True)
+                # Load the reprojection errors as a numpy array
+                reprojection_errors = np.loadtxt(reprojection_errors_path)
 
-            # Save the plot to the PDF file
-            pdf.savefig(dpi=300)
-            plt.close()
+                # Create a scatter plot of the reprojection errors
+                plt.scatter(reprojection_errors[:, 0], reprojection_errors[:, 1])
+                plt.xlabel('X Error (m)')
+                plt.ylabel('Y Error (m)')
+                plt.title(f'{k} Calibration Reprojection Errors')
+                plt.grid(True)
 
-            # Define the path to the diffcal-calib.yaml file
-            diffcal_calib_path = os.path.join(calib_output_folder, '04_alignment', 'diffcal-calib.yaml')
+                # Save the plot to the PDF file
+                pdf.savefig(dpi=300)
+                plt.close()
 
-            # Copy diffcal_calib_path file into the current folder with the new name
-            new_calib_file_name = f"{k}_calibration.yaml"
-            shutil.copy(diffcal_calib_path, new_calib_file_name)
+                # Define the path to the diffcal-calib.yaml file
+                diffcal_calib_path = os.path.join(calib_output_folder, '04_alignment', 'diffcal-calib.yaml')
 
-            # Read the YAML file
-            with open(diffcal_calib_path, 'r') as file:
-                diffcal_calib_data = yaml.load(file, Loader=yaml.FullLoader)
+                # Copy diffcal_calib_path file into the current folder with the new name
+                new_calib_file_name = f"{k}_calibration.yaml"
+                shutil.copy(diffcal_calib_path, new_calib_file_name)
 
-            # Extract the T_cam_lidar for cam0
-            T_cam_lidar = np.array(diffcal_calib_data['cam0']['T_cam_lidar'])
-            T_cam_lidar_for_lidarname[k] = T_cam_lidar
-            rotation_matrix = T_cam_lidar[:3, :3]
-            translation_vector = T_cam_lidar[:3, 3]
+                # Read the YAML file
+                with open(diffcal_calib_path, 'r') as file:
+                    diffcal_calib_data = yaml.load(file, Loader=yaml.FullLoader)
 
-            # Convert rotation matrix to roll, pitch, yaw in degrees
-            from scipy.spatial.transform import Rotation as R
+                # Extract the T_cam_lidar for cam0
+                T_cam_lidar = np.array(diffcal_calib_data['cam0']['T_cam_lidar'])
+                T_cam_lidar_for_lidarname[k] = T_cam_lidar
+                rotation_matrix = T_cam_lidar[:3, :3]
+                translation_vector = T_cam_lidar[:3, 3]
 
-            r = R.from_matrix(rotation_matrix)
+                # Convert rotation matrix to roll, pitch, yaw in degrees
+                from scipy.spatial.transform import Rotation as R
+
+                r = R.from_matrix(rotation_matrix)
+                roll, pitch, yaw = r.as_euler('xyz', degrees=True)
+
+                # Convert translation to millimeters
+                translation_vector_mm = translation_vector * 1000
+
+                # Add a single page for T_cam_lidar contents
+                plt.figure()
+                plt.title(f'T_cam_lidar for cam0 to {k}')
+                plt.axis('off')
+                text = (f"Rotation (Roll, Pitch, Yaw) in degrees:\n"
+                        f"{roll:.4f} {pitch:.4f} {yaw:.4f}\n\n"
+                        f"Translation (x, y, z) in mm:\n"
+                        f"{translation_vector_mm[0]:.2f} {translation_vector_mm[1]:.2f} {translation_vector_mm[2]:.2f}")
+                plt.text(0.0, 0.8, text, ha='left', va='center', wrap=True)
+                pdf.savefig(dpi=300)
+                plt.close()
+
+                # Define the path to the homography-merged-cloud.txt file
+                homography_merged_cloud_path = os.path.join(calib_output_folder, '04_alignment',
+                                                            'post-opt-homography-merged-cloud.txt')
+                # Load the homography-merged-cloud data as a numpy array
+                homography_merged_cloud = np.loadtxt(homography_merged_cloud_path)
+                homography_merged_cloud = homography_merged_cloud[
+                    np.linspace(0, len(homography_merged_cloud) - 1, 20000, dtype=int)]
+                # Create a scatter plot of the xy coordinates, showing intensity as color
+                plt.scatter(homography_merged_cloud[:, 0], homography_merged_cloud[:, 1], c=homography_merged_cloud[:, 3],
+                            cmap='viridis', s=0.1)
+                plt.colorbar(label='Intensity')
+                plt.xlabel('X Coordinate (m)')
+                plt.ylabel('Y Coordinate (m)')
+                plt.title(f'{k} Reconstructed LiDAR board model')
+                plt.grid(True)
+                # Save the plot to the PDF file
+                pdf.savefig(dpi=300)
+                plt.close()
+
+            T_cam_hesai = T_cam_lidar_for_lidarname["hesai"]
+            T_cam_livox = T_cam_lidar_for_lidarname["livox"]
+            T_hesai_livox = np.linalg.inv(T_cam_hesai) @ T_cam_livox
+
+            r = R.from_matrix(T_hesai_livox[:3, :3])
             roll, pitch, yaw = r.as_euler('xyz', degrees=True)
 
             # Convert translation to millimeters
-            translation_vector_mm = translation_vector * 1000
-
+            translation_vector_mm = T_hesai_livox[:3, -1] * 1000
             # Add a single page for T_cam_lidar contents
             plt.figure()
-            plt.title(f'T_cam_lidar for cam0 to {k}')
+            plt.title(f'T_hesai_livox for hesai to livox')
             plt.axis('off')
             text = (f"Rotation (Roll, Pitch, Yaw) in degrees:\n"
                     f"{roll:.4f} {pitch:.4f} {yaw:.4f}\n\n"
@@ -446,68 +518,30 @@ if __name__ == "__main__":
             pdf.savefig(dpi=300)
             plt.close()
 
-            # Define the path to the homography-merged-cloud.txt file
-            homography_merged_cloud_path = os.path.join(calib_output_folder, '04_alignment',
-                                                        'post-opt-homography-merged-cloud.txt')
-            # Load the homography-merged-cloud data as a numpy array
-            homography_merged_cloud = np.loadtxt(homography_merged_cloud_path)
-            homography_merged_cloud = homography_merged_cloud[
-                np.linspace(0, len(homography_merged_cloud) - 1, 20000, dtype=int)]
-            # Create a scatter plot of the xy coordinates, showing intensity as color
-            plt.scatter(homography_merged_cloud[:, 0], homography_merged_cloud[:, 1], c=homography_merged_cloud[:, 3],
-                        cmap='viridis', s=0.1)
-            plt.colorbar(label='Intensity')
-            plt.xlabel('X Coordinate (m)')
-            plt.ylabel('Y Coordinate (m)')
-            plt.title(f'{k} Reconstructed LiDAR board model')
-            plt.grid(True)
-            # Save the plot to the PDF file
-            pdf.savefig(dpi=300)
-            plt.close()
+        assert (os.path.exists(camcam_calibration_path))
+        with open(camcam_calibration_path, 'r') as file:
+            camcam_calibration_data = yaml.load(file, Loader=yaml.FullLoader)
 
-        T_cam_hesai = T_cam_lidar_for_lidarname["hesai"]
-        T_cam_livox = T_cam_lidar_for_lidarname["livox"]
-        T_hesai_livox = np.linalg.inv(T_cam_hesai) @ T_cam_livox
+        camcamlidar_calibration_data = camcam_calibration_data.copy()
 
-        r = R.from_matrix(T_hesai_livox[:3, :3])
-        roll, pitch, yaw = r.as_euler('xyz', degrees=True)
+        camcamlidar_calibration_path = os.path.join(camera_camera_folder_path,
+                                                    "cameracameralidar_calibration.yaml")
+        # Add the new fields for each key in reports
+        for key in camcam_calibration_data.keys():
+            camcamlidar_calibration_data[key]['T_bundle_hesai'] = T_cam_hesai.tolist()
+            camcamlidar_calibration_data[key]['T_bundle_livox'] = T_cam_livox.tolist()
 
-        # Convert translation to millimeters
-        translation_vector_mm = T_hesai_livox[:3, -1] * 1000
-        # Add a single page for T_cam_lidar contents
-        plt.figure()
-        plt.title(f'T_hesai_livox for hesai to livox')
-        plt.axis('off')
-        text = (f"Rotation (Roll, Pitch, Yaw) in degrees:\n"
-                f"{roll:.4f} {pitch:.4f} {yaw:.4f}\n\n"
-                f"Translation (x, y, z) in mm:\n"
-                f"{translation_vector_mm[0]:.2f} {translation_vector_mm[1]:.2f} {translation_vector_mm[2]:.2f}")
-        plt.text(0.0, 0.8, text, ha='left', va='center', wrap=True)
-        pdf.savefig(dpi=300)
-        plt.close()
-
-    assert (os.path.exists(camcam_calibration_path))
-    with open(camcam_calibration_path, 'r') as file:
-        camcam_calibration_data = yaml.load(file, Loader=yaml.FullLoader)
-
-    camcamlidar_calibration_data = camcam_calibration_data.copy()
-
-    camcamlidar_calibration_path = os.path.join(camera_lidar_folder_path,
-                                                "cameracameralidar_calibration.yaml")
-    # Add the new fields for each key in reports
-    for key in camcam_calibration_data.keys():
-        camcamlidar_calibration_data[key]['T_bundle_hesai'] = T_cam_hesai.tolist()
-        camcamlidar_calibration_data[key]['T_bundle_livox'] = T_cam_livox.tolist()
-
-    camlidar_calibration_time_header = extract_bag_start_time(hesai_bag_file)
-    camlidar_calibration_comment = (f"#Camera Calibration Data Time: {camcam_calibration_time_header}\n"
-                                    f"#LiDAR Calibration Data Time: {camlidar_calibration_time_header}")
-    pretty_write_yaml_array_with_comment(camcamlidar_calibration_data, camcamlidar_calibration_path,
-                                         comment=camlidar_calibration_comment)
+        pretty_write_yaml_array_with_comment(camcamlidar_calibration_data, camcamlidar_calibration_path,
+                                             comment=camlidar_calibration_comment)
 
     camera_prism_folder_bag_paths = [os.path.join(camera_prism_folder_path, x) for x in
                                      os.listdir(camera_prism_folder_path)
                                      if ".bag" in x]
+
+    with open(camcam_calibration_path, 'r') as file:
+        camcam_calibration_data = yaml.load(file, Loader=yaml.FullLoader)
+
+    camcamlidar_calibration_data = camcam_calibration_data.copy()
     camera_topics = [v["rostopic"] for v in camcamlidar_calibration_data.values() for y in ["cam1", "cam2", "cam3"]
                      if y in v["rostopic"]]
     camera_prism_camera_bag_paths = filter_for_bags_with_rostopics(camera_prism_folder_bag_paths, camera_topics)
@@ -516,20 +550,23 @@ if __name__ == "__main__":
     camcamlidarprism_calibration_path = os.path.join(camera_prism_folder_path,
                                                      "camcamlidarprism_calib.yaml")
 
+    camcam_calibration_path = os.path.join(camera_camera_folder_path,
+                                                "cameracamera_calibration.yaml")
     prism_calibration_time_header = extract_bag_start_time(camera_prism_prism_bag_path)
     if solve_ap20_time_offset:
         prism_command = ["rosrun", "grand_tour_ceres_apps", "camera_prism_offline_calibration", "-c",
-                         camcamlidar_calibration_path,
+                         camcam_calibration_path,
                          "--camera_bags", *camera_prism_camera_bag_paths, "-p", camera_prism_prism_bag_path,
                          "-t", prism_topic, "--solve_time_offset",
                          "-o", camcamlidarprism_calibration_path]
     else:
 
         prism_command = ["rosrun", "grand_tour_ceres_apps", "camera_prism_offline_calibration", "-c",
-                         camcamlidar_calibration_path,
+                         camcam_calibration_path,
                          "--camera_bags", *camera_prism_camera_bag_paths, "-p", camera_prism_prism_bag_path,
                          "-t", prism_topic,
                          "-o", camcamlidarprism_calibration_path]
+    print(prism_command)
     # Run the command
     safe_subprocess_run(prism_command, force=False)
 
@@ -619,8 +656,7 @@ if __name__ == "__main__":
                     "--dont-show-report"
                 ]
 
-                if not args.skip_lidar:
-                    safe_subprocess_run(camera_imu_command, force=False)
+                safe_subprocess_run(camera_imu_command, force=True)
 
                 cam_imu_merged_name_root = os.path.splitext(os.path.basename(cam_imu_merged_bag_path))[0]
 
@@ -696,6 +732,9 @@ if __name__ == "__main__":
     # Run the command
     safe_subprocess_run(conversion_command, force=True)
     add_tuple_to_yaml(tf_calibration_output_path, {"calibration_metadata": calibration_metadata})
+
+    if calib_output_folder is None:
+        calib_output_folder = hesai_calib_output_folder
 
     # Define the path to the diffcal-calib.yaml file
     raw_image_pipeline_calib_files = [os.path.join(calib_output_folder, '04_alignment', x)
