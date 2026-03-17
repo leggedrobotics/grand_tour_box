@@ -35,11 +35,11 @@ private:
     bool computeAndPopulateInitialGuessModelPose(Observations2dModelPoints3dPointIDsPose3dSensorName &observation);
 
     bool
-    handleStationarityRequirement(unsigned long long stamp,
+    recordBoardPoseAndTrimHistory(unsigned long long stamp,
                                   Observations2dModelPoints3dPointIDsPose3dSensorName &new_observation,
                                   bool force);
 
-    void manageObservationHistoryBuffer(const std::string &new_observation_name);
+    void trimBoardPoseBuffer(const std::string &new_observation_name);
 
     bool handleAddIntrinsicsCost(unsigned long long stamp,
                                  Observations2dModelPoints3dPointIDsPose3dSensorName &new_observation,

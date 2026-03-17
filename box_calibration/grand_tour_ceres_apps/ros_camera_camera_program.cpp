@@ -56,14 +56,14 @@ bool ROSCameraCameraProgram::addAlignmentData(ros::Time current_ros_time,
         if (!this->handleAddIntrinsicsCost(stamp, observation, false)) {
             return false;
         }
-        if (this->handleStationarityRequirement(stamp, observation, false)) {
+        if (this->recordBoardPoseAndTrimHistory(stamp, observation, false)) {
             this->handleAddExtrinsicsCost(stamp, observation, false);
         }
     } else {
         if (!this->handleAddIntrinsicsCost(stamp, observation, true)) {
             return false;
         }
-        this->handleStationarityRequirement(stamp, observation, true);
+        this->recordBoardPoseAndTrimHistory(stamp, observation, true);
         this->handleAddExtrinsicsCost(stamp, observation, true);
     }
 
@@ -85,21 +85,18 @@ bool ROSCameraCameraProgram::computeAndPopulateInitialGuessModelPose(
 }
 
 bool
-ROSCameraCameraProgram::handleStationarityRequirement(unsigned long long stamp,
+ROSCameraCameraProgram::recordBoardPoseAndTrimHistory(unsigned long long stamp,
                                                       Observations2dModelPoints3dPointIDsPose3dSensorName &new_observation,
                                                       bool force) {
     const std::string &new_observation_name = new_observation.sensor_name;
     board_pose_in_sensor_at_time_[new_observation_name][stamp] = new_observation.T_sensor_model;
-    if (force) {
-        return true;
+    if (!force) {
+        this->trimBoardPoseBuffer(new_observation_name);
     }
-
-    this->manageObservationHistoryBuffer(new_observation_name);
-
     return true;
 }
 
-void ROSCameraCameraProgram::manageObservationHistoryBuffer(const std::string &new_observation_name) {
+void ROSCameraCameraProgram::trimBoardPoseBuffer(const std::string &new_observation_name) {
     while (board_pose_in_sensor_at_time_.at(new_observation_name).size() > 10) {
         board_pose_in_sensor_at_time_.at(new_observation_name).erase(
                 board_pose_in_sensor_at_time_.at(new_observation_name).begin());
@@ -417,7 +414,7 @@ void ROSCameraCameraProgram::resetStateFromLoggedObservations() {
     this->resetProblem();
     for (const auto &[name, data_at_time]: logged_ros_alignment_data_) {
         for (const auto &[stamp, msg]: data_at_time) {
-            addAlignmentData(ros::Time(stamp/1000000000ul, (stamp % 1000000000ul)),
+            addAlignmentData(ros::Time(stamp / 1000000000ul, (stamp % 1000000000ul)),
                              msg, true);
         }
     }
