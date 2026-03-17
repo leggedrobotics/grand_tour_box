@@ -96,7 +96,7 @@ bool ROSCameraCameraOfflineProgram::run() {
 
     // 3) Solve (two passes, then covariance)
     setExtrinsicParametersVariableBeforeOpt();
-    problem_->solver_options_.max_num_iterations = 200;
+    problem_->solver_options_.max_num_iterations = 500;
 
     ROS_DEBUG_STREAM("Solving...");
     {
