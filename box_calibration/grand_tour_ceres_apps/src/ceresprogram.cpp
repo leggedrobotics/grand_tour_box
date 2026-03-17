@@ -131,7 +131,7 @@ ceres::ResidualBlockId CameraCameraProgram::addExtrinsicResidualFromObservations
             has_initialised_extrinsics[camera_j_name] = true;
             std::cout << "Initialising: " << camera_j_name << std::endl << T_cambundle_camj.matrix() << std::endl;
         }
-        if (has_initialised_extrinsics[camera_j_name]) {
+        else if (has_initialised_extrinsics[camera_j_name]) {
             Eigen::Affine3d T_cambundle_camj = SE3Transform::toEigenAffine(
                     camera_parameter_packs.at(camera_j_name).T_bundle_sensor);
             Eigen::Affine3d T_camj_cami = observation_j.T_sensor_model * observation_i.T_sensor_model.inverse();
@@ -140,6 +140,9 @@ ceres::ResidualBlockId CameraCameraProgram::addExtrinsicResidualFromObservations
                                        camera_parameter_packs.at(camera_i_name).T_bundle_sensor);
             has_initialised_extrinsics[camera_i_name] = true;
             std::cout << "Initialising: " << camera_i_name << std::endl << T_cambundle_cami.matrix() << std::endl;
+        }
+        else {
+            std::cout << "No initial extrinsics for cameras " << camera_i_name << " and " << camera_j_name << std::endl;
         }
     }
 
