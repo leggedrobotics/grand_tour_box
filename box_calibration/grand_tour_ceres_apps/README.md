@@ -63,6 +63,31 @@ TLDR; The ceres-solver build directory is right now in the home directory under 
 catkin build grand_tour_ceres_apps
 ```
 
+### Expected camera topics and frame IDs
+
+The calibration node expects the following 10 cameras to be present. These are defined in
+`config/initial_guess.yaml` (intrinsics + extrinsics initial guess) and
+`config/rostopic_frameid_mappings.yaml` (topic → frame ID mapping).
+**You are responsible for ensuring these topics are published before launching the calibration.**
+
+| Camera | ROS topic | Frame ID | Sensor | Resolution | Distortion model |
+|--------|-----------|----------|--------|------------|-----------------|
+| cam0 | `/gt_box/alphasense_driver_node/cam1` | `cam1_sensor_frame` | Alphasense | 1440×1080 | equidistant |
+| cam1 | `/gt_box/alphasense_driver_node/cam2` | `cam2_sensor_frame` | Alphasense | 1440×1080 | equidistant |
+| cam2 | `/gt_box/alphasense_driver_node/cam3` | `cam3_sensor_frame` | Alphasense | 1440×1080 | equidistant |
+| cam3 | `/gt_box/alphasense_driver_node/cam4` | `cam4_sensor_frame` | Alphasense | 1440×1080 | equidistant |
+| cam4 | `/gt_box/alphasense_driver_node/cam5` | `cam5_sensor_frame` | Alphasense | 1440×1080 | equidistant |
+| cam5 | `/gt_box/hdr_front/image_raw` | `hdr_front` | HDR front | 1920×1280 | equidistant |
+| cam6 | `/gt_box/hdr_left/image_raw` | `hdr_left` | HDR left | 1920×1280 | equidistant |
+| cam7 | `/gt_box/hdr_right/image_raw` | `hdr_right` | HDR right | 1920×1280 | equidistant |
+| cam8 | `/gt_box/zed2i_driver_node/left_raw/image_raw_color` | `zed2i_left_camera_optical_frame` | ZED2i left | 1920×1280 | radtan |
+| cam9 | `/gt_box/zed2i_driver_node/right_raw/image_raw_color` | `zed2i_right_camera_optical_frame` | ZED2i right | 1920×1280 | radtan |
+
+The calibration node subscribes to `<topic>_corner_detections` (i.e. the detection topic derived from each image topic above),
+not the raw image topics directly. The detector nodes must be running and publishing on those derived topics.
+
+To use a different camera set, update both config files and re-run.
+
 ### Running the camera camera calibration
 First start up the detectors and the viewers. Note that the detectors are to be separately called from
 the NUC and the Jetson, respectively. The viewer and the calibration node are run from the OPC.
