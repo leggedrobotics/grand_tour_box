@@ -24,7 +24,7 @@ struct ROSCameraCameraOfflineProgram : public ROSCameraCameraProgram {
 
     bool run();
 
-    bool loadRosbagsIntoProgram();
+    void loadRosbagsIntoProgram();
 
 protected:
     bool publishDetectionsUsed(const grand_tour_camera_detection_msgs::CameraDetections &camera_detections) override;

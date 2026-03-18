@@ -83,10 +83,7 @@ bool ROSCameraCameraOfflineProgram::run() {
     }
 
     // 1) Load bags → fill logged data
-    if (!loadRosbagsIntoProgram()) {
-        ROS_ERROR_STREAM("Failed to load ROS bags into program.");
-        return false;
-    }
+    this->loadRosbagsIntoProgram();
 
     // 2) Introspect graph edges
     const auto total_edge_count = getTotalInAndOutExtrinsicEdges();
@@ -128,14 +125,9 @@ bool ROSCameraCameraOfflineProgram::run() {
     return true;
 }
 
-bool ROSCameraCameraOfflineProgram::loadRosbagsIntoProgram() {
+void ROSCameraCameraOfflineProgram::loadRosbagsIntoProgram() {
     // Precompute the detection-topic → image-topic map
     const auto detection_to_image = buildDetectionToImageMap(rostopic2frameid_, detection_suffix);
-
-    if (detection_to_image.empty()) {
-        ROS_WARN_STREAM("No camera topics configured; nothing to read from bags.");
-        return true; // Not a hard error.
-    }
 
     // Collect only the detection topics we care about (strings)
     std::vector<std::string> detection_topics;
@@ -192,5 +184,4 @@ bool ROSCameraCameraOfflineProgram::loadRosbagsIntoProgram() {
                                << bag_paths.size() << " bag(s).");
     ROS_INFO_STREAM("Unique timestamps buffered: "
                     << parsed_alignment_data.unique_timestamps.size());
-    return true;
 }
