@@ -27,7 +27,6 @@ struct ROSCameraCameraOfflineProgram : public ROSCameraCameraProgram {
     void loadRosbagsIntoProgram();
 
 protected:
-    bool publishDetectionsUsed(const grand_tour_camera_detection_msgs::CameraDetections &camera_detections) override;
 
     std::vector<std::string> bag_paths;
 

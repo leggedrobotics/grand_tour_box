@@ -581,6 +581,16 @@ std::map<std::string, int> ROSCameraCameraProgram::getTotalInAndOutExtrinsicEdge
     return total_edge_count;
 }
 
+void ROSCameraCameraProgram::publishFrameTransforms() {
+    if (!viz_) return;
+
+    std::map<std::string, Eigen::Affine3d> transforms;
+    for (const auto &[name, pack]: camera_parameter_packs) {
+        transforms[name] = SE3Transform::toEigenAffine(pack.T_bundle_sensor);
+    }
+    viz_->vizFrameTransforms(transforms);
+}
+
 void ROSCameraCameraProgram::publishResiduals() {
     if (!viz_) return;
 
@@ -631,3 +641,46 @@ void ROSCameraCameraProgram::publishResiduals() {
         }
     }
 }
+
+std::vector<std::array<float, 2>> cornersToViz(
+        const std::vector<geometry_msgs::Point>& corners) {
+    std::vector<std::array<float, 2>> out;
+    out.reserve(corners.size());
+    for (const auto& p : corners) {
+        out.push_back({static_cast<float>(p.x), static_cast<float>(p.y)});
+    }
+    return out;
+}
+
+void voxelMapToViz(const VoxelMap2D& voxel_map,
+                   std::vector<std::array<int32_t, 2>>& coords,
+                   std::vector<uint32_t>& counts) {
+    coords.reserve(voxel_map.data_.size());
+    counts.reserve(voxel_map.data_.size());
+    for (const auto& [voxel, count] : voxel_map.data_) {
+        coords.push_back({voxel.x, voxel.y});
+        counts.push_back(static_cast<uint32_t>(count));
+    }
+}
+
+bool ROSCameraCameraProgram::publishDetectionsUsed(
+            const grand_tour_camera_detection_msgs::CameraDetections& camera_detections) {
+        if (viz_) {
+            const std::string& frame_id = camera_detections.header.frame_id;
+            const int width = this->camera_parameter_packs.at(frame_id).width;
+            const int height = this->camera_parameter_packs.at(frame_id).height;
+
+            const auto corners = cornersToViz(camera_detections.corners2d);
+            viz_->vizDetections(frame_id, corners);
+
+            const auto it = corner_detection2d_voxel_map_.find(frame_id);
+            if (it != corner_detection2d_voxel_map_.end()) {
+                std::vector<std::array<int32_t, 2>> coords;
+                std::vector<uint32_t> counts;
+                voxelMapToViz(it->second, coords, counts);
+                viz_->vizVoxelMap(frame_id + "/voxel_map", coords, counts,
+                                  static_cast<float>(it->second.voxel_size_), width, height);
+            }
+        }
+        return true;
+    }

@@ -387,11 +387,5 @@ bool ROSCameraCameraOnlineProgram::startRecordingCalibrationDataServiceCallback(
     return true;
 }
 
-bool ROSCameraCameraOnlineProgram::publishDetectionsUsed(
-        const grand_tour_camera_detection_msgs::CameraDetections &camera_detections) {
-    added_detections_publisher_[camera_detections.header.frame_id].publish(camera_detections);
-    return true;
-}
-
 
 

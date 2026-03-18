@@ -39,9 +39,6 @@ private:
     void cameraDetectionsCallback(const grand_tour_camera_detection_msgs::CameraDetections::ConstPtr &msg,
                                   const std::string topic_name);
 
-protected:
-    bool publishDetectionsUsed(const grand_tour_camera_detection_msgs::CameraDetections &camera_detections) override;
-
 private:
 
     bool stopOptimizationServiceCallback(grand_tour_camera_detection_msgs::StopOptimizingService::Request &req,

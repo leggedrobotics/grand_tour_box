@@ -78,7 +78,7 @@ protected:
 
     void setBoardPoseParametersVariable();
 
-    virtual bool publishDetectionsUsed(const grand_tour_camera_detection_msgs::CameraDetections &camera_detections) = 0;
+    bool publishDetectionsUsed(const grand_tour_camera_detection_msgs::CameraDetections &camera_detections);
 
     bool setOriginCameraFrame(const std::string &camera_name);
 
@@ -137,6 +137,8 @@ protected:
     std::map<std::string, int> getTotalInAndOutExtrinsicEdges();
 
     void publishResiduals();
+
+    void publishFrameTransforms();
 };
 
 

@@ -43,36 +43,15 @@ bool validateBagPaths(const std::vector<std::string>& bag_paths) {
 }
 
 // Build a map from detection topic to image topic we expect
-std::map<std::string, std::string>
-buildDetectionToImageMap(const std::map<std::string, std::string>& rostopic2frameid,
-                         const std::string& detection_suffix) {
-    std::map<std::string, std::string> detection_to_image;
-    for (const auto& [image_topic, /*frame_id*/ _] : rostopic2frameid) {
-        detection_to_image.emplace(image_topic + detection_suffix, image_topic);
+    std::map<std::string, std::string>
+    buildDetectionToImageMap(const std::map<std::string, std::string>& rostopic2frameid,
+                             const std::string& detection_suffix) {
+        std::map<std::string, std::string> detection_to_image;
+        for (const auto& [image_topic, /*frame_id*/ _] : rostopic2frameid) {
+            detection_to_image.emplace(image_topic + detection_suffix, image_topic);
+        }
+        return detection_to_image;
     }
-    return detection_to_image;
-}
-
-std::vector<std::array<float, 2>> cornersToViz(
-    const std::vector<geometry_msgs::Point>& corners) {
-    std::vector<std::array<float, 2>> out;
-    out.reserve(corners.size());
-    for (const auto& p : corners) {
-        out.push_back({static_cast<float>(p.x), static_cast<float>(p.y)});
-    }
-    return out;
-}
-
-void voxelMapToViz(const VoxelMap2D& voxel_map,
-                   std::vector<std::array<int32_t, 2>>& coords,
-                   std::vector<uint32_t>& counts) {
-    coords.reserve(voxel_map.data_.size());
-    counts.reserve(voxel_map.data_.size());
-    for (const auto& [voxel, count] : voxel_map.data_) {
-        coords.push_back({voxel.x, voxel.y});
-        counts.push_back(static_cast<uint32_t>(count));
-    }
-}
 
 } // namespace
 // -----------------------------------------------------------------------------
@@ -91,28 +70,6 @@ ROSCameraCameraOfflineProgram::ROSCameraCameraOfflineProgram(ROSCameraCameraPars
     ROS_INFO_STREAM("Offline program valid: " << std::boolalpha << is_valid);
 }
 
-bool ROSCameraCameraOfflineProgram::publishDetectionsUsed(
-    const grand_tour_camera_detection_msgs::CameraDetections& camera_detections) {
-    if (viz_) {
-        const std::string& frame_id = camera_detections.header.frame_id;
-        const int width = this->camera_parameter_packs.at(frame_id).width;
-        const int height = this->camera_parameter_packs.at(frame_id).height;
-
-        const auto corners = cornersToViz(camera_detections.corners2d);
-        viz_->vizDetections(frame_id, corners);
-
-        const auto it = corner_detection2d_voxel_map_.find(frame_id);
-        if (it != corner_detection2d_voxel_map_.end()) {
-            std::vector<std::array<int32_t, 2>> coords;
-            std::vector<uint32_t> counts;
-            voxelMapToViz(it->second, coords, counts);
-            viz_->vizVoxelMap(frame_id + "/voxel_map", coords, counts,
-                              static_cast<float>(it->second.voxel_size_), width, height);
-        }
-    }
-    return true;
-}
-
 bool ROSCameraCameraOfflineProgram::run() {
     if (!is_valid) {
         ROS_ERROR_STREAM("Program is not valid. Aborting run().");
@@ -121,6 +78,8 @@ bool ROSCameraCameraOfflineProgram::run() {
 
     // 1) Load bags → fill logged data
     this->loadRosbagsIntoProgram();
+
+    this->publishFrameTransforms();
 
     // 2) Introspect graph edges
     const auto total_edge_count = getTotalInAndOutExtrinsicEdges();
@@ -141,6 +100,7 @@ bool ROSCameraCameraOfflineProgram::run() {
         this->rebuildProblemFromLoggedROSAlignmentData();
         const bool success_second = Solve();
         this->publishResiduals();
+        this->publishFrameTransforms();
 
         ROS_INFO_STREAM("Solve converged (first pass): " << std::boolalpha << success_first);
         ROS_INFO_STREAM("Solve converged (second pass): " << std::boolalpha << success_second);
@@ -162,6 +122,8 @@ bool ROSCameraCameraOfflineProgram::run() {
 
     return true;
 }
+
+
 
 void ROSCameraCameraOfflineProgram::loadRosbagsIntoProgram() {
     // Precompute the detection-topic → image-topic map
