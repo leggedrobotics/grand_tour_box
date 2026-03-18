@@ -62,13 +62,18 @@ target_link_libraries(camera_camera_online_calibration gtboxcalibration ${catkin
 )
 target_include_directories(camera_camera_online_calibration PRIVATE ${catkin_INCLUDE_DIRS})
 
+include(FetchContent)
+FetchContent_Declare(rerun_sdk URL
+        https://github.com/rerun-io/rerun/releases/download/0.22.1/rerun_cpp_sdk.zip)
+FetchContent_MakeAvailable(rerun_sdk)
+
 add_executable(camera_camera_offline_calibration ros_camera_camera_offline_calibration.cpp
         ros_camera_camera_program.cpp
         ros_camera_camera_offline_program.cpp
         ros_camera_camera_parser.cpp
         ros_utils.cpp
 )
-target_link_libraries(camera_camera_offline_calibration gtboxcalibration ${catkin_LIBRARIES}
+target_link_libraries(camera_camera_offline_calibration gtboxcalibration ${catkin_LIBRARIES} rerun_sdk
 )
 target_include_directories(camera_camera_offline_calibration PRIVATE ${catkin_INCLUDE_DIRS})
 
