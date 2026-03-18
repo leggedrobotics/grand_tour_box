@@ -140,6 +140,7 @@ bool ROSCameraCameraOfflineProgram::run() {
         // Rebuild from logged ROS alignment data and solve again
         this->rebuildProblemFromLoggedROSAlignmentData();
         const bool success_second = Solve();
+        this->publishResiduals();
 
         ROS_INFO_STREAM("Solve converged (first pass): " << std::boolalpha << success_first);
         ROS_INFO_STREAM("Solve converged (second pass): " << std::boolalpha << success_second);

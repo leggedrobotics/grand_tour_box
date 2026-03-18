@@ -135,6 +135,8 @@ protected:
     void setExtrinsicParametersVariableBeforeOpt();
 
     std::map<std::string, int> getTotalInAndOutExtrinsicEdges();
+
+    void publishResiduals();
 };
 
 

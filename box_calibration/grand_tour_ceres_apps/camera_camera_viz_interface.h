@@ -30,6 +30,23 @@ public:
     // voxel_size: size of each voxel in pixels, used to place the image correctly.
     virtual void vizVoxelMap(const std::string &view_name, const std::vector<std::array<int32_t, 2>> &coords,
                              const std::vector<uint32_t> &counts, float voxel_size, int width, int height) = 0;
+
+    // Visualize reprojection residuals as a scatter DepthImage.
+    // observations: pixel positions (u, v) of detected corners.
+    // residual_magnitudes: reprojection error magnitude per corner, parallel to observations.
+    virtual void vizResidualMap(const std::string& view_name,
+                                const std::vector<std::array<float, 2>>& observations,
+                                const std::vector<float>& residual_magnitudes,
+                                int width, int height) = 0;
+
+    // Visualize the camera-camera adjacency graph.
+    // nodes: camera names (graph node IDs and labels).
+    // edges: pairs of (source, target) camera names.
+    // edge_counts: co-detection count per edge, parallel to edges.
+    virtual void vizAdjacencyGraph(const std::string& view_name,
+                                   const std::vector<std::string>& nodes,
+                                   const std::vector<std::pair<std::string, std::string>>& edges,
+                                   const std::vector<int>& edge_counts) = 0;
 };
 
 #endif //GRAND_TOUR_CERES_APPS_CAMERA_CAMERA_VIZ_INTERFACE_H

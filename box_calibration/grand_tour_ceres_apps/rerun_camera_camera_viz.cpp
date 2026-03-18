@@ -53,3 +53,49 @@ void RerunCameraCameraViz::vizVoxelMap(const std::string &view_name, const std::
     rec_.log(view_name,
              rerun::DepthImage(grid.data(), {static_cast<uint32_t>(img_width), static_cast<uint32_t>(img_height)}));
 }
+
+void RerunCameraCameraViz::vizResidualMap(const std::string& view_name,
+                                           const std::vector<std::array<float, 2>>& observations,
+                                           const std::vector<float>& residual_magnitudes,
+                                           int width, int height) {
+    if (observations.empty() || !shouldLog(view_name)) return;
+
+    std::vector<float> grid(static_cast<size_t>(width * height), 0.0f);
+    for (size_t i = 0; i < observations.size(); ++i) {
+        const int u = static_cast<int>(std::round(observations[i][0]));
+        const int v = static_cast<int>(std::round(observations[i][1]));
+        if (u < 0 || u >= width || v < 0 || v >= height) continue;
+        grid[static_cast<size_t>(v * width + u)] = std::max(grid[static_cast<size_t>(v * width + u)],
+                                                             residual_magnitudes[i]);
+    }
+
+    rec_.log(view_name,
+             rerun::DepthImage(grid.data(), {static_cast<uint32_t>(width), static_cast<uint32_t>(height)}));
+}
+
+void RerunCameraCameraViz::vizAdjacencyGraph(const std::string& view_name,
+                                              const std::vector<std::string>& nodes,
+                                              const std::vector<std::pair<std::string, std::string>>& edges,
+                                              const std::vector<int>& edge_counts) {
+    if (!shouldLog(view_name)) return;
+
+    std::vector<std::string> node_labels;
+    node_labels.reserve(nodes.size());
+    for (const auto& n : nodes) {
+        node_labels.push_back(n);
+    }
+
+    std::vector<rerun::components::GraphEdge> graph_edges;
+    graph_edges.reserve(edges.size());
+    std::vector<std::string> edge_labels;
+    edge_labels.reserve(edges.size());
+    for (size_t i = 0; i < edges.size(); ++i) {
+        graph_edges.push_back({edges[i].first, edges[i].second});
+        edge_labels.push_back(std::to_string(edge_counts[i]));
+    }
+
+    rec_.log(view_name,
+             rerun::GraphNodes(nodes).with_labels(node_labels),
+             rerun::GraphEdges(graph_edges)
+                 .with_graph_type(rerun::components::GraphType::Undirected));
+}

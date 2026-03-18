@@ -560,5 +560,74 @@ std::map<std::string, int> ROSCameraCameraProgram::getTotalInAndOutExtrinsicEdge
     for (const auto &[name, other_cam_map]: camera_camera_adjacency_count) {
         std::cout << "Camera count: " << name << " " << total_edge_count[name] << std::endl;
     }
+
+    if (viz_) {
+        std::vector<std::string> nodes;
+        std::vector<std::pair<std::string, std::string>> edges;
+        std::vector<int> edge_counts;
+        for (const auto &[name, other_cam_map]: camera_camera_adjacency_count) {
+            nodes.push_back(name);
+            for (const auto &[other_name, count]: other_cam_map) {
+                // Only add each undirected edge once
+                if (name < other_name) {
+                    edges.emplace_back(name, other_name);
+                    edge_counts.push_back(count);
+                }
+            }
+        }
+        viz_->vizAdjacencyGraph("camera_adjacency_graph", nodes, edges, edge_counts);
+    }
+
     return total_edge_count;
+}
+
+void ROSCameraCameraProgram::publishResiduals() {
+    if (!viz_) return;
+
+    // Intrinsics: one DepthImage per camera showing reprojection error at observed pixel positions
+    const auto obs_residuals = getObservationsAndResiduals2D();
+    for (const auto &[name, obs_res_vec]: obs_residuals) {
+        if (!camera_parameter_packs.contains(name)) continue;
+        const auto &params = camera_parameter_packs.at(name);
+        std::vector<std::array<float, 2>> observations;
+        std::vector<float> magnitudes;
+        for (const auto &obs_res: obs_res_vec) {
+            for (int i = 0; i < obs_res.observations2d.cols(); ++i) {
+                observations.push_back({static_cast<float>(obs_res.observations2d(0, i)),
+                                        static_cast<float>(obs_res.observations2d(1, i))});
+                magnitudes.push_back(static_cast<float>(obs_res.reprojection_residuals.col(i).norm()));
+            }
+        }
+        viz_->vizResidualMap(name + "/intrinsics_residuals", observations, magnitudes,
+                             params.width, params.height);
+    }
+
+    // Extrinsics: one DepthImage per camera pair showing stereo reprojection error
+    for (const auto &[frame_id, other_frame_map]: extrinsics_residuals_of_cameras_at_time) {
+        if (!camera_parameter_packs.contains(frame_id)) continue;
+        const auto &params = camera_parameter_packs.at(frame_id);
+        for (const auto &[other_frame, stamp_map]: other_frame_map) {
+            std::vector<std::array<float, 2>> observations;
+            std::vector<float> magnitudes;
+            for (const auto &[stamp, residual_block]: stamp_map) {
+                if (!parsed_alignment_data.observations.contains(stamp)) continue;
+                const auto &obs_at_stamp = parsed_alignment_data.observations.at(stamp);
+                if (!obs_at_stamp.contains(frame_id)) continue;
+                const auto &obs = obs_at_stamp.at(frame_id);
+                Eigen::Matrix2Xf residuals;
+                if (!getReprojectionResiduals(problem_->getProblem(), residual_block, residuals)) continue;
+                const int n = std::min(static_cast<int>(obs.observations2d.cols()),
+                                       static_cast<int>(residuals.cols()));
+                for (int i = 0; i < n; ++i) {
+                    observations.push_back({static_cast<float>(obs.observations2d(0, i)),
+                                            static_cast<float>(obs.observations2d(1, i))});
+                    magnitudes.push_back(residuals.col(i).norm());
+                }
+            }
+            if (!observations.empty()) {
+                viz_->vizResidualMap(frame_id + "/extrinsics_residuals",
+                                     observations, magnitudes, params.width, params.height);
+            }
+        }
+    }
 }
