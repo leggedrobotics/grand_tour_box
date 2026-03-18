@@ -19,7 +19,7 @@ bool RerunCameraCameraViz::shouldLog(const std::string& view_name) {
 void RerunCameraCameraViz::vizDetections(const std::string& view_name,
                                          const std::vector<std::array<float, 2>>& corners_2d) {
     if (!shouldLog(view_name)) return;
-    rec_.log(view_name, rerun::Points2D(corners_2d));
+    rec_.log(view_name + "/detections", rerun::Points2D(corners_2d));
 }
 
 void RerunCameraCameraViz::vizCovariances(const std::string& view_name,
