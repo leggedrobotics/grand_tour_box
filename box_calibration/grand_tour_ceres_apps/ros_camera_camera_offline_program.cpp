@@ -53,6 +53,27 @@ buildDetectionToImageMap(const std::map<std::string, std::string>& rostopic2fram
     return detection_to_image;
 }
 
+std::vector<std::array<float, 2>> cornersToViz(
+    const std::vector<geometry_msgs::Point>& corners) {
+    std::vector<std::array<float, 2>> out;
+    out.reserve(corners.size());
+    for (const auto& p : corners) {
+        out.push_back({static_cast<float>(p.x), static_cast<float>(p.y)});
+    }
+    return out;
+}
+
+void voxelMapToViz(const VoxelMap2D& voxel_map,
+                   std::vector<std::array<int32_t, 2>>& coords,
+                   std::vector<uint32_t>& counts) {
+    coords.reserve(voxel_map.data_.size());
+    counts.reserve(voxel_map.data_.size());
+    for (const auto& [voxel, count] : voxel_map.data_) {
+        coords.push_back({voxel.x, voxel.y});
+        counts.push_back(static_cast<uint32_t>(count));
+    }
+}
+
 } // namespace
 // -----------------------------------------------------------------------------
 
@@ -72,7 +93,23 @@ ROSCameraCameraOfflineProgram::ROSCameraCameraOfflineProgram(ROSCameraCameraPars
 
 bool ROSCameraCameraOfflineProgram::publishDetectionsUsed(
     const grand_tour_camera_detection_msgs::CameraDetections& camera_detections) {
-    // Offline mode: nothing to publish (but keep hook for consistency).
+    if (viz_) {
+        const std::string& frame_id = camera_detections.header.frame_id;
+        const int width = this->camera_parameter_packs.at(frame_id).width;
+        const int height = this->camera_parameter_packs.at(frame_id).height;
+
+        const auto corners = cornersToViz(camera_detections.corners2d);
+        viz_->vizDetections(frame_id, corners);
+
+        const auto it = corner_detection2d_voxel_map_.find(frame_id);
+        if (it != corner_detection2d_voxel_map_.end()) {
+            std::vector<std::array<int32_t, 2>> coords;
+            std::vector<uint32_t> counts;
+            voxelMapToViz(it->second, coords, counts);
+            viz_->vizVoxelMap(frame_id + "/voxel_map", coords, counts,
+                              static_cast<float>(it->second.voxel_size_), width, height);
+        }
+    }
     return true;
 }
 
@@ -93,7 +130,7 @@ bool ROSCameraCameraOfflineProgram::run() {
 
     // 3) Solve (two passes, then covariance)
     setExtrinsicParametersVariableBeforeOpt();
-    problem_->solver_options_.max_num_iterations = 500;
+    problem_->solver_options_.max_num_iterations = 5;
 
     ROS_DEBUG_STREAM("Solving...");
     {
@@ -101,7 +138,7 @@ bool ROSCameraCameraOfflineProgram::run() {
 
         const bool success_first = Solve();
         // Rebuild from logged ROS alignment data and solve again
-        rebuildProblemFromLoggedROSAlignmentData();
+        this->rebuildProblemFromLoggedROSAlignmentData();
         const bool success_second = Solve();
 
         ROS_INFO_STREAM("Solve converged (first pass): " << std::boolalpha << success_first);
@@ -164,7 +201,7 @@ void ROSCameraCameraOfflineProgram::loadRosbagsIntoProgram() {
                 const auto& frame_id = detection_msg->header.frame_id;
 
                 // Add to alignment buffer + log if accepted
-                if (addAlignmentData(stamp, *detection_msg, /*is_offline=*/true)) {
+                if (addAlignmentData(stamp, *detection_msg, /*is_offline=*/true, false)) {
                     // NOTE: use nanoseconds as key; ensure map type is ordered or use unordered_map<uint64_t>
                     logged_ros_alignment_data_[frame_id][stamp.toNSec()] = *detection_msg;
                     calibration_time = stamp; // last stamp wins; OK for "latest"

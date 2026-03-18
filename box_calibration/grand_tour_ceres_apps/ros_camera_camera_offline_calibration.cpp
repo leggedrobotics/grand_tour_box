@@ -9,16 +9,21 @@
  * Author: Lanke Frank Tarimo Fu
  * License: MIT
  */
-
+#include <rerun.hpp>
 #include "ros_camera_camera_offline_program.h"
 #include "ros_camera_camera_parser.h"
+#include "rerun_camera_camera_viz.h"
 
 #include <ros/ros.h>
 #include <cstdlib>   // for EXIT_SUCCESS / EXIT_FAILURE
 #include <exception> // for std::exception
+#include <memory>
 
 int main(int argc, char** argv) {
     constexpr char kNodeName[] = "camera_camera_offline_calibration";
+
+    auto rec = rerun::RecordingStream(kNodeName);
+    rec.spawn().exit_on_failure();
 
     // Initialize the ROS node
     ros::init(argc, argv, kNodeName);
@@ -36,6 +41,7 @@ int main(int argc, char** argv) {
         ROS_INFO_STREAM("Starting offline camera calibration...");
 
         ROSCameraCameraOfflineProgram program(parser);
+        program.setViz(std::make_unique<RerunCameraCameraViz>(rec));
 
         if (!program.run()) {
             return EXIT_FAILURE;

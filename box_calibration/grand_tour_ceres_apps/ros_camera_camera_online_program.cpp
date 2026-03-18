@@ -99,7 +99,7 @@ void ROSCameraCameraOnlineProgram::cameraDetectionsCallback(
     {
         std::lock_guard<std::mutex> lock(ceres_problem_mutex_);
         ScopedTimer timer;
-        if (this->addAlignmentData(ros::Time::now(), *msg, false)) {
+        if (this->addAlignmentData(ros::Time::now(), *msg, false, false)) {
             this->logged_ros_alignment_data_[msg->header.frame_id][msg->header.stamp.toNSec()] = *msg;
         } else {
             total_n_samples_rejected_++;
