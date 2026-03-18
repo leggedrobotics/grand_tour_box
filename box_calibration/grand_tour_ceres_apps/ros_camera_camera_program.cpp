@@ -264,12 +264,12 @@ bool ROSCameraCameraProgram::handleAddExtrinsicsCost(unsigned long long stamp,
         }
 
         has_initialised_extrinsics[origin_camera_frame_id] = true;
-        if (!has_initialised_extrinsics.contains(new_observation.sensor_name) and
-            !has_initialised_extrinsics.contains(other_sensor_name)) {
-            ROS_DEBUG_STREAM("Not adding extrinsics sample between: " + new_observation.sensor_name + " and "
-                             + other_sensor_name);
-            continue;
-        }
+//        if (!has_initialised_extrinsics.contains(new_observation.sensor_name) and
+//            !has_initialised_extrinsics.contains(other_sensor_name)) {
+//            ROS_DEBUG_STREAM("Not adding extrinsics sample between: " + new_observation.sensor_name + " and "
+//                             + other_sensor_name);
+//            continue;
+//        }
         CameraCameraProgram::extrinsics_residuals_of_cameras_at_time[
                 new_observation.sensor_name][
                 other_sensor_name][
