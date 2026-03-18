@@ -363,6 +363,7 @@ bool ROSCameraCameraProgram::rebuildProblemFromLoggedROSAlignmentData() {
 }
 
 void ROSCameraCameraProgram::filterOutOutliersFromLoggedObservations(double max_reprojection_error) {
+    unsigned long n_filtered_out = 0;
     for (auto &[frame_id, data]: logged_ros_alignment_data_) {
         for (auto it = data.begin(); it != data.end();) {
             auto msg = it->second;
@@ -375,6 +376,7 @@ void ROSCameraCameraProgram::filterOutOutliersFromLoggedObservations(double max_
             if (max_residual > max_reprojection_error) {
                 // is outlier detection
                 it = data.erase(it);  // Erase the element and move the iterator to the next one
+                n_filtered_out++;
             } else {
                 ++it;
             }
@@ -399,6 +401,7 @@ void ROSCameraCameraProgram::filterOutOutliersFromLoggedObservations(double max_
                 if (max_residual > max_reprojection_error) {
                     // is outlier detection
                     it = data.erase(it);  // Erase the element and move the iterator to the next one
+                    n_filtered_out++;
                     has_outlier = true;
                     break;
                 }
@@ -408,6 +411,7 @@ void ROSCameraCameraProgram::filterOutOutliersFromLoggedObservations(double max_
             }
         }
     }
+    std::cout << "Filtered out " << n_filtered_out << " outliers" << std::endl;
 }
 
 void ROSCameraCameraProgram::resetStateFromLoggedObservations() {
