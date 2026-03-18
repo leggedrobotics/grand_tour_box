@@ -18,6 +18,10 @@ find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 find_package(OpenCV REQUIRED)
 find_package(yaml-cpp REQUIRED)
 
+include(FetchContent)
+FetchContent_Declare(rerun_sdk URL
+        https://github.com/rerun-io/rerun/releases/download/0.22.1/rerun_cpp_sdk.zip)
+FetchContent_MakeAvailable(rerun_sdk)
 
 add_library(gtboxcalibration
         include/gtboxcalibration/argparse.h
@@ -57,15 +61,12 @@ add_executable(camera_camera_online_calibration ros_camera_camera_online_calibra
         ros_camera_camera_online_program.cpp
         ros_camera_camera_parser.cpp
         ros_utils.cpp
+        camera_camera_viz_interface.cpp
+        rerun_camera_camera_viz.cpp
 )
-target_link_libraries(camera_camera_online_calibration gtboxcalibration ${catkin_LIBRARIES}
+target_link_libraries(camera_camera_online_calibration gtboxcalibration ${catkin_LIBRARIES} rerun_sdk
 )
 target_include_directories(camera_camera_online_calibration PRIVATE ${catkin_INCLUDE_DIRS})
-
-include(FetchContent)
-FetchContent_Declare(rerun_sdk URL
-        https://github.com/rerun-io/rerun/releases/download/0.22.1/rerun_cpp_sdk.zip)
-FetchContent_MakeAvailable(rerun_sdk)
 
 add_executable(camera_camera_offline_calibration ros_camera_camera_offline_calibration.cpp
         ros_camera_camera_program.cpp

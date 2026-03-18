@@ -24,6 +24,8 @@ public:
     void vizVoxelMap(const std::string &view_name, const std::vector<std::array<int32_t, 2>> &coords,
                      const std::vector<uint32_t> &counts, float voxel_size, int width, int height) override;
 
+    void vizFrameTransforms(const std::map<std::string, Eigen::Affine3d>& transforms) override;
+
     void vizResidualMap(const std::string& view_name,
                         const std::vector<std::array<float, 2>>& observations,
                         const std::vector<float>& residual_magnitudes,

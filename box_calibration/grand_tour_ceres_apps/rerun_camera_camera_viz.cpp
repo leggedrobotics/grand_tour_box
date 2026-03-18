@@ -54,6 +54,23 @@ void RerunCameraCameraViz::vizVoxelMap(const std::string &view_name, const std::
              rerun::DepthImage(grid.data(), {static_cast<uint32_t>(img_width), static_cast<uint32_t>(img_height)}));
 }
 
+void RerunCameraCameraViz::vizFrameTransforms(const std::map<std::string, Eigen::Affine3d>& transforms) {
+    for (const auto& [name, T]: transforms) {
+        const Eigen::Quaterniond q(T.rotation());
+        const Eigen::Vector3d t = T.translation();
+
+        rec_.log(
+            name,
+            rerun::Transform3D::from_translation_rotation(
+                {static_cast<float>(t.x()), static_cast<float>(t.y()), static_cast<float>(t.z())},
+                rerun::Quaternion::from_xyzw(
+                    static_cast<float>(q.x()), static_cast<float>(q.y()),
+                    static_cast<float>(q.z()), static_cast<float>(q.w()))
+            )
+        );
+    }
+}
+
 void RerunCameraCameraViz::vizResidualMap(const std::string& view_name,
                                            const std::vector<std::array<float, 2>>& observations,
                                            const std::vector<float>& residual_magnitudes,

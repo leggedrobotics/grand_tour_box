@@ -9,6 +9,8 @@
 #include <string>
 #include <vector>
 #include <Eigen/Core>
+#include <map>
+#include <Eigen/Geometry>
 
 // Abstract viz interface for camera-camera calibration.
 // Pass as std::unique_ptr<CameraCameraVizInterface> to offline/online programs.
@@ -30,6 +32,11 @@ public:
     // voxel_size: size of each voxel in pixels, used to place the image correctly.
     virtual void vizVoxelMap(const std::string &view_name, const std::vector<std::array<int32_t, 2>> &coords,
                              const std::vector<uint32_t> &counts, float voxel_size, int width, int height) = 0;
+
+    // Visualize camera frame transforms in 3D space.
+    // transforms: map from camera name to T_bundle_sensor as Affine3d.
+    // Each camera is logged as a child entity under view_name.
+    virtual void vizFrameTransforms(const std::map<std::string, Eigen::Affine3d>& transforms) = 0;
 
     // Visualize reprojection residuals as a scatter DepthImage.
     // observations: pixel positions (u, v) of detected corners.

@@ -4,17 +4,25 @@
 
 #include "ros_camera_camera_online_program.h"
 #include "ros_camera_camera_parser.h"
+#include "cmake-build-debug/_deps/rerun_sdk-src/src/rerun/recording_stream.hpp"
+#include "rerun_camera_camera_viz.h"
 #include <ros/ros.h>
 
 int main(int argc, char **argv) {
 
+    constexpr char kNodeName[] = "camera_camera_online_calibration";
+
+    auto rec = rerun::RecordingStream(kNodeName);
+    rec.spawn().exit_on_failure();
+
     // Initialize the ROS node
-    ros::init(argc, argv, "camera_camera_online_calibration");
-    ROSCameraCameraParser parser("camera_camera_online_calibration", argc, argv, true);
+    ros::init(argc, argv, kNodeName);
+    ROSCameraCameraParser parser(kNodeName, argc, argv, true);
     if (!parser.is_valid) {
         return -1;
     }
     ROSCameraCameraOnlineProgram program(parser);
+    program.setViz(std::make_unique<RerunCameraCameraViz>(rec));
     if (!program.isValid()) {
         return -1;
     }
