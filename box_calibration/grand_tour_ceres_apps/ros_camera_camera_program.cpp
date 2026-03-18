@@ -45,7 +45,7 @@ ROSCameraCameraProgram::ROSCameraCameraProgram(ROSCameraCameraParser parser) {
 
 bool ROSCameraCameraProgram::addAlignmentData(ros::Time current_ros_time,
                                               const grand_tour_camera_detection_msgs::CameraDetections &camera_detections,
-                                              bool force) {
+                                              bool force, bool block_viz) {
     const unsigned long stamp = camera_detections.header.stamp.toNSec();
     Observations2dModelPoints3dPointIDsPose3dSensorName observation = buildObservationFromRosMSG(camera_detections);
     ScopedTimer timer;
@@ -67,7 +67,9 @@ bool ROSCameraCameraProgram::addAlignmentData(ros::Time current_ros_time,
         this->handleAddExtrinsicsCost(stamp, observation, true);
     }
 
-    this->publishDetectionsUsed(camera_detections);
+    if (!block_viz) {
+        this->publishDetectionsUsed(camera_detections);
+    }
 
     this->parsed_alignment_data.unique_timestamps.insert(stamp);
     this->parsed_alignment_data.observations[stamp][camera_detections.header.frame_id] = observation;
@@ -356,9 +358,9 @@ bool ROSCameraCameraProgram::resetProblem() {
 
 bool ROSCameraCameraProgram::rebuildProblemFromLoggedROSAlignmentData() {
     // Compute covariance of board poses
-    this->resetStateFromLoggedObservations();
+    this->resetStateFromLoggedObservations(true);
     this->filterOutOutliersFromLoggedObservations(5.0);
-    this->resetStateFromLoggedObservations();
+    this->resetStateFromLoggedObservations(false);
     return true;
 }
 
@@ -414,12 +416,15 @@ void ROSCameraCameraProgram::filterOutOutliersFromLoggedObservations(double max_
     std::cout << "Filtered out " << n_filtered_out << " outliers" << std::endl;
 }
 
-void ROSCameraCameraProgram::resetStateFromLoggedObservations() {
+void ROSCameraCameraProgram::resetStateFromLoggedObservations(bool block_viz) {
     this->resetProblem();
     for (const auto &[name, data_at_time]: logged_ros_alignment_data_) {
+        unsigned long index = 0;
+        const unsigned long n = data_at_time.size();
         for (const auto &[stamp, msg]: data_at_time) {
             addAlignmentData(ros::Time(stamp / 1000000000ul, (stamp % 1000000000ul)),
-                             msg, true);
+                             msg, true, block_viz or (index < n-1) );
+            index++;
         }
     }
     n_samples_last_solve_ = parsed_alignment_data.unique_timestamps.size();

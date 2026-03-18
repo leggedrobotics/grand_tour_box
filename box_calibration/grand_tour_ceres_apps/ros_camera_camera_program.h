@@ -19,6 +19,7 @@
 #include <grand_tour_camera_detection_msgs/CameraDetections.h>
 #include <ros/ros.h>
 #include <gtboxcalibration/ceresprograms.h>
+#include "camera_camera_viz_interface.h"
 
 
 class ROSCameraCameraProgram : public CameraCameraProgram {
@@ -28,6 +29,10 @@ public:
 
     bool isValid() const {
         return is_valid;
+    }
+
+    void setViz(std::unique_ptr<CameraCameraVizInterface> viz) {
+        viz_ = std::move(viz);
     }
 
 private:
@@ -58,14 +63,14 @@ private:
 
     void filterOutOutliersFromLoggedObservations(double max_reprojection_error);
 
-    void resetStateFromLoggedObservations();
+    void resetStateFromLoggedObservations(bool block_viz);
 
     fs::path fetchOutputPath();
 
 protected:
     bool addAlignmentData(ros::Time timestamp,
                           const grand_tour_camera_detection_msgs::CameraDetections &camera_detections,
-                          bool force);
+                          bool force, bool block_viz);
 
     std::map<std::string, CameraCovariance> computeCovariances();
 
@@ -92,6 +97,8 @@ protected:
             corner_detection2d_voxel_map_[name.first] = VoxelMap2D(corner_detection2d_voxel_size_);
         }
     }
+
+    std::unique_ptr<CameraCameraVizInterface> viz_;
 
     const std::string detection_suffix = "_corner_detections";
 

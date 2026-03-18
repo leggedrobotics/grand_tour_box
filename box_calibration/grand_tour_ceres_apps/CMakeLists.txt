@@ -72,6 +72,8 @@ add_executable(camera_camera_offline_calibration ros_camera_camera_offline_calib
         ros_camera_camera_offline_program.cpp
         ros_camera_camera_parser.cpp
         ros_utils.cpp
+        camera_camera_viz_interface.cpp
+        rerun_camera_camera_viz.cpp
 )
 target_link_libraries(camera_camera_offline_calibration gtboxcalibration ${catkin_LIBRARIES} rerun_sdk
 )
