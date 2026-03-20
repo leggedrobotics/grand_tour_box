@@ -249,6 +249,44 @@ if __name__ == "__main__":
         print(f"Skipping camera calibration")
     camcam_calibration_time_header = read_yaml_with_comment_header(camcam_calibration_path)
 
+    assert (os.path.exists(camcam_calibration_path))
+    box_calibration_package = rospack.get_path("box_calibration")
+
+    with open(camcam_calibration_path, 'r') as file:
+        camcam_calibration_data = yaml.load(file, Loader=yaml.FullLoader)
+
+    for k, camera_params in camcam_calibration_data.items():
+        rostopic = camera_params["rostopic"]
+        output_path = None
+
+        if "alphasense" in rostopic:
+            output_path = os.path.join(box_calibration_package, "calibration", "alphasense",
+                                       rostopic.split("/")[-1] + ".yaml")
+        elif "hdr" in rostopic:
+            if "front" in rostopic:
+                output_path = os.path.join(box_calibration_package, "calibration", "hdr",
+                                           "hdr_front.yaml")
+            elif "left" in rostopic:
+                output_path = os.path.join(box_calibration_package, "calibration", "hdr",
+                                           "hdr_left.yaml")
+            elif "right" in rostopic:
+                output_path = os.path.join(box_calibration_package, "calibration", "hdr",
+                                           "hdr_right.yaml")
+            else:
+                raise ValueError(f"Unexpected rostopic name: {rostopic}")
+        elif "zed" in rostopic:
+            if "left" in rostopic:
+                output_path = os.path.join(box_calibration_package, "calibration", "zed2i",
+                                           "zed_left.yaml")
+            elif "right" in rostopic:
+                output_path = os.path.join(box_calibration_package, "calibration", "zed2i",
+                                           "zed_right.yaml")
+        else:
+            raise ValueError(f"Unexpected rostopic name: {rostopic}")
+
+        if output_path is not None:
+            write_raw_img_pipeline_format(camera_params, output_path, comment_header=camcam_calibration_time_header)
+
     # Run the second command using the output of the previous step
     livox_camcam_calib_and_initial_guess_file = os.path.join(camera_lidar_folder_path,
                                                              "kalibr_camcam_livox_initial_guess.yaml")
@@ -410,7 +448,7 @@ if __name__ == "__main__":
     camlidar_calibration_comment = (f"#Camera Calibration Data Time: {camcam_calibration_time_header}\n"
                                     f"#LiDAR Calibration Data Time: {camlidar_calibration_time_header}")
 
-    report_lidar = False
+    report_lidar = True
     if report_lidar:
         reports = {"hesai": [hesai_calib_output_folder, "hesai_calib_report.pdf"],
                    "livox": [livox_calib_output_folder, "livox_calib_report.pdf"], }
@@ -424,7 +462,7 @@ if __name__ == "__main__":
 
                 # Define the path to the reprojection_errors.txt file
                 reprojection_errors_path = os.path.join(calib_output_folder, '04_alignment',
-                                                        'post-opt-reprojection_errors.txt')
+                                                        'reprojection_errors.txt')
 
                 # Load the reprojection errors as a numpy array
                 reprojection_errors = np.loadtxt(reprojection_errors_path)
@@ -480,7 +518,7 @@ if __name__ == "__main__":
 
                 # Define the path to the homography-merged-cloud.txt file
                 homography_merged_cloud_path = os.path.join(calib_output_folder, '04_alignment',
-                                                            'post-opt-homography-merged-cloud.txt')
+                                                            'homography-merged-cloud.txt')
                 # Load the homography-merged-cloud data as a numpy array
                 homography_merged_cloud = np.loadtxt(homography_merged_cloud_path)
                 homography_merged_cloud = homography_merged_cloud[
@@ -517,10 +555,6 @@ if __name__ == "__main__":
             plt.text(0.0, 0.8, text, ha='left', va='center', wrap=True)
             pdf.savefig(dpi=300)
             plt.close()
-
-        assert (os.path.exists(camcam_calibration_path))
-        with open(camcam_calibration_path, 'r') as file:
-            camcam_calibration_data = yaml.load(file, Loader=yaml.FullLoader)
 
         camcamlidar_calibration_data = camcam_calibration_data.copy()
 
@@ -578,7 +612,6 @@ if __name__ == "__main__":
     with open(camcamlidarprism_calibration_path, 'w') as file:
         file.write(camlidar_calibration_comment + "\n" + yaml_content)
 
-    box_calibration_package = rospack.get_path("box_calibration")
 
     default_grand_tour_camera_board_path = 'grand_tour_default_camera_board.yaml'
     # Dump the YAML configuration to the file
@@ -722,11 +755,16 @@ if __name__ == "__main__":
                           "-imu", output_imu_calibration_path,
                           "-o", tf_calibration_output_path]
 
+    if camimu_calibration_time_header is not None:
+        imu_meta_info = camimu_calibration_time_header
+    else:
+        imu_meta_info = ""
+
     calibration_metadata = {
         "camera": camcam_calibration_time_header,
         "lidar": camlidar_calibration_time_header,
         "prism": prism_calibration_time_header,
-        "imu": camimu_calibration_time_header
+        "imu": imu_meta_info
     }
 
     # Run the command
@@ -736,38 +774,3 @@ if __name__ == "__main__":
     if calib_output_folder is None:
         calib_output_folder = hesai_calib_output_folder
 
-    # Define the path to the diffcal-calib.yaml file
-    raw_image_pipeline_calib_files = [os.path.join(calib_output_folder, '04_alignment', x)
-                                      for x in os.listdir(os.path.join(calib_output_folder, '04_alignment'))
-                                      if "calib_cam" in x]
-    for k, camera_params in camcam_calibration_data.items():
-        rostopic = camera_params["rostopic"]
-        output_path = None
-
-        if "alphasense" in rostopic:
-            output_path = os.path.join(box_calibration_package, "calibration", "alphasense",
-                                       rostopic.split("/")[-1] + ".yaml")
-        elif "hdr" in rostopic:
-            if "front" in rostopic:
-                output_path = os.path.join(box_calibration_package, "calibration", "hdr",
-                                           "hdr_front.yaml")
-            elif "left" in rostopic:
-                output_path = os.path.join(box_calibration_package, "calibration", "hdr",
-                                           "hdr_left.yaml")
-            elif "right" in rostopic:
-                output_path = os.path.join(box_calibration_package, "calibration", "hdr",
-                                           "hdr_right.yaml")
-            else:
-                raise ValueError(f"Unexpected rostopic name: {rostopic}")
-        elif "zed" in rostopic:
-            if "left" in rostopic:
-                output_path = os.path.join(box_calibration_package, "calibration", "zed2i",
-                                           "zed_left.yaml")
-            elif "right" in rostopic:
-                output_path = os.path.join(box_calibration_package, "calibration", "zed2i",
-                                           "zed_right.yaml")
-        else:
-            raise ValueError(f"Unexpected rostopic name: {rostopic}")
-
-        if output_path is not None:
-            write_raw_img_pipeline_format(camera_params, output_path, comment_header=camcam_calibration_time_header)

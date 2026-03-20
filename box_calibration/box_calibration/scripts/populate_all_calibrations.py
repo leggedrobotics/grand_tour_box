@@ -97,6 +97,7 @@ def main():
     # Fixed paths
     prism_calibration = "/media/fu/cloudster31/GT-spires/calibrations/OXFORD_CALIBRATIONS/cam_prism_only"
     imu_calibration = "/media/fu/cloudster31/grand_tour_calibrations/2024-12-06_calibration_imu"
+    imu_calibration = ""
 
     # Iterate through all camera and lidar calibration pairs
     for i, (cc_path, cl_path, output_bag_path, validity_end) in enumerate(camera_lidar_calibrations):
