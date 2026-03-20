@@ -111,6 +111,27 @@ Lastly, and aptly, this finalizes the calibration meaning that the solver perfor
 then writes the camera calibrations to 
 `box_calibration/box_calibration/calibration/raw_calibration_output/cameras-intrinsics-extrinsics_latest.yaml`
 
+### Rerun visualization
+
+The calibration node streams live diagnostics to [Rerun](https://rerun.io/). The key panels are:
+
+**Data accumulation progress bar** (`data_accumulation_progress`)
+Tells you at a glance whether to keep moving or wait:
+- **Green** — backend is still accumulating data. Keep moving the calibration target to new positions and cover as much of the field of view as possible.
+- **Red** — the backend has triggered an optimization run. Pause data collection; new detections during this window are less useful. Resume once the bar turns green again.
+
+**Calibration sigmas** (`calibration_sigmas`)
+Shown as a markdown table after each optimization. Columns are the per-parameter standard deviations estimated by the solver. How to read the formatting:
+
+| Style | Meaning                                                        |
+|-------|----------------------------------------------------------------|
+| `**bold**` | Value is within the acceptable threshold (good)                |
+| plain | Value exceeds the threshold (needs more data / worse coverage) |
+| `~~strikethrough~~` | Insufficient observations for camera in this mode              |
+| `✓` | All values in this row passed their threshold                  |
+
+The three sub-tables cover intrinsics (fx, fy, cx, cy), translation (tx, ty, tz), and rotation (rx, ry, rz). Cameras that are strikethrough in translation/rotation will also show their values struck through.
+
 ### Fixes in progress
 Sometimes the front and right HDR cameras are swapped in their hardware mapping. As the calibrator node currently heavily
 relies on the initial guess of the camera transforms, this means that the extrinsic initial guess also need to be
