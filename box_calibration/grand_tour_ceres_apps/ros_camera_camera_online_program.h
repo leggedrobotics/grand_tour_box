@@ -26,6 +26,9 @@ struct ROSCameraCameraOnlineProgram : public ROSCameraCameraProgram {
     }
 
     void run() {
+        if (viz_){
+            viz_->vizCalibrationSigmasPreamble();
+        }
         while (ros::ok()) {
             // Sleep to maintain the loop rate
             loop_rate_.sleep();

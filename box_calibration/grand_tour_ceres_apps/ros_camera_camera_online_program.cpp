@@ -184,7 +184,9 @@ void ROSCameraCameraOnlineProgram::optimizationCallback(const ros::TimerEvent &,
     const int n_new_samples = n_samples_now - n_samples_last_solve_;
 
     float current_batch_percentage_accumulated = float(n_new_samples) / float(min_new_samples_for_solve_);
-    this->publishPercentageDataAccumulated(current_batch_percentage_accumulated);
+    if (viz_) {
+        viz_->vizDataAccumulationProgress(current_batch_percentage_accumulated);
+    }
 
     if (n_new_samples > min_new_samples_for_solve_ or force_finalise) {
         n_samples_last_solve_ = n_samples_now;
@@ -198,7 +200,7 @@ void ROSCameraCameraOnlineProgram::optimizationCallback(const ros::TimerEvent &,
             int n_intrinsic_residuals = getTotalItemCount(intrinsics_residuals_of_camera_at_time);
             ROS_DEBUG_STREAM("N intrinsic residuals before downsample: " + std::to_string(n_intrinsic_residuals));
             const auto keys_to_remove = getKeysToRemove(intrinsics_residuals_of_camera_at_time,
-                                                        force_finalise ? 100 : 30);
+                                                        force_finalise ? 500 : 100);
             for (const auto &[frame_id, stamp_pack]: keys_to_remove) {
                 for (const auto &stamp: stamp_pack) {
                     problem_->getProblem().RemoveResidualBlock(
@@ -221,7 +223,9 @@ void ROSCameraCameraOnlineProgram::optimizationCallback(const ros::TimerEvent &,
                 ready_for_extrinsics_ = false;
             }
         }
-        this->publishAllParamsAndSigmas(covariances);
+        if (!covariances.empty()){
+            this->publishAllParamsAndSigmas(covariances);
+        }
         ROS_DEBUG("Covariance and ros publishing executed in: %f seconds", timer.elapsed().count());
         this->publishPercentageDataAccumulated(0.0f);
         {
@@ -300,9 +304,12 @@ void ROSCameraCameraOnlineProgram::publishPercentageDataAccumulated(float curren
 void
 ROSCameraCameraOnlineProgram::publishAllParamsAndSigmas(
         const std::map<std::string, CameraCovariance> &covariances) const {
+    if (!viz_) return;
+    std::map<std::string, std::pair<Eigen::VectorXd, Eigen::VectorXd>> output;
     for (const auto &[name, covariance]: covariances) {
-        publishParamsAndSigmas(name, covariance.rtvec_sigma, covariance.fxfycxcy_sigma);
+        output[name] = {covariance.rtvec_sigma, covariance.fxfycxcy_sigma};
     }
+    viz_->vizAllCameraCalibrationSigmas(output, "cam1_sensor_frame");
 }
 
 void ROSCameraCameraOnlineProgram::publishParamsAndSigmas(const std::string &name,

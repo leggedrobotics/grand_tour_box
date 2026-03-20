@@ -54,6 +54,27 @@ public:
                                    const std::vector<std::string>& nodes,
                                    const std::vector<std::pair<std::string, std::string>>& edges,
                                    const std::vector<int>& edge_counts) = 0;
+
+    // Visualize data accumulation progress as a bar chart with y-axis range [0, 1].
+    // percentage: fraction of data collected, clamped to [0, 1].
+    virtual void vizDataAccumulationProgress(float percentage) = 0;
+
+    // Log the calibration sigma preamble (legend + bar chart hint) to the sigmas panel.
+    // Call this before the optimisation starts so the panel is populated immediately.
+    virtual void vizCalibrationSigmasPreamble() = 0;
+
+    // Visualize calibration sigmas for all cameras as three markdown tables (TextDocument):
+    //   intrinsics (fx fy cx cy), translation (tx ty tz), rotation (rx ry rz).
+    // sigmas: map from camera name → {rtvec_sigma (6), fxfycxcy_sigma (4)}.
+    // origin_camera: camera fixed at the origin — always has zero rt sigmas, never struck through.
+    // Row states — intrinsics: regular → ✓ bold (converged).
+    //              translation/rotation: ~~strikethrough~~ (all zeros, non-origin) → regular → ✓ bold.
+    virtual void vizAllCameraCalibrationSigmas(
+            const std::map<std::string, std::pair<Eigen::VectorXd, Eigen::VectorXd>>& sigmas,
+            const std::string& origin_camera,
+            double intrinsics_threshold = 1.0,
+            double translation_threshold = 0.001,
+            double rotation_threshold = 0.001) = 0;
 };
 
 #endif //GRAND_TOUR_CERES_APPS_CAMERA_CAMERA_VIZ_INTERFACE_H

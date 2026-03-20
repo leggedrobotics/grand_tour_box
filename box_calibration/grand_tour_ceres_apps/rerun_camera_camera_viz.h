@@ -36,12 +36,35 @@ public:
                            const std::vector<std::pair<std::string, std::string>>& edges,
                            const std::vector<int>& edge_counts) override;
 
+    void vizDataAccumulationProgress(float percentage) override;
+
+    void vizCalibrationSigmasPreamble() override;
+
+    void vizAllCameraCalibrationSigmas(
+            const std::map<std::string, std::pair<Eigen::VectorXd, Eigen::VectorXd>>& sigmas,
+            const std::string& origin_camera,
+            double intrinsics_threshold = 1.0,
+            double translation_threshold = 0.001,
+            double rotation_threshold = 0.001) override;
+
 private:
     bool shouldLog(const std::string& view_name);
 
     rerun::RecordingStream& rec_;
     std::chrono::milliseconds throttle_ms_;
     std::unordered_map<std::string, std::chrono::steady_clock::time_point> last_log_time_;
+    static constexpr char base_name_[] = "world/";
+    static constexpr char calibration_sigmas_preamble_[] =
+        "# Grand Tour Cam Calibration Viz\n"
+        "Per-parameter standard deviations from the solver.\n\n"
+        "**Sigma table:**\n"
+        "- ~~Strikethrough~~ — insufficient data for this camera\n\n"
+        "- Plain — exceeds threshold (collect more data)\n"
+        "- **Bold** — within threshold (good)\n\n"
+        "**Data collection bar:**\n"
+        "- Green — keep collecting data\n"
+        "- Red — optimization running, pause and wait\n\n"
+        "cam1_sensor_frame is the origin, so it has no extrinsic sigmas\n\n";
 };
 
 #endif //GRAND_TOUR_CERES_APPS_RERUN_CAMERA_CAMERA_VIZ_H
