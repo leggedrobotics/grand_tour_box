@@ -213,6 +213,8 @@ void ROSCameraCameraOnlineProgram::optimizationCallback(const ros::TimerEvent &,
         }
         const bool solve_succeeded = this->Solve();
         ROS_DEBUG_STREAM("Solve success: " + std::to_string(solve_succeeded));
+        this->publishResiduals();
+        this->publishFrameTransforms();
         this->rebuildProblemFromLoggedROSAlignmentData();
         ROS_DEBUG_STREAM("Starting covariance computation...");
         ScopedTimer timer;
