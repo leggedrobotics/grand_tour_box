@@ -67,7 +67,7 @@ void RerunCameraCameraViz::vizFrameTransforms(const std::map<std::string, Eigen:
                 rerun::Quaternion::from_xyzw(
                     static_cast<float>(q.x()), static_cast<float>(q.y()),
                     static_cast<float>(q.z()), static_cast<float>(q.w()))
-            ).with_axis_length(.05f)
+            ), rerun::TransformAxes3D(.05f)
         );
     }
 }

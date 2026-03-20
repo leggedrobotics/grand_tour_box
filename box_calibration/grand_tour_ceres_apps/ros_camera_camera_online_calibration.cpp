@@ -22,6 +22,7 @@ int main(int argc, char **argv) {
         return -1;
     }
     ROSCameraCameraOnlineProgram program(parser);
+    rec.log_file_from_path(parser.rerun_blue_print_path);
     program.setViz(std::make_unique<RerunCameraCameraViz>(rec));
     if (!program.isValid()) {
         return -1;

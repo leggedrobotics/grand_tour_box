@@ -301,17 +301,6 @@ void ROSCameraCameraOnlineProgram::publishPercentageDataAccumulated(float curren
     }
 }
 
-void
-ROSCameraCameraOnlineProgram::publishAllParamsAndSigmas(
-        const std::map<std::string, CameraCovariance> &covariances) const {
-    if (!viz_) return;
-    std::map<std::string, std::pair<Eigen::VectorXd, Eigen::VectorXd>> output;
-    for (const auto &[name, covariance]: covariances) {
-        output[name] = {covariance.rtvec_sigma, covariance.fxfycxcy_sigma};
-    }
-    viz_->vizAllCameraCalibrationSigmas(output, "cam1_sensor_frame");
-}
-
 void ROSCameraCameraOnlineProgram::publishParamsAndSigmas(const std::string &name,
                                                           const Eigen::VectorXd &rvectvec_sigma,
                                                           const Eigen::VectorXd &fxfycxcy_sigma) const {

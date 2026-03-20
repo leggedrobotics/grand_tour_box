@@ -41,6 +41,7 @@ int main(int argc, char** argv) {
         ROS_INFO_STREAM("Starting offline camera calibration...");
 
         ROSCameraCameraOfflineProgram program(parser);
+        rec.log_file_from_path(parser.rerun_blue_print_path);
         program.setViz(std::make_unique<RerunCameraCameraViz>(rec));
 
         if (!program.run()) {

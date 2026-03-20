@@ -16,6 +16,7 @@ bool is_online) {
     std::string package_path = ros::package::getPath(package_name);
     std::string initial_guess_default_path = package_path + "/config/initial_guess.yaml";
     std::string frameid_mapping_default_path = package_path + "/config/rostopic_frameid_mappings.yaml";
+    std::string rerun_blueprint_default_path = package_path + "/config/camera_camera.rbl";
 
     argparse::ArgumentParser program(program_name);
     program.add_argument("-i", "--initial_guess")
@@ -33,6 +34,9 @@ bool is_online) {
     program.add_argument("--output_path")
             .help("Path where the output calibration yaml will be saved.")
             .default_value("output_camera_camera_calibration.yaml"); // Default to an empty vector if none are provided
+    program.add_argument("--blueprint_path")
+            .help("Path to the rerun blueprint file.")
+            .default_value(rerun_blueprint_default_path); // Default to an empty vector if none are provided
     try {
         program.parse_args(argc, argv);
     }
@@ -58,6 +62,7 @@ bool is_online) {
         is_valid = is_valid && bag_paths.size() > 0;
     }
     output_path = program.get<std::string>("--output_path");
+    rerun_blue_print_path = program.get<std::string>("--blueprint_path");
 }
 
 ROSCameraCameraParser::ROSCameraCameraParser(std::string program_name, int argc, char **argv)

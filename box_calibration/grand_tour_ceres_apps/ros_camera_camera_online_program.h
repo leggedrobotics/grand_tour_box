@@ -56,8 +56,6 @@ private:
                                 const Eigen::VectorXd &rvectvec_sigma, const Eigen::VectorXd &fxfycxcy_sigma) const;
 
 
-    void publishAllParamsAndSigmas(const std::map<std::string, CameraCovariance> &covariances) const;
-
     void publishPercentageDataAccumulated(float current_batch_percentage_accumulated) const;
 
     // Function to log the current edge capacities

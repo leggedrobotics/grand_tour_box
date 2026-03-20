@@ -139,6 +139,8 @@ protected:
     void publishResiduals();
 
     void publishFrameTransforms();
+
+    void publishAllParamsAndSigmas(const std::map<std::string, CameraCovariance> &covariances) const;
 };
 
 

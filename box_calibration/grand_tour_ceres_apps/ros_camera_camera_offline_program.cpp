@@ -107,6 +107,9 @@ bool ROSCameraCameraOfflineProgram::run() {
         ROS_INFO_STREAM("Computing covariances...");
         ScopedTimer timer;
         const auto covariances = computeCovariances();
+        if (!covariances.empty()){
+            this->publishAllParamsAndSigmas(covariances);
+        }
         for (const auto& [name, covariance] : covariances) {
             ROS_INFO_STREAM("Camera: " << name);
             ROS_INFO_STREAM("  rtvec_sigma:      " << covariance.rtvec_sigma.transpose());

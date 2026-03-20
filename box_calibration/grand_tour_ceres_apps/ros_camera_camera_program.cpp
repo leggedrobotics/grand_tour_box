@@ -2,9 +2,9 @@
 // Created by fu on 13/11/24.
 //
 
-#include "ros_camera_camera_offline_program.h"
 #include <filesystem>
 #include <Eigen/Core>
+#include <Eigen/Dense>
 #include <ros/package.h>
 #include <iomanip>
 #include <grand_tour_camera_detection_msgs/CameraIntrinsicsExtrinsicsSigma.h>
@@ -684,3 +684,14 @@ bool ROSCameraCameraProgram::publishDetectionsUsed(
         }
         return true;
     }
+
+void
+ROSCameraCameraProgram::publishAllParamsAndSigmas(
+        const std::map<std::string, CameraCovariance> &covariances) const {
+    if (!viz_) return;
+    std::map<std::string, std::pair<Eigen::VectorXd, Eigen::VectorXd>> output;
+    for (const auto &[name, covariance]: covariances) {
+        output[name] = {covariance.rtvec_sigma, covariance.fxfycxcy_sigma};
+    }
+    viz_->vizAllCameraCalibrationSigmas(output, "cam1_sensor_frame");
+}
