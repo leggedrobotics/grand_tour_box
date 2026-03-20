@@ -4,7 +4,6 @@
 
 #include "ros_camera_camera_online_program.h"
 #include "ros_camera_camera_parser.h"
-#include "cmake-build-debug/_deps/rerun_sdk-src/src/rerun/recording_stream.hpp"
 #include "rerun_camera_camera_viz.h"
 #include <ros/ros.h>
 

@@ -65,8 +65,6 @@ private:
 
     void resetStateFromLoggedObservations(bool block_viz);
 
-    fs::path fetchOutputPath();
-
 protected:
     bool addAlignmentData(ros::Time timestamp,
                           const grand_tour_camera_detection_msgs::CameraDetections &camera_detections,
