@@ -20,7 +20,7 @@ find_package(yaml-cpp REQUIRED)
 
 include(FetchContent)
 FetchContent_Declare(rerun_sdk URL
-        https://github.com/rerun-io/rerun/releases/download/0.22.1/rerun_cpp_sdk.zip)
+        https://github.com/rerun-io/rerun/releases/download/0.30.0/rerun_cpp_sdk.zip)
 FetchContent_MakeAvailable(rerun_sdk)
 
 add_library(gtboxcalibration
