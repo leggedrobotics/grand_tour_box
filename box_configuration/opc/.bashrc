@@ -145,7 +145,7 @@ export LD_LIBRARY_PATH=/opt/amdgpu/lib/x86_64-linux-gnu/:$LD_LIBRARY_PATH
 
 source /etc/profile.d/bash_completion.sh
 source /opt/ros/noetic/setup.bash
-source /home/rsl/catkin_ws/devel/setup.bash
+#source /home/rsl/catkin_ws/devel/setup.bash
 source /home/rsl/git/grand_tour_box/box_configuration/opc/alias.sh
 
 ## FZF autocompletion and resursive search.

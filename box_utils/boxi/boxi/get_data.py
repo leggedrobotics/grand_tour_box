@@ -29,10 +29,10 @@ def main(args):
         users.append("rsl")
     if args.lpc:
         hosts.append("lpc")
-        users.append("rsl")
+        users.append("integration")
     if args.npc:
         hosts.append("npc")
-        users.append("rsl")
+        users.append("integration")
 
     for directory in args.directory:
         if directory:
@@ -79,6 +79,14 @@ def main(args):
             if len(hosts) == 0:
                 print("No host specified. Specify host with --hostname")
             for host, user in zip(hosts, users):
+                if host == "lpc":
+                    rsync_part2 = f":/home/integration/boxi_data/{directory} ."
+                    host = "anymal-d039-lpc"
+
+                if host == "npc":
+                    host = "anymal-d039-npc"
+                    rsync_part2 = f":/home/integration/boxi_data/{directory} ."
+
                 if args.check:
                     # We want maximum speed of 1.5 Gbit/s -> 1.5 * 10 **6 / 8 = 187500 KB/s -> --bwlimit 187500
                     rsync_part1 = "rsync -r --progress -Pv --size-only -n " + user + "@"

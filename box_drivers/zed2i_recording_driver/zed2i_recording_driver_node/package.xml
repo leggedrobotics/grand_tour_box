@@ -10,9 +10,12 @@
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>zed2i_recording_driver_msgs</build_depend>
+  <build_depend>sensor_msgs</build_depend>
 
   <exec_depend>roscpp</exec_depend>
   <exec_depend>zed2i_recording_driver_msgs</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  
 
   <depend>zed</depend>
   <depend>cuda</depend>

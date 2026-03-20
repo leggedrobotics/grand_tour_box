@@ -20,7 +20,7 @@ windows:
       - roslaunch bringup_fkie fkie_opc.launch
           autostart_launch_files:="
             $(rospack find box_rviz)/launch/recording.launch
-            $(rospack find anymal_d_simple_description)/launch/load.launch
+            $(rospack find anymal_d_simple_description)/launch/standalone.launch
             $(rospack find box_rviz)/launch/multiplot.launch
             "
           load_launch_files:="

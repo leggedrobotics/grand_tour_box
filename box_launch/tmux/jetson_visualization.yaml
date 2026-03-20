@@ -24,6 +24,7 @@ windows:
             $(rospack find box_recording)/launch/rosbag_record_coordinator.launch
             $(rospack find box_recording)/launch/rosbag_record_node.launch
             $(rospack find bringup_zed2i_visualization)/launch/zed2i_visualization.launch
+            $(rospack find bringup_zed2i_recording)/launch/zed2i_recording.launch
             $(rospack find box_throttling)/launch/throttle_jetson.launch
             $(rospack find box_relaying)/launch/relay_jetson.launch
             "
