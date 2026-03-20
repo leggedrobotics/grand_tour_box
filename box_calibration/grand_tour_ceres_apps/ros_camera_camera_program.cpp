@@ -594,49 +594,32 @@ void ROSCameraCameraProgram::publishFrameTransforms() {
 void ROSCameraCameraProgram::publishResiduals() {
     if (!viz_) return;
 
-    // Intrinsics: one DepthImage per camera showing reprojection error at observed pixel positions
+    // Intrinsics: scatter plot of (dx, dy) reprojection residuals per camera
     const auto obs_residuals = getObservationsAndResiduals2D();
     for (const auto &[name, obs_res_vec]: obs_residuals) {
-        if (!camera_parameter_packs.contains(name)) continue;
-        const auto &params = camera_parameter_packs.at(name);
-        std::vector<std::array<float, 2>> observations;
-        std::vector<float> magnitudes;
+        std::vector<std::array<float, 2>> residuals_2d;
         for (const auto &obs_res: obs_res_vec) {
-            for (int i = 0; i < obs_res.observations2d.cols(); ++i) {
-                observations.push_back({static_cast<float>(obs_res.observations2d(0, i)),
-                                        static_cast<float>(obs_res.observations2d(1, i))});
-                magnitudes.push_back(static_cast<float>(obs_res.reprojection_residuals.col(i).norm()));
+            for (int i = 0; i < obs_res.reprojection_residuals.cols(); ++i) {
+                residuals_2d.push_back({static_cast<float>(obs_res.reprojection_residuals(0, i)),
+                                        static_cast<float>(obs_res.reprojection_residuals(1, i))});
             }
         }
-        viz_->vizResidualMap(name + "/intrinsics_residuals", observations, magnitudes,
-                             params.width, params.height);
+        viz_->vizResidualMap(name + "_residuals/intrinsics_residuals", residuals_2d);
     }
 
-    // Extrinsics: one DepthImage per camera pair showing stereo reprojection error
+    // Extrinsics: scatter plot of (dx, dy) reprojection residuals per camera pair
     for (const auto &[frame_id, other_frame_map]: extrinsics_residuals_of_cameras_at_time) {
-        if (!camera_parameter_packs.contains(frame_id)) continue;
-        const auto &params = camera_parameter_packs.at(frame_id);
         for (const auto &[other_frame, stamp_map]: other_frame_map) {
-            std::vector<std::array<float, 2>> observations;
-            std::vector<float> magnitudes;
+            std::vector<std::array<float, 2>> residuals_2d;
             for (const auto &[stamp, residual_block]: stamp_map) {
-                if (!parsed_alignment_data.observations.contains(stamp)) continue;
-                const auto &obs_at_stamp = parsed_alignment_data.observations.at(stamp);
-                if (!obs_at_stamp.contains(frame_id)) continue;
-                const auto &obs = obs_at_stamp.at(frame_id);
                 Eigen::Matrix2Xf residuals;
                 if (!getReprojectionResiduals(problem_->getProblem(), residual_block, residuals)) continue;
-                const int n = std::min(static_cast<int>(obs.observations2d.cols()),
-                                       static_cast<int>(residuals.cols()));
-                for (int i = 0; i < n; ++i) {
-                    observations.push_back({static_cast<float>(obs.observations2d(0, i)),
-                                            static_cast<float>(obs.observations2d(1, i))});
-                    magnitudes.push_back(residuals.col(i).norm());
+                for (int i = 0; i < residuals.cols(); ++i) {
+                    residuals_2d.push_back({residuals(0, i), residuals(1, i)});
                 }
             }
-            if (!observations.empty()) {
-                viz_->vizResidualMap(frame_id + "/extrinsics_residuals",
-                                     observations, magnitudes, params.width, params.height);
+            if (!residuals_2d.empty()) {
+                viz_->vizResidualMap(frame_id + "_residuals/extrinsics_residuals", residuals_2d);
             }
         }
     }

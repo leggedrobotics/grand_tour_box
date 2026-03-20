@@ -73,22 +73,19 @@ void RerunCameraCameraViz::vizFrameTransforms(const std::map<std::string, Eigen:
 }
 
 void RerunCameraCameraViz::vizResidualMap(const std::string& view_name,
-                                           const std::vector<std::array<float, 2>>& observations,
-                                           const std::vector<float>& residual_magnitudes,
-                                           int width, int height) {
-    if (observations.empty() || !shouldLog(view_name)) return;
+                                           const std::vector<std::array<float, 2>>& residuals_2d) {
+    if (residuals_2d.empty() || !shouldLog(view_name)) return;
 
-    std::vector<float> grid(static_cast<size_t>(width * height), 0.0f);
-    for (size_t i = 0; i < observations.size(); ++i) {
-        const int u = static_cast<int>(std::round(observations[i][0]));
-        const int v = static_cast<int>(std::round(observations[i][1]));
-        if (u < 0 || u >= width || v < 0 || v >= height) continue;
-        grid[static_cast<size_t>(v * width + u)] = std::max(grid[static_cast<size_t>(v * width + u)],
-                                                             residual_magnitudes[i]);
-    }
+    const std::string path = base_name_ + view_name;
+    rec_.log(path, rerun::Points2D(residuals_2d).with_colors(rerun::Color(34, 138, 167)));
 
-    rec_.log(base_name_ + view_name,
-             rerun::DepthImage(grid.data(), {static_cast<uint32_t>(width), static_cast<uint32_t>(height)}));
+    // Reference boxes showing 1 px and 3 px error bounds.
+    rec_.log_static(path + "/1px",
+                    rerun::Boxes2D::from_mins_and_sizes({{-1.f, -1.f}}, {{2.f, 2.f}})
+                        .with_colors(rerun::Color(0, 255, 0)));
+    rec_.log_static(path + "/3px",
+                    rerun::Boxes2D::from_mins_and_sizes({{-3.f, -3.f}}, {{6.f, 6.f}})
+                        .with_colors(rerun::Color(255, 0, 0)));
 }
 
 void RerunCameraCameraViz::vizDataAccumulationProgress(float percentage) {

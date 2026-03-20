@@ -38,13 +38,10 @@ public:
     // Each camera is logged as a child entity under view_name.
     virtual void vizFrameTransforms(const std::map<std::string, Eigen::Affine3d>& transforms) = 0;
 
-    // Visualize reprojection residuals as a scatter DepthImage.
-    // observations: pixel positions (u, v) of detected corners.
-    // residual_magnitudes: reprojection error magnitude per corner, parallel to observations.
+    // Visualize reprojection residuals as a 2D scatter plot centred at the origin.
+    // residuals_2d: (dx, dy) reprojection error vectors, one per observation.
     virtual void vizResidualMap(const std::string& view_name,
-                                const std::vector<std::array<float, 2>>& observations,
-                                const std::vector<float>& residual_magnitudes,
-                                int width, int height) = 0;
+                                const std::vector<std::array<float, 2>>& residuals_2d) = 0;
 
     // Visualize the camera-camera adjacency graph.
     // nodes: camera names (graph node IDs and labels).
