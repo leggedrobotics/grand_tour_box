@@ -89,11 +89,10 @@ bool ROSCameraCameraOfflineProgram::run() {
 
     // 3) Solve (two passes, then covariance)
     setExtrinsicParametersVariableBeforeOpt();
-    problem_->solver_options_.max_num_iterations = 5;
+    problem_->solver_options_.max_num_iterations = 500;
 
-    ROS_DEBUG_STREAM("Solving...");
+    ROS_INFO_STREAM("Solving...");
     {
-        ScopedTimer timer;
 
         const bool success_first = Solve();
         // Rebuild from logged ROS alignment data and solve again
@@ -106,6 +105,7 @@ bool ROSCameraCameraOfflineProgram::run() {
         ROS_INFO_STREAM("Solve converged (second pass): " << std::boolalpha << success_second);
 
         ROS_INFO_STREAM("Computing covariances...");
+        ScopedTimer timer;
         const auto covariances = computeCovariances();
         for (const auto& [name, covariance] : covariances) {
             ROS_INFO_STREAM("Camera: " << name);
@@ -113,8 +113,7 @@ bool ROSCameraCameraOfflineProgram::run() {
             ROS_INFO_STREAM("  fxfycxcy_sigma:   " << covariance.fxfycxcy_sigma.transpose());
         }
 
-        ROS_DEBUG("Covariance + ROS publishing executed in: %.6f seconds",
-                  timer.elapsed().count());
+        ROS_INFO_STREAM("Covariance executed in " << timer.elapsed().count() << " seconds.");
     }
 
     // 4) Write results
