@@ -9,6 +9,10 @@ jetson:
       - /gt_box/ap20/timestamp_debug
     zed2i:
       - svo # SVO recording, not rosbag. Mutually exclusive: won't record zed ros topics if svo is set here.
+    zed_sensors:
+      - /gt_box/zed2i_recording_driver/baro
+      - /gt_box/zed2i_recording_driver/imu
+      - /gt_box/zed2i_recording_driver/mag
     hdr:
       - /gt_box/hdr_front/image_raw/compressed
       - /gt_box/hdr_front/camera_info
@@ -88,6 +92,8 @@ nuc:
       - /tf_static
     cpt7_local:
       - cpt7_local
+    radar:
+      - /ti_mmwave/radar_scan_pcl_0      
 lpc:
   grpc_cfg:
     address: 192.168.0.141
@@ -96,6 +102,20 @@ lpc:
     locomotion:
       - /debug_info
     general:
+      - /chrony_monitor_lpc/status
+      - /anymal_low_level_controller/actuator_voltage
+      - /anymal_low_level_controller/LF_HAA/command
+      - /anymal_low_level_controller/LF_HFE/command
+      - /anymal_low_level_controller/LF_KFE/command
+      - /anymal_low_level_controller/LH_HAA/command
+      - /anymal_low_level_controller/LH_HFE/command
+      - /anymal_low_level_controller/LH_KFE/command
+      - /anymal_low_level_controller/RF_HAA/command
+      - /anymal_low_level_controller/RF_HFE/command
+      - /anymal_low_level_controller/RF_KFE/command
+      - /anymal_low_level_controller/RH_HAA/command
+      - /anymal_low_level_controller/RH_HFE/command
+      - /anymal_low_level_controller/RH_KFE/command
       - /anymal_low_level_controller/actuator_readings                  
       - /anymal_low_level_controller/actuator_readings_extended_throttled           
       - /foot_scan                                                                
@@ -112,7 +132,16 @@ lpc:
       - /state_estimator/anymal_state
       - /state_estimator/odometry
       - /state_estimator/pose_in_odom
-      - /state_estimator/twist_throttle
+      - /state_estimator/zero_velocity_update_notification
+      - /state_estimator/twist
+      - /state_estimator/imu_angular_velocity_bias
+      - /state_estimator/imu_linear_acceleration_bias
+      - /state_estimator/contact_force_lf_foot
+      - /state_estimator/contact_force_lh_foot
+      - /state_estimator/contact_force_rf_foot
+      - /state_estimator/contact_force_rh_foot
+      - /state_estimator/joint_states
+
     depth_cameras:
       - /depth_camera_front_upper/depth/camera_info
       - /depth_camera_front_upper/depth/image_rect_raw
@@ -134,6 +163,10 @@ npc:
     address: 192.168.0.142
     port: 50052
   bags:
+    general:
+      - /chrony_monitor_npc/status
+      - /point_cloud_odometry/pose
+      - /point_cloud_odometry/map_pose
     depth_cameras:
       - /depth_camera_left/depth/camera_info
       - /depth_camera_left/depth/image_rect_raw
@@ -146,9 +179,9 @@ npc:
       - /lidar/time_sync_status
     elevation_mapping:
       - /elevation_mapping/elevation_map_raw
-
-    # wide_angle_cameras:
-    #   - /wide_angle_camera_front/image_color/compressed
-    #   - /wide_angle_camera_front/camera_info
-    #   - /wide_angle_camera_rear/image_color/compressed
-    #   - /wide_angle_camera_rear/camera_info
+      - /near_field_mapping/elevation_map
+    wide_angle_cameras:
+      - /wide_angle_camera_front/image_color/compressed
+      - /wide_angle_camera_front/camera_info
+      - /wide_angle_camera_rear/image_color/compressed
+      - /wide_angle_camera_rear/camera_info

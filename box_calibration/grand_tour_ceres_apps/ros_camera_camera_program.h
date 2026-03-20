@@ -32,7 +32,7 @@ public:
         return is_valid;
     }
 private:
-
+    std::filesystem::path fetchOutputPath();
     bool computeAndPopulateInitialGuessModelPose(Observations2dModelPoints3dPointIDsPose3dSensorName &observation);
 
     bool

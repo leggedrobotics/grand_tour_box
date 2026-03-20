@@ -2,5 +2,13 @@ nuc:
   bags:
     hesai:
       - /gt_box/hesai/points
+      - /gt_box/hesai/packets
     livox:
       - /gt_box/livox/lidar
+npc:
+  grpc_cfg:
+    address: 192.168.0.142
+    port: 50052
+  bags:
+    velodyne:
+      - /lidar/point_cloud

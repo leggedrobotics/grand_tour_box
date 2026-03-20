@@ -1,0 +1,34 @@
+
+jetson:
+  bags:
+    ap20_aux:
+      - /ap20/tps
+      - /ap20/imu
+      - /gt_box/ap20/imu_debug
+      - /gt_box/ap20/position_debug
+      - /gt_box/ap20/timestamp_debug
+    adis:
+      - /gt_box/adis16475_node/imu
+    stim:
+      - /gt_box/stim320/imu
+nuc:
+  bags:
+    utils:
+      - /gt_box/health_status/nuc/status
+    livox:
+      - /gt_box/livox/imu
+      - /gt_box/livox/imu_si_compliant
+    alphasense:
+      - /gt_box/alphasense_driver_node/cam1
+      - /gt_box/alphasense_driver_node/cam2
+      - /gt_box/alphasense_driver_node/cam3
+      - /gt_box/alphasense_driver_node/imu
+    cpt7_local:
+      - cpt7_local
+lpc:
+  grpc_cfg:
+    address: 192.168.0.141
+    port: 50051
+  bags:
+    anymal_imu:
+      - /sensors/imu

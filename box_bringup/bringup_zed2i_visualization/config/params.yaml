@@ -49,7 +49,7 @@ general:
 #video:
 
 depth:
-    depth_mode:                 'ULTRA'                         # 'NONE', 'PERFORMANCE', 'QUALITY', 'ULTRA', 'NEURAL'
+    depth_mode:                 'NONE'                         # 'NONE', 'PERFORMANCE', 'QUALITY', 'ULTRA', 'NEURAL'
     depth_stabilization:        0                               # [0-100] - 0: Disabled
     openni_depth_mode:          false                           # 'false': 32bit float meter units, 'true': 16bit uchar millimeter units
     min_depth:                  0.3         # Min: 0.3, Max: 3.0 - Default 0.7 - Note: reducing this value wil require more computational power and GPU memory
