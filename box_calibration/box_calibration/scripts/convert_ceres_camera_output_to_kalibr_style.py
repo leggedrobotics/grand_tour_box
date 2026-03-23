@@ -95,7 +95,7 @@ def main():
         print(f"Created output directory '{output_dir}'.")
 
     # Warn if the output file already exists
-    if os.path.isfile(output_path):
+    if os.path.exists(output_path):
         warnings.warn(f"Warning: Output file '{output_path}' already exists.", UserWarning)
 
     # Define the hardcoded T_bundle_lidar matrix
