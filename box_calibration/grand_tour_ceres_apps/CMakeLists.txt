@@ -83,11 +83,12 @@ target_include_directories(camera_camera_offline_calibration PRIVATE ${catkin_IN
 add_executable(camera_prism_offline_calibration ros_camera_prism_offline_calibration.cpp
         ros_camera_prism_program.cpp
         ros_camera_prism_parser.cpp
+        rerun_camera_prism_viz.cpp
         ros_utils.cpp)
 target_link_libraries(camera_prism_offline_calibration PRIVATE
         gtboxcalibration
         Ceres::ceres Eigen3::Eigen
-        ${catkin_LIBRARIES})
+        ${catkin_LIBRARIES} rerun_sdk)
 target_include_directories(camera_prism_offline_calibration PRIVATE ${catkin_INCLUDE_DIRS})
 
 if(CATKIN_ENABLE_TESTING)

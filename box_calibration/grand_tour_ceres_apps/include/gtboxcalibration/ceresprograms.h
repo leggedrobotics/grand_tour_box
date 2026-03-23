@@ -52,6 +52,8 @@ struct CameraPrismProgram : CeresProgram {
     std::string cameras_calibration_path;
     bool solve_time_offset = false;
     unsigned long long calibration_time_nsec;
+    static constexpr double prism_sigma_ = 0.003;
+    static constexpr double prism_sigma2_ = prism_sigma_ * prism_sigma_;
 };
 
 struct CameraCameraProgram : CeresProgram {

@@ -7,12 +7,14 @@
 PrismInCam0InBoardInTotalStationConsistencyError::PrismInCam0InBoardInTotalStationConsistencyError(
         const Eigen::Affine3d &tCamselfCam0, const Eigen::Affine3d &tBoardCamself,
         unsigned long long camera_detection_time,
-        const PrismPositionDetectionData &prism_detections) : T_camself_cam0_(tCamselfCam0),
-                                                              T_board_camself_(tBoardCamself),
-                                                              camera_detection_time_(
-                                                                      camera_detection_time),
-                                                              total_station_prism_measurement_data_(
-                                                                      prism_detections) {
+        const PrismPositionDetectionData &prism_detections,
+        const double prism_sigma2) : T_camself_cam0_(tCamselfCam0),
+                                     T_board_camself_(tBoardCamself),
+                                     camera_detection_time_(
+                                             camera_detection_time),
+                                     total_station_prism_measurement_data_(
+                                             prism_detections),
+                                     prism_sigma2_(prism_sigma2) {
 
 }
 

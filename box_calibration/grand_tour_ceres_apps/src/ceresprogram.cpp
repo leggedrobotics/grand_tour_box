@@ -272,7 +272,7 @@ bool CameraPrismProgram::PopulateProblem() {
             residual_block_map[camera_name][camera_stamp] = problem_->getProblem().AddResidualBlock(
                     PrismInCam0InBoardInTotalStationConsistencyError::Create(
                             T_cam_cam0, T_board_camera,
-                            camera_stamp, prism_detections),
+                            camera_stamp, prism_detections, prism_sigma2_),
                     new ceres::HuberLoss(1.0),
                     prism_board_in_total_station_params.T_totalstation_board,
                     prism_board_in_total_station_params.t_cam0_prism,

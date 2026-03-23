@@ -1,11 +1,18 @@
 
 #include "ros_camera_prism_parser.h"
 #include "ros_camera_prism_program.h"
+
+#include <rerun.hpp>
+#include "rerun_camera_prism_viz.h"
+
 int main(int argc, char **argv) {
-    ROSCameraPrismParser parser("camera_prism_offline", argc, argv);
+    constexpr char kNodeName[] = "camera_prism_offline_calibration";
+    auto rec = rerun::RecordingStream(kNodeName);
+    rec.spawn().exit_on_failure();
+    ROSCameraPrismParser parser(kNodeName, argc, argv);
     if (!parser.is_valid) return 1;
 
-    ROSCameraPrismProgram program(parser);
+    ROSCameraPrismProgram program(parser, std::make_unique<RerunCameraPrismViz>(rec));
     program.Solve();
     program.WriteOutputParameters();
     return 0;
