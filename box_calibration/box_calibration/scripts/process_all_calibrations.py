@@ -191,6 +191,17 @@ if __name__ == "__main__":
             mutate_sequence_flowstyle_to_inline(yaml_composition)
             yaml.serialize(yaml_composition, outfile)
 
+    def safe_subprocess_run_non_blocking(command, force=False):
+        if args.dry_run and not force:
+            print("[DRY RUN] Would run command:", " ".join(command))
+            return None
+
+        try:
+            process = subprocess.Popen(command)
+            return process  # returns immediately
+        except Exception as e:
+            print(f"[ERROR] Failed to start command: {e}")
+            sys.exit(1)
 
     def safe_subprocess_run(command, force=False):
         """
@@ -288,17 +299,17 @@ if __name__ == "__main__":
             write_raw_img_pipeline_format(camera_params, output_path, comment_header=camcam_calibration_time_header)
 
     # Run the second command using the output of the previous step
-    livox_camcam_calib_and_initial_guess_file = os.path.join(camera_lidar_folder_path,
+    camera_bundle_and_livox_initial_guess_file = os.path.join(camera_lidar_folder_path,
                                                              "kalibr_camcam_livox_initial_guess.yaml")
     convert_command = ["rosrun", "box_calibration", "convert_ceres_camera_output_to_kalibr_style.py",
-                       camcam_calibration_path, livox_camcam_calib_and_initial_guess_file, "--livox"]
+                       camcam_calibration_path, camera_bundle_and_livox_initial_guess_file, "--livox"]
     safe_subprocess_run(convert_command, force=True)
 
     # Run the second command using the output of the previous step
-    hesai_camcam_calib_and_initial_guess_file = os.path.join(camera_lidar_folder_path,
+    camera_bundle_and_hesai_initial_guess_file = os.path.join(camera_lidar_folder_path,
                                                              "kalibr_camcam_hesai_initial_guess.yaml")
     convert_command = ["rosrun", "box_calibration", "convert_ceres_camera_output_to_kalibr_style.py",
-                       camcam_calibration_path, hesai_camcam_calib_and_initial_guess_file, "--hesai"]
+                       camcam_calibration_path, camera_bundle_and_hesai_initial_guess_file, "--hesai"]
     safe_subprocess_run(convert_command, force=True)
 
     default_grand_tour_lidar_board_path = os.path.join(camera_lidar_folder_path,
@@ -403,8 +414,8 @@ if __name__ == "__main__":
 
     if hesai_bag_file:
         # Define the parameters for the 'rosrun' command
-        intrinsic_calibrations_path = hesai_camcam_calib_and_initial_guess_file
-        initial_guess_config_path = hesai_camcam_calib_and_initial_guess_file
+        intrinsic_calibrations_path = camera_bundle_and_hesai_initial_guess_file
+        initial_guess_config_path = camera_bundle_and_hesai_initial_guess_file
         target_config_path = default_grand_tour_lidar_board_path
         application_parameters_path = hesai_calib_settings_path
 
@@ -418,7 +429,14 @@ if __name__ == "__main__":
         # Run the command
         if not args.skip_lidar:
             print(hesai_command)
-            # safe_subprocess_run(hesai_command)
+            safe_subprocess_run(hesai_command)
+            hesai_viz_command = ["rosrun", "diffcal_gui_ros", "offline_alignment_viewer.py",
+                             "--intrinsic_calibrations_path", intrinsic_calibrations_path,
+                             "--target_config_path", target_config_path,
+                             "--application_parameters_path",
+                             application_parameters_path,
+                                 "--port", "8030"]
+            safe_subprocess_run_non_blocking(hesai_viz_command)
         else:
             print(f"Skipping lidar calibration")
 
@@ -427,8 +445,8 @@ if __name__ == "__main__":
 
     if livox_bag_file:
         # Define the parameters for the 'rosrun' command
-        intrinsic_calibrations_path = livox_camcam_calib_and_initial_guess_file
-        initial_guess_config_path = livox_camcam_calib_and_initial_guess_file
+        intrinsic_calibrations_path = camera_bundle_and_livox_initial_guess_file
+        initial_guess_config_path = camera_bundle_and_livox_initial_guess_file
         target_config_path = default_grand_tour_lidar_board_path
         application_parameters_path = livox_calib_settings_path
 
@@ -441,8 +459,13 @@ if __name__ == "__main__":
 
         # Run the command
         if not args.skip_lidar:
-            # pass
             safe_subprocess_run(livox_command)
+            livox_viz_command = ["rosrun", "diffcal_gui_ros", "offline_alignment_viewer.py",
+                         "--intrinsic_calibrations_path", intrinsic_calibrations_path,
+                         "--target_config_path", target_config_path,
+                         "--application_parameters_path", application_parameters_path,
+                         "--port", "8060"]
+            safe_subprocess_run_non_blocking(livox_viz_command)
 
     camlidar_calibration_time_header = extract_bag_start_time(hesai_bag_file)
     camlidar_calibration_comment = (f"#Camera Calibration Data Time: {camcam_calibration_time_header}\n"
@@ -648,6 +671,7 @@ if __name__ == "__main__":
     output_imu_calibration_path = os.path.join(camera_imu_folder_path,
                                                "./imu_calibration.yaml")
 
+    camimu_calibration_time_header = None
     if camera_imu_folder_path != "":
         cam_imu_merged_name = "cam_imu_merged_cropped.bag"
         cam_imu_bags = [x for x in os.listdir(camera_imu_folder_path) if x != cam_imu_merged_name and ".bag" in x]
@@ -668,8 +692,8 @@ if __name__ == "__main__":
 
                 cam_imu_camerachain_path = os.path.join(camera_imu_folder_path,
                                                         "kalibr_camcam_chain.yaml")
-                filter_yaml_by_rostopics(hesai_camcam_calib_and_initial_guess_file,
-                                         ["/gt_box/alphasense_driver_node/cam1"], #camimu_image_topics,
+                filter_yaml_by_rostopics(camera_bundle_and_hesai_initial_guess_file,
+                                         ["/gt_box/alphasense_driver_node/cam1"],  #camimu_image_topics,
                                          cam_imu_camerachain_path)
 
                 camera_imu_command = [
