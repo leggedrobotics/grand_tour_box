@@ -8,7 +8,6 @@ const std::vector<rerun::Color> RerunCameraPrismViz::kCameraColors = {
         {111, 220, 140},  // green
         {209, 39,  113},  // magenta
         {160, 50,  200},  // purple
-        {200, 200, 50},  // yellow
         {200, 100, 150},  // pink
 };
 
@@ -101,7 +100,7 @@ void RerunCameraPrismViz::vizPrismObservedTrajectory(
             std::string(base_name_) + "prism/observed/strip",
             std::string(base_name_) + "prism",
             "observed",
-            rerun::Color(200, 200, 200),  // light grey
+            rerun::Color(241, 194, 27),  // yellow
             timestamps_s, positions);
 }
 
