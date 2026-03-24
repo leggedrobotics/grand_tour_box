@@ -121,6 +121,9 @@ void ROSCameraPrismProgram::visualizePerCameraPrismEstimates() {
 
     const Eigen::Affine3d T_totalstation_board = SE3Transform::toEigenAffine(
             prism_board_in_total_station_params.T_totalstation_board);
+    if (viz_) {
+        viz_->vizStaticFrames(T_totalstation_board);
+    }
     const Eigen::Vector3d t_cam0_prism = Eigen::Map<const Eigen::Vector3d>(
             prism_board_in_total_station_params.t_cam0_prism);
     const double t_offset = prism_board_in_total_station_params.t_offset[0];
@@ -141,15 +144,60 @@ void ROSCameraPrismProgram::visualizePerCameraPrismEstimates() {
     for (const auto &[camera_name, data]: viz_data) {
         viz_->vizPrismEstimatedByCameraDetections(camera_name, data.first, data.second);
     }
+
+    const double time_offset = prism_board_in_total_station_params.t_offset[0];
+    std::cout << "time offset: " << prism_board_in_total_station_params.t_offset[0] << std::endl;
+    std::cout << "T_totalstation_board:\n" << T_totalstation_board.matrix() << std::endl;
+    std::cout << "t_cam0_prism:\n" << t_cam0_prism.transpose() << std::endl;
+
+
+    Eigen::Vector3d prism_position_sigma;
+    Eigen::VectorXd board_pose_sigma;
+    double time_offset_sigma;
+
+    {
+        std::vector<const double *> covariance_block = {prism_board_in_total_station_params.t_cam0_prism};
+        Eigen::MatrixXd prism_position_covariance;
+        problem_->ComputeAndFetchCovariance(
+                covariance_block, prism_position_covariance);
+        std::cout << "Prism position sigma:" << "\n" << prism_position_covariance.diagonal().array().sqrt().transpose()
+                  << std::endl;
+        prism_position_sigma = prism_position_covariance.diagonal().array().sqrt();
+    }
+
+    {
+        std::vector<const double *> covariance_block = {prism_board_in_total_station_params.T_totalstation_board};
+        Eigen::MatrixXd board_pose_covariance;
+        problem_->ComputeAndFetchCovariance(
+                covariance_block, board_pose_covariance);
+        std::cout << "Board pose sigma:" << "\n" << board_pose_covariance.diagonal().array().sqrt().transpose()
+                  << std::endl;
+        board_pose_sigma = board_pose_covariance.diagonal().array().sqrt();
+    }
+
+    {
+        std::vector<const double *> covariance_block = {prism_board_in_total_station_params.t_offset};
+        Eigen::MatrixXd t_offset_covariance;
+        problem_->ComputeAndFetchCovariance(
+                covariance_block, t_offset_covariance);
+        std::cout << "T-offset sigma:" << "\n" << t_offset_covariance.array().sqrt() << std::endl;
+        time_offset_sigma = t_offset_covariance.array().sqrt()(0);
+    }
+
+    if (viz_){
+        viz_->vizCalibrationResults(cam0_name, t_cam0_prism, time_offset, T_totalstation_board.matrix(),
+                                    prism_position_sigma, board_pose_sigma, time_offset_sigma);
+        const auto residuals_map3d = this->computeResidualMap3D();
+        viz_->vizResiduals3D(residuals_map3d);
+    }
 }
 
 bool ROSCameraPrismProgram::Solve() {
     bool success = CeresProgram::Solve();
-    this->calculateResiduals();
+    this->calculateResidualsAndFilterOutliers();
     this->PopulateProblem();
     this->visualizePerCameraPrismEstimates();
     success = CeresProgram::Solve();
-    this->calculateResiduals();
     return success;
 }
 
@@ -169,9 +217,38 @@ double median(std::vector<double> &vec) {
     }
 }
 
-void ROSCameraPrismProgram::calculateResiduals() {
+void ROSCameraPrismProgram::calculateResidualsAndFilterOutliers() {
     std::vector<double> all_residuals;
-    // Fetch residuals
+    std::map<unsigned long long int, std::map<std::string, double>> residual_map = this->computeResidualNormMap(
+            all_residuals);
+    std::cout << "Median residual: " << median(all_residuals) << std::endl;
+
+    const double median_residual = median(all_residuals);
+    constexpr double outlier_median_threshold = 3;
+
+    std::map<unsigned long long,
+            std::map<std::string, Observations2dModelPoints3dPointIDsPose3dSensorName>> valid_observations;
+
+    unsigned long n_filtered = 0;
+    for (const auto &[camera_stamp, detections_at_stamp]: camera_detections.observations) {
+        for (const auto &[camera_name, detection]: detections_at_stamp) {
+            if (residual_map.contains(camera_stamp) && residual_map.at(camera_stamp).contains(camera_name)
+                && residual_map.at(camera_stamp).at(camera_name) < outlier_median_threshold * median_residual) {
+                valid_observations[camera_stamp][camera_name] = detection;
+            } else {
+                n_filtered++;
+            }
+        }
+    }
+
+    std::cout << "Filtered out " << n_filtered << " outliers greater than " << outlier_median_threshold <<
+    " x Median."<< std::endl;
+    camera_detections.observations = valid_observations;
+
+}
+
+std::map<unsigned long long int, std::map<std::string, double>>
+ROSCameraPrismProgram::computeResidualNormMap(std::vector<double> &all_residuals) {
     std::map<unsigned long long, std::map<std::string, double>> residual_map;
     for (const auto &[camera_stamp, detections_at_stamp]: camera_detections.observations) {
         for (const auto &[camera_name, _]: detections_at_stamp) {
@@ -181,7 +258,7 @@ void ROSCameraPrismProgram::calculateResiduals() {
                     residual_block_map[camera_name][camera_stamp], false, nullptr,
                     &residuals[0], nullptr);
             if (success && std::abs(residuals[0]) > 0) {
-                double residual_norm = std::sqrt(residuals[0] * residuals[0] +
+                double residual_norm = sqrt(residuals[0] * residuals[0] +
                                                  residuals[1] * residuals[1] +
                                                  residuals[2] * residuals[2]);
                 residual_norm = residual_norm * prism_sigma_;
@@ -191,23 +268,25 @@ void ROSCameraPrismProgram::calculateResiduals() {
             }
         }
     }
-    std::cout << "Median : " << median(all_residuals) << std::endl;
+    return residual_map;
+}
 
-    const double median_residual = median(all_residuals);
-
-    std::map<unsigned long long,
-            std::map<std::string, Observations2dModelPoints3dPointIDsPose3dSensorName>> valid_observations;
-
+std::map<std::string, std::vector<Eigen::Vector3d>>
+ROSCameraPrismProgram::computeResidualMap3D() {
+    std::map<std::string, std::vector<Eigen::Vector3d>> residual_map;
     for (const auto &[camera_stamp, detections_at_stamp]: camera_detections.observations) {
-        for (const auto &[camera_name, detection]: detections_at_stamp) {
-            if (residual_map.contains(camera_stamp) && residual_map.at(camera_stamp).contains(camera_name)
-                && residual_map.at(camera_stamp).at(camera_name) < 3 * median_residual) {
-                valid_observations[camera_stamp][camera_name] = detection;
+        for (const auto &[camera_name, _]: detections_at_stamp) {
+            std::vector<double> residuals(3, 0.0);  // Residuals of size 3
+
+            bool success = problem_->getProblem().EvaluateResidualBlock(
+                    residual_block_map[camera_name][camera_stamp], false, nullptr,
+                    &residuals[0], nullptr);
+            if (success && std::abs(residuals[0]) > 0) {
+                Eigen::Vector3d residual_scaled = Eigen::Map<const Eigen::Vector3d>(residuals.data());
+                residual_map[camera_name].push_back(residual_scaled * prism_sigma_);
             }
         }
     }
-
-    camera_detections.observations = valid_observations;
-
+    return residual_map;
 }
 

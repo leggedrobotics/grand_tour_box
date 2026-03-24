@@ -12,6 +12,7 @@ int main(int argc, char **argv) {
     ROSCameraPrismParser parser(kNodeName, argc, argv);
     if (!parser.is_valid) return 1;
 
+    rec.log_file_from_path(parser.rerun_blue_print_path);
     ROSCameraPrismProgram program(parser, std::make_unique<RerunCameraPrismViz>(rec));
     program.Solve();
     program.WriteOutputParameters();

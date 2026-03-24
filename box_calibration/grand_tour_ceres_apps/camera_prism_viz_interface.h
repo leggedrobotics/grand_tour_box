@@ -59,4 +59,27 @@ public:
         const std::string& origin_camera,
         double translation_threshold = 0.001,
         double rotation_threshold = 0.001) = 0;
+
+    // Optimised calibration result values and their solver sigmas.
+    // t_cam0_prism: prism offset in the cam0 frame (m).
+    // time_offset: camera-to-prism time offset (s).
+    // T_totalstation_board: 4x4 board pose in the total-station frame.
+    // prism_position_sigma: (sx, sy, sz) standard deviations for t_cam0_prism (m).
+    // board_pose_sigma: 6-vector (rx,ry,rz,tx,ty,tz) for T_totalstation_board.
+    // time_offset_sigma: standard deviation for the time offset (s).
+    virtual void vizCalibrationResults(
+            const std::string& origin_camera,
+        const Eigen::Vector3d& t_cam0_prism,
+        double time_offset,
+        const Eigen::Matrix4d& T_totalstation_board,
+        const Eigen::Vector3d& prism_position_sigma,
+        const Eigen::VectorXd& board_pose_sigma,
+        double time_offset_sigma) = 0;
+
+    // Log per-camera 3D prism residuals as 2D scatter plots on the XY, YZ, and XZ planes.
+    // residuals_per_camera maps camera name to a list of 3D residual vectors (in metres).
+    // Logged to world/{XY,YZ,XZ}_residuals/<camera_name> so the blueprint Spatial2DViews
+    // for each plane show one coloured series per camera.
+    virtual void vizResiduals3D(
+        const std::map<std::string, std::vector<Eigen::Vector3d>>& residuals_per_camera) = 0;
 };

@@ -34,6 +34,18 @@ public:
         double translation_threshold = 0.001,
         double rotation_threshold = 0.001) override;
 
+    void vizCalibrationResults(
+            const std::string& origin_camera,
+        const Eigen::Vector3d& t_cam0_prism,
+        double time_offset,
+        const Eigen::Matrix4d& T_totalstation_board,
+        const Eigen::Vector3d& prism_position_sigma,
+        const Eigen::VectorXd& board_pose_sigma,
+        double time_offset_sigma) override;
+
+    void vizResiduals3D(
+        const std::map<std::string, std::vector<Eigen::Vector3d>>& residuals_per_camera) override;
+
 private:
     // Returns a stable colour for a given camera name, assigned on first use.
     rerun::Color colorForCamera(const std::string& camera_name);
@@ -57,9 +69,6 @@ private:
         "# Grand Tour Cam-Prism Calibration Viz\n"
         "Per-parameter standard deviations from the solver.\n\n"
         "**Sigma table:**\n"
-        "- ~~Strikethrough~~ — insufficient data for this camera\n\n"
-        "- Plain — exceeds threshold (collect more data)\n"
-        "- **Bold** — within threshold (good)\n\n"
-        "cam0 is the origin, so it has no extrinsic sigmas\n\n";
+        "- **Bold** — within threshold (good)\n\n";
     static const std::vector<rerun::Color> kCameraColors;
 };

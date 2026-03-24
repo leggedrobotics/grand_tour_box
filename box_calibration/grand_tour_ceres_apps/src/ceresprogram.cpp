@@ -293,36 +293,6 @@ bool CameraPrismProgram::PopulateProblem() {
 
 void CameraPrismProgram::WriteOutputParameters() {
     Eigen::Map<Eigen::Vector3d> t_cam0_prism(prism_board_in_total_station_params.t_cam0_prism);
-    std::cout << "t_cam0_prism: " << t_cam0_prism.transpose() << std::endl;
-    std::cout << "time offset: " << prism_board_in_total_station_params.t_offset[0] << std::endl;
-    Eigen::Affine3d T_totalstation_board = SE3Transform::toEigenAffine(
-            prism_board_in_total_station_params.T_totalstation_board);
-    std::cout << "T_totalstation_board:\n" << T_totalstation_board.matrix() << std::endl;
-    {
-        std::vector<const double *> covariance_block = {prism_board_in_total_station_params.t_cam0_prism};
-        Eigen::MatrixXd prism_position_covariance;
-        problem_->ComputeAndFetchCovariance(
-                covariance_block, prism_position_covariance);
-        std::cout << "Prism position sigma:" << "\n" << prism_position_covariance.diagonal().array().sqrt().transpose()
-                  << std::endl;
-    }
-
-    {
-        std::vector<const double *> covariance_block = {prism_board_in_total_station_params.T_totalstation_board};
-        Eigen::MatrixXd board_pose_covariance;
-        problem_->ComputeAndFetchCovariance(
-                covariance_block, board_pose_covariance);
-        std::cout << "Board pose sigma:" << "\n" << board_pose_covariance.diagonal().array().sqrt().transpose()
-                  << std::endl;
-    }
-
-    {
-        std::vector<const double *> covariance_block = {prism_board_in_total_station_params.t_offset};
-        Eigen::MatrixXd t_offset_covariance;
-        problem_->ComputeAndFetchCovariance(
-                covariance_block, t_offset_covariance);
-        std::cout << "T-offset sigma:" << "\n" << t_offset_covariance.array().sqrt() << std::endl;
-    }
 
     YAML::Node output_calibration = YAML::LoadFile(cameras_calibration_path);
     for (YAML::const_iterator it = output_calibration.begin(); it != output_calibration.end(); ++it) {
