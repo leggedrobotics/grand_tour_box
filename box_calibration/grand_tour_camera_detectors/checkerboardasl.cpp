@@ -2,14 +2,14 @@
 // Created by fu on 07/10/24.
 //
 
-#include "checkerboardasl.h"
+#include <grand_tour_camera_detectors/checkerboardasl.h>
 
 #include <vector>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-#include "checkerboardasl.h"
+#include <grand_tour_camera_detectors/checkerboardasl.h>
 
 namespace cameras {
 

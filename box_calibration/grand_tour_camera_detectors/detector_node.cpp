@@ -3,8 +3,8 @@
 //
 
 #include "detector_node.h"
-#include "aprilgridasl.h"
-#include "checkerboardasl.h"
+#include "grand_tour_camera_detectors/aprilgridasl.h"
+#include "grand_tour_camera_detectors/checkerboardasl.h"
 
 #include <opencv2/imgcodecs.hpp>
 #include <iostream>

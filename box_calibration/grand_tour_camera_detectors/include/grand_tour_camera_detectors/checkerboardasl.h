@@ -8,7 +8,7 @@
 #include <vector>
 #include <Eigen/Core>
 #include <opencv2/core/core.hpp>
-#include "calibrationtargetasl.h"
+#include <grand_tour_camera_detectors/calibrationtargetasl.h>
 
 namespace cameras {
 
