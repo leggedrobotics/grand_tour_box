@@ -14,6 +14,18 @@ const std::vector<rerun::Color> RerunCameraImuViz::kCameraColors = {
 
 RerunCameraImuViz::RerunCameraImuViz(rerun::RecordingStream& rec) : rec_(rec) {}
 
+static rerun::Transform3D affineToRerunTransform(const Eigen::Affine3d& T) {
+    const Eigen::Vector3d t = T.translation();
+    const Eigen::Matrix3d R = T.rotation();
+    return rerun::Transform3D::from_translation_mat3x3(
+            {static_cast<float>(t.x()), static_cast<float>(t.y()), static_cast<float>(t.z())},
+            rerun::Mat3x3({
+                                  static_cast<float>(R(0,0)), static_cast<float>(R(1,0)), static_cast<float>(R(2,0)),
+                                  static_cast<float>(R(0,1)), static_cast<float>(R(1,1)), static_cast<float>(R(2,1)),
+                                  static_cast<float>(R(0,2)), static_cast<float>(R(1,2)), static_cast<float>(R(2,2)),
+                          }));
+}
+
 rerun::Color RerunCameraImuViz::colorForCamera(const std::string& camera_name) {
     if (camera_color_index_.find(camera_name) == camera_color_index_.end())
         camera_color_index_[camera_name] = camera_color_index_.size();
@@ -66,6 +78,64 @@ void RerunCameraImuViz::vizCameraPose(const std::string& camera_name,
     rec_.log(ori_base + "/roll",  rerun::Scalars(rpy.x()));
     rec_.log(ori_base + "/pitch", rerun::Scalars(rpy.y()));
     rec_.log(ori_base + "/yaw",   rerun::Scalars(rpy.z()));
+}
+
+void RerunCameraImuViz::vizRigPose3D(double timestamp_s, const Eigen::Affine3d& T_world_imu) {
+    rec_.set_time_timestamp_secs_since_epoch(kTimeline, timestamp_s);
+    rec_.log("world/rig",
+             affineToRerunTransform(T_world_imu),
+             rerun::TransformAxes3D(0.1f));
+}
+
+void RerunCameraImuViz::vizBoardPose3D(const Eigen::Affine3d& T_world_board) {
+    rec_.log_static("world/board",
+                    affineToRerunTransform(T_world_board),
+                    rerun::TransformAxes3D(0.2f));
+}
+
+void RerunCameraImuViz::vizReprojectionError(const std::string& camera_name,
+                                             double timestamp_s,
+                                             double rms_pixels) {
+    const std::string path = std::string(kBase) + camera_name + "/reprojection_error_rms";
+    rec_.log_static(path, rerun::SeriesLines()
+            .with_colors(colorForCamera(camera_name)).with_widths(2));
+    rec_.set_time_timestamp_secs_since_epoch(kTimeline, timestamp_s);
+    rec_.log(path, rerun::Scalars(rms_pixels));
+}
+
+void RerunCameraImuViz::vizImuConsistencyResidual(double timestamp_s,
+                                                   double position_norm,
+                                                   double velocity_norm,
+                                                   double rotation_norm) {
+    static constexpr char kImuRes[] = "world/imu/consistency/";
+    static const rerun::Color kColor{241, 194, 27};
+
+    static bool styled = false;
+    if (!styled) {
+        styled = true;
+        for (const char* path : {"world/imu/consistency/position",
+                                  "world/imu/consistency/velocity",
+                                  "world/imu/consistency/rotation"})
+            rec_.log_static(path, rerun::SeriesLines().with_colors(kColor).with_widths(2));
+    }
+
+    rec_.set_time_timestamp_secs_since_epoch(kTimeline, timestamp_s);
+    rec_.log(std::string(kImuRes) + "position", rerun::Scalars(position_norm));
+    rec_.log(std::string(kImuRes) + "velocity", rerun::Scalars(velocity_norm));
+    rec_.log(std::string(kImuRes) + "rotation", rerun::Scalars(rotation_norm));
+}
+
+
+void RerunCameraImuViz::vizExtrinsics(const std::map<std::string, Eigen::Affine3d>& T_bundle_cameras,
+                                      const Eigen::Affine3d& T_bundle_imu) {
+    static constexpr char kBundle[] = "world/bundle/";
+
+    for (const auto& [camera_name, T] : T_bundle_cameras) {
+        rec_.log_static(std::string(kBundle) + camera_name,
+                        affineToRerunTransform(T), rerun::TransformAxes3D(.05f));
+    }
+    rec_.log_static(std::string(kBundle) + "imu",
+                    affineToRerunTransform(T_bundle_imu), rerun::TransformAxes3D(.05f));
 }
 
 void RerunCameraImuViz::vizImuState(double timestamp_s,

@@ -160,6 +160,8 @@ struct PinholeProjection : CeresOperationView<PinholeProjection> {
     double parameters_[NUM_PARAMETERS]{};
 };
 
+template <typename T>
+using EigenJetAffine = Eigen::Transform<T, 3, Eigen::Affine>;
 
 struct SE3Transform : CeresOperationView<SE3Transform> {
     bool handleSetParameterization(ceres::Problem &problem, double *parameters) override {
@@ -179,6 +181,15 @@ struct SE3Transform : CeresOperationView<SE3Transform> {
         ceres::QuaternionToRotation(parameters, ceres::ColumnMajorAdapter3x3(rotation.data()));
 
         return (rotation * points_in_source).colwise() + translation;
+    }
+    template<typename T>
+    static EigenJetAffine<T> toEigenAffineJetSafe(const T *const parameters) {
+        Eigen::Matrix<T, 3, 3> rotation = Eigen::Matrix<T, 3, 3> ::Identity();
+        ceres::QuaternionToRotation(parameters, ceres::ColumnMajorAdapter3x3(rotation.data()));
+        EigenJetAffine<T> output = EigenJetAffine<T>::Identity();
+        output.linear() = rotation;
+        output.translation() = Eigen::Map<const Eigen::Matrix<T, 3, 1>>(parameters + NUM_QUATERNION_PARAMS);
+        return output;
     }
 
     template<typename T>

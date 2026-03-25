@@ -37,6 +37,9 @@ ROSCameraIMUProgram::ROSCameraIMUProgram(ROSCameraIMUParser parser,
                 auto det_msg = m.instantiate<grand_tour_camera_detection_msgs::CameraDetections>();
                 if (!det_msg || det_msg->cornerids.empty()) continue;
 
+                auto observation = buildObservationFromRosMSG(
+                        *det_msg);
+
                 // Strip suffix to recover the camera topic name.
                 const std::string &det_topic = m.getTopic();
                 const std::string camera_topic = det_topic.substr(
@@ -56,7 +59,16 @@ ROSCameraIMUProgram::ROSCameraIMUProgram(ROSCameraIMUParser parser,
                 }
 
                 Eigen::Affine3d T_camera_board;
-                solvePnP(camera_packs.at(camera_topic), detected_corners, model_pts, T_camera_board);
+                bool success = solvePnP(
+                        camera_packs.at(camera_topic), detected_corners, model_pts, T_camera_board);
+
+                if (!success) {
+                    continue;
+                }
+                observation.T_sensor_model = T_camera_board;
+                unsigned long long stamp = det_msg->header.stamp.toNSec();
+                camera_detections.unique_timestamps.insert(stamp);
+                camera_detections.observations[stamp][camera_topic] = observation;
 
                 if (viz_) {
                     std::vector<std::array<float, 2>> corners_2d;
@@ -75,9 +87,6 @@ ROSCameraIMUProgram::ROSCameraIMUProgram(ROSCameraIMUParser parser,
         }
     }
 
-//    SE3Transform se3Transform;
-//    se3Transform.assignToData(Eigen::Affine3d::Identity(),
-//                              prism_board_in_total_station_params.T_totalstation_board);
     try {
         rosbag::Bag bag;
         bag.open(parser.imu_bag_path, rosbag::bagmode::Read);
@@ -111,35 +120,103 @@ ROSCameraIMUProgram::ROSCameraIMUProgram(ROSCameraIMUParser parser,
                                             imu_msg->linear_acceleration.y,
                                             imu_msg->linear_acceleration.z};
 
-                // Seed timestamp on first message, then integrate.
-                if (integrator.state().timestamp_s < 0.0) {
-                    ImuIntegrator::State seed = integrator.state();
-                    seed.timestamp_s = timestamp_s;
-                    integrator = ImuIntegrator(seed);
-                    continue;
-                }
-
-                integrator.integrate(timestamp_s, gyro, accel);
-
-                if (viz_) {
-                    const auto& s = integrator.state();
-                    viz_->vizImuState(timestamp_s, s.position, s.velocity,
-                                      s.orientation, s.acc_bias, s.gyro_bias);
-                }
+                imu_observations.push_back({gyro, accel, timestamp_s});
             }
         }
         bag.close();
     } catch (const rosbag::BagException &e) {
         std::cerr << "Error reading bag file " << parser.imu_bag_path << ": " << e.what() << std::endl;
     }
+
+    // --- Initialize parameters ---
+
+    // World frame = board frame initially; T_camera_bundle_imu starts as identity.
+    SE3Transform::assignToData(Eigen::Affine3d::Identity(), T_world_board);
+    SE3Transform::assignToData(Eigen::Affine3d::Identity(), T_camera_bundle_imu);
+
+    // Per-keyframe T_world_imu: derived from solvePnP result at each stamp.
+    // With T_world_board = I and T_camera_bundle_imu = I, the projection chain reduces to:
+    //   T_camera_board = T_bundle_sensor.inv * T_world_imu.inv
+    //   => T_world_imu = T_camera_board.inv * T_bundle_sensor.inv
+    for (const auto &[stamp, detections_at_stamp]: camera_detections.observations) {
+        const auto &[cam_name, detection] = *detections_at_stamp.begin();
+        const Eigen::Affine3d T_bundle_sensor = SE3Transform::toEigenAffine(
+                camera_packs.at(cam_name).T_bundle_sensor);
+        const Eigen::Affine3d T_world_imu =
+                detection.T_sensor_model.inverse() * T_bundle_sensor.inverse();
+
+        auto &pack = keyframe_params[stamp];
+        SE3Transform::assignToData(T_world_imu, pack.T_world_imu);
+    }
+
+    std::cout << "Loaded " << camera_detections.unique_timestamps.size()
+              << " keyframes, " << imu_observations.size() << " IMU observations." << std::endl;
+
+    this->PopulateProblem();
 }
 
 
 bool ROSCameraIMUProgram::Solve() {
+    PreSolveExtrinsic();
     bool success = CeresProgram::Solve();
-    this->calculateResidualsAndFilterOutliers();
-    this->PopulateProblem();
-    success = CeresProgram::Solve();
+
+    if (viz_) {
+        // Board and world origin.
+        viz_->vizBoardPose3D(SE3Transform::toEigenAffine(T_world_board));
+
+        // Rig trajectory: one IMU pose per keyframe.
+        for (const auto& [stamp, pack] : keyframe_params) {
+            viz_->vizRigPose3D(static_cast<double>(stamp) * 1e-9,
+                               SE3Transform::toEigenAffine(pack.T_world_imu));
+        }
+
+        // Static sensor frames in the bundle.
+        std::map<std::string, Eigen::Affine3d> T_bundle_cameras;
+        for (const auto& [cam_name, cam_pack] : camera_packs)
+            T_bundle_cameras[cam_name] = SE3Transform::toEigenAffine(cam_pack.T_bundle_sensor);
+
+        const Eigen::Affine3d T_bundle_imu = SE3Transform::toEigenAffine(T_camera_bundle_imu);
+        viz_->vizExtrinsics(T_bundle_cameras, T_bundle_imu);
+
+        // Reprojection errors per camera per keyframe.
+        for (const auto& [camera_name, stamp_map] : visual_residual_block_map) {
+            for (const auto& [stamp, block_id] : stamp_map) {
+                const int n = problem_->getProblem().GetCostFunctionForResidualBlock(block_id)->num_residuals();
+                std::vector<double> residuals(n);
+                problem_->getProblem().EvaluateResidualBlock(block_id, false, nullptr, residuals.data(), nullptr);
+                double sum_sq = 0;
+                for (double r : residuals) sum_sq += r * r;
+                viz_->vizReprojectionError(camera_name,
+                                           static_cast<double>(stamp) * 1e-9,
+                                           std::sqrt(sum_sq / n));
+            }
+        }
+
+        // IMU consistency residuals per interval.
+        for (const auto& [stamp_k, block_id] : imu_residual_block_map) {
+            std::vector<double> r(9);
+            problem_->getProblem().EvaluateResidualBlock(block_id, false, nullptr, r.data(), nullptr);
+            viz_->vizImuConsistencyResidual(
+                    static_cast<double>(stamp_k) * 1e-9,
+                    std::sqrt(r[0]*r[0] + r[1]*r[1] + r[2]*r[2]),
+                    std::sqrt(r[3]*r[3] + r[4]*r[4] + r[5]*r[5]),
+                    std::sqrt(r[6]*r[6] + r[7]*r[7] + r[8]*r[8]));
+        }
+
+        // Per-keyframe optimized IMU states.
+        for (const auto& [stamp, pack] : keyframe_params) {
+            const double timestamp_s = static_cast<double>(stamp) * 1e-9;
+            const Eigen::Affine3d T_world_imu = SE3Transform::toEigenAffine(pack.T_world_imu);
+            viz_->vizImuState(
+                    timestamp_s,
+                    T_world_imu.translation(),
+                    Eigen::Map<const Eigen::Vector3d>(pack.v_world_imu),
+                    Eigen::Quaterniond(T_world_imu.rotation()),
+                    Eigen::Map<const Eigen::Vector3d>(pack.bias_accel),
+                    Eigen::Map<const Eigen::Vector3d>(pack.bias_gyro));
+        }
+    }
+
     return success;
 }
 
@@ -158,77 +235,3 @@ double median(std::vector<double> &vec) {
         return (lower + *(mid - 1)) / 2.0;  // Even case
     }
 }
-
-void ROSCameraIMUProgram::calculateResidualsAndFilterOutliers() {
-    std::vector<double> all_residuals;
-    std::map<unsigned long long int, std::map<std::string, double>> residual_map = this->computeResidualNormMap(
-            all_residuals);
-    std::cout << "Median residual: " << median(all_residuals) << std::endl;
-
-    const double median_residual = median(all_residuals);
-    constexpr double outlier_median_threshold = 3;
-
-    std::map<unsigned long long,
-            std::map<std::string, Observations2dModelPoints3dPointIDsPose3dSensorName>> valid_observations;
-
-    unsigned long n_filtered = 0;
-    for (const auto &[camera_stamp, detections_at_stamp]: camera_detections.observations) {
-        for (const auto &[camera_name, detection]: detections_at_stamp) {
-            if (residual_map.contains(camera_stamp) && residual_map.at(camera_stamp).contains(camera_name)
-                && residual_map.at(camera_stamp).at(camera_name) < outlier_median_threshold * median_residual) {
-                valid_observations[camera_stamp][camera_name] = detection;
-            } else {
-                n_filtered++;
-            }
-        }
-    }
-
-    std::cout << "Filtered out " << n_filtered << " outliers greater than " << outlier_median_threshold <<
-              " x Median." << std::endl;
-    camera_detections.observations = valid_observations;
-
-}
-
-std::map<unsigned long long int, std::map<std::string, double>>
-ROSCameraIMUProgram::computeResidualNormMap(std::vector<double> &all_residuals) {
-    std::map<unsigned long long, std::map<std::string, double>> residual_map;
-    for (const auto &[camera_stamp, detections_at_stamp]: camera_detections.observations) {
-        for (const auto &[camera_name, _]: detections_at_stamp) {
-            std::vector<double> residuals(3, 0.0);  // Residuals of size 3
-
-            bool success = problem_->getProblem().EvaluateResidualBlock(
-                    residual_block_map[camera_name][camera_stamp], false, nullptr,
-                    &residuals[0], nullptr);
-            if (success && std::abs(residuals[0]) > 0) {
-                double residual_norm = sqrt(residuals[0] * residuals[0] +
-                                            residuals[1] * residuals[1] +
-                                            residuals[2] * residuals[2]);
-                residual_norm = residual_norm * prism_sigma_;
-                all_residuals.push_back(residual_norm);
-                residual_map[camera_stamp][camera_name] = residual_norm;
-            } else {
-            }
-        }
-    }
-    return residual_map;
-}
-
-std::map<std::string, std::vector<Eigen::Vector3d>>
-ROSCameraIMUProgram::computeResidualMap3D() {
-    std::map<std::string, std::vector<Eigen::Vector3d>> residual_map;
-    for (const auto &[camera_stamp, detections_at_stamp]: camera_detections.observations) {
-        for (const auto &[camera_name, _]: detections_at_stamp) {
-            std::vector<double> residuals(3, 0.0);  // Residuals of size 3
-
-            bool success = problem_->getProblem().EvaluateResidualBlock(
-                    residual_block_map[camera_name][camera_stamp], false, nullptr,
-                    &residuals[0], nullptr);
-            if (success && std::abs(residuals[0]) > 0) {
-                Eigen::Vector3d residual_scaled = Eigen::Map<const Eigen::Vector3d>(residuals.data());
-                residual_map[camera_name].push_back(residual_scaled * prism_sigma_);
-            }
-        }
-    }
-    return residual_map;
-}
-

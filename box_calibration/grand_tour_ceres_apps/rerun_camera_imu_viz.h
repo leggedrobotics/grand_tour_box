@@ -22,6 +22,21 @@ public:
                        double timestamp_s,
                        const Eigen::Affine3d& T_camera_board) override;
 
+    void vizRigPose3D(double timestamp_s, const Eigen::Affine3d& T_world_imu) override;
+    void vizBoardPose3D(const Eigen::Affine3d& T_world_board) override;
+
+    void vizReprojectionError(const std::string& camera_name,
+                              double timestamp_s,
+                              double rms_pixels) override;
+
+    void vizImuConsistencyResidual(double timestamp_s,
+                                   double position_norm,
+                                   double velocity_norm,
+                                   double rotation_norm) override;
+
+    void vizExtrinsics(const std::map<std::string, Eigen::Affine3d>& T_bundle_cameras,
+                       const Eigen::Affine3d& T_bundle_imu) override;
+
     void vizImuState(double timestamp_s,
                      const Eigen::Vector3d& position,
                      const Eigen::Vector3d& velocity,

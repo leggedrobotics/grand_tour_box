@@ -3,6 +3,7 @@
 #include <array>
 #include <string>
 #include <vector>
+#include <map>
 #include <Eigen/Geometry>
 
 // Abstract viz interface for camera-IMU calibration.
@@ -31,6 +32,29 @@ public:
     virtual void vizCameraPose(const std::string& camera_name,
                                double timestamp_s,
                                const Eigen::Affine3d& T_camera_board) = 0;
+
+    // Log the IMU pose in world frame at a keyframe (time-varying — animates the rig trajectory).
+    virtual void vizRigPose3D(double timestamp_s, const Eigen::Affine3d& T_world_imu) = 0;
+
+    // Log the board pose in world frame (static).
+    virtual void vizBoardPose3D(const Eigen::Affine3d& T_world_board) = 0;
+
+    // Log RMS reprojection error (pixels) for a single camera at a keyframe.
+    virtual void vizReprojectionError(const std::string& camera_name,
+                                      double timestamp_s,
+                                      double rms_pixels) = 0;
+
+    // Log norms of the three IMU consistency sub-residuals for an interval starting at timestamp_s.
+    virtual void vizImuConsistencyResidual(double timestamp_s,
+                                           double position_norm,
+                                           double velocity_norm,
+                                           double rotation_norm) = 0;
+
+    // Log the static sensor extrinsics as 3D frames in the bundle coordinate system.
+    // T_bundle_cameras: per-camera transform (sensor → bundle).
+    // T_bundle_imu:     IMU transform (IMU → bundle).
+    virtual void vizExtrinsics(const std::map<std::string, Eigen::Affine3d>& T_bundle_cameras,
+                               const Eigen::Affine3d& T_bundle_imu) = 0;
 
     // Log integrated IMU state as separate per-axis time series:
     //   position (x/y/z), velocity (x/y/z), orientation (roll/pitch/yaw),

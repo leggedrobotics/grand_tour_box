@@ -30,5 +30,13 @@ struct CameraCamera2D3DTargetDetectionData {
 
 using PrismPositionDetectionData = std::map<unsigned long long, Eigen::Vector3d>;
 
+struct IMUObservation {
+    Eigen::Vector3d angular_velocity;
+    Eigen::Vector3d linear_acceleration;
+    double detection_time_secs;
+};
+
+using IMUObservationData = std::vector<IMUObservation>;
+
 
 #endif //COMPUTE_CONNECTIVITY_TYPES_H

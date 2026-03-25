@@ -15,5 +15,6 @@ int main(int argc, char **argv) {
 
     rec.log_file_from_path(parser.rerun_blue_print_path);
     ROSCameraIMUProgram program(parser, std::make_unique<RerunCameraImuViz>(rec));
+    program.Solve();
     return 0;
 }

@@ -24,6 +24,8 @@ FetchContent_Declare(rerun_sdk URL
         https://github.com/rerun-io/rerun/releases/download/0.30.0/rerun_cpp_sdk.zip)
 FetchContent_MakeAvailable(rerun_sdk)
 
+add_subdirectory(Sophus)
+
 add_library(gtboxcalibration
         include/gtboxcalibration/argparse.h
         include/gtboxcalibration/argparsers.h src/argparsers.cpp
@@ -39,9 +41,10 @@ add_library(gtboxcalibration
         include/gtboxcalibration/reprojectionresiduals.h src/reprojectionresiduals.cpp
         include/gtboxcalibration/utils.h src/utils.cpp
         include/gtboxcalibration/voxel_2d.h src/voxel_2d.cpp
+        include/gtboxcalibration/imuresiduals.h src/imuresiduals.cpp
 )
 target_include_directories(gtboxcalibration PUBLIC include)
-target_link_libraries(gtboxcalibration PUBLIC Eigen3::Eigen ${OpenCV_LIBS} yaml-cpp Ceres::ceres)
+target_link_libraries(gtboxcalibration PUBLIC Eigen3::Eigen ${OpenCV_LIBS} yaml-cpp Ceres::ceres Sophus::Sophus)
 
 catkin_package(
         INCLUDE_DIRS
