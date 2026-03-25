@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
         rosbag
         sensor_msgs
         ap20_driver_ros
+        grand_tour_camera_detectors
 )
 find_package(Boost 1.70 REQUIRED COMPONENTS graph)
 find_package(Ceres 2.2 REQUIRED)
@@ -91,7 +92,41 @@ target_link_libraries(camera_prism_offline_calibration PRIVATE
         ${catkin_LIBRARIES} rerun_sdk)
 target_include_directories(camera_prism_offline_calibration PRIVATE ${catkin_INCLUDE_DIRS})
 
-if(CATKIN_ENABLE_TESTING)
+add_executable(camera_imu_offline_calibration
+        ros_camera_imu_offline_calibration.cpp
+        ros_camera_imu_parser.cpp ros_camera_imu_program.cpp
+        imu_integrator.cpp
+        rerun_camera_imu_viz.cpp
+        ros_utils.cpp)
+
+target_include_directories(
+        camera_imu_offline_calibration
+        PRIVATE ${catkin_INCLUDE_DIRS}
+)
+
+target_link_libraries(camera_imu_offline_calibration PRIVATE
+        gtboxcalibration
+        Ceres::ceres Eigen3::Eigen
+        ${catkin_LIBRARIES} rerun_sdk
+)
+
+add_executable(camera_imu_preprocess ros_camera_imu_preprocess.cpp)
+target_include_directories(camera_imu_preprocess PRIVATE ${catkin_INCLUDE_DIRS})
+target_link_libraries(camera_imu_preprocess PRIVATE
+        gtboxcalibration
+        Eigen3::Eigen
+        ${catkin_LIBRARIES}
+)
+
+add_executable(camera_imu_detection_benchmark ros_camera_imu_detection_benchmark.cpp)
+target_include_directories(camera_imu_detection_benchmark PRIVATE ${catkin_INCLUDE_DIRS})
+target_link_libraries(camera_imu_detection_benchmark PRIVATE
+        gtboxcalibration
+        Eigen3::Eigen
+        ${catkin_LIBRARIES}
+)
+
+if (CATKIN_ENABLE_TESTING)
     catkin_add_gtest(test_utils tests/test_utils.cpp)
     target_link_libraries(test_utils gtboxcalibration yaml-cpp)
 
@@ -112,4 +147,4 @@ if(CATKIN_ENABLE_TESTING)
             ${catkin_INCLUDE_DIRS}
             ${CMAKE_CURRENT_SOURCE_DIR}
     )
-endif()
+endif ()
