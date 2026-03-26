@@ -444,7 +444,7 @@ void CameraIMUProgram::PreSolveBoard() {
 
     // Step 2: find R_world_imu that aligns g_imu → -gravity_world
     // (static accel = R_imu_world * (-gravity_world), so g_imu points opposite to gravity_world)
-    const Eigen::Vector3d minus_g_world = -Eigen::Map<const Eigen::Vector3d>(gravity_world);
+    const Eigen::Vector3d minus_g_world = -gravity_world;
     Eigen::Affine3d T_world_imu0 = Eigen::Affine3d::Identity();
     T_world_imu0.linear() = Eigen::Quaterniond::FromTwoVectors(g_imu, minus_g_world)
                                     .toRotationMatrix();
@@ -484,24 +484,9 @@ void CameraIMUProgram::PreSolveBoard() {
     Eigen::Affine3d T_world_board_est = Eigen::Affine3d::Identity();
     T_world_board_est.linear()      = R_board;
     T_world_board_est.translation() = t_sum / count;
-    SE3Transform::assignToData(T_world_board_est, T_world_board);
 
-    // Step 5: re-initialize T_world_imu per keyframe consistently with new T_world_board.
-    // From the reprojection chain: T_world_board = T_world_imu * T_bundle_imu⁻¹ * T_bundle_sensor * T_camera_board
-    // => T_world_imu = T_world_board * T_camera_board⁻¹ * T_bundle_sensor⁻¹ * T_bundle_imu
-    for (auto &[stamp, pack] : keyframe_params) {
-        if (!camera_detections.observations.contains(stamp)) continue;
-        const auto &detections_at_stamp = camera_detections.observations.at(stamp);
-        const auto &[cam_name, detection] = *detections_at_stamp.begin();
-        const Eigen::Affine3d T_bundle_sensor = SE3Transform::toEigenAffine(
-                camera_packs.at(cam_name).T_bundle_sensor);
-        const Eigen::Affine3d T_world_imu_k =
-                T_world_board_est *
-                detection.T_sensor_model.inverse() *
-                T_bundle_sensor.inverse() *
-                T_bundle_imu;
-        SE3Transform::assignToData(T_world_imu_k, pack.T_world_imu);
-    }
+    // Step 5: store the estimate into T_world_board.
+    SE3Transform::assignToData(T_world_board_est, T_world_board);
 
     std::cout << "PreSolveBoard: T_world_board =\n" << T_world_board_est.matrix() << std::endl;
 }
@@ -509,99 +494,93 @@ void CameraIMUProgram::PreSolveBoard() {
 bool CameraIMUProgram::PopulateProblem() {
     SE3Transform se3;
 
-    // Anchor T_world_board translation at origin (world = gravity-aligned, board defines rotation only).
-    problem_->getProblem().AddResidualBlock(
-            new ceres::AutoDiffCostFunction<BoardTranslationAtOriginPrior, 3, SE3Transform::NUM_PARAMETERS>(
-                    new BoardTranslationAtOriginPrior(0.001)),
-            nullptr,
-            T_world_board);
-    se3.handleSetParameterization(problem_->getProblem(), T_world_board);
-
-    // Sorted keyframe timestamps come from camera_detections.unique_timestamps.
     const auto& stamps = camera_detections.unique_timestamps;
 
-    // Single global bias shared across all IMU residuals.
-    auto& global_bias_pack = keyframe_params.begin()->second;
-
-    // Pre-sort IMU observations by time for efficient interval lookup.
     std::vector<IMUObservation> sorted_imu = imu_observations;
     std::sort(sorted_imu.begin(), sorted_imu.end(),
               [](const IMUObservation& a, const IMUObservation& b) {
                   return a.detection_time_secs < b.detection_time_secs;
               });
 
+    constexpr double kMinIntervalSecs = 1.0;
+
     for (auto stamp_it = stamps.begin(); stamp_it != stamps.end(); ++stamp_it) {
-        const unsigned long long stamp_k = *stamp_it;
-        const double time_k_s = static_cast<double>(stamp_k) * 1e-9;
+        auto next_it = std::next(stamp_it);
+        if (next_it == stamps.end()) break;
 
-        auto& pack_k = keyframe_params.at(stamp_k);
+        // Advance next_it until it is at least kMinIntervalSecs ahead.
+        while (next_it != stamps.end() &&
+               (static_cast<double>(*next_it - *stamp_it) * 1e-9) < kMinIntervalSecs)
+            ++next_it;
+        if (next_it == stamps.end()) break;
 
-        // --- Visual residuals at keyframe k ---
-        if (camera_detections.observations.contains(stamp_k)) {
-            for (const auto& [camera_name, detection] : camera_detections.observations.at(stamp_k)) {
-                const auto& cam_pack = camera_packs.at(camera_name);
-                PinholeCamera camera(
-                        PinholeProjection(cam_pack.width, cam_pack.height),
-                        cam_pack.distortion_type);
-
-                visual_residual_block_map[camera_name][stamp_k] =
-                        problem_->getProblem().AddResidualBlock(
-                                VisualReprojectionError::Create(
-                                        detection.modelpoints3d,
-                                        detection.observations2d,
-                                        cam_pack, camera),
-                                new ceres::HuberLoss(1.0),
-                                T_camera_bundle_imu,
-                                T_world_board,
-                                pack_k.T_world_imu);
-
-                se3.handleSetParameterization(problem_->getProblem(), T_camera_bundle_imu);
-                se3.handleSetParameterization(problem_->getProblem(), pack_k.T_world_imu);
-            }
-        }
-
-        // --- IMU consistency residual between k and k+1 ---
-        const auto next_it = std::next(stamp_it);
-        if (next_it == stamps.end()) continue;
-
+        const unsigned long long stamp_k   = *stamp_it;
         const unsigned long long stamp_kp1 = *next_it;
+
+        if (!camera_detections.observations.contains(stamp_k))   continue;
+        if (!camera_detections.observations.contains(stamp_kp1)) continue;
+
+        const double time_k_s   = static_cast<double>(stamp_k)   * 1e-9;
         const double time_kp1_s = static_cast<double>(stamp_kp1) * 1e-9;
 
-        auto& pack_kp1 = keyframe_params.at(stamp_kp1);
-
-        // Collect IMU observations in [time_k_s, time_kp1_s), plus the first
-        // sample >= time_kp1_s so the integrator can interpolate exactly to t_kp1.
-        std::vector<IMUObservation> interval_imu;
+        // Collect IMU samples in [t_k, t_{k+1}] plus first sample >= t_{k+1}.
+        std::vector<IMUObservation> imu_k_to_kp1;
         bool past_kp1_added = false;
         for (const auto& obs : sorted_imu) {
             if (obs.detection_time_secs < time_k_s) continue;
             if (obs.detection_time_secs < time_kp1_s) {
-                interval_imu.push_back(obs);
+                imu_k_to_kp1.push_back(obs);
             } else if (!past_kp1_added) {
-                interval_imu.push_back(obs);
+                imu_k_to_kp1.push_back(obs);
                 past_kp1_added = true;
                 break;
             }
         }
+        if (imu_k_to_kp1.empty()) continue;
 
-        if (interval_imu.empty()) continue;
+        // Use first camera present at both stamps; bake in bundle-frame board points.
+        Eigen::Matrix3Xd points_k, points_kp1;
+        Eigen::Affine3d T_bundle_board_k;
+        bool found = false;
+        for (const auto& [cam_name, det_k] : camera_detections.observations.at(stamp_k)) {
+            if (!camera_detections.observations.at(stamp_kp1).contains(cam_name)) continue;
+            const auto& det_kp1 = camera_detections.observations.at(stamp_kp1).at(cam_name);
+            const Eigen::Affine3d T_bundle_sensor = SE3Transform::toEigenAffine(
+                    camera_packs.at(cam_name).T_bundle_sensor);
+            T_bundle_board_k = T_bundle_sensor * det_k.T_sensor_model;
+            // Force the same set of model_points
+            const Eigen::Matrix3Xd& model_points3d = det_k.modelpoints3d;
+            points_k   = T_bundle_sensor * det_k.T_sensor_model   * model_points3d;
+            points_kp1 = T_bundle_sensor * det_kp1.T_sensor_model * model_points3d;
+            found = true;
+            break;
+        }
+        if (!found) continue;
 
-        imu_residual_block_map[stamp_k] =
+        auto& pack_k = keyframe_params[stamp_k];
+
+        relative_residual_block_map[stamp_k] =
                 problem_->getProblem().AddResidualBlock(
-                        IMUConsistencyError::Create(std::move(interval_imu), time_k_s, time_kp1_s),
-                        nullptr,
-                        pack_k.T_world_imu,
+                        RelativeIMUBoardPointError::Create(
+                                std::move(imu_k_to_kp1), time_k_s, time_kp1_s,
+                                T_bundle_board_k, points_k, points_kp1,
+                                gravity_world),
+                        new ceres::HuberLoss(0.02),
+                        T_world_board,
                         pack_k.v_world_imu,
-                        global_bias_pack.bias_gyro,
-                        global_bias_pack.bias_accel,
-                        pack_kp1.T_world_imu,
-                        pack_kp1.v_world_imu,
-                        gravity_world);
-
-        se3.handleSetParameterization(problem_->getProblem(), pack_k.T_world_imu);
-        se3.handleSetParameterization(problem_->getProblem(), pack_kp1.T_world_imu);
-        problem_->getProblem().SetParameterBlockConstant(gravity_world);
+                        bias_gyro,
+                        bias_accel,
+                        T_camera_bundle_imu);
     }
+    se3.handleSetParameterization(problem_->getProblem(), T_world_board);
+    se3.handleSetParameterization(problem_->getProblem(), T_camera_bundle_imu);
+
+    // Anchor T_world_board translation near origin (rotation is well constrained by gravity).
+    problem_->getProblem().AddResidualBlock(
+            new ceres::AutoDiffCostFunction<BoardTranslationAtOriginPrior, 3,
+                    SE3Transform::NUM_PARAMETERS>(
+                    new BoardTranslationAtOriginPrior(1.0)),
+            nullptr, T_world_board);
 
     problem_->solver_options_.minimizer_progress_to_stdout = true;
     problem_->solver_options_.max_num_iterations = 200;

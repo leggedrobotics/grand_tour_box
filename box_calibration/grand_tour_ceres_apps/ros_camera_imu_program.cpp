@@ -130,24 +130,11 @@ ROSCameraIMUProgram::ROSCameraIMUProgram(ROSCameraIMUParser parser,
 
     // --- Initialize parameters ---
 
-    // World frame = board frame initially; T_camera_bundle_imu starts as identity.
-    SE3Transform::assignToData(Eigen::Affine3d::Identity(), T_world_board);
+    // T_camera_bundle_imu starts as identity.
     SE3Transform::assignToData(Eigen::Affine3d::Identity(), T_camera_bundle_imu);
 
-    // Per-keyframe T_world_imu: derived from solvePnP result at each stamp.
-    // With T_world_board = I and T_camera_bundle_imu = I, the projection chain reduces to:
-    //   T_camera_board = T_bundle_sensor.inv * T_world_imu.inv
-    //   => T_world_imu = T_camera_board.inv * T_bundle_sensor.inv
-    for (const auto &[stamp, detections_at_stamp]: camera_detections.observations) {
-        const auto &[cam_name, detection] = *detections_at_stamp.begin();
-        const Eigen::Affine3d T_bundle_sensor = SE3Transform::toEigenAffine(
-                camera_packs.at(cam_name).T_bundle_sensor);
-        const Eigen::Affine3d T_world_imu =
-                detection.T_sensor_model.inverse() * T_bundle_sensor.inverse();
-
-        auto &pack = keyframe_params[stamp];
-        SE3Transform::assignToData(T_world_imu, pack.T_world_imu);
-    }
+    // T_world_board starts as identity; PreSolveBoard() will set a better initial estimate.
+    SE3Transform::assignToData(Eigen::Affine3d::Identity(), T_world_board);
 
     std::cout << "Loaded " << camera_detections.unique_timestamps.size()
               << " keyframes, " << imu_observations.size() << " IMU observations." << std::endl;
@@ -157,64 +144,46 @@ ROSCameraIMUProgram::ROSCameraIMUProgram(ROSCameraIMUParser parser,
 
 
 bool ROSCameraIMUProgram::Solve() {
-    PreSolveExtrinsic();
-    PreSolveBoard();
+//    PreSolveExtrinsic();
+//    PreSolveBoard();
     bool success = CeresProgram::Solve();
 
     if (viz_) {
-        // Board and world origin.
-        viz_->vizBoardPose3D(SE3Transform::toEigenAffine(T_world_board));
-
-        // Rig trajectory: one IMU pose per keyframe.
-        for (const auto& [stamp, pack] : keyframe_params) {
-            viz_->vizRigPose3D(static_cast<double>(stamp) * 1e-9,
-                               SE3Transform::toEigenAffine(pack.T_world_imu));
-        }
-
         // Static sensor frames in the bundle.
         std::map<std::string, Eigen::Affine3d> T_bundle_cameras;
         for (const auto& [cam_name, cam_pack] : camera_packs)
             T_bundle_cameras[cam_name] = SE3Transform::toEigenAffine(cam_pack.T_bundle_sensor);
-
-        const Eigen::Affine3d T_bundle_imu = SE3Transform::toEigenAffine(T_camera_bundle_imu);
-        viz_->vizExtrinsics(T_bundle_cameras, T_bundle_imu);
-
-        // Reprojection errors per camera per keyframe.
-        for (const auto& [camera_name, stamp_map] : visual_residual_block_map) {
-            for (const auto& [stamp, block_id] : stamp_map) {
-                const int n = problem_->getProblem().GetCostFunctionForResidualBlock(block_id)->num_residuals();
-                std::vector<double> residuals(n);
-                problem_->getProblem().EvaluateResidualBlock(block_id, false, nullptr, residuals.data(), nullptr);
-                double sum_sq = 0;
-                for (double r : residuals) sum_sq += r * r;
-                viz_->vizReprojectionError(camera_name,
-                                           static_cast<double>(stamp) * 1e-9,
-                                           std::sqrt(sum_sq / n));
+        for (const auto stamp : camera_detections.unique_timestamps) {
+            for (const auto& [cam_name, det] : camera_detections.observations.at(stamp)) {
+                const Eigen::Affine3d T_board_camera = det.T_sensor_model.inverse();
+                const Eigen::Affine3d T_world_camera = SE3Transform::toEigenAffine(T_world_board) * T_board_camera;
+                viz_->vizCameraPose3D(cam_name, static_cast<double>(stamp) * 1e-9, T_world_camera);
+                const Eigen::Affine3d T_world_bundle = T_world_camera * SE3Transform::toEigenAffine(
+                        camera_packs.at(cam0_name).T_bundle_sensor).inverse();
+                viz_->vizRigPose3D(
+                        static_cast<double>(stamp) * 1e-9,
+                        T_world_bundle * SE3Transform::toEigenAffine(T_camera_bundle_imu));
+                viz_->vizDetectionPoints3D(cam_name, static_cast<double>(stamp) * 1e-9,
+                                           T_world_camera, det.T_sensor_model * det.modelpoints3d);
             }
         }
+        viz_->vizExtrinsics(T_bundle_cameras, SE3Transform::toEigenAffine(T_camera_bundle_imu));
+        viz_->vizBoardPose3D(SE3Transform::toEigenAffine(T_world_board));
 
-        // IMU consistency residuals per interval.
-        for (const auto& [stamp_k, block_id] : imu_residual_block_map) {
-            std::vector<double> r(9);
-            problem_->getProblem().EvaluateResidualBlock(block_id, false, nullptr, r.data(), nullptr);
-            viz_->vizImuConsistencyResidual(
-                    static_cast<double>(stamp_k) * 1e-9,
-                    std::sqrt(r[0]*r[0] + r[1]*r[1] + r[2]*r[2]),
-                    std::sqrt(r[3]*r[3] + r[4]*r[4] + r[5]*r[5]),
-                    std::sqrt(r[6]*r[6] + r[7]*r[7] + r[8]*r[8]));
-        }
-
-        // Per-keyframe optimized IMU states.
-        for (const auto& [stamp, pack] : keyframe_params) {
-            const double timestamp_s = static_cast<double>(stamp) * 1e-9;
-            const Eigen::Affine3d T_world_imu = SE3Transform::toEigenAffine(pack.T_world_imu);
-            viz_->vizImuState(
-                    timestamp_s,
-                    T_world_imu.translation(),
-                    Eigen::Map<const Eigen::Vector3d>(pack.v_world_imu),
-                    Eigen::Quaterniond(T_world_imu.rotation()),
-                    Eigen::Map<const Eigen::Vector3d>(pack.bias_accel),
-                    Eigen::Map<const Eigen::Vector3d>(pack.bias_gyro));
+        // Relative board-point errors (metres RMS per point) per keyframe interval.
+        for (const auto& [stamp_k, block_id] : relative_residual_block_map) {
+            const int n = problem_->getProblem().GetCostFunctionForResidualBlock(block_id)->num_residuals();
+            const int n_points = n / 3;
+            std::vector<double> residuals(n);
+            problem_->getProblem().EvaluateResidualBlock(block_id, false, nullptr, residuals.data(), nullptr);
+            double sum_sq = 0;
+            for (int i = 0; i < n_points; ++i)
+                sum_sq += residuals[i*3]*residuals[i*3]
+                        + residuals[i*3+1]*residuals[i*3+1]
+                        + residuals[i*3+2]*residuals[i*3+2];
+            viz_->vizWorldFramePointError("relative",
+                                          static_cast<double>(stamp_k) * 1e-9,
+                                          std::sqrt(sum_sq / n_points));
         }
     }
 

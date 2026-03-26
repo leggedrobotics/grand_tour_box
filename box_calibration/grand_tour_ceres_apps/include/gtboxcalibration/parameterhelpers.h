@@ -37,12 +37,9 @@ struct ImuParameterPack {
     double T_world_board[SE3Transform::NUM_PARAMETERS]{};
 };
 
-// Per-keyframe IMU state: one instance per camera detection timestamp.
+// Per-keyframe IMU state: velocity only — T_world_imu is derived from T_world_board chain.
 struct ImuKeyframeParameterPack {
-    double T_world_imu[SE3Transform::NUM_PARAMETERS]{0, 0, 0, 1, 0, 0, 0};  // qw=1 identity
     double v_world_imu[3]{};
-    double bias_gyro[3]{};
-    double bias_accel[3]{};
 };
 
 #endif //GRAND_TOUR_CERES_APPS_PARAMETER_HELPERS_H

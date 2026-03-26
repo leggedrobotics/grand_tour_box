@@ -49,14 +49,17 @@ struct CameraIMUProgram : CeresProgram {
     // --- Parameters: global ---
     double T_camera_bundle_imu[SE3Transform::NUM_PARAMETERS]{0, 0, 0, 1, 0, 0, 0};
     double T_world_board[SE3Transform::NUM_PARAMETERS]{0, 0, 0, 1, 0, 0, 0};
-    double gravity_world[3]{0.0, 0.0, -9.81};
+    Eigen::Vector3d gravity_world{0.0, 0.0, -9.81};
 
-    // --- Parameters: per-keyframe (keyed by camera detection timestamp ns) ---
+    // Global bias shared across all residuals.
+    double bias_gyro[3]{};
+    double bias_accel[3]{};
+
+    // --- Parameters: per-keyframe (velocity only — T_world_imu derived from chain) ---
     std::map<unsigned long long, ImuKeyframeParameterPack> keyframe_params;
 
     // --- Residual block tracking ---
-    std::map<std::string, std::map<unsigned long long, ceres::ResidualBlockId>> visual_residual_block_map;
-    std::map<unsigned long long, ceres::ResidualBlockId> imu_residual_block_map;
+    std::map<unsigned long long, ceres::ResidualBlockId> relative_residual_block_map;
 
     // --- Metadata ---
     std::string cam0_name;

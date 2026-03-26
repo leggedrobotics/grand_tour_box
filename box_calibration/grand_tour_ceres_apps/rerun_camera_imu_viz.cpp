@@ -87,20 +87,45 @@ void RerunCameraImuViz::vizRigPose3D(double timestamp_s, const Eigen::Affine3d& 
              rerun::TransformAxes3D(0.1f));
 }
 
+void RerunCameraImuViz::vizCameraPose3D(const std::string& camera_name,
+                                        double timestamp_s,
+                                        const Eigen::Affine3d& T_world_camera) {
+    rec_.set_time_timestamp_secs_since_epoch(kTimeline, timestamp_s);
+    rec_.log("world/camera_poses/" + camera_name,
+             affineToRerunTransform(T_world_camera),
+             rerun::TransformAxes3D(0.05f));
+}
+
+void RerunCameraImuViz::vizDetectionPoints3D(const std::string& camera_name,
+                                             double timestamp_s,
+                                             const Eigen::Affine3d& T_world_camera,
+                                             const Eigen::Matrix3Xd& points_sensor) {
+    if (points_sensor.cols() == 0) return;
+    const Eigen::Matrix3Xd pts_world = T_world_camera * points_sensor;
+    std::vector<std::array<float, 3>> positions(pts_world.cols());
+    for (int i = 0; i < pts_world.cols(); ++i)
+        positions[i] = {static_cast<float>(pts_world(0, i)),
+                        static_cast<float>(pts_world(1, i)),
+                        static_cast<float>(pts_world(2, i))};
+    rec_.set_time_timestamp_secs_since_epoch(kTimeline, timestamp_s);
+    rec_.log("world/camera_poses/" + camera_name + "_points",
+             rerun::Points3D(positions).with_colors(colorForCamera(camera_name)).with_radii(0.01f));
+}
+
 void RerunCameraImuViz::vizBoardPose3D(const Eigen::Affine3d& T_world_board) {
     rec_.log_static("world/board",
                     affineToRerunTransform(T_world_board),
                     rerun::TransformAxes3D(0.2f));
 }
 
-void RerunCameraImuViz::vizReprojectionError(const std::string& camera_name,
-                                             double timestamp_s,
-                                             double rms_pixels) {
-    const std::string path = std::string(kBase) + camera_name + "/reprojection_error_rms";
+void RerunCameraImuViz::vizWorldFramePointError(const std::string& camera_name,
+                                                double timestamp_s,
+                                                double rms_metres) {
+    const std::string path = std::string(kBase) + camera_name + "/world_frame_point_error_rms_m";
     rec_.log_static(path, rerun::SeriesLines()
             .with_colors(colorForCamera(camera_name)).with_widths(2));
     rec_.set_time_timestamp_secs_since_epoch(kTimeline, timestamp_s);
-    rec_.log(path, rerun::Scalars(rms_pixels));
+    rec_.log(path, rerun::Scalars(rms_metres));
 }
 
 void RerunCameraImuViz::vizImuConsistencyResidual(double timestamp_s,

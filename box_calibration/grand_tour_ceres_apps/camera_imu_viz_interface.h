@@ -36,13 +36,25 @@ public:
     // Log the IMU pose in world frame at a keyframe (time-varying — animates the rig trajectory).
     virtual void vizRigPose3D(double timestamp_s, const Eigen::Affine3d& T_world_imu) = 0;
 
+    // Log a camera pose in world frame at a keyframe (time-varying — animates per-camera trajectory).
+    virtual void vizCameraPose3D(const std::string& camera_name,
+                                 double timestamp_s,
+                                 const Eigen::Affine3d& T_world_camera) = 0;
+
+    // Log sensor-frame 3D detection points projected into world frame at a keyframe.
+    // points_sensor: 3×N matrix of points in the camera/sensor frame.
+    virtual void vizDetectionPoints3D(const std::string& camera_name,
+                                      double timestamp_s,
+                                      const Eigen::Affine3d& T_world_camera,
+                                      const Eigen::Matrix3Xd& points_sensor) = 0;
+
     // Log the board pose in world frame (static).
     virtual void vizBoardPose3D(const Eigen::Affine3d& T_world_board) = 0;
 
-    // Log RMS reprojection error (pixels) for a single camera at a keyframe.
-    virtual void vizReprojectionError(const std::string& camera_name,
-                                      double timestamp_s,
-                                      double rms_pixels) = 0;
+    // Log RMS world-frame 3D point error (metres) for a single camera at a keyframe.
+    virtual void vizWorldFramePointError(const std::string& camera_name,
+                                         double timestamp_s,
+                                         double rms_metres) = 0;
 
     // Log norms of the three IMU consistency sub-residuals for an interval starting at timestamp_s.
     virtual void vizImuConsistencyResidual(double timestamp_s,
