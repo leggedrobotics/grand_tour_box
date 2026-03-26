@@ -158,6 +158,7 @@ ROSCameraIMUProgram::ROSCameraIMUProgram(ROSCameraIMUParser parser,
 
 bool ROSCameraIMUProgram::Solve() {
     PreSolveExtrinsic();
+    PreSolveBoard();
     bool success = CeresProgram::Solve();
 
     if (viz_) {

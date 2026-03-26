@@ -41,12 +41,15 @@ ceres::CostFunction *VisualReprojectionError::Create(Eigen::Matrix3Xd model_poin
 }
 
 IMUConsistencyError::IMUConsistencyError(std::vector<IMUObservation> imu_observations,
-                                         double time_k_secs)
+                                         double time_k_secs,
+                                         double time_kp1_secs)
         : imu_observations_k_to_kp1_(std::move(imu_observations)),
-          time_k_secs_(time_k_secs) {}
+          time_k_secs_(time_k_secs),
+          time_kp1_secs_(time_kp1_secs) {}
 
 ceres::CostFunction *IMUConsistencyError::Create(std::vector<IMUObservation> imu_observations,
-                                                 double time_k_secs) {
+                                                 double time_k_secs,
+                                                 double time_kp1_secs) {
     return new ceres::AutoDiffCostFunction<IMUConsistencyError, 9,
             SE3Transform::NUM_PARAMETERS,   // T_world_imu_k
             3,                              // v_world_imu_k
@@ -55,5 +58,5 @@ ceres::CostFunction *IMUConsistencyError::Create(std::vector<IMUObservation> imu
             SE3Transform::NUM_PARAMETERS,   // T_world_imu_kp1
             3,                              // v_world_imu_kp1
             3>(                             // gravity_world
-            new IMUConsistencyError(std::move(imu_observations), time_k_secs));
+            new IMUConsistencyError(std::move(imu_observations), time_k_secs, time_kp1_secs));
 }

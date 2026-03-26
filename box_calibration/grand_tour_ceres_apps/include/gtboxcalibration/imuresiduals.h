@@ -146,10 +146,12 @@ public:
 class IMUConsistencyError {
 public:
     IMUConsistencyError(std::vector<IMUObservation> imu_observations,
-                        double time_k_secs);
+                        double time_k_secs,
+                        double time_kp1_secs);
 
     static ceres::CostFunction *Create(std::vector<IMUObservation> imu_observations,
-                                       double time_k_secs);
+                                       double time_k_secs,
+                                       double time_kp1_secs);
 
     template<typename T>
     bool operator()(
@@ -176,16 +178,37 @@ public:
         Eigen::Matrix<T, 3, 1> v = v0;
         double time_i_secs = time_k_secs_;
 
-        for (const auto &obs : imu_observations_k_to_kp1_) {
-            const double dt_d = obs.detection_time_secs - time_i_secs;
-            if (dt_d < 0) continue;
-            time_i_secs = obs.detection_time_secs;
+        const size_t n = imu_observations_k_to_kp1_.size();
+        for (size_t i = 0; i < n; ++i) {
+            const auto &obs = imu_observations_k_to_kp1_[i];
+            const bool is_last = (i + 1 == n);
+
+            // For the final sample (first one >= t_kp1): integrate only to t_kp1
+            // and linearly interpolate the measurement between prev and this sample.
+            const double t_end = is_last ? time_kp1_secs_ : obs.detection_time_secs;
+            const double dt_d = t_end - time_i_secs;
+            if (dt_d < 0) { time_i_secs = obs.detection_time_secs; continue; }
+
+            Eigen::Matrix<T, 3, 1> a_meas, w_meas;
+            if (is_last && i > 0) {
+                const auto &prev = imu_observations_k_to_kp1_[i - 1];
+                const double span = obs.detection_time_secs - prev.detection_time_secs;
+                const T alpha = span > 1e-12 ? T((time_kp1_secs_ - prev.detection_time_secs) / span)
+                                             : T(1);
+                a_meas = prev.linear_acceleration.cast<T>() +
+                         alpha * (obs.linear_acceleration.cast<T>() - prev.linear_acceleration.cast<T>());
+                w_meas = prev.angular_velocity.cast<T>() +
+                         alpha * (obs.angular_velocity.cast<T>() - prev.angular_velocity.cast<T>());
+            } else {
+                a_meas = obs.linear_acceleration.cast<T>();
+                w_meas = obs.angular_velocity.cast<T>();
+            }
 
             const T dt  = T(dt_d);
             const T dt2 = dt * dt;
 
-            Eigen::Matrix<T, 3, 1> a = obs.linear_acceleration.cast<T>() - bias_accel;
-            Eigen::Matrix<T, 3, 1> w = obs.angular_velocity.cast<T>()    - bias_gyro;
+            Eigen::Matrix<T, 3, 1> a = a_meas - bias_accel;
+            Eigen::Matrix<T, 3, 1> w = w_meas - bias_gyro;
 
             Eigen::Matrix<T, 3, 3> R = T_world_imu_integrated.linear();
             Eigen::Matrix<T, 3, 1> v_old = v;
@@ -196,6 +219,8 @@ public:
             v = v_old + gravity_world * dt + R * a * dt;
 
             T_world_imu_integrated.linear() = R * Sophus::SO3<T>::exp(w * dt).matrix();
+
+            time_i_secs = t_end;
         }
 
         // Position residual
@@ -220,6 +245,7 @@ public:
 
     std::vector<IMUObservation> imu_observations_k_to_kp1_;
     double time_k_secs_;
+    double time_kp1_secs_;
 };
 
 

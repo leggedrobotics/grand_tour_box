@@ -435,6 +435,77 @@ void CameraIMUProgram::PreSolveExtrinsic() {
     SE3Transform::toEigenAffine(T_camera_bundle_imu).rotation() << std::endl;
 }
 
+void CameraIMUProgram::PreSolveBoard() {
+    // Step 1: average accelerometer readings to get gravity direction in IMU frame.
+    Eigen::Vector3d g_imu = Eigen::Vector3d::Zero();
+    for (const auto &obs : imu_observations)
+        g_imu += obs.linear_acceleration;
+    g_imu /= static_cast<double>(imu_observations.size());
+
+    // Step 2: find R_world_imu that aligns g_imu → -gravity_world
+    // (static accel = R_imu_world * (-gravity_world), so g_imu points opposite to gravity_world)
+    const Eigen::Vector3d minus_g_world = -Eigen::Map<const Eigen::Vector3d>(gravity_world);
+    Eigen::Affine3d T_world_imu0 = Eigen::Affine3d::Identity();
+    T_world_imu0.linear() = Eigen::Quaterniond::FromTwoVectors(g_imu, minus_g_world)
+                                    .toRotationMatrix();
+
+    // Step 3: T_bundle_imu from solved extrinsic; T_world_cam_bundle = T_world_imu0 * T_bundle_imu⁻¹
+    const Eigen::Affine3d T_bundle_imu = SE3Transform::toEigenAffine(T_camera_bundle_imu);
+
+    // Step 4: accumulate T_world_board estimates across all detections.
+    Eigen::Vector3d t_sum = Eigen::Vector3d::Zero();
+    Eigen::Matrix3d R_sum = Eigen::Matrix3d::Zero();
+    int count = 0;
+
+    for (const auto &[stamp, detections_at_stamp] : camera_detections.observations) {
+        for (const auto &[cam_name, detection] : detections_at_stamp) {
+            const Eigen::Affine3d T_bundle_sensor = SE3Transform::toEigenAffine(
+                    camera_packs.at(cam_name).T_bundle_sensor);
+            // T_world_board = T_world_imu0 * T_bundle_imu⁻¹ * T_bundle_sensor * T_camera_board
+            const Eigen::Affine3d T_world_board_k =
+                    T_world_imu0 * T_bundle_imu.inverse() * T_bundle_sensor * detection.T_sensor_model;
+            t_sum += T_world_board_k.translation();
+            R_sum += T_world_board_k.rotation();
+            ++count;
+        }
+    }
+
+    if (count == 0) {
+        std::cerr << "PreSolveBoard: no detections available." << std::endl;
+        return;
+    }
+
+    // Project averaged rotation onto SO(3) via SVD.
+    Eigen::JacobiSVD<Eigen::Matrix3d> svd(R_sum / count, Eigen::ComputeFullU | Eigen::ComputeFullV);
+    Eigen::Matrix3d R_board = svd.matrixU() * svd.matrixV().transpose();
+    if (R_board.determinant() < 0)
+        R_board = svd.matrixU() * Eigen::Vector3d(1, 1, -1).asDiagonal() * svd.matrixV().transpose();
+
+    Eigen::Affine3d T_world_board_est = Eigen::Affine3d::Identity();
+    T_world_board_est.linear()      = R_board;
+    T_world_board_est.translation() = t_sum / count;
+    SE3Transform::assignToData(T_world_board_est, T_world_board);
+
+    // Step 5: re-initialize T_world_imu per keyframe consistently with new T_world_board.
+    // From the reprojection chain: T_world_board = T_world_imu * T_bundle_imu⁻¹ * T_bundle_sensor * T_camera_board
+    // => T_world_imu = T_world_board * T_camera_board⁻¹ * T_bundle_sensor⁻¹ * T_bundle_imu
+    for (auto &[stamp, pack] : keyframe_params) {
+        if (!camera_detections.observations.contains(stamp)) continue;
+        const auto &detections_at_stamp = camera_detections.observations.at(stamp);
+        const auto &[cam_name, detection] = *detections_at_stamp.begin();
+        const Eigen::Affine3d T_bundle_sensor = SE3Transform::toEigenAffine(
+                camera_packs.at(cam_name).T_bundle_sensor);
+        const Eigen::Affine3d T_world_imu_k =
+                T_world_board_est *
+                detection.T_sensor_model.inverse() *
+                T_bundle_sensor.inverse() *
+                T_bundle_imu;
+        SE3Transform::assignToData(T_world_imu_k, pack.T_world_imu);
+    }
+
+    std::cout << "PreSolveBoard: T_world_board =\n" << T_world_board_est.matrix() << std::endl;
+}
+
 bool CameraIMUProgram::PopulateProblem() {
     SE3Transform se3;
 
@@ -498,18 +569,26 @@ bool CameraIMUProgram::PopulateProblem() {
 
         auto& pack_kp1 = keyframe_params.at(stamp_kp1);
 
-        // Collect IMU observations in [time_k_s, time_kp1_s).
+        // Collect IMU observations in [time_k_s, time_kp1_s), plus the first
+        // sample >= time_kp1_s so the integrator can interpolate exactly to t_kp1.
         std::vector<IMUObservation> interval_imu;
+        bool past_kp1_added = false;
         for (const auto& obs : sorted_imu) {
-            if (obs.detection_time_secs >= time_k_s && obs.detection_time_secs < time_kp1_s)
+            if (obs.detection_time_secs < time_k_s) continue;
+            if (obs.detection_time_secs < time_kp1_s) {
                 interval_imu.push_back(obs);
+            } else if (!past_kp1_added) {
+                interval_imu.push_back(obs);
+                past_kp1_added = true;
+                break;
+            }
         }
 
         if (interval_imu.empty()) continue;
 
         imu_residual_block_map[stamp_k] =
                 problem_->getProblem().AddResidualBlock(
-                        IMUConsistencyError::Create(std::move(interval_imu), time_k_s),
+                        IMUConsistencyError::Create(std::move(interval_imu), time_k_s, time_kp1_s),
                         nullptr,
                         pack_k.T_world_imu,
                         pack_k.v_world_imu,

@@ -39,6 +39,7 @@ struct CameraIMUProgram : CeresProgram {
 
     bool PopulateProblem() override;
     void PreSolveExtrinsic();
+    void PreSolveBoard();
 
     // --- Observations ---
     std::map<std::string, CameraParameterPack> camera_packs;
