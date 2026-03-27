@@ -77,7 +77,9 @@ void RerunCameraCameraViz::vizResidualMap(const std::string& view_name,
     if (residuals_2d.empty() || !shouldLog(view_name)) return;
 
     const std::string path = base_name_ + view_name;
-    rec_.log(path, rerun::Points2D(residuals_2d).with_colors(rerun::Color(34, 138, 167)));
+    rec_.log(path, rerun::Points2D(residuals_2d)
+            .with_colors(rerun::Color(34, 138, 167))
+            .with_draw_order(0));
 
     // Reference boxes showing 1 px and 3 px error bounds.
     rec_.log_static(path + "/1px",
