@@ -27,7 +27,12 @@ ROSCameraIMUProgram::ROSCameraIMUProgram(ROSCameraIMUParser parser,
     for (const auto &[camera_topic, _] : camera_packs)
         detection_topics.push_back(camera_topic + kDetectionSuffix);
 
-    for (const auto &bag_path: parser.camera_bag_paths) {
+    for (const auto &bag_path: parser.camera_detection_bag_paths) {
+        if (!std::filesystem::exists(bag_path)) {
+            std::cerr << "\n\nPath " << bag_path << " does not exist.\n\n" << std::endl;
+            is_valid_ = false;
+            return;
+        }
         try {
             rosbag::Bag bag;
             bag.open(bag_path, rosbag::bagmode::Read);
@@ -100,15 +105,6 @@ ROSCameraIMUProgram::ROSCameraIMUProgram(ROSCameraIMUParser parser,
             if (connection_topic != parser.imu_topic) continue;
             rosbag::View topic_view(bag, rosbag::TopicQuery(parser.imu_topic));
 
-            ImuIntegrator integrator({
-                .position    = Eigen::Vector3d::Zero(),
-                .velocity    = Eigen::Vector3d::Zero(),
-                .orientation = Eigen::Quaterniond::Identity(),
-                .acc_bias    = Eigen::Vector3d::Zero(),
-                .gyro_bias   = Eigen::Vector3d::Zero(),
-                .timestamp_s = -1.0,
-            });
-
             for (const auto &m: topic_view) {
                 sensor_msgs::ImuConstPtr imu_msg = m.instantiate<sensor_msgs::Imu>();
                 if (imu_msg == nullptr) continue;
@@ -138,6 +134,7 @@ ROSCameraIMUProgram::ROSCameraIMUProgram(ROSCameraIMUParser parser,
               << " keyframes, " << imu_observations.size() << " IMU observations." << std::endl;
 
     this->PopulateProblem();
+    is_valid_ = true;
 }
 
 
@@ -145,14 +142,21 @@ bool ROSCameraIMUProgram::Solve() {
     PreSolveExtrinsic();
     PreSolveBoard();
     bool success = CeresProgram::Solve();
+    std::cout << "Initial T_camerabundle_imu: " << std::endl;
+    std::cout << SE3Transform::toEigenAffine(T_camera_bundle_imu).matrix() << std::endl;
     WriteOutputParameters();
 
     if (viz_) {
         // Static sensor frames in the bundle.
         std::map<std::string, Eigen::Affine3d> T_bundle_cameras;
-        for (const auto& [cam_name, cam_pack] : camera_packs)
+        for (const auto& [cam_name, cam_pack] : camera_packs) {
             T_bundle_cameras[cam_name] = SE3Transform::toEigenAffine(cam_pack.T_bundle_sensor);
+        }
+
+        const unsigned long long last_imu_timestamp = keyframe_params.rbegin()->first;
+
         for (const auto stamp : camera_detections.unique_timestamps) {
+            if (stamp > last_imu_timestamp) break;
             for (const auto& [cam_name, det] : camera_detections.observations.at(stamp)) {
                 // Board frame is the world frame (identity), so T_world_camera = T_board_camera.
                 const Eigen::Affine3d T_board_camera = det.T_sensor_model.inverse();
@@ -176,6 +180,7 @@ bool ROSCameraIMUProgram::Solve() {
 
         // Camera-chain IMU trajectory: T_board_imu^{cam} = inv(T_bundle_board_k) * T_bundle_imu.
         for (const auto& [stamp, detections] : camera_detections.observations) {
+            if (stamp > last_imu_timestamp) break;
             for (const auto& [cam_name, det] : detections) {
                 const Eigen::Affine3d T_bundle_sensor = SE3Transform::toEigenAffine(
                         camera_packs.at(cam_name).T_bundle_sensor);
@@ -188,20 +193,36 @@ bool ROSCameraIMUProgram::Solve() {
         viz_->vizExtrinsics(T_bundle_cameras, SE3Transform::toEigenAffine(T_camera_bundle_imu));
         viz_->vizBoardPose3D(Eigen::Affine3d::Identity());
 
-        // Relative board-point errors (metres RMS per point) per keyframe interval.
+        // Residual layout: [point_errors (3*n_pts, only when aligned) | SE3 (6) | vel (3)]
         for (const auto& [stamp_k, block_id] : relative_residual_block_map) {
             const int n = problem_->getProblem().GetCostFunctionForResidualBlock(block_id)->num_residuals();
-            const int n_points = (n - 9) / 3;  // residual layout: 3*n_pts + 9 (SE3 + vel continuity)
+            const int n_points = (n - 9) / 3;
             std::vector<double> residuals(n);
             problem_->getProblem().EvaluateResidualBlock(block_id, false, nullptr, residuals.data(), nullptr);
-            double sum_sq = 0;
-            for (int i = 0; i < n_points; ++i)
-                sum_sq += residuals[i*3]*residuals[i*3]
-                        + residuals[i*3+1]*residuals[i*3+1]
-                        + residuals[i*3+2]*residuals[i*3+2];
-            viz_->vizWorldFramePointError("relative",
-                                          static_cast<double>(stamp_k) * 1e-9,
-                                          std::sqrt(sum_sq / n_points));
+            const double t = static_cast<double>(stamp_k) * 1e-9;
+
+            if (n_points > 0) {
+                double sum_sq = 0;
+                for (int i = 0; i < n_points; ++i) {
+                    sum_sq += std::sqrt(residuals[i * 3] * residuals[i * 3]
+                              + residuals[i * 3 + 1] * residuals[i * 3 + 1]
+                              + residuals[i * 3 + 2] * residuals[i * 3 + 2]);
+                }
+                viz_->vizWorldFramePointError("relative", t, sum_sq / n_points);
+            }
+
+            // SE3 continuity: translation norm + rotation skew norm.
+            const int base = n_points * 3;
+            const double t_norm = std::sqrt(residuals[base]*residuals[base]
+                                          + residuals[base+1]*residuals[base+1]
+                                          + residuals[base+2]*residuals[base+2]);
+            const double r_norm = std::sqrt(residuals[base+3]*residuals[base+3]
+                                          + residuals[base+4]*residuals[base+4]
+                                          + residuals[base+5]*residuals[base+5]);
+            const double v_norm = std::sqrt(residuals[base+6]*residuals[base+6]
+                                          + residuals[base+7]*residuals[base+7]
+                                          + residuals[base+8]*residuals[base+8]);
+            viz_->vizImuConsistencyResidual(t, t_norm, v_norm, r_norm);
         }
     }
 

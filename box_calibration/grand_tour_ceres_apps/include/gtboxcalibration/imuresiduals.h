@@ -164,18 +164,21 @@ public:
                                double time_k_secs,
                                double time_kp1_secs,
                                Eigen::Matrix3Xd model_points,
-                               Eigen::Matrix3Xd points_in_bundle_kp1)
+                               Eigen::Matrix3Xd points_in_bundle_kp1,
+                               bool do_align_points)
             : imu_data_(std::move(imu_data_k_to_kp1)),
               time_k_secs_(time_k_secs),
               time_kp1_secs_(time_kp1_secs),
               model_points_(std::move(model_points)),
-              points_in_bundle_kp1_(std::move(points_in_bundle_kp1)) {}
+              points_in_bundle_kp1_(std::move(points_in_bundle_kp1)),
+              do_align_points_(do_align_points) {}
 
     static ceres::CostFunction *Create(std::vector<IMUObservation> imu_data_k_to_kp1,
                                        double time_k_secs,
                                        double time_kp1_secs,
                                        const Eigen::Matrix3Xd &model_points,
-                                       const Eigen::Matrix3Xd &points_in_bundle_kp1) {
+                                       const Eigen::Matrix3Xd &points_in_bundle_kp1,
+                                       bool do_align_points) {
         const int n_residuals = static_cast<int>(model_points.cols()) * 3 + 9;
         return new ceres::AutoDiffCostFunction<RelativeIMUBoardPointError, ceres::DYNAMIC,
                 3,                              // gravity_dir_board
@@ -187,7 +190,7 @@ public:
                 SE3Transform::NUM_PARAMETERS,   // T_board_imu_kp1
                 3>(                             // v_board_imu_kp1
                 new RelativeIMUBoardPointError(std::move(imu_data_k_to_kp1), time_k_secs, time_kp1_secs,
-                                               model_points, points_in_bundle_kp1),
+                                               model_points, points_in_bundle_kp1, do_align_points),
                 n_residuals);
     }
 
@@ -219,24 +222,38 @@ public:
         double time_i = time_k_secs_;
 
         const size_t n = imu_data_.size();
+        // True if imu_data_[0] is the pre-k bracketing sample (t < time_k_s).
+        const bool has_pre_k = (n > 0 && imu_data_[0].detection_time_secs < time_k_secs_);
+
+        // Forward Euler: measurement at the START of each interval drives the step.
+        // imu_data_[i] provides measurements for the step [imu_data_[i].t, imu_data_[i+1].t),
+        // clamped to [time_k_s, time_kp1_s]. No sample after time_kp1_s is needed.
         for (size_t i = 0; i < n; ++i) {
-            const auto &obs    = imu_data_[i];
-            const bool is_last = (i + 1 == n);
+            const auto &obs     = imu_data_[i];
+            const bool is_first = has_pre_k && (i == 1);
 
-            const double t_end = is_last ? time_kp1_secs_ : obs.detection_time_secs;
-            const double dt_d  = t_end - time_i;
-            if (dt_d < 0) { time_i = obs.detection_time_secs; continue; }
+            // Skip the pre-k sample — it only exists for the is_first interpolation below.
+            if (has_pre_k && i == 0) continue;
 
+            // End of this interval: next sample time, clamped to time_kp1_s.
+            const double t_next = (i + 1 < n) ? imu_data_[i + 1].detection_time_secs
+                                               : time_kp1_secs_;
+            const double t_end  = std::min(t_next, time_kp1_secs_);
+            const double dt_d   = t_end - time_i;
+            if (dt_d <= 0) { time_i = t_end; continue; }
+
+            // Measurements at the start of this interval (forward Euler).
             Eigen::Matrix<T, 3, 1> a_meas, w_meas;
-            if (is_last && i > 0) {
-                const auto &prev  = imu_data_[i - 1];
-                const double span = obs.detection_time_secs - prev.detection_time_secs;
-                const T alpha     = span > 1e-12 ? T((time_kp1_secs_ - prev.detection_time_secs) / span)
-                                                 : T(1);
-                a_meas = prev.linear_acceleration.cast<T>() +
-                         alpha * (obs.linear_acceleration.cast<T>() - prev.linear_acceleration.cast<T>());
-                w_meas = prev.angular_velocity.cast<T>() +
-                         alpha * (obs.angular_velocity.cast<T>() - prev.angular_velocity.cast<T>());
+            if (is_first) {
+                // Interpolate between pre-k (imu_data_[0]) and obs at exactly time_k_s.
+                const auto &pre   = imu_data_[0];
+                const double span = obs.detection_time_secs - pre.detection_time_secs;
+                const T alpha     = span > 1e-12 ? T((time_k_secs_ - pre.detection_time_secs) / span)
+                                                 : T(0);
+                a_meas = pre.linear_acceleration.cast<T>() +
+                         alpha * (obs.linear_acceleration.cast<T>() - pre.linear_acceleration.cast<T>());
+                w_meas = pre.angular_velocity.cast<T>() +
+                         alpha * (obs.angular_velocity.cast<T>() - pre.angular_velocity.cast<T>());
             } else {
                 a_meas = obs.linear_acceleration.cast<T>();
                 w_meas = obs.angular_velocity.cast<T>();
@@ -271,10 +288,11 @@ public:
                 p_board_pred - model_points_.cast<T>();
 
         const int n_points = point_errors.cols();
+        const T alignment_mask = do_align_points_ ? T(1.0) : T(0.0);
         for (int i = 0; i < n_points; ++i) {
-            residual[i * 3]     = point_errors(0, i);
-            residual[i * 3 + 1] = point_errors(1, i);
-            residual[i * 3 + 2] = point_errors(2, i);
+            residual[i * 3] = point_errors(0, i) * alignment_mask;
+            residual[i * 3 + 1] = point_errors(1, i) * alignment_mask;
+            residual[i * 3 + 2] = point_errors(2, i) * alignment_mask;
         }
 
         // --- SE3 pose continuity to T_board_imu_kp1 ---
@@ -307,6 +325,7 @@ private:
     double time_kp1_secs_;
     Eigen::Matrix3Xd model_points_;
     Eigen::Matrix3Xd points_in_bundle_kp1_;
+    bool do_align_points_ = false;
 };
 
 // ---------------------------------------------------------------------------

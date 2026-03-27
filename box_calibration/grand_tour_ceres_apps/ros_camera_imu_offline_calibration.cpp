@@ -16,6 +16,10 @@ int main(int argc, char **argv) {
 
     rec.log_file_from_path(parser.rerun_blue_print_path);
     ROSCameraIMUProgram program(parser, std::make_unique<RerunCameraImuViz>(rec));
+    if (!program.isValid()) {
+        std::cerr << "Camera IMU calibration failed for " << parser.imu_topic << std::endl;
+        return -1;
+    }
     program.Solve();
     return 0;
 }

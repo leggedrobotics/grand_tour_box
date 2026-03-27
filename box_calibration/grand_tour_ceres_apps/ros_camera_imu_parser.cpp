@@ -10,7 +10,7 @@ ROSCameraIMUParser::ROSCameraIMUParser(std::string program_name, int argc, char 
     program.add_argument("-c", "--cameras_calibration_path")
             .required()
             .help("specify the file containing camera intrinsics and extrinsics.");
-    program.add_argument("--camera_bags")
+    program.add_argument("--camera_detection_bags")
             .help("Paths to rosbags with grand_tour_camera_detection_msgs/CameraDetections topics")
             .nargs(argparse::nargs_pattern::any) // Allows variadic arguments
             .default_value(std::vector<std::string>{}) // Default to an empty vector if none are provided
@@ -40,9 +40,9 @@ ROSCameraIMUParser::ROSCameraIMUParser(std::string program_name, int argc, char 
         return;
     }
     // Retrieve the list of bags
-    auto bags = program.get<std::vector<std::string>>("--camera_bags");
+    auto bags = program.get<std::vector<std::string>>("--camera_detection_bags");
     cameras_calibration_path = program.get<std::string>("--cameras_calibration_path");
-    camera_bag_paths = bags;
+    camera_detection_bag_paths = bags;
     imu_bag_path = program.get<std::string>("--imu_bag");
     output_path = program.get<std::string>("--output_path");
     imu_topic = program.get<std::string>("--imu_topic");

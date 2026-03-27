@@ -120,12 +120,12 @@ void RerunCameraImuViz::vizBoardPose3D(const Eigen::Affine3d& T_world_board) {
 
 void RerunCameraImuViz::vizWorldFramePointError(const std::string& camera_name,
                                                 double timestamp_s,
-                                                double rms_metres) {
-    const std::string path = std::string(kBase) + camera_name + "/world_frame_point_error_rms_m";
+                                                double mean_l2_error_metres) {
+    const std::string path = std::string(kBase) + camera_name + "/world_frame_mean_point_error_m";
     rec_.log_static(path, rerun::SeriesLines()
             .with_colors(colorForCamera(camera_name)).with_widths(2));
     rec_.set_time_timestamp_secs_since_epoch(kTimeline, timestamp_s);
-    rec_.log(path, rerun::Scalars(rms_metres));
+    rec_.log(path, rerun::Scalars(mean_l2_error_metres));
 }
 
 void RerunCameraImuViz::vizImuConsistencyResidual(double timestamp_s,

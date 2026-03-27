@@ -417,7 +417,7 @@ void CameraIMUProgram::PreSolveExtrinsic() {
     ceres::Solver::Summary summary;
     ceres::Solve(options, &pre_problem, &summary);
     std::cout << "Pre-solve: " << summary.BriefReport() << std::endl;
-    std::cout << "Initial Rotation: " << std::endl <<
+    std::cout << "Initial R_camerabundle_imu: " << std::endl <<
     SE3Transform::toEigenAffine(T_camera_bundle_imu).rotation() << std::endl;
 }
 
@@ -522,8 +522,12 @@ bool CameraIMUProgram::PopulateProblem() {
                   return a.detection_time_secs < b.detection_time_secs;
               });
 
-//    constexpr double kMinIntervalSecs = 0.5;
+    if (stamps.empty()) return false;
 
+    constexpr double kAlignPointsIntervalSecs = 1.0;
+    // Seed far enough back so the very first frame triggers alignment.
+    double prev_align_points_sec = static_cast<double>(*stamps.begin()) * 1e-9
+                                   - kAlignPointsIntervalSecs;
     for (auto stamp_it = stamps.begin(); stamp_it != stamps.end(); ++stamp_it) {
         auto next_it = std::next(stamp_it);
         if (next_it == stamps.end()) break;
@@ -543,18 +547,23 @@ bool CameraIMUProgram::PopulateProblem() {
         const double time_k_s   = static_cast<double>(stamp_k)   * 1e-9;
         const double time_kp1_s = static_cast<double>(stamp_kp1) * 1e-9;
 
-        // Collect IMU samples in [t_k, t_{k+1}] plus first sample >= t_{k+1}.
+        // Collect IMU samples bracketing [t_k, t_{k+1}]:
+        //   - last sample strictly before t_k  (imu_data_[0], for interpolation at t_k)
+        //   - all samples in [t_k, t_{k+1})
+        // Forward Euler needs no sample after t_{k+1}.
         std::vector<IMUObservation> imu_k_to_kp1;
-        bool past_kp1_added = false;
+        const IMUObservation* pre_k = nullptr;
         for (const auto& obs : sorted_imu) {
-            if (obs.detection_time_secs < time_k_s) continue;
-            if (obs.detection_time_secs < time_kp1_s) {
-                imu_k_to_kp1.push_back(obs);
-            } else if (!past_kp1_added) {
-                imu_k_to_kp1.push_back(obs);
-                past_kp1_added = true;
-                break;
+            if (obs.detection_time_secs < time_k_s) {
+                pre_k = &obs;
+                continue;
             }
+            if (imu_k_to_kp1.empty() && pre_k)
+                imu_k_to_kp1.push_back(*pre_k);
+            if (obs.detection_time_secs < time_kp1_s)
+                imu_k_to_kp1.push_back(obs);
+            else
+                break;
         }
         if (imu_k_to_kp1.empty()) continue;
 
@@ -576,11 +585,17 @@ bool CameraIMUProgram::PopulateProblem() {
         auto& pack_k   = keyframe_params[stamp_k];
         auto& pack_kp1 = keyframe_params[stamp_kp1];
 
+        bool do_align_points = false;
+        if (time_k_s - prev_align_points_sec >= kAlignPointsIntervalSecs) {
+            do_align_points = true;
+            prev_align_points_sec = time_k_s;
+        }
+
         relative_residual_block_map[stamp_k] =
                 problem_->getProblem().AddResidualBlock(
                         RelativeIMUBoardPointError::Create(
                                 std::move(imu_k_to_kp1), time_k_s, time_kp1_s,
-                                model_points3d, points_in_bundle_kp1),
+                                model_points3d, points_in_bundle_kp1, do_align_points),
                         new ceres::HuberLoss(0.02),
                         gravity_dir_board,
                         pack_k.T_board_imu,

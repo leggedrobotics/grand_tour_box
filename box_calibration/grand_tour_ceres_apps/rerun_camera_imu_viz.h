@@ -35,7 +35,7 @@ public:
 
     void vizWorldFramePointError(const std::string& camera_name,
                                  double timestamp_s,
-                                 double rms_metres) override;
+                                 double mean_l2_error_metres) override;
 
     void vizImuConsistencyResidual(double timestamp_s,
                                    double position_norm,

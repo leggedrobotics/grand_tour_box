@@ -16,7 +16,8 @@ struct ROSCameraIMUProgram : public CameraIMUProgram {
 
     bool Solve() override;
 
+    bool isValid() const { return is_valid_; }
 
-
+    bool is_valid_ = false;
     std::unique_ptr<CameraImuVizInterface> viz_;
 };
