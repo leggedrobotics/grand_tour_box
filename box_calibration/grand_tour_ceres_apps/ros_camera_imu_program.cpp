@@ -20,6 +20,7 @@ ROSCameraIMUProgram::ROSCameraIMUProgram(ROSCameraIMUParser parser,
     solve_time_offset = parser.solve_time_offset;
     output_yaml_path = parser.output_path;
     cameras_calibration_path = parser.cameras_calibration_path;
+    imu_topic = parser.imu_topic;
 
     // Build the set of detection topics we expect (one per camera).
     std::vector<std::string> detection_topics;
@@ -144,6 +145,7 @@ bool ROSCameraIMUProgram::Solve() {
     PreSolveExtrinsic();
     PreSolveBoard();
     bool success = CeresProgram::Solve();
+    WriteOutputParameters();
 
     if (viz_) {
         // Static sensor frames in the bundle.

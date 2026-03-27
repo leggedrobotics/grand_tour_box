@@ -40,6 +40,7 @@ struct CameraIMUProgram : CeresProgram {
     bool PopulateProblem() override;
     void PreSolveExtrinsic();
     void PreSolveBoard();
+    void WriteOutputParameters();
 
     // --- Observations ---
     std::map<std::string, CameraParameterPack> camera_packs;
@@ -67,6 +68,7 @@ struct CameraIMUProgram : CeresProgram {
     std::map<std::string, Eigen::Affine3d> T_bundle_cam;
     std::string output_yaml_path;
     std::string cameras_calibration_path;
+    std::string imu_topic;
     bool solve_time_offset = false;
 };
 

@@ -476,6 +476,41 @@ void CameraIMUProgram::PreSolveBoard() {
     std::cout << "PreSolveBoard: initialized " << n_initialized << " keyframe poses." << std::endl;
 }
 
+void CameraIMUProgram::WriteOutputParameters() {
+    // Output format matches what process_all_calibrations.py feeds to convert_graph.py:
+    //   <imu_topic>:
+    //     T_camerabundle_imu: [[r00, ...], ..., [0, 0, 0, 1]]
+    //     gravity_dir_board:  [gx, gy, gz]
+    //     bias_gyro:          [bwx, bwy, bwz]
+    //     bias_accel:         [bax, bay, baz]
+    // The Python script maps imu_topic → frame_id via imu_topic_to_frame_mappings.
+
+    const Eigen::Affine3d T_bundle_imu = SE3Transform::toEigenAffine(T_camera_bundle_imu);
+    const Eigen::Matrix4d T_mat = T_bundle_imu.matrix();
+
+    YAML::Node T_node;
+    for (int i = 0; i < 4; ++i) {
+        YAML::Node row;
+        for (int j = 0; j < 4; ++j)
+            row.push_back(T_mat(i, j));
+        T_node.push_back(row);
+    }
+
+    YAML::Node root;
+    root[imu_topic]["T_camerabundle_imu"] = T_node;
+    root[imu_topic]["gravity_dir_board"] = std::vector<double>{
+            gravity_dir_board[0], gravity_dir_board[1], gravity_dir_board[2]};
+    root[imu_topic]["bias_gyro"]  = std::vector<double>{
+            bias_gyro[0],  bias_gyro[1],  bias_gyro[2]};
+    root[imu_topic]["bias_accel"] = std::vector<double>{
+            bias_accel[0], bias_accel[1], bias_accel[2]};
+
+    std::ofstream fout(output_yaml_path);
+    fout << root;
+    fout.close();
+    std::cout << "IMU calibration written to: " << output_yaml_path << std::endl;
+}
+
 bool CameraIMUProgram::PopulateProblem() {
     SE3Transform se3;
 

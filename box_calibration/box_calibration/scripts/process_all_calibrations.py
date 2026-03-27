@@ -682,86 +682,46 @@ if __name__ == "__main__":
         camimu_image_topics = extract_image_topics(cam_imu_merged_bag_path)
         print("Camera IMU Image Topics:", camimu_image_topics)
 
-        for imu_names in imu_calibration_batches:
-            imu_intrinsics_calibration_files = [os.path.join(allan_variances_root, f"{x}/imu.yaml") for x in imu_names]
-            imu_calibration_files_by_topic = {}
-            for path in imu_intrinsics_calibration_files:
-                with open(path, 'r') as file:
-                    imu_calibration_data = yaml.load(file, Loader=yaml.FullLoader)
-                imu_calibration_files_by_topic[imu_calibration_data["rostopic"]] = path
+        # Pre-process: detect april-grid corners in the camera bag once,
+        # producing a detections bag reused for all IMU calibrations.
+        cam_imu_detections_bag_path = os.path.join(
+            camera_imu_folder_path, "cam_imu_detections.bag")
+        if not os.path.exists(cam_imu_detections_bag_path):
+            preprocess_command = [
+                "rosrun", "grand_tour_ceres_apps", "ros_camera_imu_preprocess",
+                "--bags", cam_imu_merged_bag_path,
+                "-o", cam_imu_detections_bag_path,
+            ]
+            safe_subprocess_run(preprocess_command, force=True)
 
-                cam_imu_camerachain_path = os.path.join(camera_imu_folder_path,
-                                                        "kalibr_camcam_chain.yaml")
-                filter_yaml_by_rostopics(camera_bundle_and_hesai_initial_guess_file,
-                                         ["/gt_box/alphasense_driver_node/cam1"],  #camimu_image_topics,
-                                         cam_imu_camerachain_path)
+        for imu_names in imu_calibration_batches:
+            for imu_name in imu_names:
+                imu_intrinsics_path = os.path.join(allan_variances_root, f"{imu_name}/imu.yaml")
+                with open(imu_intrinsics_path, 'r') as file:
+                    imu_intrinsics_data = yaml.safe_load(file)
+                imu_topic = imu_intrinsics_data["rostopic"]
+
+                gt_camimu_output_path = os.path.join(
+                    camera_imu_folder_path, f"{imu_name}_imu_calibration.yaml")
 
                 camera_imu_command = [
-                    "rosrun", "kalibr", "kalibr_calibrate_imu_camera",
-                    "--target", default_grand_tour_camera_board_path,
-                    "--imu", *imu_intrinsics_calibration_files,
-                    "--imu-models", *["scale-misalignment-size-effect" if "stim" in x else "calibrated"
-                                      for x in imu_intrinsics_calibration_files],
-                    "--cam", cam_imu_camerachain_path,
-                    "--bag", cam_imu_merged_bag_path,
-                    "--timeoffset-padding", "0.1",  # As per https://github.com/ethz-asl/kalibr/issues/41,
-                    # "--recover-covariance",
-                    "--reprojection-sigma", "1.0",
-                    "--export-poses",
-                    "--max-iter", "1000",
-                    "--imu-delay-by-correlation",
-                    "--dont-show-report"
+                    "rosrun", "grand_tour_ceres_apps", "camera_imu_offline_calibration",
+                    "-c", camcamlidarprism_calibration_path,
+                    "--camera_bags", cam_imu_detections_bag_path,
+                    "-b", cam_imu_merged_bag_path,
+                    "-t", imu_topic,
+                    "-o", gt_camimu_output_path,
                 ]
-
                 safe_subprocess_run(camera_imu_command, force=True)
 
-                cam_imu_merged_name_root = os.path.splitext(os.path.basename(cam_imu_merged_bag_path))[0]
+                with open(gt_camimu_output_path, 'r') as file:
+                    gt_camimu_data = yaml.safe_load(file)
 
-                sub_folder_name = os.path.join(camera_imu_folder_path, list_to_folder_name(imu_names))
-                imu_calib_outputs = [os.path.join(camera_imu_folder_path, x) for x in os.listdir(camera_imu_folder_path)
-                                     if f"{cam_imu_merged_name_root}-" in x]
-                if not args.skip_lidar:
-                    move_files_to_folder(imu_calib_outputs, sub_folder_name)
-
-                camchain_imu_path = os.path.join(sub_folder_name,
-                                                 cam_imu_merged_name_root + "-camchain-imucam.yaml")
-                imuchain_path = os.path.join(sub_folder_name,
-                                             cam_imu_merged_name_root + "-imu.yaml")
-
-                with open(imuchain_path, 'r') as file:
-                    imuchain_data = yaml.safe_load(file)
-
-                for k, v in imuchain_data.items():
-                    imuchain_data[k]["frame_id"] = imu_topic_to_frame_mappings[v["rostopic"]]
-
-                imu0_frame_id = imuchain_data["imu0"]["frame_id"]
-                T_imus_imu0body = {v["frame_id"]: v["T_i_b"] for v in imuchain_data.values()}
-
-                for k in imuchain_data.keys():
-                    if imuchain_data[k]["model"] == "scale-misalignment-size-effect":
-                        accelerometer_params = imuchain_data[k]["accelerometers"]
-                        rx_i = accelerometer_params["rx_i"]
-                        ry_i = accelerometer_params["ry_i"]
-                        rz_i = accelerometer_params["rz_i"]
-                        input_calibration_file = imu_calibration_files_by_topic[imuchain_data[k]["rostopic"]]
-                        with open(input_calibration_file, 'r') as file:
-                            input_imu_calibration_data = yaml.safe_load(file)
-                            input_rx_i = input_imu_calibration_data["accelerometers"]["rx_i"]
-                            T_ikalibr_b = np.array(T_imus_imu0body[imuchain_data[k]["frame_id"]])
-                            T_imanufacturer_b = T_ikalibr_b
-                            T_imanufacturer_b[:3, -1] += np.array(input_rx_i) - rx_i
-                            T_imus_imu0body[imuchain_data[k]["frame_id"]] = T_imanufacturer_b.tolist()
-
-                with open(camchain_imu_path, 'r') as file:
-                    camchain_imu_data = yaml.safe_load(file)
-                T_camerabundle_imu0 = np.array(camchain_imu_data["cam0"]["T_bundle_camera"]) @ np.array(
-                    camchain_imu_data["cam0"]["T_cam_imu"])
-                T_imu0_camerabundle = np.linalg.inv(T_camerabundle_imu0)
-
-                for frame_id, T_imu_imu0 in T_imus_imu0body.items():
-                    camera_imu_calibration_data[frame_id] = {}
-                    camera_imu_calibration_data[frame_id]["T_camerabundle_imu"] = np.linalg.inv(
-                        T_imu_imu0 @ T_imu0_camerabundle).tolist()
+                for topic, data in gt_camimu_data.items():
+                    frame_id = imu_topic_to_frame_mappings[topic]
+                    camera_imu_calibration_data[frame_id] = {
+                        "T_camerabundle_imu": data["T_camerabundle_imu"]
+                    }
 
         camimu_calibration_time_header = extract_bag_start_time(cam_imu_merged_bag_path)
 
