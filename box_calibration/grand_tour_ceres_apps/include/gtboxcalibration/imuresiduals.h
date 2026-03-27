@@ -179,16 +179,19 @@ public:
                                        const Eigen::Matrix3Xd &model_points,
                                        const Eigen::Matrix3Xd &points_in_bundle_kp1,
                                        bool do_align_points) {
-        const int n_residuals = static_cast<int>(model_points.cols()) * 3 + 9;
+        // Layout: 3*n_pts (points) + 6 (SE3) + 3 (vel) + 3 (bias_gyro) + 3 (bias_accel) = 3*n_pts + 15
+        const int n_residuals = static_cast<int>(model_points.cols()) * 3 + 15;
         return new ceres::AutoDiffCostFunction<RelativeIMUBoardPointError, ceres::DYNAMIC,
                 3,                              // gravity_dir_board
                 SE3Transform::NUM_PARAMETERS,   // T_board_imu_k
                 3,                              // v_board_imu_k
-                3,                              // bias_gyro
-                3,                              // bias_accel
+                3,                              // bias_gyro_k
+                3,                              // bias_accel_k
                 SE3Transform::NUM_PARAMETERS,   // T_camera_bundle_imu
                 SE3Transform::NUM_PARAMETERS,   // T_board_imu_kp1
-                3>(                             // v_board_imu_kp1
+                3,                              // v_board_imu_kp1
+                3,                              // bias_gyro_kp1
+                3>(                             // bias_accel_kp1
                 new RelativeIMUBoardPointError(std::move(imu_data_k_to_kp1), time_k_secs, time_kp1_secs,
                                                model_points, points_in_bundle_kp1, do_align_points),
                 n_residuals);
@@ -199,11 +202,13 @@ public:
             const T *const params_gravity_dir_board,
             const T *const params_T_board_imu_k,
             const T *const params_v_board_imu_k,
-            const T *const params_bias_gyro,
-            const T *const params_bias_accel,
+            const T *const params_bias_gyro_k,
+            const T *const params_bias_accel_k,
             const T *const params_T_camera_bundle_imu,
             const T *const params_T_board_imu_kp1,
             const T *const params_v_board_imu_kp1,
+            const T *const params_bias_gyro_kp1,
+            const T *const params_bias_accel_kp1,
             T *residual) const {
 
         EigenJetAffine<T> T_bundle_imu = SE3Transform::toEigenAffineJetSafe(params_T_camera_bundle_imu);
@@ -212,8 +217,8 @@ public:
         EigenJetAffine<T> T_board_imu = SE3Transform::toEigenAffineJetSafe(params_T_board_imu_k);
 
         Eigen::Map<const Eigen::Matrix<T, 3, 1>> v0(params_v_board_imu_k);
-        Eigen::Map<const Eigen::Matrix<T, 3, 1>> bias_gyro(params_bias_gyro);
-        Eigen::Map<const Eigen::Matrix<T, 3, 1>> bias_accel(params_bias_accel);
+        Eigen::Map<const Eigen::Matrix<T, 3, 1>> bias_gyro(params_bias_gyro_k);
+        Eigen::Map<const Eigen::Matrix<T, 3, 1>> bias_accel(params_bias_accel_k);
 
         Eigen::Map<const Eigen::Matrix<T, 3, 1>> g_dir(params_gravity_dir_board);
         Eigen::Matrix<T, 3, 1> g = g_dir * T(kGravity);
@@ -315,6 +320,20 @@ public:
         residual[n_points * 3 + 6] = v(0) - v_kp1(0);
         residual[n_points * 3 + 7] = v(1) - v_kp1(1);
         residual[n_points * 3 + 8] = v(2) - v_kp1(2);
+
+        // --- Bias continuity (random-walk: scale by 1/sqrt(dt)) ---
+        // Larger intervals permit larger bias changes; residual penalises rate of change.
+        const T inv_sqrt_dt = T(1.0 / std::sqrt(time_kp1_secs_ - time_k_secs_));
+        Eigen::Map<const Eigen::Matrix<T, 3, 1>> bg_kp1(params_bias_gyro_kp1);
+        Eigen::Map<const Eigen::Matrix<T, 3, 1>> ba_kp1(params_bias_accel_kp1);
+        const Eigen::Matrix<T, 3, 1> dbg = (bg_kp1 - bias_gyro) * inv_sqrt_dt;
+        const Eigen::Matrix<T, 3, 1> dba = (ba_kp1 - bias_accel) * inv_sqrt_dt;
+        residual[n_points * 3 +  9] = dbg(0);
+        residual[n_points * 3 + 10] = dbg(1);
+        residual[n_points * 3 + 11] = dbg(2);
+        residual[n_points * 3 + 12] = dba(0);
+        residual[n_points * 3 + 13] = dba(1);
+        residual[n_points * 3 + 14] = dba(2);
 
         return true;
     }

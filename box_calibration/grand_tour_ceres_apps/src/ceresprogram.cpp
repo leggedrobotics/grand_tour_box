@@ -600,11 +600,13 @@ bool CameraIMUProgram::PopulateProblem() {
                         gravity_dir_board,
                         pack_k.T_board_imu,
                         pack_k.v_board_imu,
-                        bias_gyro,
-                        bias_accel,
+                        pack_k.bias_gyro,
+                        pack_k.bias_accel,
                         T_camera_bundle_imu,
                         pack_kp1.T_board_imu,
-                        pack_kp1.v_board_imu);
+                        pack_kp1.v_board_imu,
+                        pack_kp1.bias_gyro,
+                        pack_kp1.bias_accel);
     }
     // Apply manifolds: gravity unit sphere, SE3 for all keyframe poses and extrinsic.
     problem_->getProblem().SetManifold(gravity_dir_board, new ceres::SphereManifold<3>());

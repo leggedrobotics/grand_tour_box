@@ -56,11 +56,13 @@ public:
                                          double timestamp_s,
                                          double rms_metres) = 0;
 
-    // Log norms of the three IMU consistency sub-residuals for an interval starting at timestamp_s.
+    // Log norms of the IMU consistency sub-residuals for an interval starting at timestamp_s.
     virtual void vizImuConsistencyResidual(double timestamp_s,
                                            double position_norm,
                                            double velocity_norm,
-                                           double rotation_norm) = 0;
+                                           double rotation_norm,
+                                           double bias_gyro_norm,
+                                           double bias_accel_norm) = 0;
 
     // Log the static sensor extrinsics as 3D frames in the bundle coordinate system.
     // T_bundle_cameras: per-camera transform (sensor → bundle).

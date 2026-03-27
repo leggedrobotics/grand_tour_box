@@ -40,7 +40,9 @@ public:
     void vizImuConsistencyResidual(double timestamp_s,
                                    double position_norm,
                                    double velocity_norm,
-                                   double rotation_norm) override;
+                                   double rotation_norm,
+                                   double bias_gyro_norm,
+                                   double bias_accel_norm) override;
 
     void vizExtrinsics(const std::map<std::string, Eigen::Affine3d>& T_bundle_cameras,
                        const Eigen::Affine3d& T_bundle_imu) override;

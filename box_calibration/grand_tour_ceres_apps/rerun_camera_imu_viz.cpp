@@ -131,7 +131,9 @@ void RerunCameraImuViz::vizWorldFramePointError(const std::string& camera_name,
 void RerunCameraImuViz::vizImuConsistencyResidual(double timestamp_s,
                                                    double position_norm,
                                                    double velocity_norm,
-                                                   double rotation_norm) {
+                                                   double rotation_norm,
+                                                   double bias_gyro_norm,
+                                                   double bias_accel_norm) {
     static constexpr char kImuRes[] = "world/imu/consistency/";
     static const rerun::Color kColor{241, 194, 27};
 
@@ -140,14 +142,18 @@ void RerunCameraImuViz::vizImuConsistencyResidual(double timestamp_s,
         styled = true;
         for (const char* path : {"world/imu/consistency/position",
                                   "world/imu/consistency/velocity",
-                                  "world/imu/consistency/rotation"})
-            rec_.log_static(path, rerun::SeriesLines().with_colors(kColor).with_widths(2));
+                                  "world/imu/consistency/rotation",
+                                  "world/imu/consistency/bias_gyro",
+                                  "world/imu/consistency/bias_accel"})
+            rec_.log_static(path, rerun::SeriesLines().with_widths(2));
     }
 
     rec_.set_time_timestamp_secs_since_epoch(kTimeline, timestamp_s);
-    rec_.log(std::string(kImuRes) + "position", rerun::Scalars(position_norm));
-    rec_.log(std::string(kImuRes) + "velocity", rerun::Scalars(velocity_norm));
-    rec_.log(std::string(kImuRes) + "rotation", rerun::Scalars(rotation_norm));
+    rec_.log(std::string(kImuRes) + "position",   rerun::Scalars(position_norm));
+    rec_.log(std::string(kImuRes) + "velocity",   rerun::Scalars(velocity_norm));
+    rec_.log(std::string(kImuRes) + "rotation",   rerun::Scalars(rotation_norm));
+    rec_.log(std::string(kImuRes) + "bias_gyro",  rerun::Scalars(bias_gyro_norm));
+    rec_.log(std::string(kImuRes) + "bias_accel", rerun::Scalars(bias_accel_norm));
 }
 
 
@@ -170,7 +176,7 @@ void RerunCameraImuViz::vizImuPoseTrajectory(const std::string& source,
     const rerun::Color color = colorForCamera(source);
     // log_static is idempotent — safe to call every time.
     for (const std::string axis : {"/x", "/y", "/z"})
-        rec_.log_static(base + axis, rerun::SeriesLines().with_colors(color).with_widths(2));
+        rec_.log_static(base + axis, rerun::SeriesLines().with_widths(2));
 
     rec_.set_time_timestamp_secs_since_epoch(kTimeline, timestamp_s);
     const Eigen::Vector3d t = T_board_imu.translation();
@@ -198,7 +204,7 @@ void RerunCameraImuViz::vizImuState(double timestamp_s,
                 "world/imu/orientation/roll", "world/imu/orientation/pitch", "world/imu/orientation/yaw",
                 "world/imu/acc_bias/x",    "world/imu/acc_bias/y",    "world/imu/acc_bias/z",
                 "world/imu/gyro_bias/x",   "world/imu/gyro_bias/y",   "world/imu/gyro_bias/z"}) {
-            rec_.log_static(path, rerun::SeriesLines().with_colors(kColor).with_widths(2));
+            rec_.log_static(path, rerun::SeriesLines().with_widths(2));
         }
     }
 

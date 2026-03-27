@@ -174,8 +174,13 @@ bool ROSCameraIMUProgram::Solve() {
         for (const auto& [stamp, params] : keyframe_params) {
             const Eigen::Affine3d T_board_imu = SE3Transform::toEigenAffine(params.T_board_imu);
             const double t = static_cast<double>(stamp) * 1e-9;
+            const Eigen::Vector3d velocity = Eigen::Map<const Eigen::Vector3d>(params.v_board_imu);
+            const Eigen::Vector3d acc_b = Eigen::Map<const Eigen::Vector3d>(params.bias_accel);
+            const Eigen::Vector3d gyr_b = Eigen::Map<const Eigen::Vector3d>(params.bias_gyro);
             viz_->vizRigPose3D(t, T_board_imu);
             viz_->vizImuPoseTrajectory("keyframe", t, T_board_imu);
+            viz_->vizImuState(
+                    t, T_board_imu.translation(), velocity, Eigen::Quaterniond(T_board_imu.linear()), acc_b, gyr_b);
         }
 
         // Camera-chain IMU trajectory: T_board_imu^{cam} = inv(T_bundle_board_k) * T_bundle_imu.
@@ -193,10 +198,10 @@ bool ROSCameraIMUProgram::Solve() {
         viz_->vizExtrinsics(T_bundle_cameras, SE3Transform::toEigenAffine(T_camera_bundle_imu));
         viz_->vizBoardPose3D(Eigen::Affine3d::Identity());
 
-        // Residual layout: [point_errors (3*n_pts, only when aligned) | SE3 (6) | vel (3)]
+        // Residual layout: [points (3*n_pts) | SE3 (6) | vel (3) | bias_gyro (3) | bias_accel (3)]
         for (const auto& [stamp_k, block_id] : relative_residual_block_map) {
             const int n = problem_->getProblem().GetCostFunctionForResidualBlock(block_id)->num_residuals();
-            const int n_points = (n - 9) / 3;
+            const int n_points = (n - 15) / 3;
             std::vector<double> residuals(n);
             problem_->getProblem().EvaluateResidualBlock(block_id, false, nullptr, residuals.data(), nullptr);
             const double t = static_cast<double>(stamp_k) * 1e-9;
@@ -211,9 +216,8 @@ bool ROSCameraIMUProgram::Solve() {
                 viz_->vizWorldFramePointError("relative", t, sum_sq / n_points);
             }
 
-            // SE3 continuity: translation norm + rotation skew norm.
             const int base = n_points * 3;
-            const double t_norm = std::sqrt(residuals[base]*residuals[base]
+            const double t_norm = std::sqrt(residuals[base  ]*residuals[base  ]
                                           + residuals[base+1]*residuals[base+1]
                                           + residuals[base+2]*residuals[base+2]);
             const double r_norm = std::sqrt(residuals[base+3]*residuals[base+3]
@@ -222,7 +226,13 @@ bool ROSCameraIMUProgram::Solve() {
             const double v_norm = std::sqrt(residuals[base+6]*residuals[base+6]
                                           + residuals[base+7]*residuals[base+7]
                                           + residuals[base+8]*residuals[base+8]);
-            viz_->vizImuConsistencyResidual(t, t_norm, v_norm, r_norm);
+            const double bg_norm = std::sqrt(residuals[base+ 9]*residuals[base+ 9]
+                                           + residuals[base+10]*residuals[base+10]
+                                           + residuals[base+11]*residuals[base+11]);
+            const double ba_norm = std::sqrt(residuals[base+12]*residuals[base+12]
+                                           + residuals[base+13]*residuals[base+13]
+                                           + residuals[base+14]*residuals[base+14]);
+            viz_->vizImuConsistencyResidual(t, t_norm, v_norm, r_norm, bg_norm, ba_norm);
         }
     }
 
