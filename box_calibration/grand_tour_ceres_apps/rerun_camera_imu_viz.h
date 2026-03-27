@@ -45,6 +45,10 @@ public:
     void vizExtrinsics(const std::map<std::string, Eigen::Affine3d>& T_bundle_cameras,
                        const Eigen::Affine3d& T_bundle_imu) override;
 
+    void vizImuPoseTrajectory(const std::string& source,
+                              double timestamp_s,
+                              const Eigen::Affine3d& T_board_imu) override;
+
     void vizImuState(double timestamp_s,
                      const Eigen::Vector3d& position,
                      const Eigen::Vector3d& velocity,

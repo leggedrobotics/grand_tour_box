@@ -163,6 +163,22 @@ void RerunCameraImuViz::vizExtrinsics(const std::map<std::string, Eigen::Affine3
                     affineToRerunTransform(T_bundle_imu), rerun::TransformAxes3D(.05f));
 }
 
+void RerunCameraImuViz::vizImuPoseTrajectory(const std::string& source,
+                                             double timestamp_s,
+                                             const Eigen::Affine3d& T_board_imu) {
+    const std::string base = "imu_trajectory/" + source + "/position";
+    const rerun::Color color = colorForCamera(source);
+    // log_static is idempotent — safe to call every time.
+    for (const std::string axis : {"/x", "/y", "/z"})
+        rec_.log_static(base + axis, rerun::SeriesLines().with_colors(color).with_widths(2));
+
+    rec_.set_time_timestamp_secs_since_epoch(kTimeline, timestamp_s);
+    const Eigen::Vector3d t = T_board_imu.translation();
+    rec_.log(base + "/x", rerun::Scalars(t.x()));
+    rec_.log(base + "/y", rerun::Scalars(t.y()));
+    rec_.log(base + "/z", rerun::Scalars(t.z()));
+}
+
 void RerunCameraImuViz::vizImuState(double timestamp_s,
                                     const Eigen::Vector3d& position,
                                     const Eigen::Vector3d& velocity,

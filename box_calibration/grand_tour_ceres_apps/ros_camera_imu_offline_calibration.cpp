@@ -10,6 +10,7 @@ int main(int argc, char **argv) {
     constexpr char kNodeName[] = "camera_imu_offline_calibration";
     auto rec = rerun::RecordingStream(kNodeName);
     rec.spawn().exit_on_failure();
+    rec.log_static("world", rerun::ViewCoordinates::RIGHT_HAND_Y_DOWN); // Set an up-axis
     ROSCameraIMUParser parser(kNodeName, argc, argv);
     if (!parser.is_valid) return 1;
 

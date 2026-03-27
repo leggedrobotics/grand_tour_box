@@ -68,6 +68,14 @@ public:
     virtual void vizExtrinsics(const std::map<std::string, Eigen::Affine3d>& T_bundle_cameras,
                                const Eigen::Affine3d& T_bundle_imu) = 0;
 
+    // Log XYZ position of an IMU pose as a time series under "imu_trajectory/<source>/".
+    // Call with source="keyframe" for optimized keyframe poses and
+    // source="camera_chain" for camera-detection-derived poses. Both land on the
+    // same axes so they can be directly compared.
+    virtual void vizImuPoseTrajectory(const std::string& source,
+                                      double timestamp_s,
+                                      const Eigen::Affine3d& T_board_imu) = 0;
+
     // Log integrated IMU state as separate per-axis time series:
     //   position (x/y/z), velocity (x/y/z), orientation (roll/pitch/yaw),
     //   accelerometer bias (x/y/z), gyroscope bias (x/y/z).

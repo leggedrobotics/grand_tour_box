@@ -135,9 +135,11 @@ public:
 // SE3 IMU pose T_board_imu_k and velocity v_board_imu_k as parameters.
 //
 // Integration seeds from T_board_imu_k (SE3 parameter) and rolls out to k+1.
-// The integrated result is compared against the camera detection at k+1:
-//   p_pred   = T_bundle_imu * T_board_imu_{k+1}^{-1} * model_points
-//   p_camera = points_in_bundle_kp1  (T_bundle_board_kp1 * model_points, baked in)
+// The integrated result is compared against the camera detection at k+1 in board frame:
+//   p_board_pred = T_board_imu_{k+1} * T_imu_bundle * points_in_bundle_kp1
+//   residual     = p_board_pred - model_points
+// where points_in_bundle_kp1 = T_bundle_board_kp1 * model_points (baked in).
+// Expressing the error in board frame prevents IMU pose drift.
 //
 // Continuity terms link the integrated result to the k+1 keyframe parameters:
 //   SE3: T_board_imu_{k+1}^{integrated} vs T_board_imu_kp1  (6 residuals)
@@ -256,14 +258,17 @@ public:
 
         // T_board_imu is now T_board_imu_{k+1} (integrated).
 
-        // --- Camera observation at k+1 ---
-        // Predicted bundle-frame board points from integrated IMU pose:
-        //   p_pred = T_bundle_imu * T_board_imu_{k+1}^{-1} * model_points
-        Eigen::Matrix<T, 3, Eigen::Dynamic> p_pred =
-                T_bundle_imu * T_board_imu.inverse() * model_points_.cast<T>();
+        // --- Camera observation at k+1 (residual in board frame) ---
+        // Project camera-observed bundle-frame points back to board frame via the
+        // integrated IMU pose and extrinsic, then compare against the static model points:
+        //   p_board_pred = T_board_imu_{k+1} * T_imu_bundle * points_in_bundle_kp1
+        //   residual     = p_board_pred - model_points
+        // When the integrated pose matches the camera-derived pose, p_board_pred = model_points.
+        Eigen::Matrix<T, 3, Eigen::Dynamic> p_board_pred =
+                T_board_imu * T_bundle_imu.inverse() * points_in_bundle_kp1_.cast<T>();
 
         Eigen::Matrix<T, 3, Eigen::Dynamic> point_errors =
-                p_pred - points_in_bundle_kp1_.cast<T>();
+                p_board_pred - model_points_.cast<T>();
 
         const int n_points = point_errors.cols();
         for (int i = 0; i < n_points; ++i) {

@@ -162,9 +162,26 @@ bool ROSCameraIMUProgram::Solve() {
                                            T_world_camera, det.T_sensor_model * det.modelpoints3d);
             }
         }
-        for (const auto &[stamp, params] : keyframe_params){
+        const Eigen::Affine3d T_bundle_imu = SE3Transform::toEigenAffine(T_camera_bundle_imu);
+
+        // Optimized keyframe IMU trajectory.
+        for (const auto& [stamp, params] : keyframe_params) {
             const Eigen::Affine3d T_board_imu = SE3Transform::toEigenAffine(params.T_board_imu);
-            viz_->vizRigPose3D(static_cast<double>(stamp) * 1e-9, T_board_imu);
+            const double t = static_cast<double>(stamp) * 1e-9;
+            viz_->vizRigPose3D(t, T_board_imu);
+            viz_->vizImuPoseTrajectory("keyframe", t, T_board_imu);
+        }
+
+        // Camera-chain IMU trajectory: T_board_imu^{cam} = inv(T_bundle_board_k) * T_bundle_imu.
+        for (const auto& [stamp, detections] : camera_detections.observations) {
+            for (const auto& [cam_name, det] : detections) {
+                const Eigen::Affine3d T_bundle_sensor = SE3Transform::toEigenAffine(
+                        camera_packs.at(cam_name).T_bundle_sensor);
+                const Eigen::Affine3d T_bundle_board = T_bundle_sensor * det.T_sensor_model;
+                const Eigen::Affine3d T_board_imu_cam = T_bundle_board.inverse() * T_bundle_imu;
+                viz_->vizImuPoseTrajectory("camera_chain", static_cast<double>(stamp) * 1e-9, T_board_imu_cam);
+                break;  // one camera per stamp is sufficient
+            }
         }
         viz_->vizExtrinsics(T_bundle_cameras, SE3Transform::toEigenAffine(T_camera_bundle_imu));
         viz_->vizBoardPose3D(Eigen::Affine3d::Identity());
@@ -172,7 +189,7 @@ bool ROSCameraIMUProgram::Solve() {
         // Relative board-point errors (metres RMS per point) per keyframe interval.
         for (const auto& [stamp_k, block_id] : relative_residual_block_map) {
             const int n = problem_->getProblem().GetCostFunctionForResidualBlock(block_id)->num_residuals();
-            const int n_points = n / 3;
+            const int n_points = (n - 9) / 3;  // residual layout: 3*n_pts + 9 (SE3 + vel continuity)
             std::vector<double> residuals(n);
             problem_->getProblem().EvaluateResidualBlock(block_id, false, nullptr, residuals.data(), nullptr);
             double sum_sq = 0;

@@ -487,17 +487,17 @@ bool CameraIMUProgram::PopulateProblem() {
                   return a.detection_time_secs < b.detection_time_secs;
               });
 
-    constexpr double kMinIntervalSecs = 1.0;
+//    constexpr double kMinIntervalSecs = 0.5;
 
     for (auto stamp_it = stamps.begin(); stamp_it != stamps.end(); ++stamp_it) {
         auto next_it = std::next(stamp_it);
         if (next_it == stamps.end()) break;
 
-        // Advance next_it until it is at least kMinIntervalSecs ahead.
-        while (next_it != stamps.end() &&
-               (static_cast<double>(*next_it - *stamp_it) * 1e-9) < kMinIntervalSecs)
-            ++next_it;
-        if (next_it == stamps.end()) break;
+//        // Advance next_it until it is at least kMinIntervalSecs ahead.
+//        while (next_it != stamps.end() &&
+//               (static_cast<double>(*next_it - *stamp_it) * 1e-9) < kMinIntervalSecs)
+//            ++next_it;
+//        if (next_it == stamps.end()) break;
 
         const unsigned long long stamp_k   = *stamp_it;
         const unsigned long long stamp_kp1 = *next_it;
