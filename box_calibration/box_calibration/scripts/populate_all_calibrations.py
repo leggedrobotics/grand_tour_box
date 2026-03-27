@@ -88,42 +88,35 @@ class RoscoreEnvironment:
 
 def main():
     # Define different -cc (camera calibration) and -cl (lidar calibration) paths
-    camera_lidar_calibrations = [
-        ("OXFORD_CALIBRATIONS/cam_cam_sunday_evening/2025-09-14-21-53-37_calibration",
-         "OXFORD_CALIBRATIONS/cam_lidar_tuesday/2025-09-17-00-15-01_calibration",
-         "tf_static_metadata_oxford.bag",
-         "2026-10-10-00-00-00"),]
-
-    # Fixed paths
-    prism_calibration = "/media/fu/cloudster31/GT-spires/calibrations/OXFORD_CALIBRATIONS/cam_prism_only"
-    imu_calibration = "/media/fu/cloudster31/grand_tour_calibrations/2024-12-06_calibration_imu"
+    camera_camera_data_folder = "/media/fu/cloudster31/GT-spires/calibrations/OXFORD_CALIBRATIONS/cam_cam_sunday_evening/2025-09-14-21-53-37_calibration"
+    camera_lidar_data_folder = "/media/fu/cloudster31/GT-spires/calibrations/OXFORD_CALIBRATIONS/cam_lidar_tuesday/2025-09-17-00-15-01_calibration"
+    camera_prism_data_folder = "/media/fu/cloudster31/GT-spires/calibrations/OXFORD_CALIBRATIONS/cam_prism_only"
+    camera_imu_data_folder = "/media/fu/cloudster31/grand_tour_calibrations/2024-12-06_calibration_imu"
+    output_tf_metadata_bag_path = "/media/fu/cloudster31/GT-spires/calibrations/tf_static_metadata_oxford.bag"
+    validity_end = "2026-10-10-00-00-00"
 
     # Iterate through all camera and lidar calibration pairs
-    for i, (cc_path, cl_path, output_bag_path, validity_end) in enumerate(camera_lidar_calibrations):
-        cc_path = os.path.join("/media/fu/cloudster31/GT-spires/calibrations/", cc_path)
-        cl_path = os.path.join("/media/fu/cloudster31/GT-spires/calibrations/", cl_path)
-        output_bag_path = os.path.join("/media/fu/cloudster31/GT-spires/calibrations/", output_bag_path)
-        with RoscoreEnvironment(use_sim_time=True):
-            command = [
-                "rosrun", "box_calibration", "process_all_calibrations.py",
-                "-cc", cc_path, "--skip_camera",
-                "-cl", cl_path,
-                "-cp", prism_calibration,
-                "-ci", imu_calibration
-            ]
+    # with RoscoreEnvironment(use_sim_time=True):
+    command = [
+        "rosrun", "box_calibration", "process_all_calibrations.py",
+        "-cc", camera_camera_data_folder,
+        "-cl", camera_lidar_data_folder,
+        "-cp", camera_prism_data_folder,
+        "-ci", camera_imu_data_folder
+    ]
 
-            print(f"Running command:\n{' '.join(command)}")
-            subprocess.run(command)
+    print(f"Running command:\n{' '.join(command)}")
+    subprocess.run(command)
 
-            run_non_blocking_command("roslaunch box_model box_model.launch rviz:=false")
-            time.sleep(2)
-            if i > 0:
-                run_blocking_command(
-                    f"rosrun box_calibration store_tf_static.py _bag_file:={output_bag_path} _validity_end:={validity_end}")
-            else:
-                run_blocking_command(
-                    f"rosrun box_calibration store_tf_static.py _bag_file:={output_bag_path} _validity_end:={validity_end} _validity_start:=0")
-            time.sleep(10)
+    run_non_blocking_command("roslaunch box_model box_model.launch rviz:=false")
+    time.sleep(2)
+    # if i > 0:
+    #     run_blocking_command(
+    #         f"rosrun box_calibration store_tf_static.py _bag_file:={output_bag_path} _validity_end:={validity_end}")
+    # else:
+    run_blocking_command(
+        f"rosrun box_calibration store_tf_static.py _bag_file:={output_tf_metadata_bag_path} _validity_end:={validity_end} _validity_start:=0")
+    time.sleep(10)
 
 
 if __name__ == "__main__":
