@@ -133,9 +133,6 @@ ROSCameraIMUProgram::ROSCameraIMUProgram(ROSCameraIMUParser parser,
     // T_camera_bundle_imu starts as identity.
     SE3Transform::assignToData(Eigen::Affine3d::Identity(), T_camera_bundle_imu);
 
-    // T_world_board starts as identity; PreSolveBoard() will set a better initial estimate.
-    SE3Transform::assignToData(Eigen::Affine3d::Identity(), T_world_board);
-
     std::cout << "Loaded " << camera_detections.unique_timestamps.size()
               << " keyframes, " << imu_observations.size() << " IMU observations." << std::endl;
 
@@ -144,8 +141,8 @@ ROSCameraIMUProgram::ROSCameraIMUProgram(ROSCameraIMUParser parser,
 
 
 bool ROSCameraIMUProgram::Solve() {
-//    PreSolveExtrinsic();
-//    PreSolveBoard();
+    PreSolveExtrinsic();
+    PreSolveBoard();
     bool success = CeresProgram::Solve();
 
     if (viz_) {
@@ -155,8 +152,9 @@ bool ROSCameraIMUProgram::Solve() {
             T_bundle_cameras[cam_name] = SE3Transform::toEigenAffine(cam_pack.T_bundle_sensor);
         for (const auto stamp : camera_detections.unique_timestamps) {
             for (const auto& [cam_name, det] : camera_detections.observations.at(stamp)) {
+                // Board frame is the world frame (identity), so T_world_camera = T_board_camera.
                 const Eigen::Affine3d T_board_camera = det.T_sensor_model.inverse();
-                const Eigen::Affine3d T_world_camera = SE3Transform::toEigenAffine(T_world_board) * T_board_camera;
+                const Eigen::Affine3d T_world_camera = T_board_camera;
                 viz_->vizCameraPose3D(cam_name, static_cast<double>(stamp) * 1e-9, T_world_camera);
                 const Eigen::Affine3d T_world_bundle = T_world_camera * SE3Transform::toEigenAffine(
                         camera_packs.at(cam0_name).T_bundle_sensor).inverse();
@@ -168,7 +166,7 @@ bool ROSCameraIMUProgram::Solve() {
             }
         }
         viz_->vizExtrinsics(T_bundle_cameras, SE3Transform::toEigenAffine(T_camera_bundle_imu));
-        viz_->vizBoardPose3D(SE3Transform::toEigenAffine(T_world_board));
+        viz_->vizBoardPose3D(Eigen::Affine3d::Identity());
 
         // Relative board-point errors (metres RMS per point) per keyframe interval.
         for (const auto& [stamp_k, block_id] : relative_residual_block_map) {

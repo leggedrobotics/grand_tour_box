@@ -48,8 +48,9 @@ struct CameraIMUProgram : CeresProgram {
 
     // --- Parameters: global ---
     double T_camera_bundle_imu[SE3Transform::NUM_PARAMETERS]{0, 0, 0, 1, 0, 0, 0};
-    double T_world_board[SE3Transform::NUM_PARAMETERS]{0, 0, 0, 1, 0, 0, 0};
-    Eigen::Vector3d gravity_world{0.0, 0.0, -9.81};
+    // Gravity direction in board frame (unit vector); magnitude fixed to kGravity.
+    // Board frame is the reference frame — no T_world_board needed.
+    double gravity_dir_board[3]{0.0, 0.0, -1.0};
 
     // Global bias shared across all residuals.
     double bias_gyro[3]{};

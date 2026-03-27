@@ -37,9 +37,9 @@ struct ImuParameterPack {
     double T_world_board[SE3Transform::NUM_PARAMETERS]{};
 };
 
-// Per-keyframe IMU state: velocity only — T_world_imu is derived from T_world_board chain.
+// Per-keyframe IMU state: velocity only — T_board_imu is derived from camera observations.
 struct ImuKeyframeParameterPack {
-    double v_world_imu[3]{};
+    double v_board_imu[3]{};
 };
 
 #endif //GRAND_TOUR_CERES_APPS_PARAMETER_HELPERS_H
