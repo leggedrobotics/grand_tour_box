@@ -320,8 +320,8 @@ if __name__ == "__main__":
         # YAML configuration data
         default_grand_tour_camlidar_target_config = {'target_type': 'checkerboard',
                                                      'targetCols': 7, 'targetRows': 8,
-                                                     'rowSpacingMeters': 0.05,
-                                                     'colSpacingMeters': 0.05}
+                                                     'rowSpacingMeters': 0.08,
+                                                     'colSpacingMeters': 0.08}
         yaml.dump(default_grand_tour_camlidar_target_config, file)
 
     hesai_calib_output_folder = os.path.join(camera_lidar_folder_path, args.hesai_output_dir)
