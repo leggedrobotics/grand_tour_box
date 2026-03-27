@@ -457,8 +457,23 @@ void CameraIMUProgram::PreSolveBoard() {
     gravity_dir_board[0] = g_board_dir.x();
     gravity_dir_board[1] = g_board_dir.y();
     gravity_dir_board[2] = g_board_dir.z();
-
     std::cout << "PreSolveBoard: gravity_dir_board = " << g_board_dir.transpose() << std::endl;
+
+    // Initialize per-keyframe T_board_imu from the camera detection chain.
+    int n_initialized = 0;
+    for (auto& [stamp, pack] : keyframe_params) {
+        if (!camera_detections.observations.contains(stamp)) continue;
+        for (const auto& [cam_name, detection] : camera_detections.observations.at(stamp)) {
+            const Eigen::Affine3d T_bundle_sensor = SE3Transform::toEigenAffine(
+                    camera_packs.at(cam_name).T_bundle_sensor);
+            const Eigen::Affine3d T_bundle_board_k = T_bundle_sensor * detection.T_sensor_model;
+            const Eigen::Affine3d T_board_imu_k = T_bundle_board_k.inverse() * T_bundle_imu;
+            SE3Transform::assignToData(T_board_imu_k, pack.T_board_imu);
+            ++n_initialized;
+            break;
+        }
+    }
+    std::cout << "PreSolveBoard: initialized " << n_initialized << " keyframe poses." << std::endl;
 }
 
 bool CameraIMUProgram::PopulateProblem() {
@@ -508,20 +523,16 @@ bool CameraIMUProgram::PopulateProblem() {
         }
         if (imu_k_to_kp1.empty()) continue;
 
-        // Use first camera present at both stamps; bake in bundle-frame board points.
-        Eigen::Matrix3Xd points_k, points_kp1;
-        Eigen::Affine3d T_bundle_board_k;
+        // Use first camera present at both stamps; bake in model points and camera observation at k+1.
+        Eigen::Matrix3Xd model_points3d, points_in_bundle_kp1;
         bool found = false;
         for (const auto& [cam_name, det_k] : camera_detections.observations.at(stamp_k)) {
             if (!camera_detections.observations.at(stamp_kp1).contains(cam_name)) continue;
             const auto& det_kp1 = camera_detections.observations.at(stamp_kp1).at(cam_name);
             const Eigen::Affine3d T_bundle_sensor = SE3Transform::toEigenAffine(
                     camera_packs.at(cam_name).T_bundle_sensor);
-            T_bundle_board_k = T_bundle_sensor * det_k.T_sensor_model;
-            // Force the same set of model_points
-            const Eigen::Matrix3Xd& model_points3d = det_k.modelpoints3d;
-            points_k   = T_bundle_sensor * det_k.T_sensor_model   * model_points3d;
-            points_kp1 = T_bundle_sensor * det_kp1.T_sensor_model * model_points3d;
+            model_points3d       = det_k.modelpoints3d;
+            points_in_bundle_kp1 = T_bundle_sensor * det_kp1.T_sensor_model * model_points3d;
             found = true;
             break;
         }
@@ -534,18 +545,23 @@ bool CameraIMUProgram::PopulateProblem() {
                 problem_->getProblem().AddResidualBlock(
                         RelativeIMUBoardPointError::Create(
                                 std::move(imu_k_to_kp1), time_k_s, time_kp1_s,
-                                T_bundle_board_k, points_k, points_kp1),
+                                model_points3d, points_in_bundle_kp1),
                         new ceres::HuberLoss(0.02),
                         gravity_dir_board,
+                        pack_k.T_board_imu,
                         pack_k.v_board_imu,
                         bias_gyro,
                         bias_accel,
                         T_camera_bundle_imu,
+                        pack_kp1.T_board_imu,
                         pack_kp1.v_board_imu);
     }
-    // gravity_dir_board is a unit vector — constrain it to the sphere S^2.
+    // Apply manifolds: gravity unit sphere, SE3 for all keyframe poses and extrinsic.
     problem_->getProblem().SetManifold(gravity_dir_board, new ceres::SphereManifold<3>());
     se3.handleSetParameterization(problem_->getProblem(), T_camera_bundle_imu);
+    for (auto& [stamp, pack] : keyframe_params) {
+        se3.handleSetParameterization(problem_->getProblem(), pack.T_board_imu);
+    }
 
     problem_->solver_options_.minimizer_progress_to_stdout = true;
     problem_->solver_options_.max_num_iterations = 200;

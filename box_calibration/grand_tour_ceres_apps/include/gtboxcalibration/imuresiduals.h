@@ -129,29 +129,30 @@ public:
 
 
 // ---------------------------------------------------------------------------
-// Relative IMU board-point residual between consecutive keyframes k and k+1.
+// IMU rollout residual between consecutive keyframes k and k+1.
 //
-// The board is the reference (world) frame — it is static and its pose is
-// identity by definition. IMU poses are rolled out directly in the board frame.
+// The board is the reference (world) frame. Each keyframe carries an explicit
+// SE3 IMU pose T_board_imu_k and velocity v_board_imu_k as parameters.
 //
-// T_board_imu_k is derived purely from camera observations + extrinsic:
-//   T_board_imu_k = inv(T_bundle_board_k) * T_bundle_imu
-// where T_bundle_board_k = T_bundle_sensor * T_camera_board_k is baked in.
+// Integration seeds from T_board_imu_k (SE3 parameter) and rolls out to k+1.
+// The integrated result is compared against the camera detection at k+1:
+//   p_pred   = T_bundle_imu * T_board_imu_{k+1}^{-1} * model_points
+//   p_camera = points_in_bundle_kp1  (T_bundle_board_kp1 * model_points, baked in)
 //
-// Gravity is parameterized as a unit direction vector in the board frame,
-// scaled by kGravity (9.81 m/s^2) inside the residual.
-//
-//   p_pred = T_bundle_imu * T_board_imu_{k+1}^{-1} * T_board_imu_k * T_imu_bundle * p_bundle_k
-//   residual = p_pred - p_bundle_{k+1}    (R^3 per model point)
+// Continuity terms link the integrated result to the k+1 keyframe parameters:
+//   SE3: T_board_imu_{k+1}^{integrated} vs T_board_imu_kp1  (6 residuals)
+//   vel: v_{k+1}^{integrated} vs v_board_imu_kp1            (3 residuals)
 //
 // Parameters:
 //   params_gravity_dir_board   [3]  — unit gravity direction in board frame (global)
+//   params_T_board_imu_k       [7]  — IMU pose in board frame at k (per-keyframe)
 //   params_v_board_imu_k       [3]  — IMU velocity in board frame at k (per-keyframe)
 //   params_bias_gyro           [3]  — gyroscope bias (global)
 //   params_bias_accel          [3]  — accelerometer bias (global)
 //   params_T_camera_bundle_imu [7]  — extrinsic: IMU to bundle (global)
+//   params_T_board_imu_kp1     [7]  — IMU pose in board frame at k+1 (per-keyframe)
 //   params_v_board_imu_kp1     [3]  — IMU velocity in board frame at k+1 (per-keyframe)
-// Residual size: 3 * n_model_points + 3
+// Residual size: 3 * n_model_points + 9  (points + SE3 continuity + vel continuity)
 // ---------------------------------------------------------------------------
 class RelativeIMUBoardPointError {
 public:
@@ -160,55 +161,55 @@ public:
     RelativeIMUBoardPointError(std::vector<IMUObservation> imu_data_k_to_kp1,
                                double time_k_secs,
                                double time_kp1_secs,
-                               Eigen::Affine3d T_bundle_board_k,
-                               Eigen::Matrix3Xd points_in_bundle_k,
+                               Eigen::Matrix3Xd model_points,
                                Eigen::Matrix3Xd points_in_bundle_kp1)
             : imu_data_(std::move(imu_data_k_to_kp1)),
               time_k_secs_(time_k_secs),
               time_kp1_secs_(time_kp1_secs),
-              T_bundle_board_k_(std::move(T_bundle_board_k)),
-              points_in_bundle_k_(std::move(points_in_bundle_k)),
+              model_points_(std::move(model_points)),
               points_in_bundle_kp1_(std::move(points_in_bundle_kp1)) {}
 
     static ceres::CostFunction *Create(std::vector<IMUObservation> imu_data_k_to_kp1,
                                        double time_k_secs,
                                        double time_kp1_secs,
-                                       const Eigen::Affine3d &T_bundle_board_k,
-                                       const Eigen::Matrix3Xd &points_in_bundle_k,
+                                       const Eigen::Matrix3Xd &model_points,
                                        const Eigen::Matrix3Xd &points_in_bundle_kp1) {
-        const int n_residuals = static_cast<int>(points_in_bundle_k.cols()) * 3 + 3;  // +3 for v_{k+1}
+        const int n_residuals = static_cast<int>(model_points.cols()) * 3 + 9;
         return new ceres::AutoDiffCostFunction<RelativeIMUBoardPointError, ceres::DYNAMIC,
                 3,                              // gravity_dir_board
+                SE3Transform::NUM_PARAMETERS,   // T_board_imu_k
                 3,                              // v_board_imu_k
                 3,                              // bias_gyro
                 3,                              // bias_accel
                 SE3Transform::NUM_PARAMETERS,   // T_camera_bundle_imu
+                SE3Transform::NUM_PARAMETERS,   // T_board_imu_kp1
                 3>(                             // v_board_imu_kp1
                 new RelativeIMUBoardPointError(std::move(imu_data_k_to_kp1), time_k_secs, time_kp1_secs,
-                                               T_bundle_board_k, points_in_bundle_k, points_in_bundle_kp1),
+                                               model_points, points_in_bundle_kp1),
                 n_residuals);
     }
 
     template<typename T>
     bool operator()(
             const T *const params_gravity_dir_board,
+            const T *const params_T_board_imu_k,
             const T *const params_v_board_imu_k,
             const T *const params_bias_gyro,
             const T *const params_bias_accel,
             const T *const params_T_camera_bundle_imu,
+            const T *const params_T_board_imu_kp1,
             const T *const params_v_board_imu_kp1,
             T *residual) const {
 
         EigenJetAffine<T> T_bundle_imu = SE3Transform::toEigenAffineJetSafe(params_T_camera_bundle_imu);
 
-        // Board frame is the reference: T_board_imu_k = inv(T_bundle_board_k) * T_bundle_imu
-        EigenJetAffine<T> T_board_imu = T_bundle_board_k_.cast<T>().inverse() * T_bundle_imu;
+        // Seed integration from the explicit keyframe SE3 parameter.
+        EigenJetAffine<T> T_board_imu = SE3Transform::toEigenAffineJetSafe(params_T_board_imu_k);
 
         Eigen::Map<const Eigen::Matrix<T, 3, 1>> v0(params_v_board_imu_k);
         Eigen::Map<const Eigen::Matrix<T, 3, 1>> bias_gyro(params_bias_gyro);
         Eigen::Map<const Eigen::Matrix<T, 3, 1>> bias_accel(params_bias_accel);
 
-        // Gravity in board frame: unit direction * magnitude
         Eigen::Map<const Eigen::Matrix<T, 3, 1>> g_dir(params_gravity_dir_board);
         Eigen::Matrix<T, 3, 1> g = g_dir * T(kGravity);
 
@@ -217,7 +218,7 @@ public:
 
         const size_t n = imu_data_.size();
         for (size_t i = 0; i < n; ++i) {
-            const auto &obs   = imu_data_[i];
+            const auto &obs    = imu_data_[i];
             const bool is_last = (i + 1 == n);
 
             const double t_end = is_last ? time_kp1_secs_ : obs.detection_time_secs;
@@ -254,33 +255,43 @@ public:
         }
 
         // T_board_imu is now T_board_imu_{k+1} (integrated).
-        // T_board_imu_k: initial IMU pose in board frame at k.
-        EigenJetAffine<T> T_board_imu_k = T_bundle_board_k_.cast<T>().inverse() * T_bundle_imu;
 
-        // Predicted bundle-frame points at k+1:
-        //   p_pred = T_bundle_imu * T_board_imu_{k+1}^{-1} * T_board_imu_k * T_imu_bundle * p_bundle_k
+        // --- Camera observation at k+1 ---
+        // Predicted bundle-frame board points from integrated IMU pose:
+        //   p_pred = T_bundle_imu * T_board_imu_{k+1}^{-1} * model_points
         Eigen::Matrix<T, 3, Eigen::Dynamic> p_pred =
-                T_bundle_imu *
-                T_board_imu.inverse() *
-                T_board_imu_k *
-                T_bundle_imu.inverse() *
-                points_in_bundle_k_.cast<T>();
+                T_bundle_imu * T_board_imu.inverse() * model_points_.cast<T>();
 
-        Eigen::Matrix<T, 3, Eigen::Dynamic> errors =
+        Eigen::Matrix<T, 3, Eigen::Dynamic> point_errors =
                 p_pred - points_in_bundle_kp1_.cast<T>();
 
-        const int n_points = errors.cols();
+        const int n_points = point_errors.cols();
         for (int i = 0; i < n_points; ++i) {
-            residual[i * 3]     = errors(0, i);
-            residual[i * 3 + 1] = errors(1, i);
-            residual[i * 3 + 2] = errors(2, i);
+            residual[i * 3]     = point_errors(0, i);
+            residual[i * 3 + 1] = point_errors(1, i);
+            residual[i * 3 + 2] = point_errors(2, i);
         }
 
-        // Velocity continuity: integrated v at k+1 should match v_board_imu_kp1.
+        // --- SE3 pose continuity to T_board_imu_kp1 ---
+        EigenJetAffine<T> T_board_imu_kp1 = SE3Transform::toEigenAffineJetSafe(params_T_board_imu_kp1);
+
+        // Translation error
+        Eigen::Matrix<T, 3, 1> t_err = T_board_imu.translation() - T_board_imu_kp1.translation();
+        residual[n_points * 3]     = t_err(0);
+        residual[n_points * 3 + 1] = t_err(1);
+        residual[n_points * 3 + 2] = t_err(2);
+
+        // Rotation error (skew-symmetric part of R_integrated^T * R_kp1)
+        Eigen::Matrix<T, 3, 3> R_err = T_board_imu.linear().transpose() * T_board_imu_kp1.linear();
+        residual[n_points * 3 + 3] = R_err(2, 1) - R_err(1, 2);
+        residual[n_points * 3 + 4] = R_err(0, 2) - R_err(2, 0);
+        residual[n_points * 3 + 5] = R_err(1, 0) - R_err(0, 1);
+
+        // --- Velocity continuity ---
         Eigen::Map<const Eigen::Matrix<T, 3, 1>> v_kp1(params_v_board_imu_kp1);
-        residual[n_points * 3]     = v(0) - v_kp1(0);
-        residual[n_points * 3 + 1] = v(1) - v_kp1(1);
-        residual[n_points * 3 + 2] = v(2) - v_kp1(2);
+        residual[n_points * 3 + 6] = v(0) - v_kp1(0);
+        residual[n_points * 3 + 7] = v(1) - v_kp1(1);
+        residual[n_points * 3 + 8] = v(2) - v_kp1(2);
 
         return true;
     }
@@ -289,8 +300,7 @@ private:
     std::vector<IMUObservation> imu_data_;
     double time_k_secs_;
     double time_kp1_secs_;
-    Eigen::Affine3d T_bundle_board_k_;
-    Eigen::Matrix3Xd points_in_bundle_k_;
+    Eigen::Matrix3Xd model_points_;
     Eigen::Matrix3Xd points_in_bundle_kp1_;
 };
 

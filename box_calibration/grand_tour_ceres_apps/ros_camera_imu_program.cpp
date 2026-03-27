@@ -158,12 +158,13 @@ bool ROSCameraIMUProgram::Solve() {
                 viz_->vizCameraPose3D(cam_name, static_cast<double>(stamp) * 1e-9, T_world_camera);
                 const Eigen::Affine3d T_world_bundle = T_world_camera * SE3Transform::toEigenAffine(
                         camera_packs.at(cam0_name).T_bundle_sensor).inverse();
-                viz_->vizRigPose3D(
-                        static_cast<double>(stamp) * 1e-9,
-                        T_world_bundle * SE3Transform::toEigenAffine(T_camera_bundle_imu));
                 viz_->vizDetectionPoints3D(cam_name, static_cast<double>(stamp) * 1e-9,
                                            T_world_camera, det.T_sensor_model * det.modelpoints3d);
             }
+        }
+        for (const auto &[stamp, params] : keyframe_params){
+            const Eigen::Affine3d T_board_imu = SE3Transform::toEigenAffine(params.T_board_imu);
+            viz_->vizRigPose3D(static_cast<double>(stamp) * 1e-9, T_board_imu);
         }
         viz_->vizExtrinsics(T_bundle_cameras, SE3Transform::toEigenAffine(T_camera_bundle_imu));
         viz_->vizBoardPose3D(Eigen::Affine3d::Identity());

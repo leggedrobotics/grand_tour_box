@@ -37,8 +37,9 @@ struct ImuParameterPack {
     double T_world_board[SE3Transform::NUM_PARAMETERS]{};
 };
 
-// Per-keyframe IMU state: velocity only — T_board_imu is derived from camera observations.
+// Per-keyframe IMU state: explicit SE3 pose + velocity in the board frame.
 struct ImuKeyframeParameterPack {
+    double T_board_imu[SE3Transform::NUM_PARAMETERS]{0, 0, 0, 1, 0, 0, 0};
     double v_board_imu[3]{};
 };
 
