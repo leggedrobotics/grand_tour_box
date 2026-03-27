@@ -527,7 +527,8 @@ bool CameraIMUProgram::PopulateProblem() {
         }
         if (!found) continue;
 
-        auto& pack_k = keyframe_params[stamp_k];
+        auto& pack_k   = keyframe_params[stamp_k];
+        auto& pack_kp1 = keyframe_params[stamp_kp1];
 
         relative_residual_block_map[stamp_k] =
                 problem_->getProblem().AddResidualBlock(
@@ -539,7 +540,8 @@ bool CameraIMUProgram::PopulateProblem() {
                         pack_k.v_board_imu,
                         bias_gyro,
                         bias_accel,
-                        T_camera_bundle_imu);
+                        T_camera_bundle_imu,
+                        pack_kp1.v_board_imu);
     }
     // gravity_dir_board is a unit vector — constrain it to the sphere S^2.
     problem_->getProblem().SetManifold(gravity_dir_board, new ceres::SphereManifold<3>());

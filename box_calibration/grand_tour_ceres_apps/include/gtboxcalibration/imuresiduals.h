@@ -11,6 +11,7 @@
 #include <gtboxcalibration/camerageometry.h>
 #include <gtboxcalibration/parameterhelpers.h>
 #include <sophus/so3.hpp>
+#include "ceres/jet.h"
 
 
 // ---------------------------------------------------------------------------
@@ -149,7 +150,8 @@ public:
 //   params_bias_gyro           [3]  — gyroscope bias (global)
 //   params_bias_accel          [3]  — accelerometer bias (global)
 //   params_T_camera_bundle_imu [7]  — extrinsic: IMU to bundle (global)
-// Residual size: 3 * n_model_points
+//   params_v_board_imu_kp1     [3]  — IMU velocity in board frame at k+1 (per-keyframe)
+// Residual size: 3 * n_model_points + 3
 // ---------------------------------------------------------------------------
 class RelativeIMUBoardPointError {
 public:
@@ -174,13 +176,14 @@ public:
                                        const Eigen::Affine3d &T_bundle_board_k,
                                        const Eigen::Matrix3Xd &points_in_bundle_k,
                                        const Eigen::Matrix3Xd &points_in_bundle_kp1) {
-        const int n_residuals = static_cast<int>(points_in_bundle_k.cols()) * 3;
+        const int n_residuals = static_cast<int>(points_in_bundle_k.cols()) * 3 + 3;  // +3 for v_{k+1}
         return new ceres::AutoDiffCostFunction<RelativeIMUBoardPointError, ceres::DYNAMIC,
                 3,                              // gravity_dir_board
                 3,                              // v_board_imu_k
                 3,                              // bias_gyro
                 3,                              // bias_accel
-                SE3Transform::NUM_PARAMETERS>(  // T_camera_bundle_imu
+                SE3Transform::NUM_PARAMETERS,   // T_camera_bundle_imu
+                3>(                             // v_board_imu_kp1
                 new RelativeIMUBoardPointError(std::move(imu_data_k_to_kp1), time_k_secs, time_kp1_secs,
                                                T_bundle_board_k, points_in_bundle_k, points_in_bundle_kp1),
                 n_residuals);
@@ -193,6 +196,7 @@ public:
             const T *const params_bias_gyro,
             const T *const params_bias_accel,
             const T *const params_T_camera_bundle_imu,
+            const T *const params_v_board_imu_kp1,
             T *residual) const {
 
         EigenJetAffine<T> T_bundle_imu = SE3Transform::toEigenAffineJetSafe(params_T_camera_bundle_imu);
@@ -265,11 +269,19 @@ public:
         Eigen::Matrix<T, 3, Eigen::Dynamic> errors =
                 p_pred - points_in_bundle_kp1_.cast<T>();
 
-        for (int i = 0; i < errors.cols(); ++i) {
+        const int n_points = errors.cols();
+        for (int i = 0; i < n_points; ++i) {
             residual[i * 3]     = errors(0, i);
             residual[i * 3 + 1] = errors(1, i);
             residual[i * 3 + 2] = errors(2, i);
         }
+
+        // Velocity continuity: integrated v at k+1 should match v_board_imu_kp1.
+        Eigen::Map<const Eigen::Matrix<T, 3, 1>> v_kp1(params_v_board_imu_kp1);
+        residual[n_points * 3]     = v(0) - v_kp1(0);
+        residual[n_points * 3 + 1] = v(1) - v_kp1(1);
+        residual[n_points * 3 + 2] = v(2) - v_kp1(2);
+
         return true;
     }
 
