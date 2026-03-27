@@ -42,7 +42,9 @@ std::map<std::string, CameraParameterPack> PopulateCameraParameterPacks(const st
 
 bool SerialiseCameraParameters(const std::string &output_path,
                                const std::map<std::string, CameraParameterPack> &camera_parameter_packs,
-                               const std::string comment = "");
+                               const std::string comment = "",
+                               std::shared_ptr<std::map<std::string, CameraCovariance>> covariances=nullptr,
+                               std::shared_ptr<std::map<std::string, std::vector<Observations2dReprojectionResiduals>>> intrinsics_residuals=nullptr);
 
 std::map<std::string, std::map<unsigned long long, std::shared_ptr<BoardPoseParameterPack>>>
 PopulateBoardParameters(const CameraCamera2D3DTargetDetectionData

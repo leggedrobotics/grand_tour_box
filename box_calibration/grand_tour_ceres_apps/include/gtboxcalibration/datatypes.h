@@ -18,12 +18,25 @@ struct Observations2dModelPoints3dPointIDsPose3dSensorName {
     std::string sensor_name;
 };
 
+struct Observations2dReprojectionResiduals {
+    Eigen::Matrix2Xd observations2d;
+    Eigen::Matrix2Xd reprojection_residuals;
+};
+
 struct CameraCamera2D3DTargetDetectionData {
     std::set<unsigned long long> unique_timestamps;
     std::map<unsigned long long, std::map<std::string, Observations2dModelPoints3dPointIDsPose3dSensorName>> observations;
 };
 
 using PrismPositionDetectionData = std::map<unsigned long long, Eigen::Vector3d>;
+
+struct IMUObservation {
+    Eigen::Vector3d angular_velocity;
+    Eigen::Vector3d linear_acceleration;
+    double detection_time_secs;
+};
+
+using IMUObservationData = std::vector<IMUObservation>;
 
 
 #endif //COMPUTE_CONNECTIVITY_TYPES_H

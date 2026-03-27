@@ -10,11 +10,13 @@
 
 namespace fs = std::filesystem;
 
-ROSCameraCameraParser::ROSCameraCameraParser(std::string program_name, int argc, char **argv) {
+ROSCameraCameraParser::ROSCameraCameraParser(std::string program_name, int argc, char **argv,
+bool is_online) {
     const std::string package_name = "grand_tour_ceres_apps";
     std::string package_path = ros::package::getPath(package_name);
     std::string initial_guess_default_path = package_path + "/config/initial_guess.yaml";
     std::string frameid_mapping_default_path = package_path + "/config/rostopic_frameid_mappings.yaml";
+    std::string rerun_blueprint_default_path = package_path + "/config/camera_camera.rbl";
 
     argparse::ArgumentParser program(program_name);
     program.add_argument("-i", "--initial_guess")
@@ -29,6 +31,12 @@ ROSCameraCameraParser::ROSCameraCameraParser(std::string program_name, int argc,
             .nargs(argparse::nargs_pattern::any) // Allows variadic arguments
             .default_value(std::vector<std::string>{}) // Default to an empty vector if none are provided
             .action([](const std::string& value) { return value; });
+    program.add_argument("--output_path")
+            .help("Path where the output calibration yaml will be saved.")
+            .default_value("output_camera_camera_calibration.yaml"); // Default to an empty vector if none are provided
+    program.add_argument("--blueprint_path")
+            .help("Path to the rerun blueprint file.")
+            .default_value(rerun_blueprint_default_path); // Default to an empty vector if none are provided
     try {
         program.parse_args(argc, argv);
     }
@@ -50,7 +58,16 @@ ROSCameraCameraParser::ROSCameraCameraParser(std::string program_name, int argc,
     // Retrieve the list of bags
     std::vector<std::string> bags = program.get<std::vector<std::string>>("--bags");
     bag_paths = bags;
+    if (!is_online){
+        is_valid = is_valid && bag_paths.size() > 0;
+    }
+    output_path = program.get<std::string>("--output_path");
+    rerun_blue_print_path = program.get<std::string>("--blueprint_path");
 }
+
+ROSCameraCameraParser::ROSCameraCameraParser(std::string program_name, int argc, char **argv)
+: ROSCameraCameraParser(std::move(program_name), argc, argv, false)
+{}
 
 std::map<std::string, std::string> LoadRostopicFrameIDMapping(const std::string yaml_path) {
     const YAML::Node yaml_mapping = YAML::LoadFile(yaml_path);

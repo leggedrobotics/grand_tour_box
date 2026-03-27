@@ -26,6 +26,9 @@ struct ROSCameraCameraOnlineProgram : public ROSCameraCameraProgram {
     }
 
     void run() {
+        if (viz_){
+            viz_->vizCalibrationSigmasPreamble();
+        }
         while (ros::ok()) {
             // Sleep to maintain the loop rate
             loop_rate_.sleep();
@@ -38,9 +41,6 @@ private:
 
     void cameraDetectionsCallback(const grand_tour_camera_detection_msgs::CameraDetections::ConstPtr &msg,
                                   const std::string topic_name);
-
-protected:
-    bool publishDetectionsUsed(const grand_tour_camera_detection_msgs::CameraDetections &camera_detections) override;
 
 private:
 
@@ -55,9 +55,6 @@ private:
     void publishParamsAndSigmas(const std::string &name,
                                 const Eigen::VectorXd &rvectvec_sigma, const Eigen::VectorXd &fxfycxcy_sigma) const;
 
-    std::map<std::string, CameraCovariance> computeCovariances();
-
-    void publishAllParamsAndSigmas(const std::map<std::string, CameraCovariance> &covariances) const;
 
     void publishPercentageDataAccumulated(float current_batch_percentage_accumulated) const;
 
@@ -90,7 +87,6 @@ private:
     std::mutex ceres_problem_mutex_;
 
     bool do_optimize_ = true;
-    bool ready_for_extrinsics_ = false;
 
 };
 

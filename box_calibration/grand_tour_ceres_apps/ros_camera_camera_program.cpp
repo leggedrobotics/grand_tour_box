@@ -4,6 +4,7 @@
 
 #include <filesystem>
 #include <Eigen/Core>
+#include <Eigen/Dense>
 #include <ros/package.h>
 #include <iomanip>
 #include <grand_tour_camera_detection_msgs/CameraIntrinsicsExtrinsicsSigma.h>
@@ -39,11 +40,12 @@ ROSCameraCameraProgram::ROSCameraCameraProgram(ROSCameraCameraParser parser) {
         this->resetCornerObservationVoxelMap();
         ROS_INFO_STREAM("Using " + first_frameid + " as the origin");
     }
+    output_path = parser.output_path;
 }
 
 bool ROSCameraCameraProgram::addAlignmentData(ros::Time current_ros_time,
                                               const grand_tour_camera_detection_msgs::CameraDetections &camera_detections,
-                                              bool force) {
+                                              bool force, bool block_viz) {
     const unsigned long stamp = camera_detections.header.stamp.toNSec();
     Observations2dModelPoints3dPointIDsPose3dSensorName observation = buildObservationFromRosMSG(camera_detections);
     ScopedTimer timer;
@@ -54,18 +56,20 @@ bool ROSCameraCameraProgram::addAlignmentData(ros::Time current_ros_time,
         if (!this->handleAddIntrinsicsCost(stamp, observation, false)) {
             return false;
         }
-        if (this->handleStationarityRequirement(stamp, observation, false)) {
+        if (this->recordBoardPoseAndTrimHistory(stamp, observation, false)) {
             this->handleAddExtrinsicsCost(stamp, observation, false);
         }
     } else {
         if (!this->handleAddIntrinsicsCost(stamp, observation, true)) {
             return false;
         }
-        this->handleStationarityRequirement(stamp, observation, true);
+        this->recordBoardPoseAndTrimHistory(stamp, observation, true);
         this->handleAddExtrinsicsCost(stamp, observation, true);
     }
 
-    this->publishDetectionsUsed(camera_detections);
+    if (!block_viz) {
+        this->publishDetectionsUsed(camera_detections);
+    }
 
     this->parsed_alignment_data.unique_timestamps.insert(stamp);
     this->parsed_alignment_data.observations[stamp][camera_detections.header.frame_id] = observation;
@@ -83,21 +87,18 @@ bool ROSCameraCameraProgram::computeAndPopulateInitialGuessModelPose(
 }
 
 bool
-ROSCameraCameraProgram::handleStationarityRequirement(unsigned long long stamp,
+ROSCameraCameraProgram::recordBoardPoseAndTrimHistory(unsigned long long stamp,
                                                       Observations2dModelPoints3dPointIDsPose3dSensorName &new_observation,
                                                       bool force) {
     const std::string &new_observation_name = new_observation.sensor_name;
     board_pose_in_sensor_at_time_[new_observation_name][stamp] = new_observation.T_sensor_model;
-    if (force) {
-        return true;
+    if (!force) {
+        this->trimBoardPoseBuffer(new_observation_name);
     }
-
-    this->manageObservationHistoryBuffer(new_observation_name);
-
     return true;
 }
 
-void ROSCameraCameraProgram::manageObservationHistoryBuffer(const std::string &new_observation_name) {
+void ROSCameraCameraProgram::trimBoardPoseBuffer(const std::string &new_observation_name) {
     while (board_pose_in_sensor_at_time_.at(new_observation_name).size() > 10) {
         board_pose_in_sensor_at_time_.at(new_observation_name).erase(
                 board_pose_in_sensor_at_time_.at(new_observation_name).begin());
@@ -112,18 +113,71 @@ bool ROSCameraCameraProgram::handleAddIntrinsicsCost(unsigned long long stamp,
                     new_observation.observations2d, 5);
     if (added_to_observation_voxel_map) {
         const auto tentative_residual_block =
-                CameraCameraProgram::addBoardPoseParameterAndCameraIntrinsicsResidualFromObservation(stamp,
-                                                                                                     new_observation);
-        CameraCameraProgram::intrinsics_residuals_of_camera_at_time[new_observation.sensor_name][stamp] = tentative_residual_block;
+                this->addBoardPoseParameterAndCameraIntrinsicsResidualFromObservation(stamp, new_observation);
+        intrinsics_residuals_of_camera_at_time[new_observation.sensor_name][stamp] = tentative_residual_block;
         return true;
     } else {
         return false;
     }
 }
 
+std::map<std::string, CameraCovariance> ROSCameraCameraProgram::computeCovariances() {
+    if (ready_for_extrinsics_) {
+        this->setExtrinsicParametersVariableBeforeOpt();
+    }
+    const auto total_in_out_edges = this->getTotalInAndOutExtrinsicEdges();
+    std::map<std::string, CameraCovariance> covariances;
+    std::map<std::string, bool> do_compute_extrinsics;
+    std::vector<const double *> diagonal_covariance_blocks;
+    for (const auto &[name, params]: camera_parameter_packs) {
+        if (!intrinsics_residuals_of_camera_at_time.contains(name) or
+            intrinsics_residuals_of_camera_at_time.at(name).empty()) {
+            continue;
+        }
+        diagonal_covariance_blocks.push_back(params.fxfycxcy);
+        if (!total_in_out_edges.contains(name)) {
+            continue;
+        }
+        const bool compute_extrinsics_sigma = total_in_out_edges.at(name) > 0;
+        if (compute_extrinsics_sigma) {
+            diagonal_covariance_blocks.push_back(params.T_bundle_sensor);
+            do_compute_extrinsics[name] = true;
+        }
+    }
+    const auto covariance_object = problem_->ComputeSubBlockCovariance(diagonal_covariance_blocks);
+    if (covariance_object == nullptr) {
+        ROS_ERROR_STREAM("Failed to compute covariance");
+        return covariances;
+    }
+    for (const auto &[name, params]: camera_parameter_packs) {
+        if (!intrinsics_residuals_of_camera_at_time.contains(name) or
+            intrinsics_residuals_of_camera_at_time.at(name).empty()) {
+            continue;
+        }
+        std::vector<Eigen::MatrixXd> intrinsics_extrinsics_covariance;
+        std::vector<const double *> local_params;
+        local_params.push_back(params.fxfycxcy);
+        if (do_compute_extrinsics.contains(name)) {
+            local_params.push_back(params.T_bundle_sensor);
+        }
+        CameraCovariance local_covariance;
+        if (problem_->FetchSubBlockCovariance(covariance_object, local_params,
+                                              intrinsics_extrinsics_covariance)) {
+            local_covariance.fxfycxcy_sigma =
+                    intrinsics_extrinsics_covariance[0].diagonal().array().sqrt();
+            if (do_compute_extrinsics.contains(name)) {
+                local_covariance.rtvec_sigma =
+                        intrinsics_extrinsics_covariance[1].diagonal().array().sqrt();
+            }
+            covariances[name] = local_covariance;
+        }
+    }
+    return covariances;
+}
+
 bool ROSCameraCameraProgram::getReprojectionResiduals(ceres::Problem &problem,
                                                       const ceres::ResidualBlockId &residual_block,
-                                                      Eigen::Matrix2Xf &residuals) {
+                                                      Eigen::Matrix2Xf &residuals) const {
 
     // Loop over each residual block
     const ceres::CostFunction *cost_function = problem.GetCostFunctionForResidualBlock(residual_block);
@@ -152,6 +206,24 @@ bool ROSCameraCameraProgram::getReprojectionResiduals(ceres::Problem &problem,
 
     return true;
 }
+
+std::map<std::string, std::vector<Observations2dReprojectionResiduals>>
+ROSCameraCameraProgram::getObservationsAndResiduals2D() const {
+    std::map<std::string, std::vector<Observations2dReprojectionResiduals>> result;
+    for (const auto &[stamp, observations_map]: parsed_alignment_data.observations) {
+        for (const auto &[name, observation]: observations_map) {
+            if (intrinsics_residuals_of_camera_at_time.contains(name) and
+                intrinsics_residuals_of_camera_at_time.at(name).contains(stamp)) {
+                Eigen::Matrix2Xf reprojection_residuals;
+                this->getReprojectionResiduals(
+                        problem_->getProblem(),
+                        intrinsics_residuals_of_camera_at_time.at(name).at(stamp), reprojection_residuals);
+                result[name].push_back({observation.observations2d, reprojection_residuals.cast<double>()});
+            }
+        }
+    }
+    return result;
+};
 
 bool ROSCameraCameraProgram::handleAddExtrinsicsCost(unsigned long long stamp,
                                                      Observations2dModelPoints3dPointIDsPose3dSensorName &new_observation,
@@ -194,12 +266,12 @@ bool ROSCameraCameraProgram::handleAddExtrinsicsCost(unsigned long long stamp,
         }
 
         has_initialised_extrinsics[origin_camera_frame_id] = true;
-        if (!has_initialised_extrinsics.contains(new_observation.sensor_name) and
-        !has_initialised_extrinsics.contains(other_sensor_name)) {
-            ROS_DEBUG_STREAM("Not adding extrinsics sample between: " + new_observation.sensor_name + " and "
-            + other_sensor_name);
-            continue;
-        }
+//        if (!has_initialised_extrinsics.contains(new_observation.sensor_name) and
+//            !has_initialised_extrinsics.contains(other_sensor_name)) {
+//            ROS_DEBUG_STREAM("Not adding extrinsics sample between: " + new_observation.sensor_name + " and "
+//                             + other_sensor_name);
+//            continue;
+//        }
         CameraCameraProgram::extrinsics_residuals_of_cameras_at_time[
                 new_observation.sensor_name][
                 other_sensor_name][
@@ -222,6 +294,8 @@ bool ROSCameraCameraProgram::handleAddExtrinsicsCost(unsigned long long stamp,
                                                            codetection_graph_);
         }
         information_added = true;
+        camera_camera_adjacency_count[new_observation.sensor_name][other_sensor_name]++;
+        camera_camera_adjacency_count[other_sensor_name][new_observation.sensor_name]++;
     }
     return information_added;
 }
@@ -266,15 +340,16 @@ ROSCameraCameraProgram::fetchIntersection(const std::vector<unsigned int> &a,
 }
 
 bool ROSCameraCameraProgram::resetProblem() {
-    CameraCameraProgram::parsed_alignment_data.unique_timestamps.clear();
-    CameraCameraProgram::parsed_alignment_data.observations.clear();
+    parsed_alignment_data.unique_timestamps.clear();
+    parsed_alignment_data.observations.clear();
+    camera_camera_adjacency_count.clear();
     frame_id_to_vertex_mapping_.clear();
     vertex_to_frame_id_.clear();
-    CameraCameraProgram::extrinsics_residuals_of_cameras_at_time.clear();
-    CameraCameraProgram::intrinsics_residuals_of_camera_at_time.clear();
+    extrinsics_residuals_of_cameras_at_time.clear();
+    intrinsics_residuals_of_camera_at_time.clear();
     board_pose_in_sensor_at_time_.clear();
     n_samples_last_solve_ = 0;
-    CameraCameraProgram::board_pose_parameter_packs.clear();
+    board_pose_parameter_packs.clear();
     codetection_graph_.clear();
     this->problem_ = std::make_unique<CeresProblem>();
     this->resetCornerObservationVoxelMap();
@@ -283,25 +358,27 @@ bool ROSCameraCameraProgram::resetProblem() {
 
 bool ROSCameraCameraProgram::rebuildProblemFromLoggedROSAlignmentData() {
     // Compute covariance of board poses
-    this->resetStateFromLoggedObservations();
-//    this->filterOutOutliersFromLoggedObservations(3.0);
-    this->resetStateFromLoggedObservations();
+    this->resetStateFromLoggedObservations(true);
+    this->filterOutOutliersFromLoggedObservations(5.0);
+    this->resetStateFromLoggedObservations(false);
     return true;
 }
 
 void ROSCameraCameraProgram::filterOutOutliersFromLoggedObservations(double max_reprojection_error) {
+    unsigned long n_filtered_out = 0;
     for (auto &[frame_id, data]: logged_ros_alignment_data_) {
         for (auto it = data.begin(); it != data.end();) {
             auto msg = it->second;
             Eigen::Matrix2Xf residuals;
-            getReprojectionResiduals(CeresProgram::problem_->getProblem(),
-                                     CameraCameraProgram::intrinsics_residuals_of_camera_at_time.at(frame_id).at(
+            getReprojectionResiduals(this->problem_->getProblem(),
+                                     intrinsics_residuals_of_camera_at_time.at(frame_id).at(
                                              msg.header.stamp.toNSec()),
                                      residuals);
             const double max_residual = residuals.cwiseAbs().maxCoeff();
             if (max_residual > max_reprojection_error) {
                 // is outlier detection
                 it = data.erase(it);  // Erase the element and move the iterator to the next one
+                n_filtered_out++;
             } else {
                 ++it;
             }
@@ -319,13 +396,14 @@ void ROSCameraCameraProgram::filterOutOutliersFromLoggedObservations(double max_
                     continue;
                 }
                 Eigen::Matrix2Xf residuals;
-                getReprojectionResiduals(CeresProgram::problem_->getProblem(),
+                getReprojectionResiduals(this->problem_->getProblem(),
                                          residual_block_at_time.at(msg.header.stamp.toNSec()),
                                          residuals);
                 const double max_residual = residuals.cwiseAbs().maxCoeff();
                 if (max_residual > max_reprojection_error) {
                     // is outlier detection
                     it = data.erase(it);  // Erase the element and move the iterator to the next one
+                    n_filtered_out++;
                     has_outlier = true;
                     break;
                 }
@@ -335,16 +413,21 @@ void ROSCameraCameraProgram::filterOutOutliersFromLoggedObservations(double max_
             }
         }
     }
+    std::cout << "Filtered out " << n_filtered_out << " outliers" << std::endl;
 }
 
-void ROSCameraCameraProgram::resetStateFromLoggedObservations() {
+void ROSCameraCameraProgram::resetStateFromLoggedObservations(bool block_viz) {
     this->resetProblem();
     for (const auto &[name, data_at_time]: logged_ros_alignment_data_) {
+        unsigned long index = 0;
+        const unsigned long n = data_at_time.size();
         for (const auto &[stamp, msg]: data_at_time) {
-            addAlignmentData(ros::Time::now(), msg, true);
+            addAlignmentData(ros::Time(stamp / 1000000000ul, (stamp % 1000000000ul)),
+                             msg, true, block_viz or (index < n-1) );
+            index++;
         }
     }
-    n_samples_last_solve_ = CameraCameraProgram::parsed_alignment_data.unique_timestamps.size();
+    n_samples_last_solve_ = parsed_alignment_data.unique_timestamps.size();
 }
 
 bool ROSCameraCameraProgram::setOriginCameraFrame(const std::string &frame_id) {
@@ -374,11 +457,20 @@ bool ROSCameraCameraProgram::writeCalibrationOutput() {
         return false;
     }
     std::map<std::string, CameraParameterPack> camera_parameters_by_rostopic;
+    auto covariance_sigmas = this->computeCovariances();
+    auto intrinsics_residuals = this->getObservationsAndResiduals2D();
     for (const auto &[frameid, params]: camera_parameter_packs) {
         camera_parameters_by_rostopic[frameid2rostopic_.at(frameid)] = params;
+        covariance_sigmas[frameid2rostopic_.at(frameid)] = covariance_sigmas[frameid];
+        intrinsics_residuals[frameid2rostopic_.at(frameid)] = intrinsics_residuals[frameid];
     }
+
     SerialiseCameraParameters(write_path.string(), camera_parameters_by_rostopic,
-                              GetTimeNowString(calibration_time).str());
+                              GetTimeNowString(calibration_time).str(),
+                              std::make_shared<std::map<std::string, CameraCovariance>>(covariance_sigmas),
+                              std::make_shared<std::map<std::string, std::vector<Observations2dReprojectionResiduals>>>(
+                                      intrinsics_residuals));
+
     ROS_INFO_STREAM("Wrote output calibrations to: " + write_path.string());
     return true;
 }
@@ -405,7 +497,7 @@ void ROSCameraCameraProgram::setIntrinsicParametersVariableBeforeOpt() {
 
 void ROSCameraCameraProgram::setExtrinsicParametersVariableBeforeOpt() {// Free up camera transforms before solve
     for (auto &[name, params]: camera_parameter_packs) {
-        if (!extrinsics_residuals_of_cameras_at_time.contains(name)) {
+        if (!camera_camera_adjacency_count.contains(name)) {
             continue;
         }
         if (name == origin_camera_frame_id) {
@@ -421,21 +513,21 @@ void ROSCameraCameraProgram::setExtrinsicParametersConstBeforeOpt() {
         if (!extrinsics_residuals_of_cameras_at_time.contains(name)) {
             continue;
         }
-            problem_->getProblem().SetParameterBlockConstant(params.T_bundle_sensor);
+        problem_->getProblem().SetParameterBlockConstant(params.T_bundle_sensor);
     }
 }
 
 void ROSCameraCameraProgram::setBoardPoseParametersConst() {
-    for (const auto& [cam_name, board_packs] : board_pose_parameter_packs) {
-        for (const auto& [stamp, board_param] : board_packs) {
+    for (const auto &[cam_name, board_packs]: board_pose_parameter_packs) {
+        for (const auto &[stamp, board_param]: board_packs) {
             problem_->getProblem().SetParameterBlockConstant(board_param->T_sensor_board);
         }
     }
 }
 
 void ROSCameraCameraProgram::setBoardPoseParametersVariable() {
-    for (const auto& [cam_name, board_packs] : board_pose_parameter_packs) {
-        for (const auto& [stamp, board_param] : board_packs) {
+    for (const auto &[cam_name, board_packs]: board_pose_parameter_packs) {
+        for (const auto &[stamp, board_param]: board_packs) {
             problem_->getProblem().SetParameterBlockVariable(board_param->T_sensor_board);
         }
     }
@@ -455,4 +547,134 @@ fs::path ROSCameraCameraProgram::fetchOutputPath() {
         return path;
     // }
     // return output_path;
+}
+
+std::map<std::string, int> ROSCameraCameraProgram::getTotalInAndOutExtrinsicEdges() {
+    std::map<std::string, int> total_edge_count;
+    for (const auto &[name, other_cam_map]: camera_camera_adjacency_count) {
+        for (const auto &[other_name, count]: other_cam_map) {
+            total_edge_count[name] += count;
+            total_edge_count[other_name] += count;
+        }
+    }
+    for (const auto &[name, other_cam_map]: camera_camera_adjacency_count) {
+        std::cout << "Camera count: " << name << " " << total_edge_count[name] << std::endl;
+    }
+
+    if (viz_) {
+        std::vector<std::string> nodes;
+        std::vector<std::pair<std::string, std::string>> edges;
+        std::vector<int> edge_counts;
+        for (const auto &[name, other_cam_map]: camera_camera_adjacency_count) {
+            nodes.push_back(name);
+            for (const auto &[other_name, count]: other_cam_map) {
+                // Only add each undirected edge once
+                if (name < other_name) {
+                    edges.emplace_back(name, other_name);
+                    edge_counts.push_back(count);
+                }
+            }
+        }
+        viz_->vizAdjacencyGraph("camera_adjacency_graph", nodes, edges, edge_counts);
+    }
+
+    return total_edge_count;
+}
+
+void ROSCameraCameraProgram::publishFrameTransforms() {
+    if (!viz_) return;
+
+    std::map<std::string, Eigen::Affine3d> transforms;
+    for (const auto &[name, pack]: camera_parameter_packs) {
+        transforms[name] = SE3Transform::toEigenAffine(pack.T_bundle_sensor);
+    }
+    viz_->vizFrameTransforms(transforms);
+}
+
+void ROSCameraCameraProgram::publishResiduals() {
+    if (!viz_) return;
+
+    // Intrinsics: scatter plot of (dx, dy) reprojection residuals per camera
+    const auto obs_residuals = getObservationsAndResiduals2D();
+    for (const auto &[name, obs_res_vec]: obs_residuals) {
+        std::vector<std::array<float, 2>> residuals_2d;
+        for (const auto &obs_res: obs_res_vec) {
+            for (int i = 0; i < obs_res.reprojection_residuals.cols(); ++i) {
+                residuals_2d.push_back({static_cast<float>(obs_res.reprojection_residuals(0, i)),
+                                        static_cast<float>(obs_res.reprojection_residuals(1, i))});
+            }
+        }
+        viz_->vizResidualMap(name + "_residuals/intrinsics_residuals", residuals_2d);
+    }
+
+    // Extrinsics: scatter plot of (dx, dy) reprojection residuals per camera pair
+    for (const auto &[frame_id, other_frame_map]: extrinsics_residuals_of_cameras_at_time) {
+        for (const auto &[other_frame, stamp_map]: other_frame_map) {
+            std::vector<std::array<float, 2>> residuals_2d;
+            for (const auto &[stamp, residual_block]: stamp_map) {
+                Eigen::Matrix2Xf residuals;
+                if (!getReprojectionResiduals(problem_->getProblem(), residual_block, residuals)) continue;
+                for (int i = 0; i < residuals.cols(); ++i) {
+                    residuals_2d.push_back({residuals(0, i), residuals(1, i)});
+                }
+            }
+            if (!residuals_2d.empty()) {
+                viz_->vizResidualMap(frame_id + "_residuals/extrinsics_residuals", residuals_2d);
+            }
+        }
+    }
+}
+
+std::vector<std::array<float, 2>> cornersToViz(
+        const std::vector<geometry_msgs::Point>& corners) {
+    std::vector<std::array<float, 2>> out;
+    out.reserve(corners.size());
+    for (const auto& p : corners) {
+        out.push_back({static_cast<float>(p.x), static_cast<float>(p.y)});
+    }
+    return out;
+}
+
+void voxelMapToViz(const VoxelMap2D& voxel_map,
+                   std::vector<std::array<int32_t, 2>>& coords,
+                   std::vector<uint32_t>& counts) {
+    coords.reserve(voxel_map.data_.size());
+    counts.reserve(voxel_map.data_.size());
+    for (const auto& [voxel, count] : voxel_map.data_) {
+        coords.push_back({voxel.x, voxel.y});
+        counts.push_back(static_cast<uint32_t>(count));
+    }
+}
+
+bool ROSCameraCameraProgram::publishDetectionsUsed(
+            const grand_tour_camera_detection_msgs::CameraDetections& camera_detections) {
+        if (viz_) {
+            const std::string& frame_id = camera_detections.header.frame_id;
+            const int width = this->camera_parameter_packs.at(frame_id).width;
+            const int height = this->camera_parameter_packs.at(frame_id).height;
+
+            const auto corners = cornersToViz(camera_detections.corners2d);
+            viz_->vizDetections(frame_id, corners);
+
+            const auto it = corner_detection2d_voxel_map_.find(frame_id);
+            if (it != corner_detection2d_voxel_map_.end()) {
+                std::vector<std::array<int32_t, 2>> coords;
+                std::vector<uint32_t> counts;
+                voxelMapToViz(it->second, coords, counts);
+                viz_->vizVoxelMap(frame_id + "/voxel_map", coords, counts,
+                                  static_cast<float>(it->second.voxel_size_), width, height);
+            }
+        }
+        return true;
+    }
+
+void
+ROSCameraCameraProgram::publishAllParamsAndSigmas(
+        const std::map<std::string, CameraCovariance> &covariances) const {
+    if (!viz_) return;
+    std::map<std::string, std::pair<Eigen::VectorXd, Eigen::VectorXd>> output;
+    for (const auto &[name, covariance]: covariances) {
+        output[name] = {covariance.rtvec_sigma, covariance.fxfycxcy_sigma};
+    }
+    viz_->vizAllCameraCalibrationSigmas(output, "cam1_sensor_frame");
 }

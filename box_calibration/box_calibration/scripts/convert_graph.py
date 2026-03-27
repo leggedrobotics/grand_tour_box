@@ -404,15 +404,15 @@ if __name__ == "__main__":
                                        transform=np.array(imu_frame_data["ap20_imu"]["T_camerabundle_imu"]))
         else:
             calibration_graph.add_edge("cpt7_imu", "ap20_imu",
-                                       xyz=[0.004, -0.102, 0.002],
+                                       xyz=[0.001, -0.0924, 0.0088],
                                        rpy=[-1.569, 0.000, -0.000])
         if "stim320_imu" in imu_frame_data:
             calibration_graph.add_edge("cam1_sensor_frame", "stim320_imu",
                                        transform=np.array(imu_frame_data["stim320_imu"]["T_camerabundle_imu"]))
         else:
             calibration_graph.add_edge("cpt7_imu", "stim320_imu",
-                                       xyz=[0.297, -0.068, 0.157],
-                                       rpy=[-3.140, -0.000, -0.000])
+                                       xyz=[0.290, -0.0585, 0.1635],
+                                       rpy=[-3.14159, -0.000, -0.000])
     else:
         calibration_graph.add_edge("cpt7_imu", "cam1_sensor_frame",
                                    xyz=[0.369, -0.046, 0.068],
@@ -433,8 +433,8 @@ if __name__ == "__main__":
                                    xyz=[0.004, -0.102, 0.002],
                                    rpy=[-1.569, 0.000, -0.000])
         calibration_graph.add_edge("cpt7_imu", "stim320_imu",
-                                   xyz=[0.297, -0.068, 0.157],
-                                   rpy=[-3.140, -0.000, -0.000])
+                                   xyz=[0.290, -0.0585, 0.1635],
+                                   rpy=[-3.14159, -0.000, -0.000])
 
     has_prism_calibration = "t_cam_prism" in calibration_data_by_topic[camera_bundle_topic]
     if has_prism_calibration:

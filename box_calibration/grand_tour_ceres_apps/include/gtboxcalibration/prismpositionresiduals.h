@@ -30,7 +30,8 @@ public:
     PrismInCam0InBoardInTotalStationConsistencyError(const Eigen::Affine3d &tCamselfCam0,
                                                      const Eigen::Affine3d &tBoardCamself,
                                                      const unsigned long long camera_detection_time,
-                                                     const PrismPositionDetectionData& prism_detections);
+                                                     const PrismPositionDetectionData& prism_detections,
+                                                     const double prism_sigma2);
 
     template<typename T>
     bool operator()(
@@ -69,7 +70,7 @@ public:
         Eigen::Matrix<T, 3, -1> prism_position_predicted =
                 se3_transform_(params_T_leica_board, prism_position_in_board);
 
-        constexpr double M_1_sqrt_totalstation_cov = 1. / std::sqrt(0.003);
+        const double M_1_sqrt_totalstation_cov = 1. / std::sqrt(prism_sigma2_);
         Eigen::Matrix<T, 3, -1> errors = (total_station_measured_point - prism_position_predicted) * M_1_sqrt_totalstation_cov;
         residual[0] = errors(0, 0);
         residual[1] = errors(1, 0);
@@ -80,14 +81,16 @@ public:
     static ceres::CostFunction *Create(const Eigen::Affine3d &tCamselfCam0,
                                        const Eigen::Affine3d &tBoardCamself,
                                        const unsigned long long camera_detection_time,
-                                       const PrismPositionDetectionData& prism_detections) {
+                                       const PrismPositionDetectionData& prism_detections,
+                                       const double prism_sigma2) {
         return new ceres::AutoDiffCostFunction<PrismInCam0InBoardInTotalStationConsistencyError,
                 3,
                 SE3Transform::NUM_PARAMETERS, 3, 1>(
                 new PrismInCam0InBoardInTotalStationConsistencyError(tCamselfCam0,
                                                                      tBoardCamself,
                                                                      camera_detection_time,
-                                                                     prism_detections)
+                                                                     prism_detections,
+                                                                     prism_sigma2)
         );
     }
 
@@ -98,6 +101,7 @@ private:
     const unsigned long long camera_detection_time_;
     const PrismPositionDetectionData& total_station_prism_measurement_data_;
 //    T_leica_board @ T_board_camself @ T_camself_cam0 @ t_cam0_prism = total_station_measured_point;
+    const double prism_sigma2_;
 };
 
 std::pair<Eigen::VectorXd, double> GetResidualsAndLossAtResidualBlockID(const ceres::Problem &problem,

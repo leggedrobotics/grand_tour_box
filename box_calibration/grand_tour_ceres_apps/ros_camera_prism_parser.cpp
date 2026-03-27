@@ -1,8 +1,12 @@
 #include "ros_camera_prism_parser.h"
 #include <gtboxcalibration/argparsers.h>
+#include <ros/package.h>
 
 ROSCameraPrismParser::ROSCameraPrismParser(std::string program_name, int argc, char **argv) {
     argparse::ArgumentParser program(program_name);
+    const std::string package_name = "grand_tour_ceres_apps";
+    std::string package_path = ros::package::getPath(package_name);
+    std::string rerun_blueprint_default_path = package_path + "/config/camera_prism.rbl";
     program.add_argument("-c", "--cameras_calibration_path")
             .required()
             .help("specify the file containing camera intrinsics and extrinsics.");
@@ -24,6 +28,9 @@ ROSCameraPrismParser::ROSCameraPrismParser(std::string program_name, int argc, c
             .default_value(false)
             .implicit_value(true)
             .help("Boolean flag to solve the timeoffset.");
+    program.add_argument("--blueprint_path")
+            .help("Path to the rerun blueprint file.")
+            .default_value(rerun_blueprint_default_path);
     try {
         program.parse_args(argc, argv);
     }
@@ -41,4 +48,5 @@ ROSCameraPrismParser::ROSCameraPrismParser(std::string program_name, int argc, c
     prism_topic = program.get<std::string>("--prism_topic");
     solve_time_offset = program.get<bool>("--solve_time_offset");
     is_valid = true;
+    rerun_blue_print_path = program.get<std::string>("--blueprint_path");
 }

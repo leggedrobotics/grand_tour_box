@@ -63,7 +63,7 @@ def process_camera_data(camera_data, T_bundle_lidar):
         T_cam_lidar = compute_t_cam_lidar(T_bundle_cn, T_bundle_lidar)
         params['T_cam_lidar'] = T_cam_lidar
         params['camera_model'] = "pinhole"
-        print(f"  Computed T_cam_lidar for {camera}: {T_cam_lidar}")
+        # print(f"  Computed T_cam_lidar for {camera}: {T_cam_lidar}")
 
         # Update previous transform for the next iteration
         T_bundle_cnm1 = T_bundle_cn
@@ -95,13 +95,13 @@ def main():
         print(f"Created output directory '{output_dir}'.")
 
     # Warn if the output file already exists
-    if os.path.isfile(output_path):
+    if os.path.exists(output_path):
         warnings.warn(f"Warning: Output file '{output_path}' already exists.", UserWarning)
 
     # Define the hardcoded T_bundle_lidar matrix
     if args.hesai:
         T_bundle_lidar = [
-            [-0.9999281619849881, -0.006010770995409205, 0.010370221857026046, -0.005763996987117227],
+            [-0.9999281619849881, -0.006010770995409205, 0.010370221857026046, -0.0000763996987117227],
             [-0.011273051948827523, 0.177608418731531, -0.9840366699953026, -0.0624975811909965],
             [0.004072980368505267, -0.9840828828039464, -0.1776634194289637, -0.07276315632961762],
             [0.0, 0.0, 0.0, 1.0]

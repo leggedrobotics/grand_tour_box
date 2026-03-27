@@ -27,4 +27,22 @@ struct PrismBoardInTotalStationParameterPack {
     double t_offset[1]{};
 };
 
+struct ImuParameterPack {
+    double T_camera_bundle_imu[SE3Transform::NUM_PARAMETERS]{};
+    double T_world_imu[SE3Transform::NUM_PARAMETERS]{};
+    double v_world_imu[3]{};
+    double gravity_world[3]{};
+    double bias_gyro[3]{};
+    double bias_accel[3]{};
+    double T_world_board[SE3Transform::NUM_PARAMETERS]{};
+};
+
+// Per-keyframe IMU state: explicit SE3 pose + velocity + biases in the board frame.
+struct ImuKeyframeParameterPack {
+    double T_board_imu[SE3Transform::NUM_PARAMETERS]{0, 0, 0, 1, 0, 0, 0};
+    double v_board_imu[3]{};
+    double bias_gyro[3]{};
+    double bias_accel[3]{};
+};
+
 #endif //GRAND_TOUR_CERES_APPS_PARAMETER_HELPERS_H

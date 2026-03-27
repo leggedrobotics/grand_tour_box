@@ -10,6 +10,7 @@ struct ROSCameraPrismParser {
     std::vector<std::string> camera_bag_paths;
     std::string prism_bag_path;
     std::string prism_topic;
+    std::string rerun_blue_print_path;
     bool solve_time_offset = false;
     bool is_valid = false;
 };

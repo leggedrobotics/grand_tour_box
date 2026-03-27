@@ -6,6 +6,7 @@
 #include <gtboxcalibration/interpolation3d.h>
 #include <gtboxcalibration/prismpositionresiduals.h>
 #include <gtboxcalibration/argparsers.h>
+#include <gtboxcalibration/imuresiduals.h>
 
 #include <memory>
 
@@ -272,7 +273,7 @@ bool CameraPrismProgram::PopulateProblem() {
             residual_block_map[camera_name][camera_stamp] = problem_->getProblem().AddResidualBlock(
                     PrismInCam0InBoardInTotalStationConsistencyError::Create(
                             T_cam_cam0, T_board_camera,
-                            camera_stamp, prism_detections),
+                            camera_stamp, prism_detections, prism_sigma2_),
                     new ceres::HuberLoss(1.0),
                     prism_board_in_total_station_params.T_totalstation_board,
                     prism_board_in_total_station_params.t_cam0_prism,
@@ -293,36 +294,6 @@ bool CameraPrismProgram::PopulateProblem() {
 
 void CameraPrismProgram::WriteOutputParameters() {
     Eigen::Map<Eigen::Vector3d> t_cam0_prism(prism_board_in_total_station_params.t_cam0_prism);
-    std::cout << "t_cam0_prism: " << t_cam0_prism.transpose() << std::endl;
-    std::cout << "time offset: " << prism_board_in_total_station_params.t_offset[0] << std::endl;
-    Eigen::Affine3d T_totalstation_board = SE3Transform::toEigenAffine(
-            prism_board_in_total_station_params.T_totalstation_board);
-    std::cout << "T_totalstation_board:\n" << T_totalstation_board.matrix() << std::endl;
-    {
-        std::vector<const double *> covariance_block = {prism_board_in_total_station_params.t_cam0_prism};
-        Eigen::MatrixXd prism_position_covariance;
-        problem_->ComputeAndFetchCovariance(
-                covariance_block, prism_position_covariance);
-        std::cout << "Prism position sigma:" << "\n" << prism_position_covariance.diagonal().array().sqrt().transpose()
-                  << std::endl;
-    }
-
-    {
-        std::vector<const double *> covariance_block = {prism_board_in_total_station_params.T_totalstation_board};
-        Eigen::MatrixXd board_pose_covariance;
-        problem_->ComputeAndFetchCovariance(
-                covariance_block, board_pose_covariance);
-        std::cout << "Board pose sigma:" << "\n" << board_pose_covariance.diagonal().array().sqrt().transpose()
-                  << std::endl;
-    }
-
-    {
-        std::vector<const double *> covariance_block = {prism_board_in_total_station_params.t_offset};
-        Eigen::MatrixXd t_offset_covariance;
-        problem_->ComputeAndFetchCovariance(
-                covariance_block, t_offset_covariance);
-        std::cout << "T-offset sigma:" << "\n" << t_offset_covariance.array().sqrt() << std::endl;
-    }
 
     YAML::Node output_calibration = YAML::LoadFile(cameras_calibration_path);
     for (YAML::const_iterator it = output_calibration.begin(); it != output_calibration.end(); ++it) {
@@ -376,4 +347,275 @@ void CeresProgram::PrintParameterAndResidualBlockStats() {
 void CeresProgram::ResetAndRepopulateProblem() {
     problem_ = std::make_unique<CeresProblem>();
     this->PopulateProblem();
+}
+
+void CameraIMUProgram::PreSolveExtrinsic() {
+    std::vector<IMUObservation> sorted_imu = imu_observations;
+    std::sort(sorted_imu.begin(), sorted_imu.end(),
+              [](const IMUObservation& a, const IMUObservation& b) {
+                  return a.detection_time_secs < b.detection_time_secs;
+              });
+
+    ceres::Problem pre_problem;
+    SE3Transform se3;
+
+    const auto& stamps = camera_detections.unique_timestamps;
+    int n_pairs = 0;
+
+    for (auto it = stamps.begin(); it != stamps.end(); ++it) {
+        const auto next_it = std::next(it);
+        if (next_it == stamps.end()) break;
+
+        const double t_k   = static_cast<double>(*it)       * 1e-9;
+        const double t_kp1 = static_cast<double>(*next_it)  * 1e-9;
+
+        const auto& obs_k   = camera_detections.observations.at(*it);
+        const auto& obs_kp1 = camera_detections.observations.at(*next_it);
+
+        // Use the first camera present at both keyframes.
+        for (const auto& [cam_name, det_k] : obs_k) {
+            if (!obs_kp1.contains(cam_name)) continue;
+            const auto& det_kp1 = obs_kp1.at(cam_name);
+
+            // Visual relative rotation: R_kp1 * R_k^T
+            const Eigen::Matrix3d R_cam_rel_obs =
+                    det_kp1.T_sensor_model.rotation() *
+                    det_k.T_sensor_model.rotation().transpose();
+
+            // IMU relative rotation (zero bias — pre-solve).
+            Eigen::Matrix3d R_imu_rel = Eigen::Matrix3d::Identity();
+            double t_prev = t_k;
+            for (const auto& obs : sorted_imu) {
+                if (obs.detection_time_secs < t_k || obs.detection_time_secs >= t_kp1) continue;
+                const double dt = obs.detection_time_secs - t_prev;
+                t_prev = obs.detection_time_secs;
+                const double angle = obs.angular_velocity.norm() * dt;
+                if (angle > 1e-10)
+                    R_imu_rel = R_imu_rel *
+                            Eigen::AngleAxisd(angle, obs.angular_velocity.normalized())
+                            .toRotationMatrix();
+            }
+
+            const Eigen::Matrix3d R_bundle_sensor_inv =
+                    SE3Transform::toEigenAffine(camera_packs.at(cam_name).T_bundle_sensor)
+                    .rotation().transpose();
+
+            pre_problem.AddResidualBlock(
+                    RelativePoseExtrinsicError::Create(R_bundle_sensor_inv, R_imu_rel, R_cam_rel_obs),
+                    new ceres::HuberLoss(0.1),
+                    T_camera_bundle_imu);
+            ++n_pairs;
+            break;
+        }
+    }
+    se3.handleSetParameterization(pre_problem, T_camera_bundle_imu);
+
+    std::cout << "Pre-solving extrinsic from " << n_pairs << " relative pose pairs..." << std::endl;
+    ceres::Solver::Options options;
+    options.minimizer_progress_to_stdout = false;
+    options.max_num_iterations = 200;
+    ceres::Solver::Summary summary;
+    ceres::Solve(options, &pre_problem, &summary);
+    std::cout << "Pre-solve: " << summary.BriefReport() << std::endl;
+    std::cout << "Initial R_camerabundle_imu: " << std::endl <<
+    SE3Transform::toEigenAffine(T_camera_bundle_imu).rotation() << std::endl;
+}
+
+void CameraIMUProgram::PreSolveBoard() {
+    // Average accelerometer readings to estimate gravity direction in IMU frame.
+    // At rest: a_meas = R_imu_board * (-g_board), so g_board = -R_board_imu * a_meas
+    Eigen::Vector3d a_avg = Eigen::Vector3d::Zero();
+    for (const auto &obs : imu_observations)
+        a_avg += obs.linear_acceleration;
+    a_avg /= static_cast<double>(imu_observations.size());
+
+    const Eigen::Affine3d T_bundle_imu = SE3Transform::toEigenAffine(T_camera_bundle_imu);
+
+    // Accumulate gravity direction estimates in board frame across all detections.
+    Eigen::Vector3d g_board_sum = Eigen::Vector3d::Zero();
+    int count = 0;
+    for (const auto &[stamp, detections_at_stamp] : camera_detections.observations) {
+        for (const auto &[cam_name, detection] : detections_at_stamp) {
+            const Eigen::Affine3d T_bundle_sensor = SE3Transform::toEigenAffine(
+                    camera_packs.at(cam_name).T_bundle_sensor);
+            const Eigen::Affine3d T_bundle_board_k = T_bundle_sensor * detection.T_sensor_model;
+            // R_board_imu = R_bundle_board^T * R_bundle_imu
+            const Eigen::Matrix3d R_board_imu =
+                    T_bundle_board_k.rotation().transpose() * T_bundle_imu.rotation();
+            // gravity_dir_board = -R_board_imu * a_avg_normalized
+            g_board_sum += R_board_imu * (-a_avg.normalized());
+            ++count;
+        }
+    }
+
+    if (count == 0) {
+        std::cerr << "PreSolveBoard: no detections available." << std::endl;
+        return;
+    }
+
+    const Eigen::Vector3d g_board_dir = (g_board_sum / count).normalized();
+    gravity_dir_board[0] = g_board_dir.x();
+    gravity_dir_board[1] = g_board_dir.y();
+    gravity_dir_board[2] = g_board_dir.z();
+    std::cout << "PreSolveBoard: gravity_dir_board = " << g_board_dir.transpose() << std::endl;
+
+    // Initialize per-keyframe T_board_imu from the camera detection chain.
+    int n_initialized = 0;
+    for (auto& [stamp, pack] : keyframe_params) {
+        if (!camera_detections.observations.contains(stamp)) continue;
+        for (const auto& [cam_name, detection] : camera_detections.observations.at(stamp)) {
+            const Eigen::Affine3d T_bundle_sensor = SE3Transform::toEigenAffine(
+                    camera_packs.at(cam_name).T_bundle_sensor);
+            const Eigen::Affine3d T_bundle_board_k = T_bundle_sensor * detection.T_sensor_model;
+            const Eigen::Affine3d T_board_imu_k = T_bundle_board_k.inverse() * T_bundle_imu;
+            SE3Transform::assignToData(T_board_imu_k, pack.T_board_imu);
+            ++n_initialized;
+            break;
+        }
+    }
+    std::cout << "PreSolveBoard: initialized " << n_initialized << " keyframe poses." << std::endl;
+}
+
+void CameraIMUProgram::WriteOutputParameters() {
+    // Output format matches what process_all_calibrations.py feeds to convert_graph.py:
+    //   <imu_topic>:
+    //     T_camerabundle_imu: [[r00, ...], ..., [0, 0, 0, 1]]
+    //     gravity_dir_board:  [gx, gy, gz]
+    //     bias_gyro:          [bwx, bwy, bwz]
+    //     bias_accel:         [bax, bay, baz]
+    // The Python script maps imu_topic → frame_id via imu_topic_to_frame_mappings.
+
+    const Eigen::Affine3d T_bundle_imu = SE3Transform::toEigenAffine(T_camera_bundle_imu);
+    const Eigen::Matrix4d T_mat = T_bundle_imu.matrix();
+
+    YAML::Node T_node;
+    for (int i = 0; i < 4; ++i) {
+        YAML::Node row;
+        for (int j = 0; j < 4; ++j)
+            row.push_back(T_mat(i, j));
+        T_node.push_back(row);
+    }
+
+    YAML::Node root;
+    root[imu_topic]["T_camerabundle_imu"] = T_node;
+    root[imu_topic]["gravity_dir_board"] = std::vector<double>{
+            gravity_dir_board[0], gravity_dir_board[1], gravity_dir_board[2]};
+    root[imu_topic]["bias_gyro"]  = std::vector<double>{
+            bias_gyro[0],  bias_gyro[1],  bias_gyro[2]};
+    root[imu_topic]["bias_accel"] = std::vector<double>{
+            bias_accel[0], bias_accel[1], bias_accel[2]};
+
+    std::ofstream fout(output_yaml_path);
+    fout << root;
+    fout.close();
+    std::cout << "IMU calibration written to: " << output_yaml_path << std::endl;
+}
+
+bool CameraIMUProgram::PopulateProblem() {
+    SE3Transform se3;
+
+    const auto& stamps = camera_detections.unique_timestamps;
+
+    std::vector<IMUObservation> sorted_imu = imu_observations;
+    std::sort(sorted_imu.begin(), sorted_imu.end(),
+              [](const IMUObservation& a, const IMUObservation& b) {
+                  return a.detection_time_secs < b.detection_time_secs;
+              });
+
+    if (stamps.empty()) return false;
+
+    constexpr double kAlignPointsIntervalSecs = 1.0;
+    // Seed far enough back so the very first frame triggers alignment.
+    double prev_align_points_sec = static_cast<double>(*stamps.begin()) * 1e-9
+                                   - kAlignPointsIntervalSecs;
+    for (auto stamp_it = stamps.begin(); stamp_it != stamps.end(); ++stamp_it) {
+        auto next_it = std::next(stamp_it);
+        if (next_it == stamps.end()) break;
+
+//        // Advance next_it until it is at least kMinIntervalSecs ahead.
+//        while (next_it != stamps.end() &&
+//               (static_cast<double>(*next_it - *stamp_it) * 1e-9) < kMinIntervalSecs)
+//            ++next_it;
+//        if (next_it == stamps.end()) break;
+
+        const unsigned long long stamp_k   = *stamp_it;
+        const unsigned long long stamp_kp1 = *next_it;
+
+        if (!camera_detections.observations.contains(stamp_k))   continue;
+        if (!camera_detections.observations.contains(stamp_kp1)) continue;
+
+        const double time_k_s   = static_cast<double>(stamp_k)   * 1e-9;
+        const double time_kp1_s = static_cast<double>(stamp_kp1) * 1e-9;
+
+        // Collect IMU samples bracketing [t_k, t_{k+1}]:
+        //   - last sample strictly before t_k  (imu_data_[0], for interpolation at t_k)
+        //   - all samples in [t_k, t_{k+1})
+        // Forward Euler needs no sample after t_{k+1}.
+        std::vector<IMUObservation> imu_k_to_kp1;
+        const IMUObservation* pre_k = nullptr;
+        for (const auto& obs : sorted_imu) {
+            if (obs.detection_time_secs < time_k_s) {
+                pre_k = &obs;
+                continue;
+            }
+            if (imu_k_to_kp1.empty() && pre_k)
+                imu_k_to_kp1.push_back(*pre_k);
+            if (obs.detection_time_secs < time_kp1_s)
+                imu_k_to_kp1.push_back(obs);
+            else
+                break;
+        }
+        if (imu_k_to_kp1.empty()) continue;
+
+        // Use first camera present at both stamps; bake in model points and camera observation at k+1.
+        Eigen::Matrix3Xd model_points3d, points_in_bundle_kp1;
+        bool found = false;
+        for (const auto& [cam_name, det_k] : camera_detections.observations.at(stamp_k)) {
+            if (!camera_detections.observations.at(stamp_kp1).contains(cam_name)) continue;
+            const auto& det_kp1 = camera_detections.observations.at(stamp_kp1).at(cam_name);
+            const Eigen::Affine3d T_bundle_sensor = SE3Transform::toEigenAffine(
+                    camera_packs.at(cam_name).T_bundle_sensor);
+            model_points3d       = det_k.modelpoints3d;
+            points_in_bundle_kp1 = T_bundle_sensor * det_kp1.T_sensor_model * model_points3d;
+            found = true;
+            break;
+        }
+        if (!found) continue;
+
+        auto& pack_k   = keyframe_params[stamp_k];
+        auto& pack_kp1 = keyframe_params[stamp_kp1];
+
+        bool do_align_points = false;
+        if (time_k_s - prev_align_points_sec >= kAlignPointsIntervalSecs) {
+            do_align_points = true;
+            prev_align_points_sec = time_k_s;
+        }
+
+        relative_residual_block_map[stamp_k] =
+                problem_->getProblem().AddResidualBlock(
+                        RelativeIMUBoardPointError::Create(
+                                std::move(imu_k_to_kp1), time_k_s, time_kp1_s,
+                                model_points3d, points_in_bundle_kp1, do_align_points),
+                        new ceres::HuberLoss(0.02),
+                        gravity_dir_board,
+                        pack_k.T_board_imu,
+                        pack_k.v_board_imu,
+                        pack_k.bias_gyro,
+                        pack_k.bias_accel,
+                        T_camera_bundle_imu,
+                        pack_kp1.T_board_imu,
+                        pack_kp1.v_board_imu,
+                        pack_kp1.bias_gyro,
+                        pack_kp1.bias_accel);
+    }
+    // Apply manifolds: gravity unit sphere, SE3 for all keyframe poses and extrinsic.
+    problem_->getProblem().SetManifold(gravity_dir_board, new ceres::SphereManifold<3>());
+    se3.handleSetParameterization(problem_->getProblem(), T_camera_bundle_imu);
+    for (auto& [stamp, pack] : keyframe_params) {
+        se3.handleSetParameterization(problem_->getProblem(), pack.T_board_imu);
+    }
+
+    problem_->solver_options_.minimizer_progress_to_stdout = true;
+    problem_->solver_options_.max_num_iterations = 200;
+    return true;
 }

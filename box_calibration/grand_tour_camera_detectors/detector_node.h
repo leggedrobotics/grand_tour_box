@@ -5,7 +5,7 @@
 #ifndef GRAND_TOUR_CAMERA_DETECTORS_DETECTOR_NODE_H
 #define GRAND_TOUR_CAMERA_DETECTORS_DETECTOR_NODE_H
 
-#include "calibrationtargetasl.h"
+#include <grand_tour_camera_detectors/calibrationtargetasl.h>
 #include <ros/ros.h>
 #include <opencv2/core.hpp>
 #include <Eigen/Dense>

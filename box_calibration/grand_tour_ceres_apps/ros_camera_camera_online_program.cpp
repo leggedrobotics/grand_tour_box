@@ -99,7 +99,7 @@ void ROSCameraCameraOnlineProgram::cameraDetectionsCallback(
     {
         std::lock_guard<std::mutex> lock(ceres_problem_mutex_);
         ScopedTimer timer;
-        if (this->addAlignmentData(ros::Time::now(), *msg, false)) {
+        if (this->addAlignmentData(ros::Time::now(), *msg, false, false)) {
             this->logged_ros_alignment_data_[msg->header.frame_id][msg->header.stamp.toNSec()] = *msg;
         } else {
             total_n_samples_rejected_++;
@@ -184,7 +184,9 @@ void ROSCameraCameraOnlineProgram::optimizationCallback(const ros::TimerEvent &,
     const int n_new_samples = n_samples_now - n_samples_last_solve_;
 
     float current_batch_percentage_accumulated = float(n_new_samples) / float(min_new_samples_for_solve_);
-    this->publishPercentageDataAccumulated(current_batch_percentage_accumulated);
+    if (viz_) {
+        viz_->vizDataAccumulationProgress(current_batch_percentage_accumulated);
+    }
 
     if (n_new_samples > min_new_samples_for_solve_ or force_finalise) {
         n_samples_last_solve_ = n_samples_now;
@@ -198,7 +200,7 @@ void ROSCameraCameraOnlineProgram::optimizationCallback(const ros::TimerEvent &,
             int n_intrinsic_residuals = getTotalItemCount(intrinsics_residuals_of_camera_at_time);
             ROS_DEBUG_STREAM("N intrinsic residuals before downsample: " + std::to_string(n_intrinsic_residuals));
             const auto keys_to_remove = getKeysToRemove(intrinsics_residuals_of_camera_at_time,
-                                                        force_finalise ? 100 : 30);
+                                                        force_finalise ? 500 : 100);
             for (const auto &[frame_id, stamp_pack]: keys_to_remove) {
                 for (const auto &stamp: stamp_pack) {
                     problem_->getProblem().RemoveResidualBlock(
@@ -211,6 +213,8 @@ void ROSCameraCameraOnlineProgram::optimizationCallback(const ros::TimerEvent &,
         }
         const bool solve_succeeded = this->Solve();
         ROS_DEBUG_STREAM("Solve success: " + std::to_string(solve_succeeded));
+        this->publishResiduals();
+        this->publishFrameTransforms();
         this->rebuildProblemFromLoggedROSAlignmentData();
         ROS_DEBUG_STREAM("Starting covariance computation...");
         ScopedTimer timer;
@@ -221,7 +225,9 @@ void ROSCameraCameraOnlineProgram::optimizationCallback(const ros::TimerEvent &,
                 ready_for_extrinsics_ = false;
             }
         }
-        this->publishAllParamsAndSigmas(covariances);
+        if (!covariances.empty()){
+            this->publishAllParamsAndSigmas(covariances);
+        }
         ROS_DEBUG("Covariance and ros publishing executed in: %f seconds", timer.elapsed().count());
         this->publishPercentageDataAccumulated(0.0f);
         {
@@ -295,65 +301,6 @@ void ROSCameraCameraOnlineProgram::publishPercentageDataAccumulated(float curren
         data_accumulation_msg.percentage_progress.data = current_batch_percentage_accumulated;
         calibration_data_collection_state_publisher_.publish(data_accumulation_msg);
     }
-}
-
-void
-ROSCameraCameraOnlineProgram::publishAllParamsAndSigmas(
-        const std::map<std::string, CameraCovariance> &covariances) const {
-    for (const auto &[name, covariance]: covariances) {
-        publishParamsAndSigmas(name, covariance.rtvec_sigma, covariance.fxfycxcy_sigma);
-    }
-}
-
-std::map<std::string, CameraCovariance> ROSCameraCameraOnlineProgram::computeCovariances() {
-    if (ready_for_extrinsics_) {
-        this->setExtrinsicParametersVariableBeforeOpt();
-    }
-    std::map<std::string, CameraCovariance> covariances;
-    std::map<std::string, bool> do_compute_extrinsics;
-    std::vector<const double *> diagonal_covariance_blocks;
-    for (const auto &[name, params]: camera_parameter_packs) {
-        if (!intrinsics_residuals_of_camera_at_time.contains(name) or
-            intrinsics_residuals_of_camera_at_time.at(name).empty()) {
-            continue;
-        }
-        diagonal_covariance_blocks.push_back(params.fxfycxcy);
-        const bool compute_extrinsics_sigma = extrinsics_residuals_of_cameras_at_time.contains(name) and
-                                              !extrinsics_residuals_of_cameras_at_time.at(name).empty();
-        if (compute_extrinsics_sigma) {
-            diagonal_covariance_blocks.push_back(params.T_bundle_sensor);
-            do_compute_extrinsics[name] = true;
-        }
-    }
-    const auto covariance_object = problem_->ComputeSubBlockCovariance(diagonal_covariance_blocks);
-    if (covariance_object == nullptr) {
-        ROS_ERROR_STREAM("Failed to compute covariance");
-        return covariances;
-    }
-    for (const auto &[name, params]: camera_parameter_packs) {
-        if (!intrinsics_residuals_of_camera_at_time.contains(name) or
-            intrinsics_residuals_of_camera_at_time.at(name).empty()) {
-            continue;
-        }
-        std::vector<Eigen::MatrixXd> intrinsics_extrinsics_covariance;
-        std::vector<const double *> local_params;
-        local_params.push_back(params.fxfycxcy);
-        if (do_compute_extrinsics.contains(name)) {
-            local_params.push_back(params.T_bundle_sensor);
-        }
-        CameraCovariance local_covariance;
-        if (problem_->FetchSubBlockCovariance(covariance_object, local_params,
-                                              intrinsics_extrinsics_covariance)) {
-            local_covariance.fxfycxcy_sigma =
-                    intrinsics_extrinsics_covariance[0].diagonal().array().sqrt();
-            if (do_compute_extrinsics.contains(name)) {
-                local_covariance.rtvec_sigma =
-                        intrinsics_extrinsics_covariance[1].diagonal().array().sqrt();
-            }
-            covariances[name] = local_covariance;
-        }
-    }
-    return covariances;
 }
 
 void ROSCameraCameraOnlineProgram::publishParamsAndSigmas(const std::string &name,
@@ -435,12 +382,6 @@ bool ROSCameraCameraOnlineProgram::startRecordingCalibrationDataServiceCallback(
         grand_tour_camera_detection_msgs::StartRecordingCalibrationDataService::Request &req,
         grand_tour_camera_detection_msgs::StartRecordingCalibrationDataService::Response &res) {
     res.recording_id.data = run_id_;
-    return true;
-}
-
-bool ROSCameraCameraOnlineProgram::publishDetectionsUsed(
-        const grand_tour_camera_detection_msgs::CameraDetections &camera_detections) {
-    added_detections_publisher_[camera_detections.header.frame_id].publish(camera_detections);
     return true;
 }
 
