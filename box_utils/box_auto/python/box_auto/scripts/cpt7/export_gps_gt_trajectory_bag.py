@@ -721,7 +721,7 @@ def main():
                 # Create a TwistWithCovariance message for velocity
                 velocity_msg = TwistWithCovariance()
                 velocity_msg.twist.linear = Vector3(
-                    x=velocity_enu[1].item(), y=velocity_enu[0].item(), z=-velocity_enu[2].item()
+                    x=velocity_enu[0].item(), y=velocity_enu[1].item(), z=velocity_enu[2].item()
                 )
                 velocity_msg.twist.angular = Vector3(x=0, y=0, z=0)  # not the best, but we don't have the data
                 velocity_cov = np.eye(6)
