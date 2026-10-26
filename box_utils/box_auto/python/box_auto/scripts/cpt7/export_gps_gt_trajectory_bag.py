@@ -737,7 +737,7 @@ def main():
                 # Write to the bag as a combined odometry message
                 odometry_msg = Odometry()
                 odometry_msg.header = output_msg.header
-                odometry_msg.pose.pose = output_msg.pose.pose
+                odometry_msg.pose = output_msg.pose
                 odometry_msg.twist = velocity_msg
                 odometry_msg.child_frame_id = "cpt7_imu"
                 bag.write(topic=f"/gt_box/inertial_explorer/{post_proc_mode}/odometry", msg=odometry_msg, t=timestamp)
