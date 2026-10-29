@@ -9,7 +9,7 @@
 #include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
-#include "aprilgridasl.h"
+#include <grand_tour_camera_detectors/aprilgridasl.h>
 
 namespace cameras {
 

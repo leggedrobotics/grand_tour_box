@@ -7,7 +7,7 @@
 CeresProblem::CeresProblem() {
     problem_options_.enable_fast_removal = true;
     problem_ = ceres::Problem(problem_options_);
-    solver_options_.num_threads = 12;
+    solver_options_.num_threads = 4;
     solver_options_.update_state_every_iteration = false;
     solver_options_.linear_solver_type = ceres::SPARSE_SCHUR;
     solver_options_.minimizer_progress_to_stdout = false;

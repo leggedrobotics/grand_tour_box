@@ -34,6 +34,40 @@ CameraCamera2D3DTargetDetectionData
 FixCameraDetectionTimes(const CameraCamera2D3DTargetDetectionData &input_camera_detections,
                         const PrismPositionDetectionData &prism_detections);
 
+struct CameraIMUProgram : CeresProgram {
+    CameraIMUProgram() = default;
+
+    bool PopulateProblem() override;
+    bool PreSolveExtrinsic();
+    bool PreSolveBoard();
+    bool WriteOutputParameters();
+
+    // --- Observations ---
+    std::map<std::string, CameraParameterPack> camera_packs;
+    CameraCamera2D3DTargetDetectionData camera_detections;
+    IMUObservationData imu_observations;
+
+    // --- Parameters: global ---
+    double T_camera_bundle_imu[SE3Transform::NUM_PARAMETERS]{0, 0, 0, 1, 0, 0, 0};
+    // Gravity direction in board frame (unit vector); magnitude fixed to kGravity.
+    // Board frame is the reference frame — no T_world_board needed.
+    double gravity_dir_board[3]{0.0, 0.0, -1.0};
+
+    // Pose, velocity and IMU biases are estimated at each keyframe.
+    std::map<unsigned long long, ImuKeyframeParameterPack> keyframe_params;
+
+    // --- Residual block tracking ---
+    std::map<unsigned long long, ceres::ResidualBlockId> relative_residual_block_map;
+
+    // --- Metadata ---
+    std::string cam0_name;
+    std::map<std::string, Eigen::Affine3d> T_bundle_cam;
+    std::string output_yaml_path;
+    std::string cameras_calibration_path;
+    std::string imu_topic;
+    bool solve_time_offset = false;
+};
+
 struct CameraPrismProgram : CeresProgram {
     CameraPrismProgram() = default;
     explicit CameraPrismProgram(CameraPrismCalibrationAppParser argparser);
@@ -71,6 +105,7 @@ struct CameraCameraProgram : CeresProgram {
     std::map<std::string,
             std::map<std::string,
             std::map<unsigned long long, ceres::ResidualBlockId>>> extrinsics_residuals_of_cameras_at_time;
+    std::map<std::string, std::map<std::string, int>> camera_camera_adjacency_count;
     std::string origin_camera_frame_id;
 
     ceres::ResidualBlockId

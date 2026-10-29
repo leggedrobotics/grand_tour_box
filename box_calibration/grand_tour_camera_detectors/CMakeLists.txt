@@ -108,10 +108,10 @@ find_package(OpenCV REQUIRED)
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-        #  INCLUDE_DIRS include
-        #  LIBRARIES grand_tour_camera_detectors
-        #  CATKIN_DEPENDS other_catkin_pkg
-        #  DEPENDS system_lib
+        INCLUDE_DIRS include grand_tour_ethz_apriltag2/include
+        LIBRARIES grand_tour_camera_detectors_lib grand_tour_ethz_apriltag2
+        CATKIN_DEPENDS roscpp std_msgs sensor_msgs cv_bridge grand_tour_camera_detection_msgs rosbag
+        DEPENDS Eigen3
 )
 
 ###########
@@ -121,32 +121,28 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-        # include
-         ${catkin_INCLUDE_DIRS}
+        include
+        ${catkin_INCLUDE_DIRS}
 )
-
-## Declare a C++ library
-# add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/grand_tour_camera_detectors.cpp
-# )
-
-## Add cmake target dependencies of the library
-## as an example, code may need to be generated before libraries
-## either from message generation or dynamic reconfigure
-# add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
-## Declare a C++ executable
-## With catkin_make all packages are built within a single CMake context
-## The recommended prefix ensures that target names across packages don't collide
 
 add_subdirectory(grand_tour_ethz_apriltag2)
 
-add_executable(grand_tour_camera_detector main.cpp aprilgridasl.cpp calibrationtargetasl.cpp
-        detector_node.cpp checkerboardasl.cpp)
-target_link_libraries(grand_tour_camera_detector
-        PRIVATE
+## Library exposing april grid detector logic for use by other ROS packages
+add_library(grand_tour_camera_detectors_lib
+        aprilgridasl.cpp
+        calibrationtargetasl.cpp
+        checkerboardasl.cpp
+)
+target_link_libraries(grand_tour_camera_detectors_lib
+        PUBLIC
         Eigen3::Eigen ${OpenCV_LIBS} grand_tour_ethz_apriltag2
         ${catkin_LIBRARIES}
+)
+
+add_executable(grand_tour_camera_detector main.cpp detector_node.cpp)
+target_link_libraries(grand_tour_camera_detector
+        PRIVATE
+        grand_tour_camera_detectors_lib
 )
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the

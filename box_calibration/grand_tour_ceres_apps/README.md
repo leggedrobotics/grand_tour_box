@@ -1,95 +1,98 @@
-# Grand Tour Ceres Apps
+# Calibration applications
 
-[![Build Status](https://github.com/fulkast/grand_tour_ceres_apps/actions/workflows/ci.yaml/badge.svg)](https://github.com/fulkast/grand_tour_ceres_apps/actions)
+This package provides online/offline camera-to-camera calibration, camera–prism
+calibration, and an offline Ceres camera–IMU solver. It requires ROS Noetic,
+Ceres 2.2+, Eigen, OpenCV and yaml-cpp. The package uses C++17 for compatibility
+with Noetic message serialization. CMake downloads the pinned Rerun 0.30 SDK;
+Sophus headers and their license are included in `Sophus/`.
 
-This project holds several apps used in calibrating sub-components of the GTBox
+## Camera-to-camera
 
-## Prerequisites
+Input bags contain `grand_tour_camera_detection_msgs/CameraDetections` on
+`<image_topic>_corner_detections`. The YAML topic/frame mapping must match the
+messages. Initial parameters select the cameras to calibrate.
 
-Make sure you have the following tools installed on your system:
-
-- **CMake** (version 3.10 or higher)
-- **C++ Compiler** (GCC, Clang, or MSVC)
-- **Git** (optional but recommended)
-
-### Installing Dependencies
-
-#### Ubuntu/Debian
-
-You can install all the required dependencies using the following `apt` commands:
-
-```bash
-sudo apt-get update
-sudo apt-get install -y \
-    libboost-all-dev \
-    libeigen3-dev \
-    libopencv-dev \
-    libyaml-cpp-dev
+```sh
+rosrun grand_tour_ceres_apps camera_camera_offline_calibration \
+  --initial_guess initial.yaml --rostopic_frameid_mapping mapping.yaml \
+  --bags detections.bag --output_path results/cameras.yaml
 ```
 
-### Ceres version 2.20
-This app requires version 2.2 of the ceres-solver. The can be downloaded [here](http://ceres-solver.org/ceres-solver-2.2.0.tar.gz)
-The installation instructions can be found [here](http://ceres-solver.org/installation.html).
-These are summarized as follows:
-```bash
-# CMake
-sudo apt-get install cmake
-# google-glog + gflags
-sudo apt-get install libgoogle-glog-dev libgflags-dev
-# Use ATLAS for BLAS & LAPACK
-sudo apt-get install libatlas-base-dev
-# Eigen3
-sudo apt-get install libeigen3-dev
-# SuiteSparse (optional)
-sudo apt-get install libsuitesparse-dev
+The output directory must already exist. Offline calibration checks that every
+requested camera has observations connected to the fixed origin camera. It
+solves, rebuilds accepted observations with the existing outlier filter, and
+solves again. Input, convergence and write failures return a nonzero exit code.
+The requested output path is honored. Existing deployed calibration files are
+only changed when explicitly selected as output or installed by the existing
+calibration deployment scripts.
 
-tar zxf ceres-solver-2.2.0.tar.gz # Currently this has been untarred on the home folder
-mkdir ceres-bin
-cd ceres-bin
-cmake ../ceres-solver-2.2.0
-make -j3
-make test
-# Optionally install Ceres, it can also be exported using CMake which
-# allows Ceres to be used without requiring installation, see the documentation
-# for the EXPORT_BUILD_DIR option for more information.
-make install
+Output includes intrinsics, distortion, transforms and, when covariance
+estimation succeeds, `covariances.fxfycxcy_sigma` and `covariances.rtvec_sigma`.
+These are standard deviations, not full covariance matrices. A missing
+covariance means it could not be estimated; it does not mean zero uncertainty.
+`residuals_path` refers to the per-camera observations and reprojection errors
+written alongside the calibration. All generated files must be kept together.
+
+## Camera–IMU
+
+The reusable Aprilgrid detector preprocesses raw `sensor_msgs/Image` bags:
+
+```sh
+rosrun grand_tour_ceres_apps camera_imu_preprocess \
+  --bags camera_images.bag --output detections.bag
+rosrun grand_tour_ceres_apps camera_imu_offline_calibration \
+  -c cameras.yaml --camera_detection_bags detections.bag \
+  --imu_bag imu.bag --imu_topic /gt_box/stim320/imu \
+  --output_path results/camera_imu.yaml
 ```
 
-TLDR; The ceres-solver build directory is right now in the home directory under `/home/rsl/ceres-solver-2.2.0/ceres-bin`
+The preprocessor uses the existing Grand Tour 6 × 6 Aprilgrid with 0.083 m tags
+and spacing ratio 0.3. It refuses existing output paths and removes its temporary
+bag if conversion fails or no target is detected. Sensor timestamps are preserved.
 
+The IMU path estimates camera-bundle/IMU extrinsics, gravity direction and
+per-keyframe pose, velocity and biases. Its output stores the estimated biases
+under nanosecond timestamp keys. Camera and IMU timestamps must already share a
+clock; time-offset estimation is not implemented and that option is rejected.
+The existing dataset-processing and calibration-deployment orchestration is
+preserved; this solver is invoked explicitly through the command above.
 
-### Catkin Build
-```bash
-catkin build grand_tour_ceres_apps
+## Visualization
+
+For the camera-to-camera and camera–IMU executables, add `--visualize` to open the Rerun viewer, or
+`--rerun_recording results/calibration.rrd` to save visualization without a GUI.
+When both are supplied, saving takes precedence. `--blueprint_path` selects an
+optional layout; absent layouts use Rerun's default. Opening a GUI requires a
+compatible Rerun viewer on `PATH`. The blueprint generator scripts in
+`grand_tour_calibration_viewers/scripts` require Python 3.10+ and
+`rerun-sdk==0.30.0`; the ROS Noetic Python interpreter remains unchanged. Camera-to-camera views show
+detections, coverage, camera connectivity, transforms, uncertainty and residuals.
+Camera–IMU views show observations, trajectories, biases and residuals.
+
+## Tests and validation limits
+
+`catkin_make run_tests_grand_tour_ceres_apps` runs synthetic offline calibration,
+input/output failure tests, analytical IMU residual checks, and utility tests.
+Temporary bags and output files are removed by the tests. The full synthetic
+camera–IMU executable and Rerun recording test can also be repeated in the sourced
+workspace:
+
+```sh
+python3 tests/test_camera_imu_cli.py --executable /path/to/camera_imu_offline_calibration
 ```
 
-### Running the camera camera calibration
-First start up the detectors and the viewers. Note that the detectors are to be separately called from
-the NUC and the Jetson, respectively. The viewer and the calibration node are run from the OPC.
-```bash
-roslaunch grand_tour_camera_detectors detectors_on_nuc_generic.launch use_april_grid:=true [record_pointcloud:=true (default: false)]
-roslaunch grand_tour_camera_detectors detectors_on_jetson_generic.launch use_april_grid:=true
-roslaunch grand_tour_calibration_viewers all_cameras.launch
+This requires the ROS Python messages, NumPy, SciPy and PyYAML. It independently
+generates motion and sensor observations, then checks convergence, rotation,
+translation, per-keyframe bias output and recording-file creation.
 
-ROS_NAMESPACE=/gt_box rosrun grand_tour_ceres_apps camera_camera_online_calibration 
-```
-Running the node above in the `/gt_box` namespace is required for smoothly interfacing with the detector and viewer nodes
-if  the detectors are run with `record_pointcloud:=true`, the hesai and livox point clouds will also be recorded on the
-NUC.
+The recording regression is optional. Set `GT_CALIBRATION_BAG_DIR` to the
+reference recording directory containing the ten bags listed in
+`tests/test_calibration_regression.cpp` and `output_camera_camera_calibration.yaml`.
+An explicitly configured but missing recording fails. Checks cover every camera,
+all distortion coefficients, intrinsics (2 pixels), translation (2 mm), and
+rotation (0.001 rad). A skipped recording regression is not an accuracy pass.
 
-
-### Available services
-#### gt_box/camera_camera_online_calibration/finalize
-This service notifies the calibrator to stop receiving new detections. This also makes the calibrator node notify the
-detector nodes to stop recording calibration data. 
-Lastly, and aptly, this finalizes the calibration meaning that the solver performs and exhaustive optimization run,
-then writes the camera calibrations to 
-`box_calibration/box_calibration/calibration/raw_calibration_output/cameras-intrinsics-extrinsics_latest.yaml`
-
-### Fixes in progress
-Sometimes the front and right HDR cameras are swapped in their hardware mapping. As the calibrator node currently heavily
-relies on the initial guess of the camera transforms, this means that the extrinsic initial guess also need to be
-swapped.
-```bash
-ROS_NAMESPACE=/gt_box rosrun grand_tour_ceres_apps camera_camera_online_calibration -i /home/fu/catkin_ws/src/grand_tour_box/box_calibration/grand_tour_ceres_apps/config/initial_guess_hdr_front_right_swapped.yaml
-```
+Synthetic tests and ordinary dataset smoke tests do not establish physical
+calibration accuracy or adequate motion excitation for the new camera–IMU
+solver. Validate its results against an independently trusted calibration before
+using them as deployed sensor parameters.

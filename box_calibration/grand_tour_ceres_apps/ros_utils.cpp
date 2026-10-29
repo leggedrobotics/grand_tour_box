@@ -1,3 +1,6 @@
+#include <cmath>
+#include <set>
+#include <stdexcept>
 //
 // Created by fu on 30/09/24.
 //
@@ -20,11 +23,23 @@ ScopedTimer::ScopedTimer(std::string timer_name) : name(std::move(timer_name)),
 Observations2dModelPoints3dPointIDsPose3dSensorName
 buildObservationFromRosMSG(const grand_tour_camera_detection_msgs::CameraDetections &camera_detections) {
     int n_detections = camera_detections.corners2d.size();
+    if (camera_detections.modelpoint3d.size() != static_cast<size_t>(n_detections) ||
+        camera_detections.cornerids.size() != static_cast<size_t>(n_detections)) {
+        throw std::invalid_argument("Detection corner, model point and ID counts differ");
+    }
+    std::set<int32_t> ids;
     Observations2dModelPoints3dPointIDsPose3dSensorName observation;
     observation.observations2d = Eigen::Matrix2Xd(2, n_detections);
     observation.modelpoints3d = Eigen::Matrix3Xd(3, n_detections);
-    observation.modelpointIDs = std::vector<unsigned int> (n_detections, 0);
+    observation.modelpointIDs = std::vector<unsigned int>(n_detections, 0);
     for (int i = 0; i < n_detections; i++) {
+        const auto& pixel = camera_detections.corners2d[i];
+        const auto& point = camera_detections.modelpoint3d[i];
+        if (!std::isfinite(pixel.x) || !std::isfinite(pixel.y) ||
+            !std::isfinite(point.x) || !std::isfinite(point.y) || !std::isfinite(point.z) ||
+            camera_detections.cornerids[i] < 0 || !ids.insert(camera_detections.cornerids[i]).second) {
+            throw std::invalid_argument("Detection contains invalid coordinates or duplicate corner IDs");
+        }
         observation.observations2d(0, i) = camera_detections.corners2d[i].x;
         observation.observations2d(1, i) = camera_detections.corners2d[i].y;
 
@@ -126,11 +141,42 @@ bool solvePnP(const CameraParameterPack &camera_parameters, const Eigen::Matrix2
     try {
         if (camera_parameters.distortion_type == Distortion::Fisheye) {
             cv::Mat corners_undistorted;
-            cv::fisheye::undistortPoints(cornersMat, corners_undistorted, K, D);
+            cv::fisheye::undistortPoints(cornersMat, corners_undistorted, K, D, cv::noArray(), K);
             cv::Mat eye = cv::Mat::eye(3, 3, CV_64F);
             cv::Mat zero = cv::Mat::zeros(1, 4, CV_64F);
-            cv::solvePnP(modelpointsMat.t(), corners_undistorted.t(), eye, zero, rvec, tvec);
+            cv::solvePnP(modelpointsMat.t(), corners_undistorted.t(), K, zero, rvec, tvec);
 
+            std::vector<cv::Point2d> undistortedPoints;
+            for (int i = 0; i < corners_undistorted.cols; ++i) {
+                undistortedPoints.emplace_back(
+                        corners_undistorted.at<cv::Vec2d>(0, i)[0],
+                        corners_undistorted.at<cv::Vec2d>(0, i)[1]
+                );
+            }
+            // Step 2: Compute reprojection error for each point
+            std::vector<cv::Point2d> reprojectedPoints;
+            cv::projectPoints(modelpointsMat.t(), rvec, tvec, K, zero, reprojectedPoints);
+
+            std::vector<cv::Point3d> inlierModelPoints;
+            std::vector<cv::Point2d> inlierImagePoints;
+
+            double reprojThreshold = 1.0;  // Max allowed reprojection error (in pixels)
+            for (size_t i = 0; i < reprojectedPoints.size(); ++i) {
+                double error = cv::norm(reprojectedPoints[i] - undistortedPoints[i]);
+
+                if (error < reprojThreshold) {  // Keep inliers
+                    inlierModelPoints.push_back(modelpointsMat.at<cv::Point3d>(0, i));
+                    inlierImagePoints.push_back(undistortedPoints[i]);
+                }
+            }
+
+            // Step 3: Recompute pose using only inliers
+            if (inlierModelPoints.size() >= 50) {
+                cv::solvePnP(inlierModelPoints, inlierImagePoints, K, zero, rvec, tvec);
+                cv::solvePnPRefineLM(inlierModelPoints, inlierImagePoints, K, zero, rvec, tvec);
+            } else {
+//                std::cerr << "Not enough inliers for final PnP! Found: " << inlierModelPoints.size() << std::endl;
+            }
         } else if (camera_parameters.distortion_type == Distortion::RadTan) {
             cv::solvePnP(modelpointsMat.t(), cornersMat.t(), K, D, rvec, tvec);
         } else {

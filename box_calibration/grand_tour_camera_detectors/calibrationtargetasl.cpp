@@ -3,7 +3,7 @@
 //
 
 #include <utility>
-#include "calibrationtargetasl.h"
+#include <grand_tour_camera_detectors/calibrationtargetasl.h>
 
 namespace cameras {
 

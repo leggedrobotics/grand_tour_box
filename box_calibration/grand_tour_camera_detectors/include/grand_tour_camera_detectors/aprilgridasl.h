@@ -12,9 +12,9 @@
 #include <opencv2/core/core.hpp>
 
 // April tags detector and various tag families
-#include "apriltags/TagDetector.h"
-#include "apriltags/Tag36h11.h"
-#include "calibrationtargetasl.h"
+#include <apriltags/TagDetector.h>
+#include <apriltags/Tag36h11.h>
+#include <grand_tour_camera_detectors/calibrationtargetasl.h>
 
 namespace cameras {
 

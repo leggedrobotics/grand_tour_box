@@ -22,15 +22,15 @@
 struct ROSCameraCameraOfflineProgram : public ROSCameraCameraProgram {
     explicit ROSCameraCameraOfflineProgram(ROSCameraCameraParser);
 
-    void run();
+    bool run();
 
     bool loadRosbagsIntoProgram();
 
 protected:
-    bool publishDetectionsUsed(const grand_tour_camera_detection_msgs::CameraDetections &camera_detections) override;
+    bool hasConnectedObservations() const;
 
-    bool is_valid = false;
     std::vector<std::string> bag_paths;
+
 };
 
 
