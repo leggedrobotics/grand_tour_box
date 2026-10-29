@@ -88,7 +88,8 @@
 	branch = grandtour
 [submodule "box_applications/wavemap"]
 	path = box_applications/wavemap
-	url = git@github.com:ethz-asl/wavemap.git
+	url = git@github.com:leggedrobotics/wavemap.git
+	branch = feature/grand_tour
 [submodule "box_applications/elevation_mapping_cupy"]
 	path = box_applications/elevation_mapping_cupy
 	url = git@github.com:leggedrobotics/elevation_mapping_cupy.git

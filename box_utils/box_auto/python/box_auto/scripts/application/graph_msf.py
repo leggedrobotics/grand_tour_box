@@ -555,20 +555,20 @@ def launch_nodes():
     )
 
     print(f"Found MSF artifact folder: {GRAPH_MSF_ARTIFACT_FOLDER_SUBFOLDER}")
-    csv_R_6D_transform_world_to_leica_total_station, suc1 = get_file(
-        "R_6D_transform_world_to_leica_total_station.csv", GRAPH_MSF_ARTIFACT_FOLDER_SUBFOLDER
+    csv_R_6D_transform_world_graph_msf_to_leica_total_station, suc1 = get_file(
+        "R_6D_transform_world_graph_msf_to_leica_total_station.csv", GRAPH_MSF_ARTIFACT_FOLDER_SUBFOLDER
     )
     csv_6D_transform_leica_total_station_to_prism, suc2 = get_file(
         "R_6D_transform_leica_total_station_to_leica_total_stationOld.csv", GRAPH_MSF_ARTIFACT_FOLDER_SUBFOLDER
     )
     csv_file_world_to_enu_orign, gps_is_available = get_file(
-        "R_6D_transform_world_to_enu_origin.csv", GRAPH_MSF_ARTIFACT_FOLDER_SUBFOLDER
+        "R_6D_transform_world_graph_msf_to_enu_origin.csv", GRAPH_MSF_ARTIFACT_FOLDER_SUBFOLDER
     )
     assert suc1 and suc2, "Totalstation has to be available!"
     print(f"CSV files retrieved. GPS available: {gps_is_available}")
 
     R_world_to_helper = csv_to_TransformStamped(
-        csv_R_6D_transform_world_to_leica_total_station, "world", "leica_total_station_helper"
+        csv_R_6D_transform_world_graph_msf_to_leica_total_station, "world_graph_msf", "leica_total_station_helper"
     )
 
     R_helper_to_prism = csv_to_TransformStamped(
@@ -577,7 +577,7 @@ def launch_nodes():
     tf_statics.append(R_world_to_helper)
     tf_statics.append(R_helper_to_prism)
     if gps_is_available:
-        R_world_to_enu_origin = csv_to_TransformStamped(csv_file_world_to_enu_orign, "world", "enu_origin")
+        R_world_to_enu_origin = csv_to_TransformStamped(csv_file_world_to_enu_orign, "world_graph_msf", "enu_origin")
         tf_statics.append(R_world_to_enu_origin)
         print("Added world to ENU origin transform to tf_statics")
 
@@ -591,7 +591,7 @@ def launch_nodes():
     #         qx=0,
     #         qy=0,
     #         qz=0,
-    #         fixed_frame_id="world",
+    #         fixed_frame_id="world_graph_msf",
     #         child_frame_id="enu_origin",
     #     )
     #     gps_is_available = True
@@ -604,7 +604,7 @@ def launch_nodes():
     pose_gt_path = tf_static_path.replace("_tf_minimal.bag", "_gt_pose.bag")
     csv_cov_file, _ = get_file("X_state_6D_pose_covariance.csv", GRAPH_MSF_ARTIFACT_FOLDER_SUBFOLDER)
     csv_pose_file, _ = get_file("X_state_6D_pose.csv", GRAPH_MSF_ARTIFACT_FOLDER_SUBFOLDER)
-    convert_csv_to_bag(csv_cov_file, csv_pose_file, tf_gt_path, pose_gt_path, "world", "box_base")
+    convert_csv_to_bag(csv_cov_file, csv_pose_file, tf_gt_path, pose_gt_path, "world_graph_msf", "box_base")
     print(f"Converted CSV to bags: {tf_gt_path} and {pose_gt_path}")
 
     # Load all data from rosbags and plot it
@@ -616,11 +616,11 @@ def launch_nodes():
     print(f"Loaded {len(ap20)} AP20 messages and {len(pose_gt)} ground truth poses")
 
     tf_transformer = BagTfTransformer(tf_static_gt_path)
-    t_prism_world, q_prism_world = tf_transformer.lookupTransform("prism", "world", 0, latest=True)
+    t_prism_world, q_prism_world = tf_transformer.lookupTransform("prism", "world_graph_msf", 0, latest=True)
     print(f"Looked up transform prism -> world: translation={t_prism_world}, rotation={q_prism_world}")
 
     if gps_is_available:
-        t_enu_origin_world, q_enu_origin_world = tf_transformer.lookupTransform("enu_origin", "world", 0, latest=True)
+        t_enu_origin_world, q_enu_origin_world = tf_transformer.lookupTransform("enu_origin", "world_graph_msf", 0, latest=True)
         # Transform the paths to the correct frames
         T_enu_origin_world = np.eye(4)
         T_enu_origin_world[:3, :3] = R.from_quat(q_enu_origin_world).as_matrix()
