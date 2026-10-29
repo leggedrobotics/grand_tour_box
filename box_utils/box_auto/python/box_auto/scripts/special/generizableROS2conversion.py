@@ -27,13 +27,6 @@ from tqdm import tqdm
 def make_pbar(total: int):
     return tqdm(total=total, unit="msg", desc="Converting → ROS2/CDR")
 
-# -------------------- hard-coded batch option --------------------
-# If True, iterate over all .bag files in a folder.
-BATCH_MODE: bool = True
-# If None, uses parent directory of --inbag if it is a file,
-# or uses --inbag itself if it’s a directory.
-BATCH_DIR: Optional[str] = ""
-# Glob used to pick bag files from BATCH_DIR
 BATCH_GLOB: str = "*.bag"
 
 # -------------------- time handling --------------------
@@ -266,14 +259,14 @@ def dump_ros1_vs_ros2(topic, kind, ros1_msg, ros2_msg, publish_ns, log_ns):
         sys.stderr.write(f"format: {getattr(ros2_msg, 'format', None)}\n")
     sys.stderr.write("=== END SAMPLE ===\n\n")
 
-# -------------------- ROS 2 message definitions (explicit, ROS2-style names) --------------------
+# -------------------- ROS 2 message definitions (field types use pkg/Type) --------------------
 TIME_DEF = """int32 sec
 uint32 nanosec
 """
 DURATION_DEF = """int32 sec
 uint32 nanosec
 """
-HEADER_DEF = """builtin_interfaces/msg/Time stamp
+HEADER_DEF = """builtin_interfaces/Time stamp
 string frame_id
 """
 ROI_DEF = """uint32 x_offset
@@ -282,7 +275,7 @@ uint32 height
 uint32 width
 bool do_rectify
 """
-CAMERAINFO_DEF = """std_msgs/msg/Header header
+CAMERAINFO_DEF = """std_msgs/Header header
 uint32 height
 uint32 width
 string distortion_model
@@ -292,9 +285,9 @@ float64[9] r
 float64[12] p
 uint32 binning_x
 uint32 binning_y
-sensor_msgs/msg/RegionOfInterest roi
+sensor_msgs/RegionOfInterest roi
 """
-IMAGE_DEF = """std_msgs/msg/Header header
+IMAGE_DEF = """std_msgs/Header header
 uint32 height
 uint32 width
 string encoding
@@ -302,7 +295,7 @@ uint8 is_bigendian
 uint32 step
 uint8[] data
 """
-CIMAGE_DEF = """std_msgs/msg/Header header
+CIMAGE_DEF = """std_msgs/Header header
 string format
 uint8[] data
 """
@@ -315,12 +308,12 @@ VEC3_DEF = """float64 x
 float64 y
 float64 z
 """
-IMU_DEF = """std_msgs/msg/Header header
-geometry_msgs/msg/Quaternion orientation
+IMU_DEF = """std_msgs/Header header
+geometry_msgs/Quaternion orientation
 float64[9] orientation_covariance
-geometry_msgs/msg/Vector3 angular_velocity
+geometry_msgs/Vector3 angular_velocity
 float64[9] angular_velocity_covariance
-geometry_msgs/msg/Vector3 linear_acceleration
+geometry_msgs/Vector3 linear_acceleration
 float64[9] linear_acceleration_covariance
 """
 PFIELD_DEF = """string name
@@ -328,10 +321,10 @@ uint32 offset
 uint8 datatype
 uint32 count
 """
-PC2_DEF = """std_msgs/msg/Header header
+PC2_DEF = """std_msgs/Header header
 uint32 height
 uint32 width
-sensor_msgs/msg/PointField[] fields
+sensor_msgs/PointField[] fields
 bool is_bigendian
 uint32 point_step
 uint32 row_step
@@ -342,95 +335,95 @@ POINT_DEF = """float64 x
 float64 y
 float64 z
 """
-POINTSTAMPED_DEF = """std_msgs/msg/Header header
-geometry_msgs/msg/Point point
+POINTSTAMPED_DEF = """std_msgs/Header header
+geometry_msgs/Point point
 """
-POSE_DEF = """geometry_msgs/msg/Point position
-geometry_msgs/msg/Quaternion orientation
+POSE_DEF = """geometry_msgs/Point position
+geometry_msgs/Quaternion orientation
 """
-POSECOV_DEF = """geometry_msgs/msg/Pose pose
+POSECOV_DEF = """geometry_msgs/Pose pose
 float64[36] covariance
 """
-POSECOVSTAMPED_DEF = """std_msgs/msg/Header header
-geometry_msgs/msg/PoseWithCovariance pose
+POSECOVSTAMPED_DEF = """std_msgs/Header header
+geometry_msgs/PoseWithCovariance pose
 """
-POSESTAMPED_DEF = """std_msgs/msg/Header header
-geometry_msgs/msg/Pose pose
+POSESTAMPED_DEF = """std_msgs/Header header
+geometry_msgs/Pose pose
 """
-TWIST_DEF = """geometry_msgs/msg/Vector3 linear
-geometry_msgs/msg/Vector3 angular
+TWIST_DEF = """geometry_msgs/Vector3 linear
+geometry_msgs/Vector3 angular
 """
-TWISTSTAMPED_DEF = """std_msgs/msg/Header header
-geometry_msgs/msg/Twist twist
+TWISTSTAMPED_DEF = """std_msgs/Header header
+geometry_msgs/Twist twist
 """
-TWISTCOV_DEF = """geometry_msgs/msg/Twist twist
+TWISTCOV_DEF = """geometry_msgs/Twist twist
 float64[36] covariance
 """
-TWISTCOVSTAMPED_DEF = """std_msgs/msg/Header header
-geometry_msgs/msg/TwistWithCovariance twist
+TWISTCOVSTAMPED_DEF = """std_msgs/Header header
+geometry_msgs/TwistWithCovariance twist
 """
-ODOM_DEF = """std_msgs/msg/Header header
+ODOM_DEF = """std_msgs/Header header
 string child_frame_id
-geometry_msgs/msg/PoseWithCovariance pose
-geometry_msgs/msg/TwistWithCovariance twist
+geometry_msgs/PoseWithCovariance pose
+geometry_msgs/TwistWithCovariance twist
 """
-PATH_DEF = """std_msgs/msg/Header header
-geometry_msgs/msg/PoseStamped[] poses
+PATH_DEF = """std_msgs/Header header
+geometry_msgs/PoseStamped[] poses
 """
-TEMP_DEF = """std_msgs/msg/Header header
+TEMP_DEF = """std_msgs/Header header
 float64 temperature
 float64 variance
 """
-FLUID_DEF = """std_msgs/msg/Header header
+FLUID_DEF = """std_msgs/Header header
 float64 fluid_pressure
 float64 variance
 """
-MAG_DEF = """std_msgs/msg/Header header
-geometry_msgs/msg/Vector3 magnetic_field
+MAG_DEF = """std_msgs/Header header
+geometry_msgs/Vector3 magnetic_field
 float64[9] magnetic_field_covariance
 """
-TRANS_DEF = """geometry_msgs/msg/Vector3 translation
-geometry_msgs/msg/Quaternion rotation
+TRANS_DEF = """geometry_msgs/Vector3 translation
+geometry_msgs/Quaternion rotation
 """
-TRANSSTAMPED_DEF = """std_msgs/msg/Header header
+TRANSSTAMPED_DEF = """std_msgs/Header header
 string child_frame_id
-geometry_msgs/msg/Transform transform
+geometry_msgs/Transform transform
 """
-TFMSG_DEF = """geometry_msgs/msg/TransformStamped[] transforms
+TFMSG_DEF = """geometry_msgs/TransformStamped[] transforms
 """
 MADIM_DEF = """string label
 uint32 size
 uint32 stride
 """
-MALAYOUT_DEF = """std_msgs/msg/MultiArrayLayout layout
+MALAYOUT_DEF = """std_msgs/MultiArrayLayout layout
 float32[] data
 """
-F32MA_DEF = """std_msgs/msg/MultiArrayLayout layout
+F32MA_DEF = """std_msgs/MultiArrayLayout layout
 float32[] data
 """
 GRIDMAPINFO_DEF = """float32 resolution
 float32 length_x
 float32 length_y
-geometry_msgs/msg/Pose pose
+geometry_msgs/Pose pose
 """
-GRIDMAP_DEF = """std_msgs/msg/Header header
-grid_map_msgs/msg/GridMapInfo info
+GRIDMAP_DEF = """std_msgs/Header header
+grid_map_msgs/GridMapInfo info
 string[] layers
 string[] basic_layers
-std_msgs/msg/Float32MultiArray[] data
+std_msgs/Float32MultiArray[] data
 uint16 outer_start_index
 uint16 inner_start_index
 """
-VEC3STAMPED_DEF = """std_msgs/msg/Header header
-geometry_msgs/msg/Vector3 vector
+VEC3STAMPED_DEF = """std_msgs/Header header
+geometry_msgs/Vector3 vector
 """
-WRENCH_DEF = """geometry_msgs/msg/Vector3 force
-geometry_msgs/msg/Vector3 torque
+WRENCH_DEF = """geometry_msgs/Vector3 force
+geometry_msgs/Vector3 torque
 """
-WRENCHSTAMPED_DEF = """std_msgs/msg/Header header
-geometry_msgs/msg/Wrench wrench
+WRENCHSTAMPED_DEF = """std_msgs/Header header
+geometry_msgs/Wrench wrench
 """
-JOINTSTATE_DEF = """std_msgs/msg/Header header
+JOINTSTATE_DEF = """std_msgs/Header header
 string[] name
 float64[] position
 float64[] velocity
@@ -449,7 +442,6 @@ float32 g
 float32 b
 float32 a
 """
-# visualization_msgs
 MARKER_DEF = """int32 ARROW=0
 int32 CUBE=1
 int32 SPHERE=2
@@ -466,36 +458,35 @@ int32 ADD=0
 int32 MODIFY=0
 int32 DELETE=2
 int32 DELETEALL=3
-std_msgs/msg/Header header
+std_msgs/Header header
 string ns
 int32 id
 int32 type
 int32 action
-geometry_msgs/msg/Pose pose
-geometry_msgs/msg/Vector3 scale
-std_msgs/msg/ColorRGBA color
-builtin_interfaces/msg/Duration lifetime
+geometry_msgs/Pose pose
+geometry_msgs/Vector3 scale
+std_msgs/ColorRGBA color
+builtin_interfaces/Duration lifetime
 bool frame_locked
-geometry_msgs/msg/Point[] points
-std_msgs/msg/ColorRGBA[] colors
+geometry_msgs/Point[] points
+std_msgs/ColorRGBA[] colors
 string text
 string mesh_resource
 bool mesh_use_embedded_materials
 """
-MARKERARRAY_DEF = """visualization_msgs/msg/Marker[] markers
+MARKERARRAY_DEF = """visualization_msgs/Marker[] markers
 """
 
-# ---- control_msgs (for DynamicJointState) ----
 INTERFACEVALUE_DEF = """string interface_name
 float64[] values
 """
-DYNJOINTSTATE_DEF = """std_msgs/msg/Header header
+DYNJOINTSTATE_DEF = """std_msgs/Header header
 string[] joint_names
 string[] interface_names
-control_msgs/msg/InterfaceValue[] interface_values
+control_msgs/InterfaceValue[] interface_values
 """
 
-# ==================== ros2msg schema bundling (fix health-check errors) ====================
+# ==================== ros2msg schema bundling (emit MSG: names matching field tokens) ====================
 _SEP_LINE = "=" * 78 + "\n"
 
 def _canon(name: str) -> str:
@@ -564,7 +555,10 @@ _BUILTINS = {
     "int64","uint64","float32","float64","string","wstring","time","duration",
 }
 
-def _deps_from_def(def_text: str) -> list:
+def _deps_from_def(def_text: str):
+    """
+    Return list of (display_name_as_in_field, canonical_key_in_DEFS).
+    """
     out = []
     seen = set()
     for raw in def_text.replace("\r\n","\n").replace("\r","\n").splitlines():
@@ -578,36 +572,46 @@ def _deps_from_def(def_text: str) -> list:
         if ty in _BUILTINS:
             continue
         if "/" in ty:
-            name = _canon(ty)
-            if name not in seen:
-                seen.add(name)
-                out.append(name)
+            canon = _canon(ty)
+            if canon not in seen:
+                seen.add(canon)
+                out.append((ty, canon))
     return out
 
 def make_ros2msg_bundle(top_name: str) -> str:
+    """
+    Build a ros2msg bundle whose dependency headers (MSG: ...) use the same tokens
+    that appear in field types (e.g., 'std_msgs/Header'), while body text is loaded
+    from DEFS via canonical keys (e.g., 'std_msgs/msg/Header').
+    """
     top = _canon(top_name)
     if top not in DEFS:
         raise KeyError(f"Definition not found for '{top}'")
     stack = [top]
     order = []
     visited = set()
+    display_for = {}  # canonical -> last-seen display token
+
     while stack:
         cur = stack.pop()
         if cur in visited:
             continue
         visited.add(cur)
         order.append(cur)
-        for dep in _deps_from_def(DEFS[cur]):
-            if dep not in visited and dep in DEFS:
-                stack.append(dep)
+        for disp, depcanon in _deps_from_def(DEFS[cur]):
+            display_for.setdefault(depcanon, disp)
+            if depcanon not in visited and depcanon in DEFS:
+                stack.append(depcanon)
+
     pieces = [DEFS[top].rstrip() + "\n"]
     for dep in order[1:]:
         pieces.append(_SEP_LINE)
-        pieces.append(f"MSG: {dep}\n")
+        disp = display_for.get(dep, dep.replace("/msg/", "/"))
+        pieces.append(f"MSG: {disp}\n")
         pieces.append(DEFS[dep].rstrip() + "\n")
     return "".join(pieces)
 
-# -------------------- ANYmal naming (index → names/frames) --------------------
+# -------------------- ANYmal naming --------------------
 ANYMAL_JOINT_NAMES = [
     "LF_HAA", "LF_HFE", "LF_KFE",
     "RF_HAA", "RF_HFE", "RF_KFE",
@@ -636,7 +640,7 @@ def convert_single_bag(bag_path: Path, args):
         if name not in ts.types:
             ts.register(get_types_from_msg(defn, name))
 
-    # Ensure required types
+    # Ensure required types (keys remain canonical pkg/msg/Type)
     ensure_type("builtin_interfaces/msg/Time", TIME_DEF)
     ensure_type("builtin_interfaces/msg/Duration", DURATION_DEF)
     ensure_type("std_msgs/msg/Header", HEADER_DEF)
@@ -867,13 +871,14 @@ def convert_single_bag(bag_path: Path, args):
             return mw.register_schema(name=name, encoding="ros2msg", data=blob)
 
         def dual_reg(fullname: str) -> int:
-            cid = _reg_bundled(fullname)
+            cid = _reg_bundled(fullname)  # canonical name
+            # also register alias (pkg/Type) with its own bundle
             if "/msg/" in fullname:
                 alias = fullname.replace("/msg/", "/")
             else:
                 parts = fullname.split("/")
                 alias = f"{parts[0]}/msg/{parts[1]}" if len(parts) == 2 else fullname
-            mw.register_schema(name=alias, encoding="ros2msg", data=make_ros2msg_bundle(fullname).encode("utf-8"))
+            mw.register_schema(name=alias, encoding="ros2msg", data=make_ros2msg_bundle(alias).encode("utf-8"))
             return cid
 
         schema_ids = {
@@ -1129,7 +1134,7 @@ def convert_single_bag(bag_path: Path, args):
                     print_progress(processed, total_msgs)
                 continue
 
-            # --- SEA readings path -> split into standard messages (IMU skipped) ---
+            # --- SEA readings path ---
             if kind == "sear":
                 base = topic.rstrip("/")
 
@@ -1711,52 +1716,33 @@ def convert_single_bag(bag_path: Path, args):
         print_progress(processed, total_msgs)
 
 # -------------------- CLI --------------------
-def main():
-    ap = argparse.ArgumentParser(description="ROS1 .bag → MCAP (ROS 2 profile, CDR) with optional image decompression and message splitting")
-    ap.add_argument("--inbag", required=False, help="input ROS1 .bag or a directory (used if BATCH_MODE=True)", default="2024-11-14-13-45-37_anymal_state.bag")
+def main(argv=None):
+    ap = argparse.ArgumentParser(description="Convert ROS1 .bag; a directory selects batch processing.")
+    ap.add_argument("--inbag", required=True, help="Input file or directory")
+    ap.add_argument("--glob", default=BATCH_GLOB, help="File pattern when input is a directory")
     ap.add_argument("--decompress-images", type=int, choices=[0, 1], default=0)
     ap.add_argument("--print-random-sample", type=int, choices=[0, 1], default=1)
     ap.add_argument("--sample-prefer",
                     choices=["cimg","img","cinfo","imu","pc2","odom","twist","twistcovs","pwcs","pnt","temp","press","mag","gmap","path","marker","marray","tf","tfs","astate","sear"],
                     default=None)
-    args = ap.parse_args()
-
+    args = ap.parse_args(argv)
     root = Path(args.inbag).expanduser()
-    if BATCH_MODE:
-        if BATCH_DIR is not None:
-            base_dir = Path(BATCH_DIR).expanduser()
-        else:
-            base_dir = root if root.is_dir() else root.parent
+    if not root.exists():
+        ap.error(f"Input does not exist: {root}")
+    inputs = sorted(p for p in root.glob(args.glob) if p.is_file()) if root.is_dir() else [root]
+    if not inputs:
+        ap.error(f"No files matching '{args.glob}' in {root}")
+    failures = 0
+    for source in inputs:
+        try:
+            convert_single_bag(source, args)
+        except (Exception, SystemExit) as exc:
+            failures += 1
+            print(f"[ERROR] {source}: {exc}", file=sys.stderr)
+    if failures:
+        print(f"Conversion finished with {failures} failure(s).", file=sys.stderr)
+    return 1 if failures else 0
 
-        if not base_dir.is_dir():
-            sys.exit(f"BATCH_MODE: directory not found: {base_dir}")
-
-        bag_files = sorted(p for p in base_dir.glob(BATCH_GLOB) if p.is_file())
-        if not bag_files:
-            sys.exit(f"BATCH_MODE: no files matching '{BATCH_GLOB}' in {base_dir}")
-
-        sys.stdout.write(f"\n=== BATCH_MODE: converting {len(bag_files)} bag(s) in {base_dir} ===\n")
-        sys.stdout.flush()
-        failures = 0
-        for bp in bag_files:
-            sys.stdout.write(f"\n--- Converting: {bp} ---\n"); sys.stdout.flush()
-            try:
-                convert_single_bag(bp, args)
-            except SystemExit as se:
-                failures += 1
-                sys.stderr.write(f"[ERROR] {bp}: {se}\n")
-            except Exception as e:
-                failures += 1
-                sys.stderr.write(f"[ERROR] {bp}: {e}\n")
-        if failures:
-            sys.stderr.write(f"\nBATCH_MODE finished with {failures} failure(s).\n")
-        else:
-            sys.stdout.write("\nBATCH_MODE finished successfully.\n")
-        return
-
-    if root.is_dir():
-        sys.exit(f"--inbag points to a directory but BATCH_MODE is False: {root}")
-    convert_single_bag(root, args)
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

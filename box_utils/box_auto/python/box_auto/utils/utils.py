@@ -1,4 +1,5 @@
 import os
+import subprocess
 from github import Github
 from pathlib import Path
 import psutil
@@ -29,7 +30,7 @@ def get_uuid_mapping():
 def run_ros_command(cmd, background=False):
     if background:
         cmd += " &"
-    return os.system("bash -c '" + PRE + cmd + "' ")
+    return subprocess.call(["bash", "-c", PRE + cmd])
 
 
 def start_roscore():
@@ -142,11 +143,13 @@ def find_and_extract_non_matching(directory, pattern):
     matched_files = [p.resolve() for p in Path(directory).rglob(pattern)]  # Absolute paths of matches
 
     if len(matched_files) == 0:
-        raise ValueError(f"No files found matching the pattern '{pattern}' in directory '{Path(directory).resolve()}'.")
+        msg = f"No files found matching the pattern '{pattern}' in directory '{Path(directory).resolve()}'."
+        print(f"\033[31m{msg}\033[0m")
+        raise ValueError(msg)
     elif len(matched_files) > 1:
-        raise ValueError(
-            f"Multiple files found matching the pattern '{pattern}': {[str(p) for p in matched_files]}"
-        )
+        msg = f"Multiple files found matching the pattern '{pattern}': {[str(p) for p in matched_files]}"
+        print(f"\033[31m{msg}\033[0m")
+        raise ValueError(msg)
 
     filename = matched_files[0].name
 

@@ -1,5 +1,6 @@
 import os
 import glob
+import re
 import rosbag
 import rospy
 from rosbags.highlevel.anyreader import AnyReader
@@ -12,27 +13,25 @@ import rospkg
 from sensor_msgs.msg import CameraInfo
 import copy
 import subprocess
+from typing import Sequence, Union
 
 MISSION_DATA = os.environ.get("MISSION_DATA", "/tmp_disk")
 
 
-def shell_run(cmd, cwd=None, env={}, time=True, continue_on_error=True):
+def shell_run(cmd: Union[str, Sequence[str]], cwd=None, env=None, time=True, continue_on_error=True):
     """Execute shell command."""
-    # Support both list and str format for commands
-    # if isinstance(cmd, str):
-    #     cmd = shlex.split(cmd)
-
-    # Set up environmental variables
     env_variables = copy.deepcopy(os.environ)
-    env_variables.update(env)
+    env_variables.update(env or {})
 
-    # Execute command
     try:
-        p = subprocess.Popen(cmd, cwd=cwd, env=env_variables, shell=True, executable="/bin/bash")
+        if isinstance(cmd, str):
+            completed = subprocess.run(cmd, cwd=cwd, env=env_variables, shell=True, executable="/bin/bash")
+        else:
+            completed = subprocess.run(list(cmd), cwd=cwd, env=env_variables, shell=False)
     except Exception as e:
         raise RuntimeError(f"{e} --- while executing {cmd}")
 
-    if p.wait() != 0:
+    if completed.returncode != 0:
         print()
         if not continue_on_error:
             raise RuntimeError(f"Error Return non 0 --- while executing {cmd}")
@@ -42,7 +41,6 @@ def load_camera_info_from_yaml(yaml_path):
     with open(yaml_path, "r") as f:
         calib_data = yaml.safe_load(f)
 
-    # Create a CameraInfo message
     camera_info = CameraInfo()
     camera_info.width = calib_data["image_width"]
     camera_info.height = calib_data["image_height"]
@@ -80,7 +78,6 @@ def downgrade_camerainfo_to_rosbag1(src: Path, dst: Path, replace: bool = False)
 
                     if "camera_info" in topic:
                         if topic not in camera_info_msg:
-                            # Extract camera name from frame_id
                             camera_name = msg.header.frame_id.split("/")[-1]
                             calib_file = get_calibration_file_path(camera_name)
                             new_camera_info = load_camera_info_from_yaml(calib_file)
@@ -93,9 +90,11 @@ def downgrade_camerainfo_to_rosbag1(src: Path, dst: Path, replace: bool = False)
                         output_bag.write(topic, new_camera_info, t)
 
                     else:
-                        # Write original message if not replaced
-                        msg.header.seq = seq_per_topic[topic]
+                        # If msg has a header, keep seq consistent
+                        if hasattr(msg, "header") and hasattr(msg.header, "seq"):
+                            msg.header.seq = seq_per_topic[topic]
                         output_bag.write(topic, msg, t)
+
                     seq_per_topic[topic] += 1
 
     else:
@@ -161,36 +160,78 @@ def split_rosbags(input_bag_path, camera_direction, duration_minutes=5):
         index += 1
 
 
+def find_original_txt_and_parse(mission_root: str):
+    """
+    Find a unique mission marker, or return None for legacy inputs without one.
+    Extract:
+      - timestamp prefix: 'YYYY-MM-DD-HH-MM-SS' (start of filename)
+      - mission name: text between '__original__' and '.yml'
+    Return: (txt_path: Path, timestamp_str: str, mission_name: str, file_text: str)
+    """
+    matches = sorted(Path(mission_root).glob("*__original__*.yml"))
+
+    if not matches:
+        return None
+    if len(matches) != 1:
+        raise ValueError(f"Ambiguous mission markers under {mission_root}: {matches}")
+
+    txt_path = matches[0]
+    fname = txt_path.name
+
+    # Example:
+    # 2026-01-19-11-04-32__original__xxyy.yml
+    m = re.match(r"^(?P<ts>\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2})__original__(?P<name>.+)\.yml$", fname)
+    if not m:
+        raise ValueError(f"Filename does not match expected pattern: {fname}")
+
+    timestamp_str = m.group("ts")
+    mission_name = m.group("name")
+
+    file_text = txt_path.read_text(encoding="utf-8", errors="replace")
+    return txt_path, timestamp_str, mission_name, file_text
+
+
 if __name__ == "__main__":
+    # 1) Find and read the "__original__" txt file and extract vars
+    marker = find_original_txt_and_parse(MISSION_DATA)
+    original_timestamp = marker[1] if marker else None
+    print(f"Mission timestamp: {original_timestamp or 'from each input directory (no marker)'}")
+    # If you want to use the file content, it's in original_txt_contents
+
+    # 2) Existing processing
     mcaps = [str(Path(p).parent) for p in glob.glob(f"{MISSION_DATA}/*/*.mcap", recursive=True)]
     mcaps = np.unique(np.array(mcaps)).tolist()
     print(f"Found {len(mcaps)} directories to process: \n {mcaps}")
-    for _i, mcap in enumerate(mcaps):
-        # We at first convert all missions to ROS1 - we have to merge the bags into a single mission for the hdr cameras given the metdata.yaml
-        timestamp = Path(mcap).name.split("_")[0]
+
+    conversion_inputs = {}
+    for mcap in mcaps:
+        timestamp = Path(mcap).name.split("_jetson_hdr_")[0]
         camera_direction = mcap.split("_")[-1]
-        converted_bag_path = Path(mcap).parent.joinpath(f"{timestamp}_jetson_hdr_{camera_direction}_raw.bag")
+        if camera_direction not in {"front", "left", "right"}:
+            raise ValueError(f"Cannot determine HDR camera direction from {mcap}")
+        output_timestamp = original_timestamp or timestamp
+        converted_bag_path = Path(mcap).parent / f"{output_timestamp}_jetson_hdr_{camera_direction}_raw.bag"
+        if converted_bag_path in conversion_inputs:
+            raise ValueError(f"Multiple HDR inputs target {converted_bag_path}: {conversion_inputs[converted_bag_path]}, {mcap}")
+        conversion_inputs[converted_bag_path] = mcap
+
+    for converted_bag_path, mcap in conversion_inputs.items():
         if not converted_bag_path.exists():
-            cmd = f"rosbags-convert {mcap} --dst {str(converted_bag_path)}"
+            cmd = ["rosbags-convert", mcap, "--dst", str(converted_bag_path)]
             print(cmd)
-            shell_run(cmd)
+            shell_run(cmd, continue_on_error=False)
             print("Converted to ROS1 raw format, types are not yet converted.")
         else:
             print(f"Skipping {mcap} conversion.")
 
-        downgraded_bag_path = str(converted_bag_path).replace("_raw", "")
+        downgraded_bag_path = str(converted_bag_path)[:-len("_raw.bag")] + ".bag"
         if not Path(downgraded_bag_path).exists():
-            # Downgrade CameraInfo and write to a new bag
             print("Downgrading CameraInfo to ROS1 format and saving")
             downgrade_camerainfo_to_rosbag1(converted_bag_path, Path(downgraded_bag_path), True)
         else:
             print(f"Skipping {mcap} downgraded.")
 
-        # Split the downgraded bag into 5-minute chunks
-        # print("Splitting the downgraded bag into 5-minute chunks.")
-        # split_rosbags(downgraded_bag_path, camera_direction=camera_direction)
         # Remove intermediate artifacts
         os.remove(converted_bag_path)
-        # os.remove(downgraded_bag_path)
 
     print("All directories processed. Split bags are available in each directory.")

@@ -13,8 +13,10 @@
 .catkin_tools
 .idea/
 wifi_config.ini
+imgui.ini
 .DS_Store
 box_utils/box_recording/data
+box_utils/box_auto/build/
 box_utils/box_mission_report/reports*
 box_bringup/bringup_open3d_slam/data/maps/*
 box_utils/box_auto/compose/*_local.yaml

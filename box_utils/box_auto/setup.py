@@ -7,7 +7,7 @@ from setuptools import setup
 from catkin_pkg.python_setup import generate_distutils_setup
 
 d = generate_distutils_setup(
-    packages=["box_auto"],
+    packages=["box_auto", "box_auto.utils"],
     package_dir={"": "python"},
     include_package_data=True,
     package_data={},
