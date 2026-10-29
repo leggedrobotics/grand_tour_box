@@ -1,0 +1,41 @@
+<launch>
+  <!-- Read-only visualization of already-rectified images stored in bag files -->
+
+  <!-- Required -->
+  <arg name="rgb_bag" default="/home/tutuna/Videos/julia_depth_test/2024-11-04-12-55-59_zed2i_images_processed.bag"/>
+  <arg name="rgb_image_topic" default="/boxi/zed2i/right/image_rect/compressed"/>
+  <arg name="rgb_info_bag" default=""/> <!-- empty => defaults to rgb_bag at runtime -->
+  <arg name="rgb_info_topic" default="/boxi/zed2i/right/camera_info"/> <!-- empty => disable CameraInfo printing -->
+  <arg name="rgb_info_print_interval_sec" default="2.0"/>
+
+  <!-- Depth (optional) -->
+  <arg name="use_depth" default="true"/>
+  <arg name="depth_bag" default="/home/tutuna/Videos/julia_depth_test/2024-11-04-12-55-59_zed2i_depth_processed.bag"/>
+  <arg name="depth_image_topic" default="/boxi/zed2i/depth/image_rect/compressed"/>
+
+  <!-- Confidence (optional) -->
+  <arg name="use_confidence" default="true"/>
+  <arg name="confidence_bag" default=""/> <!-- if empty and use_depth=true, defaults to depth_bag at runtime -->
+  <arg name="confidence_image_topic" default="/boxi/zed2i/confidence/image_rect/compressed"/>
+
+  <node pkg="boxi_rectify_from_bag"
+        type="visualize_rectified_from_bag_node"
+        name="visualize_rectified_from_bag"
+        output="screen"
+        required="true">
+
+    <param name="rgb_bag" value="$(arg rgb_bag)"/>
+    <param name="rgb_image_topic" value="$(arg rgb_image_topic)"/>
+    <param name="rgb_info_bag" value="$(arg rgb_info_bag)"/>
+    <param name="rgb_info_topic" value="$(arg rgb_info_topic)"/>
+    <param name="rgb_info_print_interval_sec" value="$(arg rgb_info_print_interval_sec)"/>
+
+    <param name="use_depth" value="$(arg use_depth)"/>
+    <param name="depth_bag" value="$(arg depth_bag)"/>
+    <param name="depth_image_topic" value="$(arg depth_image_topic)"/>
+
+    <param name="use_confidence" value="$(arg use_confidence)"/>
+    <param name="confidence_bag" value="$(arg confidence_bag)"/>
+    <param name="confidence_image_topic" value="$(arg confidence_image_topic)"/>
+  </node>
+</launch>

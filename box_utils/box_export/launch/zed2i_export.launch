@@ -1,0 +1,82 @@
+<!-- zed2i_decompression_and_saving.launch -->
+<launch>
+  <!-- Depth and Images are found by string matching in this folder. If left empty not used. -->
+  <arg name="bag_file_directory"  />
+
+  <!-- Handling of single bag. Optional. If left empty not used. -->
+  <arg name="global_rosbag_path" default="" />
+
+  <!-- Bag filename substring matching (only used when global_rosbag_path is empty) -->
+  <arg name="depth_bag_match_substring" default="depth.bag" />
+  <arg name="rgb_bag_match_substring"   default="images.bag" />
+
+  <!-- Topics to read (OPTIONAL):
+       - depth_topic empty => depth disabled
+       - save_confidence only meaningful if depth bag/topic is usable; confidence_topic empty disables confidence -->
+  <arg name="depth_topic" default="/boxi/zed2i/depth/image_raw/compressed" />
+  <arg name="save_confidence" default="true" />
+  <arg name="confidence_topic" default="/boxi/zed2i/confidence/image_raw/compressed" />
+
+  <!-- RGB topics:
+       - right_color_topic is REQUIRED
+       - left_color_topic is OPTIONAL: empty => MONO export into <out>/image + traj.txt
+         non-empty => STEREO export into <out>/images/right|left + traj_right/left.txt -->
+  <arg name="right_color_topic" default="/boxi/zed2i/right/image_rect/compressed" />
+  <arg name="left_color_topic"  default="/boxi/zed2i/left/image_rect/compressed" />
+
+  <!-- CameraInfo (JSON is written from RIGHT). Left is optional. -->
+  <arg name="right_camera_info_topic" default="/boxi/zed2i/right/camera_info_rect" />
+  <arg name="left_camera_info_topic"  default="/boxi/zed2i/left/camera_info_rect" />
+
+  <!-- Where the output files will be generated. -->
+  <arg name="output_folder_path"  />
+
+  <!-- Number of frames to save. -->
+  <arg name="max_color_images" default="500" />
+
+  <!-- The saving will start from Nth image in the bag. Often first images are not good. -->
+  <arg name="frames_to_skip" default="0" />
+
+  <!-- EXR is a format allowing saving 32-BIT depth images. -->
+  <arg name="save_as_exr" default="true" />
+
+  <!-- Pose of camera will be retrieved in this frame. -->
+  <arg name="map_frame" default="dlio_map" />
+
+  <!-- The list of rosbags that have the /tf , /tf_static topics. All will be accumulated. -->
+  <arg name="tf_bag_paths" />
+  <rosparam param="tf_containing_bag_paths" subst_value="True">$(arg tf_bag_paths)</rosparam>
+
+  <node pkg="box_export" type="zed2i_decompression_and_saving" name="zed2i_decompression_and_saving_node" output="screen" required="true">
+    <param name="images_rectified" value="true"/>
+    <param name="global_rosbag_path" value="$(arg global_rosbag_path)"/>
+    <param name="bag_file_directory" value="$(arg bag_file_directory)"/>
+
+    <param name="depth_bag_match_substring" value="$(arg depth_bag_match_substring)"/>
+    <param name="rgb_bag_match_substring" value="$(arg rgb_bag_match_substring)"/>
+
+    <param name="depth_topic" value="$(arg depth_topic)"/>
+    <param name="save_confidence" value="$(arg save_confidence)"/>
+    <param name="confidence_topic" value="$(arg confidence_topic)"/>
+
+    <param name="right_color_topic" value="$(arg right_color_topic)"/>
+    <param name="left_color_topic"  value="$(arg left_color_topic)"/>
+
+    <!-- Back-compat (optional): some old configs still set these -->
+    <param name="color_topic" value="$(arg right_color_topic)"/>
+    <param name="camera_info_topic" value="$(arg right_camera_info_topic)"/>
+
+    <param name="right_camera_info_topic" value="$(arg right_camera_info_topic)"/>
+    <param name="left_camera_info_topic"  value="$(arg left_camera_info_topic)"/>
+
+    <param name="max_color_images" value="$(arg max_color_images)"/>
+    <param name="output_folder_path" value="$(arg output_folder_path)"/>
+    <param name="map_frame" value="$(arg map_frame)"/>
+    <param name="frames_to_skip" value="$(arg frames_to_skip)"/>
+    <param name="save_as_exr" value="$(arg save_as_exr)"/>
+
+    <!-- Optional debugging knobs (default false/8000 inside node) -->
+    <param name="print_tf_frames" value="false"/>
+    <param name="tf_dump_max_chars" value="8000"/>
+  </node>
+</launch>

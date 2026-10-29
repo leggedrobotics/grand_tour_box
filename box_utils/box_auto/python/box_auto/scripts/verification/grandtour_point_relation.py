@@ -3,6 +3,7 @@
 
 import numpy as np
 import yaml
+from box_auto.utils.evaluation_config import validate_evaluation_config
 
 # from evo.core.trajectory import PoseTrajectory3D
 from evo.core.trajectory import Plane
@@ -1075,7 +1076,7 @@ def process_directory(base_path, output_dir, config, disable_viz, prefix):
 
 def load_config(config_path):
     with open(config_path, "r") as f:
-        config = yaml.safe_load(f)
+        config = validate_evaluation_config(yaml.safe_load(f))
     return config
 
 

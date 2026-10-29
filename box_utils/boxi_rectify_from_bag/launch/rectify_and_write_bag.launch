@@ -1,0 +1,43 @@
+<launch>
+  <!-- Fresh output directory: both bags and their summary publish together. -->
+  <arg name="bag_dir"/>
+  <arg name="output_dir"/>
+  <arg name="right_match" default="zed2i_images"/>
+  <arg name="left_match" default=""/>
+  <arg name="depth_match" default="zed2i_depth"/>
+  <arg name="confidence_match" default=""/>
+  <!-- The shipped ZED replay already selects SDK rectification. Use false only
+       for raw inputs with complete per-camera K,D,R,P calibration in their bags. -->
+  <arg name="input_rectified" default="true"/>
+  <arg name="allow_unmatched" default="false"/>
+  <arg name="right_topic" default="/boxi/zed2i/right/image_rect/compressed"/>
+  <arg name="left_topic" default="/boxi/zed2i/left/image_rect/compressed"/>
+  <arg name="depth_topic" default="/boxi/zed2i/depth/image_raw/compressed"/>
+  <arg name="confidence_topic" default="/boxi/zed2i/confidence/image_raw/compressed"/>
+  <arg name="right_info_topic" default="/boxi/zed2i/right/camera_info"/>
+  <arg name="left_info_topic" default="/boxi/zed2i/left/camera_info"/>
+  <arg name="depth_info_topic" default="/boxi/zed2i/depth/camera_info"/>
+  <arg name="confidence_info_topic" default=""/>
+  <arg name="output_codec" default="png"/>
+  <arg name="jpeg_quality" default="95"/>
+  <node pkg="boxi_rectify_from_bag" type="rectify_and_write_bag_node" name="rectify_and_write_bag" output="screen" required="true">
+    <param name="bag_dir" value="$(arg bag_dir)"/>
+    <param name="output_dir" value="$(arg output_dir)"/>
+    <param name="right_match" value="$(arg right_match)"/>
+    <param name="left_match" value="$(arg left_match)"/>
+    <param name="depth_match" value="$(arg depth_match)"/>
+    <param name="confidence_match" value="$(arg confidence_match)"/>
+    <param name="input_rectified" value="$(arg input_rectified)"/>
+    <param name="allow_unmatched" value="$(arg allow_unmatched)"/>
+    <param name="right_topic" value="$(arg right_topic)"/>
+    <param name="left_topic" value="$(arg left_topic)"/>
+    <param name="depth_topic" value="$(arg depth_topic)"/>
+    <param name="confidence_topic" value="$(arg confidence_topic)"/>
+    <param name="right_info_topic" value="$(arg right_info_topic)"/>
+    <param name="left_info_topic" value="$(arg left_info_topic)"/>
+    <param name="depth_info_topic" value="$(arg depth_info_topic)"/>
+    <param name="confidence_info_topic" value="$(arg confidence_info_topic)"/>
+    <param name="output_codec" value="$(arg output_codec)"/>
+    <param name="jpeg_quality" value="$(arg jpeg_quality)"/>
+  </node>
+</launch>

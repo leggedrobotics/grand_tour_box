@@ -24,40 +24,48 @@ def read_sheet_data(spreadsheet_id, sheet_name_topic="topic_overview", sheet_nam
     sheet = gc.open_by_key(spreadsheet_id)
     worksheet = sheet.worksheet(sheet_name_topic)
 
-    # Read data from A1 to G545 from the topic worksheet
-    data = worksheet.get_all_values("A1:G545")
-
-    # Define column headers for the topic data
-    keys = ["topic_name_orig", "type", "frame_id_orig", "convert", "topic_name_out", "frame_id_out", "bag_name_out"]
-
-    # Convert raw data to list of dictionaries with proper keys
-    data_list = []
-    for row in data:
-        data_list.append({str(k): str(v) for k, v in zip(keys, row)})
-
-    # Process topic data to extract relevant information
-    current_bag_name = None
-    topic_data = []
-    for _data in data_list:
-        # Extract bag name when a bag entry is found
-        if "Bag: " in _data["topic_name_orig"]:
-            current_bag_name = _data["topic_name_orig"].replace("Bag: 2024-11-11-12-42-47_", "")
-        if _data["topic_name_orig"] != "":
-            # Only include topics that start with '/' and are marked for conversion
-            if _data["topic_name_orig"][0] == "/" and _data["convert"] in ["Yes", "ROSBAG"]:
-                _data["bag_name_orig"] = current_bag_name
-                topic_data.append(_data)
-
-    # Read data from the mission worksheet
+    topic_data = parse_topic_rows(worksheet.get_all_values("A:G"))
     worksheet = sheet.worksheet(sheet_name_mission)
-    data = worksheet.get_all_values("A1:Z72")
-
-    data_list = []
-
-    # Process mission data using the first row as keys
-    keys = data[0][1:]
-    mission_data = {}
-    for row in data[1:]:
-        mission_data[row[0]] = {str(k): str(v) for k, v in zip(keys, row[1:])}
-
+    mission_data = parse_mission_rows(worksheet.get_all_values("A:AD"))
     return topic_data, mission_data
+
+
+def parse_topic_rows(rows):
+    """Pad sparse spreadsheet rows; never silently truncate a late mission."""
+    keys = ["topic_name_orig", "type", "frame_id_orig", "convert", "topic_name_out", "frame_id_out", "bag_name_out"]
+    current_bag_name = None
+    result = []
+    for row in rows:
+        values = list(row) + [""] * max(0, len(keys) - len(row))
+        item = dict(zip(keys, map(str, values)))
+        name = item["topic_name_orig"].strip()
+        if name.startswith("Bag: "):
+            current_bag_name = name[len("Bag: ") :]
+            prefix = "2024-11-11-12-42-47_"
+            if current_bag_name.startswith(prefix):
+                current_bag_name = current_bag_name[len(prefix) :]
+        if name.startswith("/") and item["convert"] in ("Yes", "ROSBAG"):
+            if not current_bag_name:
+                raise ValueError("Converted topic has no preceding bag: " + name)
+            item["bag_name_orig"] = current_bag_name
+            result.append(item)
+    return result
+
+
+def parse_mission_rows(rows):
+    if not rows:
+        raise ValueError("Mission worksheet is empty")
+    keys = [str(k).strip() for k in rows[0][1:]]
+    populated = [k for k in keys if k]
+    if len(populated) != len(set(populated)):
+        raise ValueError("Mission worksheet has duplicate headers")
+    result = {}
+    for row in rows[1:]:
+        if not row or not any(str(v).strip() for v in row):
+            continue
+        mission = str(row[0]).strip()
+        if not mission or mission in result:
+            raise ValueError("Missing or duplicate mission identifier: " + mission)
+        values = list(row[1:]) + [""] * len(keys)
+        result[mission] = {key: str(value) for key, value in zip(keys, values) if key}
+    return result

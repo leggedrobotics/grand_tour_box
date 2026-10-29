@@ -5,7 +5,7 @@
   <arg name="bag_file_directory" default="" />
 
   <!-- Where the output files will be generated. -->
-  <!-- Be careful that files ending with `.tum` will be cleaned at this folder on every run. -->
+  <!-- Use a fresh folder. Existing trajectory or bag outputs cause a failure. -->
   <arg name="output_folder_path" default="" />
 
   <!-- Interpolate -->

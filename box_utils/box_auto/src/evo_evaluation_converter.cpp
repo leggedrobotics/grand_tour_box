@@ -379,6 +379,40 @@ TopicFrequencyResult computeTopicFrequencyFromHeaderTimestamps(const std::string
 }
 // ------------------ END ADDED ---------------------------------------------------------------
 
+Eigen::Matrix<double, 6, 6> covarianceAtTrackedPoint(const geometry_msgs::PoseWithCovariance& source,
+                                                     const geometry_msgs::Point& targetPosition) {
+  // ROS orientation errors are world-fixed small angles. For a lever arm r,
+  // delta p_target = delta p_source - [r]x delta_theta. Retain cross-covariance.
+  Eigen::Matrix<double, 6, 6> covariance;
+  for (int row = 0; row < 6; ++row)
+    for (int col = 0; col < 6; ++col) covariance(row, col) = source.covariance[row * 6 + col];
+  if (!covariance.allFinite() || !covariance.isApprox(covariance.transpose(), 1e-10))
+    throw std::runtime_error("Invalid source pose covariance");
+  Eigen::SelfAdjointEigenSolver<Eigen::Matrix<double, 6, 6>> eigenvalues(covariance);
+  if (eigenvalues.eigenvalues().minCoeff() < -1e-10)
+    throw std::runtime_error("Source pose covariance is not positive semidefinite");
+  const auto& position = source.pose.position;
+  Eigen::Vector3d lever(targetPosition.x - position.x, targetPosition.y - position.y, targetPosition.z - position.z);
+  Eigen::Matrix<double, 6, 6> jacobian = Eigen::Matrix<double, 6, 6>::Identity();
+  Eigen::Matrix3d skew;
+  skew << 0, -lever.z(), lever.y(), lever.z(), 0, -lever.x(), -lever.y(), lever.x(), 0;
+  jacobian.block<3, 3>(0, 3) = -skew;
+  return jacobian * covariance * jacobian.transpose();
+}
+
+void writeCovariance(std::ostream& marginal, std::ostream& full, double timestamp,
+                     const Eigen::Matrix<double, 6, 6>& covariance) {
+  marginal << timestamp;
+  full << timestamp;
+  for (int row = 0; row < 6; ++row) {
+    marginal << " " << std::sqrt(std::max(0.0, covariance(row, row)));
+    for (int col = 0; col < 6; ++col) full << " " << covariance(row, col);
+  }
+  marginal << std::endl;
+  full << std::endl;
+  if (!marginal || !full) throw std::runtime_error("Failed to write pose covariance");
+}
+
 void parseRosbagToTum(const std::string& bagPath, const std::string& topicName, const std::string& outputTopicName,
                       const std::string& outputPath, tf2_ros::Buffer& tf_buffer, const std::string& targetFrame,
                       const std::string& sourceFrame, bool enable_interpolation, rosbag::Bag& outputBag,
@@ -408,6 +442,16 @@ void parseRosbagToTum(const std::string& bagPath, const std::string& topicName, 
   possibleCovarianceFile.open(covOutputPath, std::ios_base::app);
   possibleCovarianceFile.precision(std::numeric_limits<double>::max_digits10);
   possibleCovarianceFile << covarianceFileHeader << std::endl;
+
+  // Retain all correlations for uncertainty plots; the legacy file stores
+  // marginal standard deviations only and cannot support frame rotation.
+  std::ofstream fullCovarianceFile(outputPath.substr(0, outputPath.size() - 4) + "_covariance_full.tum", std::ios_base::app);
+  fullCovarianceFile.precision(std::numeric_limits<double>::max_digits10);
+  fullCovarianceFile << "timestamp";
+  for (int row = 0; row < 6; ++row)
+    for (int col = 0; col < 6; ++col) fullCovarianceFile << " c" << row << col;
+  fullCovarianceFile << std::endl;
+  if (!fullCovarianceFile.is_open()) throw std::runtime_error("Cannot open full covariance output");
 
   if (!possibleCovarianceFile.is_open()) {
     ROS_ERROR_STREAM("Failed to open possibleCovarianceFile: " << covOutputPath);
@@ -476,10 +520,14 @@ void parseRosbagToTum(const std::string& bagPath, const std::string& topicName, 
             Eigen::Matrix4d transformedPoseAsMat = poseAsMat * transformAsMat;
             transformed_pose = matrixToPose(transformedPoseAsMat, targetFrame, odometry->header.stamp);
           }
+          const auto covariance = covarianceAtTrackedPoint(odometry->pose, transformed_pose.pose.position);
           nav_msgs::Odometry asOdom;
           asOdom.header = odometry->header;
           asOdom.child_frame_id = targetFrame;
           asOdom.pose.pose = transformed_pose.pose;
+          for (int row = 0; row < 6; ++row)
+            for (int col = 0; col < 6; ++col) asOdom.pose.covariance[row * 6 + col] = covariance(row, col);
+
 
           try {
             outputBag.write(outputTopicName, odometry->header.stamp, asOdom);
@@ -502,6 +550,7 @@ void parseRosbagToTum(const std::string& bagPath, const std::string& topicName, 
 
           tumFile << timestamp << " " << position.x << " " << position.y << " " << position.z << " " << orientation.x << " " << orientation.y
                   << " " << orientation.z << " " << orientation.w << std::endl;
+          writeCovariance(possibleCovarianceFile, fullCovarianceFile, timestamp, covariance);
 
         } catch (const tf2::TransformException& ex) {
           ROS_ERROR_STREAM("Failed to transform pose: " << ex.what());
@@ -609,10 +658,15 @@ void parseRosbagToTum(const std::string& bagPath, const std::string& topicName, 
             transformed_pose = matrixToPose(transformedPoseAsMat, targetFrame, poseCov->header.stamp);
           }
 
+          const auto covariance = covarianceAtTrackedPoint(poseCov->pose, transformed_pose.pose.position);
+
           nav_msgs::Odometry asOdom;
           asOdom.header = poseCov->header;
           asOdom.child_frame_id = targetFrame;
           asOdom.pose.pose = transformed_pose.pose;
+          for (int row = 0; row < 6; ++row)
+            for (int col = 0; col < 6; ++col) asOdom.pose.covariance[row * 6 + col] = covariance(row, col);
+
 
           try {
             outputBag.write(outputTopicName, poseCov->header.stamp, asOdom);
@@ -636,17 +690,7 @@ void parseRosbagToTum(const std::string& bagPath, const std::string& topicName, 
           tumFile << timestamp << " " << position.x << " " << position.y << " " << position.z << " " << orientation.x << " " << orientation.y
                   << " " << orientation.z << " " << orientation.w << std::endl;
 
-          auto estGnssOfflinePoseMeasUnaryNoiseList = poseCov->pose.covariance;
-          Eigen::Matrix<double, 6, 1> estGnssOfflinePoseMeasUnaryNoise;
-          estGnssOfflinePoseMeasUnaryNoise << sqrt(estGnssOfflinePoseMeasUnaryNoiseList[0]), sqrt(estGnssOfflinePoseMeasUnaryNoiseList[7]),
-              sqrt(estGnssOfflinePoseMeasUnaryNoiseList[14]), sqrt(estGnssOfflinePoseMeasUnaryNoiseList[21]),
-              sqrt(estGnssOfflinePoseMeasUnaryNoiseList[28]), sqrt(estGnssOfflinePoseMeasUnaryNoiseList[35]);
-
-          possibleCovarianceFile << timestamp;
-          for (int i = 0; i < estGnssOfflinePoseMeasUnaryNoise.size(); ++i) {
-            possibleCovarianceFile << " " << estGnssOfflinePoseMeasUnaryNoise[i];
-          }
-          possibleCovarianceFile << std::endl;
+          writeCovariance(possibleCovarianceFile, fullCovarianceFile, timestamp, covariance);
 
         } catch (const tf2::TransformException& ex) {
           ROS_ERROR_STREAM("Failed to transform pose: " << ex.what());
@@ -867,9 +911,9 @@ int main(int argc, char** argv) {
   }
 
   for (const auto& entry : std::filesystem::directory_iterator(outputDir)) {
-    if (entry.path().extension() == ".tum") {
-      std::filesystem::remove(entry.path());
-      ROS_INFO_STREAM("\033[1;31mDeleted file: " << entry.path() << "\033[0m");
+    if (entry.path().extension() == ".tum" || entry.path().extension() == ".bag") {
+      ROS_ERROR_STREAM("Output contains existing trajectories; choose a fresh directory: " << outputDir);
+      return 1;
     }
   }
 

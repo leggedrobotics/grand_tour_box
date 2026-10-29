@@ -45,7 +45,7 @@ def load_script(relative):
     parent.__path__ = [str(PACKAGE / 'python/box_auto')]
     spec = importlib.util.spec_from_file_location('reliability_' + Path(relative).stem, SCRIPTS / relative)
     module = importlib.util.module_from_spec(spec)
-    overrides = {'box_auto': parent, 'box_auto.utils': utilities}
+    overrides = {'box_auto': parent, 'box_auto.utils': utilities, spec.name: module}
     previous = {name: sys.modules.get(name) for name in overrides}
     sys.modules.update(overrides)
     try:
@@ -296,6 +296,23 @@ class AdditionalReliabilityTests(TemporaryCase):
         with self.assertRaises(ValueError):
             parse(self.directory)
 
+    def test_anonymizers_reject_missing_or_unprocessed_images(self):
+        root = PACKAGE.parent/'box_converter/image-anonymization-pipeline'
+        for filename in ('anonimization_standalone.py', 'anonimization_standalone_chat.py'):
+            with self.subTest(filename=filename):
+                function = extracted_function(root/filename, 'anonymize_image_topics_in_bagfile', dict(Path=Path, rosbag=rosbag, tqdm=tqdm))
+                source = self.directory/'source.bag'
+                string_bag(source)
+                with self.assertRaisesRegex(ValueError, 'None of the selected'):
+                    function(source, self.output, image_topics=['/images'], detectors=None, visualization_state=None)
+                self.assertFalse(self.output.exists())
+                with rosbag.Bag(str(source), 'w') as bag:
+                    bag.write('/metadata', String(data='first'), rospy.Time(1))
+                    bag.write('/images', CompressedImage(), rospy.Time(2))
+                with self.assertRaisesRegex(ValueError, 'No images were processed'):
+                    function(source, self.output, image_topics=['/images'], detectors=None, visualization_state=None, head=1)
+                self.assertFalse(self.output.exists())
+                self.assertFalse(list(self.directory.glob('.anonymizing-*')))
 
     def test_calibration_updates_preserve_headers_and_unrelated_messages(self):
         source = self.directory/'mission_nuc_alphasense_color.bag'
@@ -335,6 +352,20 @@ class AdditionalReliabilityTests(TemporaryCase):
         self.assertEqual(source.read_bytes(), original)
         self.assertEqual(sidecar.read_bytes(), b'previous calibration')
 
+    def test_standalone_imu_conversion_does_not_require_livox(self):
+        lookup = Mock(side_effect=AssertionError('Livox lookup must be skipped'))
+        parser = Mock()
+        namespace = dict(argparse=argparse, Path=Path, MISSION_DATA=str(self.directory),
+                         configure_logger=lambda **kw: Mock(), find_livox_bag=lookup,
+                         find_single_rawimusx_ascii=lambda root: root/'RAWIMUSX.ASCII',
+                         RAWIMUDataParser=Mock(return_value=parser), CPT7_TOPIC_DEFAULT='/imu')
+        main = extracted_function(SCRIPTS/'cpt7/export_raw_imu_bag.py', 'main', namespace)
+        with patch.object(sys, 'argv', ['imu', '--skip_verify', '--output_bag', str(self.output)]):
+            with self.assertRaises(SystemExit) as exit_code:
+                main()
+        self.assertEqual(exit_code.exception.code, 0)
+        lookup.assert_not_called()
+        parser.write_to_rosbag.assert_called_once_with(str(self.output))
 
     def test_evaluation_records_short_and_unassociated_runs(self):
         self.addCleanup(ap20.matplotlib.rcParams.update, ap20.matplotlib.rcParams.copy())

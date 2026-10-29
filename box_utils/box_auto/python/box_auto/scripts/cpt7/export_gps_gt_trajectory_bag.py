@@ -25,6 +25,7 @@ from box_auto.utils import MISSION_DATA, GPS_utils
 import xml.etree.ElementTree as ET
 from html.parser import HTMLParser
 import json
+from box_auto.utils.atomic_file import atomic_output
 
 
 # HTML parser to handle CDATA with <BR> and text
@@ -216,6 +217,48 @@ def dms_string_to_decimal(dms_str):
     return degrees + minutes / 60 + seconds / 3600
 
 
+def compact_cov_to_full(c6):
+    # [c11, c21, c22, c31, c32, c33] -> symmetric 3x3
+    c6 = np.asarray(c6, dtype=np.float64).reshape(6,)
+    covariance = np.array(
+        [
+            [c6[0], c6[1], c6[3]],
+            [c6[1], c6[2], c6[4]],
+            [c6[3], c6[4], c6[5]],
+        ],
+        dtype=np.float64,
+    )
+    if not np.isfinite(covariance).all():
+        raise ValueError("Covariance contains nonfinite values")
+    tolerance = 1e-10 * max(1.0, float(np.max(np.abs(covariance))))
+    if np.linalg.eigvalsh(covariance).min() < -tolerance:
+        raise ValueError("Covariance is not positive semidefinite")
+    return covariance
+
+
+def orientation_covariance_enu(heading_deg, roll_deg, pitch_deg, std_hrp_deg):
+    """Map independent IE ZXY angle errors to fixed ENU small-angle errors.
+
+    ROS pose covariance describes rotations about fixed world axes. Merely
+    reordering heading/roll/pitch variances is only valid at special attitudes.
+    The Jacobian is for the same intrinsic ZXY composition used for the pose.
+    A constant right-side body-axis conversion leaves this world Jacobian unchanged.
+    """
+    values = np.asarray([heading_deg, roll_deg, pitch_deg], dtype=float)
+    std = np.asarray(std_hrp_deg, dtype=float)
+    if std.shape != (3,) or not np.isfinite(values).all() or not np.isfinite(std).all() or np.any(std < 0):
+        raise ValueError("Attitude and its standard deviations must be finite; deviations must be nonnegative")
+    # Match the currently published pose exactly: NED-to-ENU @ ZXY(H,R,P).
+    # This fixes its uncertainty propagation without changing attitude conventions.
+    sign = 1.0
+    yaw = heading_deg
+    rz = Rotation.from_euler("z", yaw, degrees=True).as_matrix()
+    rx = Rotation.from_euler("x", roll_deg, degrees=True).as_matrix()
+    jacobian = np.column_stack((sign * np.array([0., 0., 1.]), rz[:, 0], (rz @ rx)[:, 1]))
+    jacobian = np.array([[0., 1., 0.], [1., 0., 0.], [0., 0., -1.]]) @ jacobian
+    return (jacobian * np.square(np.deg2rad(std))) @ jacobian.T
+
+
 def main():
     """
     Processes a GPS path and converts it into various ROS messages.
@@ -368,7 +411,7 @@ def main():
         satellites_values = []
         ambiguity_values = []
 
-        with rosbag.Bag(bag_path, "w", compression="lz4") as bag:
+        with atomic_output(bag_path) as temporary, rosbag.Bag(str(temporary), "w", compression="lz4") as bag:
             for i, (
                 time,
                 position,
@@ -500,13 +543,7 @@ def main():
                 ecef_vz = ecef_vel[2]
 
                 # Build ECEF velocity covariance matrix
-                cov_ecef_vel = np.array(
-                    [
-                        [ecef_vel_cov[0], ecef_vel_cov[1], ecef_vel_cov[3]],  # Vel-Cx11, Vel-Cx21, Vel-Cx31
-                        [ecef_vel_cov[1], ecef_vel_cov[2], ecef_vel_cov[4]],  # Vel-Cx21, Vel-Cx22, Vel-Cx32
-                        [ecef_vel_cov[3], ecef_vel_cov[4], ecef_vel_cov[5]],  # Vel-Cx31, Vel-Cx32, Vel-Cx33
-                    ]
-                )
+                cov_ecef_vel = compact_cov_to_full(ecef_vel_cov)
 
                 # Extract standard deviations from ECEF velocity covariance matrix
                 # Standard deviation is the square root of the variance (diagonal elements of covariance matrix)
@@ -610,13 +647,7 @@ def main():
                 # Build the ECEF covariance matrix from the position_covariance elements
                 # The position_covariance vector contains the 6 unique elements of a symmetric 3x3 matrix
                 # ["Cx11", "Cx21", "Cx22", "Cx31", "Cx32", "Cx33"]
-                cov_ecef = np.array(
-                    [
-                        [position_cov[0], position_cov[1], position_cov[3]],  # Cx11, Cx21, Cx31
-                        [position_cov[1], position_cov[2], position_cov[4]],  # Cx21, Cx22, Cx32
-                        [position_cov[3], position_cov[4], position_cov[5]],  # Cx31, Cx32, Cx33
-                    ]
-                )
+                cov_ecef = compact_cov_to_full(position_cov)
 
                 # For the transformation, convert latitude and longitude to radians
                 lat_rad = math.radians(lat_deg)
@@ -666,22 +697,14 @@ def main():
                 # position_enu_std = np.array(R_enu__ned @ utils.R @ position_std)
                 # position_enu_var = np.square(position_enu_std)[0]
 
-                # Covariance is diagonal - 6x6 matrix ( dx, dy, dz, droll, dpitch, dyaw)
+                # Full 6x6 covariance: position and fixed-world small-angle errors.
                 # TO ROS convention: fixed axis https://www.ros.org/reps/rep-0103.html
                 quaternion_xyzw = Rotation.from_matrix(
                     R_enu__ned @ Rotation.from_euler("ZXY", orientation_hrp, degrees=True).as_matrix()
                 ).as_quat()
-                rot_std = np.deg2rad(orientation_hrp_std)
-                rot_std = np.array([rot_std[2], rot_std[1], rot_std[0]])
-                rot_var = np.square(rot_std)
-
-                covariance = np.eye(6)
-                # Set the position covariance (top-left 3x3 block)
+                covariance = np.zeros((6, 6))
                 covariance[:3, :3] = cov_enu
-                # Set the rotation covariance (bottom-right 3x3 block)
-                covariance[3, 3] = rot_var[0]
-                covariance[4, 4] = rot_var[1]
-                covariance[5, 5] = rot_var[2]
+                covariance[3:, 3:] = orientation_covariance_enu(*orientation_hrp, orientation_hrp_std)
 
                 # Create PoseWithCovarianceStamped message
                 output_msg = PoseWithCovarianceStamped()
@@ -689,7 +712,7 @@ def main():
                 output_msg.header.stamp = timestamp
                 output_msg.header.frame_id = frame_id
                 output_msg.pose.pose.position = Point(x=position_enu[1], y=position_enu[0], z=-position_enu[2])
-                output_msg.pose.covariance = covariance.astype(np.float32).flatten().tolist()
+                output_msg.pose.covariance = covariance.flatten().tolist()
                 ###########################
                 output_msg.pose.pose.orientation = Quaternion(
                     x=quaternion_xyzw[0], y=quaternion_xyzw[1], z=quaternion_xyzw[2], w=quaternion_xyzw[3]
@@ -718,6 +741,12 @@ def main():
                 #     x=new_quat[0], y=new_quat[1], z=new_quat[2], w=new_quat[3]
                 # )
 
+                bag.write(topic=f"/gt_box/inertial_explorer/{post_proc_mode}/pose_with_covariance",
+                          msg=output_msg, t=timestamp)
+
+                # Preserve the existing twist convention pending independent validation.
+                rot_std = np.deg2rad(orientation_hrp_std)
+                rot_var = np.square([rot_std[2], rot_std[1], rot_std[0]])
                 # Create a TwistWithCovariance message for velocity
                 velocity_msg = TwistWithCovariance()
                 velocity_msg.twist.linear = Vector3(
@@ -737,7 +766,7 @@ def main():
                 # Write to the bag as a combined odometry message
                 odometry_msg = Odometry()
                 odometry_msg.header = output_msg.header
-                odometry_msg.pose.pose = output_msg.pose.pose
+                odometry_msg.pose = output_msg.pose
                 odometry_msg.twist = velocity_msg
                 odometry_msg.child_frame_id = "cpt7_imu"
                 bag.write(topic=f"/gt_box/inertial_explorer/{post_proc_mode}/odometry", msg=odometry_msg, t=timestamp)

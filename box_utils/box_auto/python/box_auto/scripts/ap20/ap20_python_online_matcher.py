@@ -5,9 +5,60 @@ from nav_msgs.msg import Odometry
 from collections import deque
 import rospy
 import os
+import argparse
+from pathlib import Path
+from box_auto.utils.atomic_file import atomic_output
 import tf2_msgs.msg
 import geometry_msgs.msg
 from box_auto.utils import get_bag, upload_bag
+
+
+# =========================
+# Hard-coded parameters
+# =========================
+
+# Bag selection / naming
+INPUT_BAG_GLOB = "*_jetson_ap20_aux.bag"
+INPUT_BAG_NAME_TOKEN = "jetson_ap20_aux"
+OUTPUT_BAG_NAME_TOKEN = "jetson_ap20_synced"
+
+# Topics (input)
+TOPIC_IMU_DEBUG = "/gt_box/ap20/imu_debug"
+TOPIC_POSITION_DEBUG = "/gt_box/ap20/position_debug"
+TOPIC_TIMESTAMP_DEBUG = "/gt_box/ap20/timestamp_debug"
+
+# Topics (output)
+TOPIC_IMU_OUT = "/gt_box/ap20/imu"
+TOPIC_PRISM_POSITION_POSESTAMPED_OUT = "/gt_box/ap20/prism_position_posestamped"
+TOPIC_PRISM_POSITION_ODOMETRY_OUT = "/gt_box/ap20/prism_position_odometry"
+TOPIC_PRISM_POSITION_POINT_OUT = "/gt_box/ap20/prism_position"
+TOPIC_TF_OUT = "/tf"
+
+# Frame IDs
+FRAME_ID_IMU = "ap20_imu"
+FRAME_ID_LEICA = "leica_total_station"
+CHILD_FRAME_ID_PRISM = "prism"
+
+# Timebase / thresholds (seconds)
+IMU_TICK_SEC = 0.005  # assumed IMU/timestamp tick (200 Hz)
+BAG_START_OFFSET_SEC = 2.0  # skip initial bag portion
+
+LINE_DELAY_VALID_MIN_SEC = 0.0
+LINE_DELAY_VALID_MAX_SEC = 0.005  # arrival delay validity window
+
+AP20_TIME_ACCURACY_TOL_SEC = 0.0005
+HARDWARE_TS_TIME_ACCURACY_TOL_SEC = 0.001
+HARDWARE_TS_SHUTDOWN_TOL_SEC = 0.001
+
+INTERP_DELTA_EPS_SEC = 1e-5  # used with IMU_TICK_SEC in delta check
+HIGH_LINE_DELAY_WARN_SEC = 0.01
+
+RESUMED_SYNC_TIMESTAMP_TICKS_THRESHOLD = 10
+POSITION_MATCH_RESET_THRESHOLD_SEC = 30
+
+# Fixed pose/twist outputs
+IDENTITY_QUATERNION = (0.0, 0.0, 0.0, 1.0)
+ZERO_3 = (0.0, 0.0, 0.0)
 
 
 def d(stamp):
@@ -39,27 +90,32 @@ class LastMatch:
 
     def line_delay_valid(self):
         delay = self.get_line_delay()  # timestamp arrives before imu but not more than 3ms
-        return delay > 0 and delay < 0.005
+        return delay > LINE_DELAY_VALID_MIN_SEC and delay < LINE_DELAY_VALID_MAX_SEC
 
     def get_stats(self, other):
         res = {}
         res["N_imu_messages"] = self.imu_seq - other.imu_seq
         res["N_imu_count"] = self.imu_counter - other.imu_counter
-        res["N_imu_time"] = round(float((self.imu_time - other.imu_time).to_sec()) / 0.005)
+        res["N_imu_time"] = round(float((self.imu_time - other.imu_time).to_sec()) / IMU_TICK_SEC)
 
         res["AP20_time_accuracy_check"] = (
-            abs(((other.imu_time.to_sec() + res["N_imu_time"] * 0.005) - self.imu_time.to_sec())) < 0.0005
+            abs(((other.imu_time.to_sec() + res["N_imu_time"] * IMU_TICK_SEC) - self.imu_time.to_sec()))
+            < AP20_TIME_ACCURACY_TOL_SEC
         )
         res["N_imu_arrivial_ros_time"] = round(
-            (self.imu_arrivial_ros_time.to_sec() - other.imu_arrivial_ros_time.to_sec()) / 0.005
+            (self.imu_arrivial_ros_time.to_sec() - other.imu_arrivial_ros_time.to_sec()) / IMU_TICK_SEC
         )
 
-        res["N_timestamp_time"] = round((self.timestamp_time.to_sec() - other.timestamp_time.to_sec()) / 0.005)
+        res["N_timestamp_time"] = round((self.timestamp_time.to_sec() - other.timestamp_time.to_sec()) / IMU_TICK_SEC)
         res["HardwareTS_time_accuracy_check"] = (
-            abs((other.timestamp_time.to_sec() + (res["N_timestamp_time"] * 0.005) - self.timestamp_time.to_sec()))
-            < 0.001
+            abs(
+                (other.timestamp_time.to_sec() + (res["N_timestamp_time"] * IMU_TICK_SEC) - self.timestamp_time.to_sec())
+            )
+            < HARDWARE_TS_TIME_ACCURACY_TOL_SEC
         )
-        res["HardwareTS_shutdown_timestamp"] = (self.timestamp_time.to_sec() - other.timestamp_time.to_sec()) < 0.001
+        res["HardwareTS_shutdown_timestamp"] = (
+            self.timestamp_time.to_sec() - other.timestamp_time.to_sec()
+        ) < HARDWARE_TS_SHUTDOWN_TOL_SEC
         res["ROS_arrivial_time_check"] = self.line_delay_valid()
         res["ROS_arrivial_line_delay"] = self.get_line_delay()
 
@@ -68,12 +124,13 @@ class LastMatch:
     def publish(self, bag, counter):
         self.imu_debug_msg.imu.header.stamp = self.timestamp_time
         self.imu_debug_msg.imu.header.seq = counter
-        self.imu_debug_msg.imu.header.frame_id = "ap20_imu"
-        bag.write("/gt_box/ap20/imu", self.imu_debug_msg.imu, self.imu_debug_msg.imu.header.stamp)
+        self.imu_debug_msg.imu.header.frame_id = FRAME_ID_IMU
+        bag.write(TOPIC_IMU_OUT, self.imu_debug_msg.imu, self.imu_debug_msg.imu.header.stamp)
         counter += 1
+        return counter
 
 
-def read_bag_file(bag_path):
+def read_bag_file(bag_path, output_bag_path=None, *, upload=True, start_offset=BAG_START_OFFSET_SEC):
     last_match = None
     imu_data = deque()
     tps_data = deque()
@@ -94,30 +151,36 @@ def read_bag_file(bag_path):
     all_matches = []
     counter_ts = 0
     counter_positions_in = 0
-    output_bag_path = bag_path.replace("jetson_ap20_aux", "jetson_ap20_synced")
+    if not np.isfinite(start_offset) or start_offset < 0:
+        raise ValueError("Startup offset must be finite and nonnegative")
+    input_counts = {}
+    read_counts = {TOPIC_IMU_DEBUG: 0, TOPIC_POSITION_DEBUG: 0, TOPIC_TIMESTAMP_DEBUG: 0}
+    bag_path = str(bag_path)
+    output_bag_path = str(output_bag_path or bag_path.replace(INPUT_BAG_NAME_TOKEN, OUTPUT_BAG_NAME_TOKEN))
+    if Path(bag_path).resolve() == Path(output_bag_path).resolve():
+        raise ValueError("Provide a distinct output path for this input filename")
 
-    if os.path.exists(output_bag_path):
-        os.remove(output_bag_path)
-
-    with rosbag.Bag(output_bag_path, "w") as bag_out:
+    with atomic_output(output_bag_path) as temporary, rosbag.Bag(str(temporary), "w", compression="lz4") as bag_out:
         with rosbag.Bag(bag_path, "r") as bag:
-            for topic, msg, t in bag.read_messages():
-
-                bag_start_time = t
-                if t is not None:
-                    break
-            target_time = bag_start_time + rospy.Duration.from_sec(2)
+            if not bag.get_message_count():
+                raise ValueError("AP20 input bag is empty")
+            bag_start_time = next(bag.read_messages()).timestamp
+            # Preserve the existing startup guard, but make its data loss explicit
+            # in the return report and allow callers to choose an offset of zero.
+            target_time = bag_start_time + rospy.Duration.from_sec(start_offset)
+            input_counts = {topic: bag.get_message_count(topic_filters=[topic]) for topic in read_counts}
 
             for topic, msg, t in bag.read_messages(
-                topics=["/gt_box/ap20/imu_debug", "/gt_box/ap20/position_debug", "/gt_box/ap20/timestamp_debug"],
+                topics=[TOPIC_IMU_DEBUG, TOPIC_POSITION_DEBUG, TOPIC_TIMESTAMP_DEBUG],
                 start_time=target_time,
             ):
-                if topic == "/gt_box/ap20/imu_debug":
+                read_counts[topic] += 1
+                if topic == TOPIC_IMU_DEBUG:
                     imu_debug_data.append(msg)
-                elif topic == "/gt_box/ap20/position_debug":
+                elif topic == TOPIC_POSITION_DEBUG:
                     position_debug_data.append(msg)
                     counter_positions_in += 1
-                elif topic == "/gt_box/ap20/timestamp_debug":
+                elif topic == TOPIC_TIMESTAMP_DEBUG:
                     timestamp_debug_data.append(msg)
 
                 if len(position_debug_data) > 0:
@@ -134,22 +197,22 @@ def read_bag_file(bag_path):
                     if ref > 0 and ref != -1:
                         p1 = all_matches[ref - 1]
                         p2 = all_matches[ref]
-                        if not (delta > 0.005 + 1e-5):
+                        if not (delta > IMU_TICK_SEC + INTERP_DELTA_EPS_SEC):
                             rate = (t - p1.imu_time) / (p2.imu_time - p1.imu_time)
                             new_ts = p1.timestamp_time + ((p2.timestamp_time - p1.timestamp_time) * rate)
 
                             new_pose_stamped_msgs = PoseStamped()
                             new_pose_stamped_msgs.header.stamp = new_ts
                             new_pose_stamped_msgs.header.seq = counter_ts
-                            new_pose_stamped_msgs.header.frame_id = "leica_total_station"
+                            new_pose_stamped_msgs.header.frame_id = FRAME_ID_LEICA
                             new_pose_stamped_msgs.pose.position = position.position.point
-                            new_pose_stamped_msgs.pose.orientation.x = 0
-                            new_pose_stamped_msgs.pose.orientation.y = 0
-                            new_pose_stamped_msgs.pose.orientation.z = 0
-                            new_pose_stamped_msgs.pose.orientation.w = 1
+                            new_pose_stamped_msgs.pose.orientation.x = IDENTITY_QUATERNION[0]
+                            new_pose_stamped_msgs.pose.orientation.y = IDENTITY_QUATERNION[1]
+                            new_pose_stamped_msgs.pose.orientation.z = IDENTITY_QUATERNION[2]
+                            new_pose_stamped_msgs.pose.orientation.w = IDENTITY_QUATERNION[3]
 
                             bag_out.write(
-                                "/gt_box/ap20/prism_position_posestamped",
+                                TOPIC_PRISM_POSITION_POSESTAMPED_OUT,
                                 new_pose_stamped_msgs,
                                 new_pose_stamped_msgs.header.stamp,
                             )
@@ -157,22 +220,22 @@ def read_bag_file(bag_path):
                             new_odometry_msg = Odometry()
                             new_odometry_msg.header.stamp = new_ts
                             new_odometry_msg.header.seq = counter_ts
-                            new_odometry_msg.header.frame_id = "leica_total_station"
-                            new_odometry_msg.child_frame_id = "prism"
+                            new_odometry_msg.header.frame_id = FRAME_ID_LEICA
+                            new_odometry_msg.child_frame_id = CHILD_FRAME_ID_PRISM
                             new_odometry_msg.pose.pose.position = position.position.point
-                            new_odometry_msg.pose.pose.orientation.x = 0
-                            new_odometry_msg.pose.pose.orientation.y = 0
-                            new_odometry_msg.pose.pose.orientation.z = 0
-                            new_odometry_msg.pose.pose.orientation.w = 1
-                            new_odometry_msg.twist.twist.linear.x = 0
-                            new_odometry_msg.twist.twist.linear.y = 0
-                            new_odometry_msg.twist.twist.linear.z = 0
-                            new_odometry_msg.twist.twist.angular.x = 0
-                            new_odometry_msg.twist.twist.angular.y = 0
-                            new_odometry_msg.twist.twist.angular.z = 0
+                            new_odometry_msg.pose.pose.orientation.x = IDENTITY_QUATERNION[0]
+                            new_odometry_msg.pose.pose.orientation.y = IDENTITY_QUATERNION[1]
+                            new_odometry_msg.pose.pose.orientation.z = IDENTITY_QUATERNION[2]
+                            new_odometry_msg.pose.pose.orientation.w = IDENTITY_QUATERNION[3]
+                            new_odometry_msg.twist.twist.linear.x = ZERO_3[0]
+                            new_odometry_msg.twist.twist.linear.y = ZERO_3[1]
+                            new_odometry_msg.twist.twist.linear.z = ZERO_3[2]
+                            new_odometry_msg.twist.twist.angular.x = ZERO_3[0]
+                            new_odometry_msg.twist.twist.angular.y = ZERO_3[1]
+                            new_odometry_msg.twist.twist.angular.z = ZERO_3[2]
 
                             bag_out.write(
-                                "/gt_box/ap20/prism_position_odometry",
+                                TOPIC_PRISM_POSITION_ODOMETRY_OUT,
                                 new_odometry_msg,
                                 new_odometry_msg.header.stamp,
                             )
@@ -181,28 +244,28 @@ def read_bag_file(bag_path):
                             tf_msg = tf2_msgs.msg.TFMessage()
                             transform = geometry_msgs.msg.TransformStamped()
                             transform.header.stamp = new_ts
-                            transform.header.frame_id = "leica_total_station"
-                            transform.child_frame_id = "prism"
+                            transform.header.frame_id = FRAME_ID_LEICA
+                            transform.child_frame_id = CHILD_FRAME_ID_PRISM
                             transform.transform.translation.x = position.position.point.x
                             transform.transform.translation.y = position.position.point.y
                             transform.transform.translation.z = position.position.point.z
-                            transform.transform.rotation.x = 0
-                            transform.transform.rotation.y = 0
-                            transform.transform.rotation.z = 0
-                            transform.transform.rotation.w = 1
+                            transform.transform.rotation.x = IDENTITY_QUATERNION[0]
+                            transform.transform.rotation.y = IDENTITY_QUATERNION[1]
+                            transform.transform.rotation.z = IDENTITY_QUATERNION[2]
+                            transform.transform.rotation.w = IDENTITY_QUATERNION[3]
                             tf_msg.transforms.append(transform)
 
-                            bag_out.write("/tf", tf_msg, transform.header.stamp)
+                            bag_out.write(TOPIC_TF_OUT, tf_msg, transform.header.stamp)
 
                             new_msg = PointStamped()
                             new_msg.header.stamp = new_ts
                             new_msg.header.seq = counter_ts
-                            new_msg.header.frame_id = "leica_total_station"
+                            new_msg.header.frame_id = FRAME_ID_LEICA
                             new_msg.point.x = position.position.point.x
                             new_msg.point.y = position.position.point.y
                             new_msg.point.z = position.position.point.z
                             counter_ts += 1
-                            bag_out.write("/gt_box/ap20/prism_position", new_msg, new_msg.header.stamp)
+                            bag_out.write(TOPIC_PRISM_POSITION_POINT_OUT, new_msg, new_msg.header.stamp)
 
                             all_matches = all_matches[i - 1 :]
                         else:
@@ -218,11 +281,15 @@ def read_bag_file(bag_path):
                                 "Match position data",
                                 position.position.header.stamp.to_sec(),
                             )
-                            if all_matches[0].imu_time.to_sec() > position.position.header.stamp.to_sec() + 30:
+                            if (
+                                all_matches[0].imu_time.to_sec()
+                                > position.position.header.stamp.to_sec() + POSITION_MATCH_RESET_THRESHOLD_SEC
+                            ):
                                 print("Wrong reset matching positions")
 
                 if len(imu_debug_data) > 0 and len(timestamp_debug_data) > 0:
                     new_imu_msg = imu_debug_data.popleft()
+                    # Preserve the established FIFO association policy.
                     new_timestamp_msg = timestamp_debug_data.popleft()
 
                     # Create inital match based on guessing
@@ -231,7 +298,7 @@ def read_bag_file(bag_path):
                         valid = candidate.line_delay_valid()
                         if valid:
                             last_match = candidate
-                            last_match.publish(bag_out, counter)
+                            counter = last_match.publish(bag_out, counter)
 
                             all_matches = []
 
@@ -248,6 +315,12 @@ def read_bag_file(bag_path):
                                 matching_results["initial_skip"] += 1
                     else:
                         candidate = LastMatch(new_imu_msg, new_timestamp_msg)
+                        # A repeated/backward hardware stamp cannot timestamp a
+                        # new IMU sample. Retain the IMU for the next timestamp.
+                        if candidate.timestamp_time <= last_match.timestamp_time:
+                            matching_results["reset"] += 1
+                            imu_debug_data.appendleft(new_imu_msg)
+                            continue
                         res = candidate.get_stats(last_match)
 
                         # if  not res["AP20_time_accuracy_check"]:
@@ -284,27 +357,27 @@ def read_bag_file(bag_path):
                             # perfect match
                             matching_results["prefect_match"] += 1
                             last_match = candidate
-                            last_match.publish(bag_out, counter)
+                            counter = last_match.publish(bag_out, counter)
 
                             # if all_matches[-1].imu_time.to_sec() > last_match.imu_time.to_sec():
                             #     all_matches = []
 
                             all_matches.append(last_match)
                             line_delay.append(res["ROS_arrivial_line_delay"])
-                            if line_delay[-1] > 0.01:
+                            if line_delay[-1] > HIGH_LINE_DELAY_WARN_SEC:
                                 print(str(new_imu_msg.header.seq) + " --- " + "Really high line delay:", line_delay[-1])
 
                         elif res["N_imu_time"] == res["N_timestamp_time"]:
                             # good match
                             matching_results["prefect_match"] += 1
                             last_match = candidate
-                            last_match.publish(bag_out, counter)
+                            counter = last_match.publish(bag_out, counter)
 
                             # if all_matches[-1].imu_time.to_sec() > last_match.imu_time.to_sec():
                             #     all_matches = []
                             all_matches.append(last_match)
                             line_delay.append(res["ROS_arrivial_line_delay"])
-                            if line_delay[-1] > 0.01:
+                            if line_delay[-1] > HIGH_LINE_DELAY_WARN_SEC:
                                 print(str(new_imu_msg.header.seq) + " --- " + "Really high line delay:", line_delay[-1])
 
                         elif res["HardwareTS_shutdown_timestamp"] or (
@@ -319,7 +392,7 @@ def read_bag_file(bag_path):
                             matching_results["reset"] += 1
                             imu_debug_data.appendleft(new_imu_msg)
 
-                        elif res["N_imu_time"] < 0 and res["N_timestamp_time"] > 10:
+                        elif res["N_imu_time"] < 0 and res["N_timestamp_time"] > RESUMED_SYNC_TIMESTAMP_TICKS_THRESHOLD:
                             # ap20_resumed_sync
                             print(
                                 str(new_imu_msg.header.seq)
@@ -328,7 +401,7 @@ def read_bag_file(bag_path):
                             )
 
                             last_match = candidate
-                            last_match.publish(bag_out, counter)
+                            counter = last_match.publish(bag_out, counter)
                             # if all_matches[-1].imu_time.to_sec() > last_match.imu_time.to_sec():
                             #     all_matches = []
 
@@ -366,21 +439,24 @@ def read_bag_file(bag_path):
                                 " ",
                                 res["N_timestamp_time"],
                             )
-    upload_bag(output_bag_path)
+        if not counter or (counter_positions_in and not counter_ts):
+            raise ValueError("AP20 synchronization produced no usable IMU/position output")
+    if upload:
+        upload_bag(output_bag_path)
 
     print(matching_results)
-    print(
-        "LINE DELAY min: ",
-        np.array(line_delay).min(),
-        " max: ",
-        np.array(line_delay).max(),
-        " median: ",
-        np.median(np.array(line_delay)),
-    )
-    print("counter_positions_in: ", counter_positions_in, " counter_ts: ", counter_ts)
-    print(np.where(np.array(line_delay) == np.array(line_delay).max()))
+    if line_delay:
+        print("LINE DELAY min/max/median:", min(line_delay), max(line_delay), np.median(line_delay))
+    print("counter_positions_in:", counter_positions_in, "counter_ts:", counter_ts)
 
     return {
+        "input_counts": input_counts,
+        "read_counts": read_counts,
+        "startup_skipped": {topic: input_counts[topic] - read_counts[topic] for topic in read_counts},
+        "unpublished_positions_after_start": counter_positions_in - counter_ts,
+        "imu_count": counter,
+        "position_count": counter_ts,
+        "matching_results": matching_results,
         "imu": imu_data,
         "tps": tps_data,
         "imu_debug": imu_debug_data,
@@ -389,10 +465,16 @@ def read_bag_file(bag_path):
     }
 
 
+def main(argv=None):
+    parser = argparse.ArgumentParser(description="Synchronize AP20 using hardware timestamp and IMU tick consistency")
+    parser.add_argument("--input", type=Path)
+    parser.add_argument("--output", type=Path)
+    parser.add_argument("--start-offset", type=float, default=BAG_START_OFFSET_SEC)
+    parser.add_argument("--no-upload", action="store_true")
+    args = parser.parse_args(argv)
+    read_bag_file(args.input or get_bag(INPUT_BAG_GLOB), args.output,
+                  upload=not args.no_upload, start_offset=args.start_offset)
+
+
 if __name__ == "__main__":
-    ap20_bag = get_bag("*_jetson_ap20_aux.bag")
-
-    # Usage example
-    data = read_bag_file(ap20_bag)
-
-    exit(0)
+    main()

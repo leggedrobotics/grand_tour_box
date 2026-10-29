@@ -1,58 +1,7 @@
-from fnmatch import fnmatchcase
-from rosbag import Bag
+"""Legacy CLI for the shared fail-closed, atomic bag merger."""
+
 import argparse
-import tqdm
-from box_auto.utils import upload_bag
-
-
-def merge_bags_single(input_bag, output_bag, topics="*", upload="No", verbose=False):
-    # From https://www.clearpathrobotics.com/assets/downloads/support/merge_bag.py
-    topics = topics.split(" ")
-
-    total_included_count = 0
-    total_skipped_count = 0
-
-    if verbose:
-        print("Writing bag file: " + output_bag)
-        print("Matching topics against patters: '%s'" % " ".join(topics))
-
-    with Bag(output_bag, "w", compression="lz4") as o:
-        with tqdm.tqdm(total=len(input_bag), desc="Merging", unit="subbags", colour="green") as pbar:
-            for ifile in input_bag:
-                matchedtopics = []
-                included_count = 0
-                skipped_count = 0
-                if verbose:
-                    print("> Reading bag file: " + ifile)
-                try:
-                    with Bag(ifile, "r") as ib:
-                        for topic, msg, t in ib:
-                            if any(fnmatchcase(topic, pattern) for pattern in topics):
-                                if topic not in matchedtopics:
-                                    matchedtopics.append(topic)
-                                    if verbose:
-                                        print("Including matched topic '%s'" % topic)
-                                o.write(topic, msg, t)
-                                included_count += 1
-                            else:
-                                skipped_count += 1
-                except Exception as e:
-                    print("Failed to read bag file: %s" % str(e))
-                    print("Skipping this bag ")
-                total_included_count += included_count
-                total_skipped_count += skipped_count
-                if verbose:
-                    print("< Included %d messages and skipped %d" % (included_count, skipped_count))
-                pbar.update(1)
-
-    if verbose:
-        print("Total: Included %d messages and skipped %d" % (total_included_count, total_skipped_count))
-
-    if upload == "Yes":
-        upload_bag(output_bag)
-
-    return total_included_count, total_skipped_count
-
+from box_auto.scripts.general.merge_mission import merge_bags_single
 
 # write the following code.
 if __name__ == "__main__":
