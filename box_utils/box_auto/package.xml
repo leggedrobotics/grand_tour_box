@@ -30,11 +30,9 @@
     <depend>rosbag</depend>
     <depend>nav_msgs</depend>
     <depend>visualization_msgs</depend>
-    <depend>open3d_catkin</depend>
     <depend>anymal_msgs</depend>
     <depend>gnss_msgs</depend>
     <depend>any_velodyne_pointcloud</depend>
-    <depend>gtsam_catkin</depend>
     <depend>tf_bag</depend>
     <depend>bringup_hesai</depend>
     <depend>hesai_ros_driver</depend>
@@ -42,7 +40,7 @@
     <depend>anymal_d_simple_description</depend>
     <depend>pointcloud_undistortion</depend>
     <depend>box_model</depend>
-
+    <depend>box_calibration</depend>
 
     <!-- To disable 3rd party application building. Set export DEBUG_MODE=1 -->
     <depend condition="$DEBUG_MODE != 1">direct_lidar_inertial_odometry</depend>
@@ -52,7 +50,8 @@
     <depend condition="$DEBUG_MODE != 1">atn_position3_fuser</depend>
     <depend condition="$DEBUG_MODE != 1">ap20_driver_ros</depend>
     <depend condition="$DEBUG_MODE != 1">open3d_slam_ros</depend>
-
-
+    <depend condition="$DEBUG_MODE != 1">gtsam_catkin</depend>
+    <!-- filter_lidar.cpp requires Open3D in every build mode. -->
+    <depend>open3d_catkin</depend>
 
 </package>

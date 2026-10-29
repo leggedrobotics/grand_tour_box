@@ -1,49 +1,64 @@
 import argparse
+import shlex
+
 from box_auto.utils import get_bag, upload_bag, run_ros_command, kill_roscore
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Filter point clouds for selected LiDARs.")
-    parser.add_argument(
-        "--lidars",
-        type=str,
-        default="velodyne,hesai,livox",
-        help="Comma-separated list of LiDARs to process (e.g., velodyne,hesai,livox).",
-    )
-    selected_lidars = parser.parse_args().lidars.split(",")
 
+BAG_PATTERNS = {
+    "livox": "*nuc_livox.bag",
+    "hesai": "*nuc_hesai_post_processed.bag",
+    "velodyne": "*npc_velodyne_processed.bag",
+}
+
+
+def resolve_inputs(lidars=None):
+    """Discover local sensors, or require selected sensors (including downloads)."""
+    selected = list(BAG_PATTERNS) if lidars is None else list(dict.fromkeys(lidars))
+    unknown = set(selected) - set(BAG_PATTERNS)
+    if unknown:
+        raise ValueError(f"Unknown LiDAR(s): {', '.join(sorted(unknown))}")
     bags = []
-    if "livox" in selected_lidars:
-        try:
-            bags.append(get_bag("*nuc_livox.bag"))
-        except Exception as e:
-            print(f"Error getting livox bag: {e}")
-
-    if "hesai" in selected_lidars:
-        try:
-            bags.append(get_bag("*nuc_hesai_post_processed.bag"))
-        except:
-            pass
-    if "velodyne" in selected_lidars:
-        try:
-            bags.append(get_bag("*npc_velodyne_processed.bag"))
-        except Exception as e:
-            print(f"Error getting velodyne bag: {e}")
-
-    kill_roscore()
-    out_bags = []
-    for bag in bags:
-        if "velodyne" in bag:
-            out_bag = bag.replace("npc_velodyne_processed.bag", "npc_velodyne_ready.bag")
-        elif "hesai" in bag:
-            out_bag = bag.replace("nuc_hesai_post_processed.bag", "nuc_hesai_ready.bag")
-        elif "livox" in bag:
-            out_bag = bag.replace("nuc_livox.bag", "nuc_livox_ready.bag")
-        else:
-            out_bag = bag.replace(".bag", "_filtered.bag")
-
-        out_bags.append(out_bag)
-        run_ros_command(
-            f"roslaunch box_auto box_filter_lidars.launch global_input_bag_path:={bag} global_output_bag_path:={out_bag}"
+    for lidar in selected:
+        bag = get_bag(
+            BAG_PATTERNS[lidar],
+            auto_download=lidars is not None,
+            return_upon_no_files=lidars is None,
         )
+        if bag:
+            bags.append((lidar, bag))
+    if not bags:
+        raise FileNotFoundError("No LiDAR input bags found")
+    return bags
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description="Filter selected LiDAR bags, or discover local inputs.")
+    parser.add_argument("--lidars", nargs="+", help="LiDAR names separated by spaces or commas: livox, hesai, velodyne")
+    args = parser.parse_args(argv)
+    selected = None if args.lidars is None else [name for item in args.lidars for name in item.split(",")]
+    bags = resolve_inputs(selected)
+    suffixes = {
+        "livox": ("nuc_livox.bag", "nuc_livox_ready.bag"),
+        "hesai": ("nuc_hesai_post_processed.bag", "nuc_hesai_ready.bag"),
+        "velodyne": ("npc_velodyne_processed.bag", "npc_velodyne_ready.bag"),
+    }
+    out_bags = []
     kill_roscore()
-    upload_bag([out_bags])
+    try:
+        for lidar, bag in bags:
+            source_suffix, output_suffix = suffixes[lidar]
+            out_bag = bag[:-len(source_suffix)] + output_suffix
+            status = run_ros_command(
+                "roslaunch box_auto box_filter_lidars.launch "
+                f"global_input_bag_path:={shlex.quote(bag)} global_output_bag_path:={shlex.quote(out_bag)}"
+            )
+            if status != 0:
+                raise RuntimeError(f"LiDAR filtering failed for {bag} (exit status {status})")
+            out_bags.append(out_bag)
+    finally:
+        kill_roscore()
+    upload_bag(out_bags)
+
+
+if __name__ == "__main__":
+    main()

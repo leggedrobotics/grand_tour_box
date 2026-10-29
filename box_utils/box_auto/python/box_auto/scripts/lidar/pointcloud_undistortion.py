@@ -153,9 +153,9 @@ if __name__ == "__main__":
 
     # Filtered Hesai bag
     run_camera_sync = True  # Set to False if you want to use the existing camera sync
-    input_image_path = get_bag("*_nuc_alphasense_corrected.bag")
+    input_image_path = get_bag("*_nuc_alphasense_color.bag")
     print(f"Input image path: {input_image_path}")
-    input_image_topic = "/gt_box/alphasense_driver_node/cam1/color/image"
+    input_image_topic = "/gt_box/alphasense_driver_node/cam1/color_corrected/image/compressed"
     input_hesai_bag_path = get_bag("*_nuc_hesai_ready.bag")
     output_hesai_bag_path = input_hesai_bag_path.replace("_nuc_hesai_ready.bag", "_nuc_hesai_undist.bag")
     launch_undistorter(

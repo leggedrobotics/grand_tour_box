@@ -75,33 +75,33 @@ services:
   # Input:
   #   - _hdr.bag
   # Output:
-  #   - _hdr_updated.bag
+  #   - _hdr_encoding.bag (timestamps and encoding corrected in one pass)
   hdr_timestamp_adjuster:
     <<: *common-config
     container_name: hdr_timestamp_adjuster
     command:
       [
-        "python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/camera/hdr_timestamp_adjuster.py",
+        "python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/camera/combined_hdr_camera_processing.py",
       ]
-    # depends_on:
-    #   hdr_convert:
-    #     condition: service_completed_successfully
+    depends_on:
+      hdr_convert:
+        condition: service_completed_successfully
 
   # Input:
   #   - _alphasense.bag
   # Output:
-  #   - _alphasense_updated.bag
-  alphasense_fix_frame_id:
+  #   - _alphasense_color.bag
+  color_correction:
     <<: *common-config
-    container_name: alphasense_fix_frame_id
+    container_name: color_correction
     command:
       [
-        "python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/camera/alphasense_fix_frame_id.py",
+        "python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/camera/color_correction.py",
       ]
 
   # Input:
-  #   - hdr_updated.bag
-  #   - alphasense_updated.bag
+  #   - hdr_encoding.bag
+  #   - alphasense_color.bag
   # Output:
   #   - alphasense_calib.bag
   #   - hdr_calib.bag
@@ -117,7 +117,7 @@ services:
     depends_on:
       hdr_timestamp_adjuster:
         condition: service_completed_successfully
-      alphasense_fix_frame_id:
+      color_correction:
         condition: service_completed_successfully
 
   # Input:
@@ -224,6 +224,18 @@ services:
         "python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/lidar/hesai.py",
       ]
 
+  prepare_tf_transforms_for_public:
+    <<: *common-config
+    container_name: prepare_tf_transforms_for_public
+    command:
+      [
+        "python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/special/prepare_tf_transforms_for_public.py",
+      ]
+    depends_on:
+      calibration:
+        condition: service_completed_successfully
+
+
   # Input:
   #   - velodyne.bag
   # Output:
@@ -236,17 +248,6 @@ services:
         "python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/lidar/velodyne.py",
       ]
 
-  preview_video:
-    <<: *common-config
-    container_name: preview_video
-    command:
-      [
-        "python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_converter/preview_video.py",
-      ]
-    depends_on:
-      hesai:
-        condition: service_completed_successfully
-
   # Input:
   #   - velodyne_post_processed.bag
   #   - hesai_post_processed.bag
@@ -254,6 +255,7 @@ services:
   # Output:
   #   - hesai_ready.bag
   #   - livox_ready.bag
+
   filter_pointclouds:
     <<: *common-config
     container_name: filter_pointclouds
@@ -279,16 +281,6 @@ services:
         condition: service_completed_successfully
       velodyne:
         condition: service_completed_successfully
-  prepare_tf_transforms_for_public:
-    <<: *common-config
-    container_name: prepare_tf_transforms_for_public
-    command:
-      [
-        "python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/special/prepare_tf_transforms_for_public.py",
-      ]
-    depends_on:
-      calibration:
-        condition: service_completed_successfully
 
   pointcloud_undistortion:
     <<: *common-config
@@ -298,9 +290,22 @@ services:
         "python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_auto/python/box_auto/scripts/lidar/pointcloud_undistortion.py",
       ]
     depends_on:
+      color_correction:
+        condition: service_completed_successfully
       filter_pointclouds:
         condition: service_completed_successfully
       prepare_tf_transforms_for_public:
+        condition: service_completed_successfully
+
+  preview_video:
+    <<: *common-config
+    container_name: preview_video
+    command:
+      [
+        "python3 /home/catkin_ws/src/grand_tour_box/box_utils/box_converter/youtube/preview_video.py",
+      ]
+    depends_on:
+      hesai:
         condition: service_completed_successfully
 
   # Input:
