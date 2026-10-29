@@ -76,47 +76,48 @@ def run_ape(test_name, reference_file, estimated_file, params, output_path, disa
     results.append(result)
     print(result)
 
-    fig = plt.figure(figsize=(16, 12))
+    if not disable_viz:
+        fig = plt.figure(figsize=(16, 12))
 
-    fig.suptitle("Absolute Pose Error (APE) Trajectory", fontsize=25)
-    ax = plot.prepare_axis(fig, plot.PlotMode.xyz)
-    ax.set_xlabel("X [m]")
-    ax.set_ylabel("Y [m]")
-    ax.set_zlabel("Z [m]")
+        fig.suptitle("Absolute Pose Error (APE) Trajectory", fontsize=25)
+        ax = plot.prepare_axis(fig, plot.PlotMode.xyz)
+        ax.set_xlabel("X [m]")
+        ax.set_ylabel("Y [m]")
+        ax.set_zlabel("Z [m]")
 
-    plot.traj(ax, plot.PlotMode.xyz, traj_reference, style="--", alpha=0.5, label="Ref.")
-    plot.traj(ax, plot.PlotMode.xyz, traj_estimated, style="-", alpha=0.5, label=" " + test_name + " ")
+        plot.traj(ax, plot.PlotMode.xyz, traj_reference, style="--", alpha=0.5, label="Ref.")
+        plot.traj(ax, plot.PlotMode.xyz, traj_estimated, style="-", alpha=0.5, label=" " + test_name + " ")
 
-    ax.view_init(elev=30, azim=45)
+        ax.view_init(elev=30, azim=45)
 
-    min_map = result.stats["min"]
-    max_map = result.stats["max"]
-    pos = traj_estimated.positions_xyz
-    norm = mpl.colors.Normalize(vmin=min_map, vmax=max_map, clip=True)
-    mapper = cm.ScalarMappable(norm=norm, cmap=SETTINGS.plot_trajectory_cmap)
-    array = result.np_arrays["error_array"]
-    mapper.set_array(array)
-    colors = [mapper.to_rgba(a) for a in array]
-    line_collection = plot.colored_line_collection(pos, colors, plot.PlotMode.xyz)
-    ax.add_collection(line_collection)
-    ax.autoscale_view(True, True, True)
-    plot.set_aspect_equal(ax)
+        min_map = result.stats["min"]
+        max_map = result.stats["max"]
+        pos = traj_estimated.positions_xyz
+        norm = mpl.colors.Normalize(vmin=min_map, vmax=max_map, clip=True)
+        mapper = cm.ScalarMappable(norm=norm, cmap=SETTINGS.plot_trajectory_cmap)
+        array = result.np_arrays["error_array"]
+        mapper.set_array(array)
+        colors = [mapper.to_rgba(a) for a in array]
+        line_collection = plot.colored_line_collection(pos, colors, plot.PlotMode.xyz)
+        ax.add_collection(line_collection)
+        ax.autoscale_view(True, True, True)
+        plot.set_aspect_equal(ax)
 
-    cbar = fig.colorbar(mapper, ticks=[min_map, (max_map - (max_map - min_map) / 2), max_map], ax=ax)
-    cbar.ax.set_yticklabels(
-        ["{0:0.3f}".format(min_map), "{0:0.3f}".format(max_map - (max_map - min_map) / 2), "{0:0.3f}".format(max_map)]
-    )
+        cbar = fig.colorbar(mapper, ticks=[min_map, (max_map - (max_map - min_map) / 2), max_map], ax=ax)
+        cbar.ax.set_yticklabels(
+            ["{0:0.3f}".format(min_map), "{0:0.3f}".format(max_map - (max_map - min_map) / 2), "{0:0.3f}".format(max_map)]
+        )
 
-    if relation == PoseRelation.translation_part:
-        cbar.set_label("APE [m]", labelpad=20)
-    elif relation == PoseRelation.rotation_angle_deg:
-        cbar.set_label("APE [deg]", labelpad=20)
+        if relation == PoseRelation.translation_part:
+            cbar.set_label("APE [m]", labelpad=20)
+        elif relation == PoseRelation.rotation_angle_deg:
+            cbar.set_label("APE [deg]", labelpad=20)
 
-    cbar.ax.yaxis.label.set_size(25)
-    cbar.ax.tick_params(labelsize=25)
-    ax.legend(frameon=True)
+        cbar.ax.yaxis.label.set_size(25)
+        cbar.ax.tick_params(labelsize=25)
+        ax.legend(frameon=True)
 
-    fig.savefig(os.path.join(output_path, plot_file_name), dpi=600)
+        fig.savefig(os.path.join(output_path, plot_file_name), dpi=600)
 
     file_interface.save_res_file(os.path.join(output_path, zip_file_name), results[0], confirm_overwrite=not True)
 
@@ -137,37 +138,47 @@ def run_ape(test_name, reference_file, estimated_file, params, output_path, disa
         print("min %f deg" % results[0].stats["min"])
         print("max %f deg" % results[0].stats["max"])
 
-    plot_x_dimension = "seconds"
-    # Plot the raw metric values.
-    fig_stats = plt.figure(figsize=SETTINGS.plot_figsize)
-    if plot_x_dimension == "distances" and "distances_from_start" in results[0].np_arrays:
-        x_array = results[0].np_arrays["distances_from_start"]
-        x_label = "$d$ (m)"
-    elif plot_x_dimension == "seconds" and "seconds_from_start" in results[0].np_arrays:
-        x_array = results[0].np_arrays["seconds_from_start"]
-        x_label = "$t$ (s)"
-    else:
-        x_array = None
-        x_label = "index"
+    if not disable_viz:
+        plot_x_dimension = "seconds"
+        # Plot the raw metric values.
+        fig_stats = plt.figure(figsize=SETTINGS.plot_figsize)
+        if plot_x_dimension == "distances" and "distances_from_start" in results[0].np_arrays:
+            x_array = results[0].np_arrays["distances_from_start"]
+            x_label = "$d$ (m)"
+        elif plot_x_dimension == "seconds" and "seconds_from_start" in results[0].np_arrays:
+            x_array = results[0].np_arrays["seconds_from_start"]
+            x_label = "$t$ (s)"
+        else:
+            x_array = None
+            x_label = "index"
 
-    plot.error_array(
-        fig_stats.gca(),
-        results[0].np_arrays["error_array"],
-        x_array=x_array,
-        statistics={s: results[0].stats[s] for s in SETTINGS.plot_statistics if s not in ("min", "max")},
-        name=results[0].info["label"],
-        title=results[0].info["title"],
-        xlabel=x_label,
-    )
+        plot.error_array(
+            fig_stats.gca(),
+            results[0].np_arrays["error_array"],
+            x_array=x_array,
+            statistics={s: results[0].stats[s] for s in SETTINGS.plot_statistics if s not in ("min", "max")},
+            name=results[0].info["label"],
+            title=results[0].info["title"],
+            xlabel=x_label,
+        )
 
-    fig_stats.savefig(os.path.join(output_path, statistics_file_name), dpi=600)
-
-    if disable_viz:
-        return
-    else:
         plt.tight_layout()
-        plt.show()
+        fig_stats.savefig(os.path.join(output_path, statistics_file_name), dpi=600)
 
+    # if disable_viz:
+    #     return
+    # else:
+    #     plt.tight_layout()
+    #     plt.show()
+
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ("yes", "true", "t", "1"):
+        return True
+    if v.lower() in ("no", "false", "f", "0"):
+        return False
+    raise argparse.ArgumentTypeError("Boolean value expected.")
 
 def process_directory(base_path, output_dir, config, disable_viz, prefix):
 
@@ -225,7 +236,14 @@ if __name__ == "__main__":
         help="Directory to save output plots and results (default: 'results/')",
     )
     parser.add_argument("--prefix", type=str, required=True, default="results/", help="The prefix for files.")
-    parser.add_argument("--disable_viz", action="store_true", help="Disable vizualization (default: False)")
+    parser.add_argument(
+        "--disable_viz",
+        type=str2bool,
+        nargs="?",
+        const=True,
+        default=False,
+        help="Disable visualization (default: False)",
+    )
 
     # Parse arguments
     args = parser.parse_args()

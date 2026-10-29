@@ -38,6 +38,7 @@
 #include <fstream>
 #include <map>
 #include <string>
+#include <stdexcept>
 #include <vector>
 
 // Define a struct to store each triplet
@@ -47,6 +48,27 @@ struct PrepPrameters {
   std::string frame = "";
   std::string outputName = "";
 };
+
+std::string sanitizeRosTopicName(const std::string& name) {
+  if (name.empty()) {
+    return name;
+  }
+
+  std::string sanitized = name;
+  for (char& c : sanitized) {
+    const bool ok =
+        ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || (c == '_') || (c == '/'));
+    if (!ok) {
+      c = '_';
+    }
+  }
+
+  if (!sanitized.empty() && sanitized[0] != '/' && sanitized[0] != '~') {
+    sanitized = "/" + sanitized;
+  }
+
+  return sanitized;
+}
 
 geometry_msgs::PoseStamped transformToPose(const geometry_msgs::TransformStamped& transform) {
   geometry_msgs::PoseStamped pose;
@@ -203,8 +225,164 @@ std::vector<PrepPrameters> parseBagTopicPairs(const XmlRpc::XmlRpcValue& param) 
   return bagTopicPairs;
 }
 
-void parseRosbagToTum(const std::string& bagPath, const std::string& topicName, const std::string& outputPath, tf2_ros::Buffer& tf_buffer,
-                      const std::string& targetFrame, const std::string& sourceFrame, bool enable_interpolation, rosbag::Bag& outputBag) {
+// -------------------- ADDED: topic frequency computation (header timestamps) --------------------
+struct TopicFrequencyResult {
+  bool computed = false;
+  bool skipped = false;
+  double hz = 0.0;
+  size_t msg_count = 0;
+  double duration_s = 0.0;
+  std::string reason;
+};
+
+TopicFrequencyResult computeTopicFrequencyFromHeaderTimestamps(const std::string& bagPath, const std::string& topicName) {
+  TopicFrequencyResult result;
+
+  if (topicName == "/tf" || topicName == "/tf_static") {
+    result.skipped = true;
+    result.reason = "TF topic skipped";
+    return result;
+  }
+
+  rosbag::Bag bag;
+  try {
+    bag.open(bagPath, rosbag::bagmode::Read);
+  } catch (const rosbag::BagException& e) {
+    result.reason = std::string("Failed to open bag: ") + e.what();
+    return result;
+  }
+
+  rosbag::View view(bag, rosbag::TopicQuery(topicName));
+  result.msg_count = view.size();
+
+  if (result.msg_count == 0) {
+    result.reason = "No messages on topic";
+    bag.close();
+    return result;
+  }
+
+  // Detect type from the first message and apply skip rules.
+  std::string first_type;
+  for (const rosbag::MessageInstance& m : view) {
+    first_type = m.getDataType();
+    break;
+  }
+
+  if (first_type == "tf2_msgs/TFMessage") {
+    result.skipped = true;
+    result.reason = "TFMessage skipped";
+    bag.close();
+    return result;
+  }
+
+  if (first_type == "geometry_msgs/PointStamped") {
+    result.skipped = true;
+    result.reason = "PointStamped skipped";
+    bag.close();
+    return result;
+  }
+
+  ros::Time min_stamp = ros::TIME_MAX;
+  ros::Time max_stamp = ros::TIME_MIN;
+  bool got_any_stamp = false;
+
+  for (const rosbag::MessageInstance& msg : view) {
+    ros::Time stamp = ros::Time(0);
+
+    if (msg.getDataType() == "nav_msgs/Odometry") {
+      nav_msgs::Odometry::ConstPtr odometry = msg.instantiate<nav_msgs::Odometry>();
+      if (!odometry) {
+        result.reason = "Failed to instantiate nav_msgs/Odometry";
+        bag.close();
+        return result;
+      }
+      stamp = odometry->header.stamp;
+
+    } else if (msg.getDataType() == "geometry_msgs/PoseStamped") {
+      geometry_msgs::PoseStamped::ConstPtr pose = msg.instantiate<geometry_msgs::PoseStamped>();
+      if (!pose) {
+        result.reason = "Failed to instantiate geometry_msgs/PoseStamped";
+        bag.close();
+        return result;
+      }
+      stamp = pose->header.stamp;
+
+    } else if (msg.getDataType() == "geometry_msgs/PoseWithCovarianceStamped") {
+      geometry_msgs::PoseWithCovarianceStamped::ConstPtr poseCov = msg.instantiate<geometry_msgs::PoseWithCovarianceStamped>();
+      if (!poseCov) {
+        result.reason = "Failed to instantiate geometry_msgs/PoseWithCovarianceStamped";
+        bag.close();
+        return result;
+      }
+      stamp = poseCov->header.stamp;
+
+    } else if (msg.getDataType() == "geometry_msgs/PointStamped") {
+      // Explicit skip rule
+      result.skipped = true;
+      result.reason = "PointStamped skipped";
+      bag.close();
+      return result;
+
+    } else if (msg.getDataType() == "tf2_msgs/TFMessage") {
+      // Explicit skip rule
+      result.skipped = true;
+      result.reason = "TFMessage skipped";
+      bag.close();
+      return result;
+
+    } else {
+      result.reason = std::string("Unsupported message type for frequency: ") + msg.getDataType();
+      bag.close();
+      return result;
+    }
+
+    if (stamp == ros::Time(0)) {
+      continue;
+    }
+
+    if (stamp < min_stamp) {
+      min_stamp = stamp;
+    }
+    if (stamp > max_stamp) {
+      max_stamp = stamp;
+    }
+    got_any_stamp = true;
+  }
+
+  if (!got_any_stamp) {
+    result.reason = "No valid (non-zero) header timestamps";
+    bag.close();
+    return result;
+  }
+
+  if (result.msg_count < 2) {
+    result.reason = "Not enough messages to compute frequency";
+    bag.close();
+    return result;
+  }
+
+  const double duration = (max_stamp - min_stamp).toSec();
+  result.duration_s = duration;
+
+  if (duration <= 0.0) {
+    result.reason = "Non-positive header timestamp span";
+    bag.close();
+    return result;
+  }
+
+  // Use total number of messages in the bag for the topic (view.size()) as requested.
+  result.hz = static_cast<double>(result.msg_count - 1) / duration;
+  result.computed = true;
+
+  bag.close();
+  return result;
+}
+// ------------------ END ADDED ---------------------------------------------------------------
+
+void parseRosbagToTum(const std::string& bagPath, const std::string& topicName, const std::string& outputTopicName,
+                      const std::string& outputPath, tf2_ros::Buffer& tf_buffer, const std::string& targetFrame,
+                      const std::string& sourceFrame, bool enable_interpolation, rosbag::Bag& outputBag,
+                      bool allow_frame_override = false) {
   rosbag::Bag bag;
   try {
     bag.open(bagPath, rosbag::bagmode::Read);
@@ -256,8 +434,17 @@ void parseRosbagToTum(const std::string& bagPath, const std::string& topicName, 
 
       if (odometry) {
         if (odometry->child_frame_id != sourceFrame) {
-          ROS_ERROR_STREAM("Child frame id does not match the source frame id");
-          return;
+          if (!allow_frame_override) {
+            throw std::runtime_error("Odometry child_frame_id '" + odometry->child_frame_id +
+                                     "' differs from configured source frame '" + sourceFrame +
+                                     "'. Set allow_frame_override only for verified frame metadata corrections.");
+          }
+          static bool childFrameWarningPrinted = false;
+          if (!childFrameWarningPrinted) {
+            ROS_ERROR_STREAM("Child frame id does not match the source frame id");
+            ROS_ERROR_STREAM("Using the parameter source_frame: " << sourceFrame << " instead of child_frame_id: " << odometry->child_frame_id);
+            childFrameWarningPrinted = true;
+          }
         }
         geometry_msgs::PoseStamped transformed_pose;
         try {
@@ -294,14 +481,27 @@ void parseRosbagToTum(const std::string& bagPath, const std::string& topicName, 
           asOdom.child_frame_id = targetFrame;
           asOdom.pose.pose = transformed_pose.pose;
 
-          outputBag.write(topicName, odometry->header.stamp, asOdom);
+          try {
+            outputBag.write(outputTopicName, odometry->header.stamp, asOdom);
+          } catch (const rosbag::BagException& e) {
+            ROS_ERROR_STREAM("rosbag::BagException while writing message."
+                             << "\n  what(): " << e.what()
+                             << "\n  bagPath: " << bagPath
+                             << "\n  inputTopic: " << topicName
+                             << "\n  outputTopic: " << outputTopicName
+                             << "\n  msgType: " << msg.getDataType()
+                             << "\n  header.stamp: " << odometry->header.stamp << " (toSec=" << odometry->header.stamp.toSec() << ")"
+                             << "\n  msg.getTime(): " << msg.getTime() << " (toSec=" << msg.getTime().toSec() << ")"
+                             << "\n  ros::TIME_MIN: " << ros::TIME_MIN << " (toSec=" << ros::TIME_MIN.toSec() << ")");
+            continue;
+          }
 
           double timestamp = odometry->header.stamp.toSec();
           const auto& position = transformed_pose.pose.position;
           const auto& orientation = transformed_pose.pose.orientation;
 
-          tumFile << timestamp << " " << position.x << " " << position.y << " " << position.z << " " << orientation.x << " "
-                  << orientation.y << " " << orientation.z << " " << orientation.w << std::endl;
+          tumFile << timestamp << " " << position.x << " " << position.y << " " << position.z << " " << orientation.x << " " << orientation.y
+                  << " " << orientation.z << " " << orientation.w << std::endl;
 
         } catch (const tf2::TransformException& ex) {
           ROS_ERROR_STREAM("Failed to transform pose: " << ex.what());
@@ -345,14 +545,27 @@ void parseRosbagToTum(const std::string& bagPath, const std::string& topicName, 
           asOdom.child_frame_id = targetFrame;
           asOdom.pose.pose = transformed_pose.pose;
 
-          outputBag.write(topicName, pose->header.stamp, asOdom);
+          try {
+            outputBag.write(outputTopicName, pose->header.stamp, asOdom);
+          } catch (const rosbag::BagException& e) {
+            ROS_ERROR_STREAM("rosbag::BagException while writing message."
+                             << "\n  what(): " << e.what()
+                             << "\n  bagPath: " << bagPath
+                             << "\n  inputTopic: " << topicName
+                             << "\n  outputTopic: " << outputTopicName
+                             << "\n  msgType: " << msg.getDataType()
+                             << "\n  header.stamp: " << pose->header.stamp << " (toSec=" << pose->header.stamp.toSec() << ")"
+                             << "\n  msg.getTime(): " << msg.getTime() << " (toSec=" << msg.getTime().toSec() << ")"
+                             << "\n  ros::TIME_MIN: " << ros::TIME_MIN << " (toSec=" << ros::TIME_MIN.toSec() << ")");
+            continue;
+          }
 
           double timestamp = pose->header.stamp.toSec();
           const auto& position = transformed_pose.pose.position;
           const auto& orientation = transformed_pose.pose.orientation;
 
-          tumFile << timestamp << " " << position.x << " " << position.y << " " << position.z << " " << orientation.x << " "
-                  << orientation.y << " " << orientation.z << " " << orientation.w << std::endl;
+          tumFile << timestamp << " " << position.x << " " << position.y << " " << position.z << " " << orientation.x << " " << orientation.y
+                  << " " << orientation.z << " " << orientation.w << std::endl;
         } catch (const tf2::TransformException& ex) {
           ROS_ERROR_STREAM("Failed to transform pose: " << ex.what());
           bag.close();
@@ -401,14 +614,27 @@ void parseRosbagToTum(const std::string& bagPath, const std::string& topicName, 
           asOdom.child_frame_id = targetFrame;
           asOdom.pose.pose = transformed_pose.pose;
 
-          outputBag.write(topicName, poseCov->header.stamp, asOdom);
+          try {
+            outputBag.write(outputTopicName, poseCov->header.stamp, asOdom);
+          } catch (const rosbag::BagException& e) {
+            ROS_ERROR_STREAM("rosbag::BagException while writing message."
+                             << "\n  what(): " << e.what()
+                             << "\n  bagPath: " << bagPath
+                             << "\n  inputTopic: " << topicName
+                             << "\n  outputTopic: " << outputTopicName
+                             << "\n  msgType: " << msg.getDataType()
+                             << "\n  header.stamp: " << poseCov->header.stamp << " (toSec=" << poseCov->header.stamp.toSec() << ")"
+                             << "\n  msg.getTime(): " << msg.getTime() << " (toSec=" << msg.getTime().toSec() << ")"
+                             << "\n  ros::TIME_MIN: " << ros::TIME_MIN << " (toSec=" << ros::TIME_MIN.toSec() << ")");
+            continue;
+          }
 
           double timestamp = poseCov->header.stamp.toSec();
           const auto& position = transformed_pose.pose.position;
           const auto& orientation = transformed_pose.pose.orientation;
 
-          tumFile << timestamp << " " << position.x << " " << position.y << " " << position.z << " " << orientation.x << " "
-                  << orientation.y << " " << orientation.z << " " << orientation.w << std::endl;
+          tumFile << timestamp << " " << position.x << " " << position.y << " " << position.z << " " << orientation.x << " " << orientation.y
+                  << " " << orientation.z << " " << orientation.w << std::endl;
 
           auto estGnssOfflinePoseMeasUnaryNoiseList = poseCov->pose.covariance;
           Eigen::Matrix<double, 6, 1> estGnssOfflinePoseMeasUnaryNoise;
@@ -482,8 +708,8 @@ void parseRosbagToTum(const std::string& bagPath, const std::string& topicName, 
           const auto& position = transformed_pose.pose.position;
           const auto& orientation = transformed_pose.pose.orientation;
 
-          tumFile << timestamp << " " << position.x << " " << position.y << " " << position.z << " " << orientation.x << " "
-                  << orientation.y << " " << orientation.z << " " << orientation.w << std::endl;
+          tumFile << timestamp << " " << position.x << " " << position.y << " " << position.z << " " << orientation.x << " " << orientation.y
+                  << " " << orientation.z << " " << orientation.w << std::endl;
 
         } catch (const tf2::TransformException& ex) {
           ROS_ERROR_STREAM("Failed to transform pose: " << ex.what());
@@ -574,6 +800,8 @@ void processTF(const std::vector<std::string>& tfContainingBags, tf2_ros::Buffer
 int main(int argc, char** argv) {
   ros::init(argc, argv, "evo_converter");
   ros::NodeHandle nh("~");
+  bool allow_frame_override = false;
+  nh.param("/allow_frame_override", allow_frame_override, false);
 
   std::string bag_file_directory = "";
   if (!nh.getParam("bag_file_directory", bag_file_directory)) {
@@ -628,8 +856,8 @@ int main(int argc, char** argv) {
     if (quartet.frame.empty()) {
       ROS_INFO_STREAM("\033[1;33mOnly tf Bag: " << quartet.bag << "\033[0m");
     } else {
-      ROS_INFO_STREAM("Bag: " << quartet.bag << ", Topic: " << quartet.topic << ", Frame: " << quartet.frame
-                              << ", Output Name: " << quartet.outputName);
+      ROS_INFO_STREAM("Bag: " << quartet.bag << ", Topic: " << quartet.topic << ", Frame: " << quartet.frame << ", Output Name: "
+                              << quartet.outputName);
     }
   }
 
@@ -713,7 +941,31 @@ int main(int argc, char** argv) {
 
     ROS_INFO_STREAM("\033[1;32mProcessing: " << bagPath << " (Topic: " << topicName << ") -> " << outputPath << ".\033[0m");
 
-    parseRosbagToTum(bagPath, topicName, outputPath, tf_buffer, targetFrame, sourceFrame, enable_interpolation, outputBag);
+    // -------------------- ADDED: print frequency (skip /tf and PointStamped) --------------------
+    {
+      TopicFrequencyResult freq = computeTopicFrequencyFromHeaderTimestamps(bagPath, topicName);
+      if (freq.computed) {
+        ROS_INFO_STREAM("\033[1;36mTopic frequency: " << freq.hz << " Hz (" << freq.msg_count << " msgs over " << freq.duration_s
+                                                      << " s)\033[0m");
+      } else if (!freq.skipped) {
+        ROS_WARN_STREAM("Could not compute topic frequency for " << topicName << " in " << bagPath << ": " << freq.reason);
+      }
+    }
+    // ------------------ END ADDED ---------------------------------------------------------------
+
+    std::string outputTopicName = outputName;
+    if (outputTopicName.empty()) {
+      outputTopicName = topicName;
+    }
+    outputTopicName = sanitizeRosTopicName(outputTopicName);
+
+    try {
+      parseRosbagToTum(bagPath, topicName, outputTopicName, outputPath, tf_buffer, targetFrame, sourceFrame,
+                      enable_interpolation, outputBag, allow_frame_override);
+    } catch (const std::exception& error) {
+      ROS_ERROR_STREAM("Evaluation conversion failed: " << error.what());
+      return 1;
+    }
   }
   outputBag.close();
   ROS_INFO("Processing completed.");
