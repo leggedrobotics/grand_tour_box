@@ -80,6 +80,19 @@ std::map<std::string, CameraParameterPack> FetchIntrinsicsAsCameraPackFromYaml(c
         const auto distortion_coeffs = cam_data["distortion_coeffs"].as<std::vector<double>>();
         const auto resolution = cam_data["resolution"].as<std::vector<int>>();
 
+        if (rostopic.empty() || result.count(rostopic) ||
+            intrinsics.size() != PinholeProjection::NUM_PARAMETERS ||
+            distortion_coeffs.size() != Distortion::NUM_PARAMETERS || resolution.size() != 2 ||
+            resolution[0] <= 0 || resolution[1] <= 0 || intrinsics[0] <= 0 || intrinsics[1] <= 0)
+            throw std::invalid_argument("Invalid or duplicate camera intrinsics: " + rostopic);
+        for (double value : intrinsics)
+            if (!std::isfinite(value)) throw std::invalid_argument("Nonfinite camera intrinsics");
+        for (double value : distortion_coeffs)
+            if (!std::isfinite(value)) throw std::invalid_argument("Nonfinite camera distortion");
+        if (distortion_model != "equidistant" && distortion_model != "radtan")
+            throw std::invalid_argument("Unsupported camera distortion model: " + distortion_model);
+
+        // Validate lengths before memcpy: malformed YAML must not read beyond a vector.
         memcpy(result[rostopic].fxfycxcy,
                intrinsics.data(), PinholeProjection::NUM_PARAMETERS * sizeof(double));
         memcpy(result[rostopic].dist_coeffs,
@@ -87,14 +100,7 @@ std::map<std::string, CameraParameterPack> FetchIntrinsicsAsCameraPackFromYaml(c
         result[rostopic].width = resolution[0];
         result[rostopic].height = resolution[1];
 
-        if (cam_data["distortion_model"].as<std::string>() == "equidistant") {
-            result[rostopic].distortion_type = Distortion::Fisheye;
-        } else if (cam_data["distortion_model"].as<std::string>() == "radtan") {
-            result[rostopic].distortion_type = Distortion::RadTan;
-        } else {
-            std::cerr << "Tried to populate wrong distortion model" << std::endl;
-//            return {};
-        }
+        result[rostopic].distortion_type = distortion_model == "equidistant" ? Distortion::Fisheye : Distortion::RadTan;
     }
     return result;
 }
@@ -110,14 +116,21 @@ std::map<std::string, Eigen::Affine3d> FetchExtrinsicsFromYaml(const YAML::Node 
         // Copy the node handle: iterator-> returns a temporary proxy.
         const YAML::Node cam_data = it->second;
         const auto &rostopic = cam_data["rostopic"].as<std::string>();
-        YAML::Node bundle_cam_data = cam_data["T_bundle_camera"];
-        Eigen::Matrix4d T_bundle_cam = Eigen::Matrix4d::Identity();
-        for (std::size_t j = 0; j < bundle_cam_data.size(); ++j) {
-            YAML::Node row = bundle_cam_data[j];
-            for (std::size_t k = 0; k < row.size(); ++k) {
-                T_bundle_cam(j, k) = row[k].as<double>();
-            }
+        const YAML::Node bundle_cam_data = cam_data["T_bundle_camera"];
+        if (rostopic.empty() || eigen_results.count(rostopic) || !bundle_cam_data.IsSequence() || bundle_cam_data.size() != 4)
+            throw std::invalid_argument("Invalid or duplicate camera extrinsics: " + rostopic);
+        Eigen::Matrix4d T_bundle_cam;
+        for (std::size_t j = 0; j < 4; ++j) {
+            const auto row = bundle_cam_data[j].as<std::vector<double>>();
+            if (row.size() != 4) throw std::invalid_argument("Camera transform must be 4x4");
+            for (std::size_t k = 0; k < 4; ++k) T_bundle_cam(j, k) = row[k];
         }
+        const Eigen::Matrix3d rotation = T_bundle_cam.block<3, 3>(0, 0);
+        // Allow rounding in serialized initial guesses while rejecting invalid transforms.
+        if (!T_bundle_cam.allFinite() || !T_bundle_cam.row(3).isApprox(Eigen::RowVector4d(0, 0, 0, 1), 1e-9) ||
+            !(rotation.transpose() * rotation).isApprox(Eigen::Matrix3d::Identity(), 1e-3) ||
+            std::abs(rotation.determinant() - 1.) > 1e-3)
+            throw std::invalid_argument("Invalid camera rigid transform: " + rostopic);
         Eigen::Affine3d output_T_bundle_cam;
         output_T_bundle_cam.translation() = T_bundle_cam.block<3, 1>(0, 3);
         output_T_bundle_cam.linear() = T_bundle_cam.block<3, 3>(0, 0);

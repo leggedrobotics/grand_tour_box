@@ -1,110 +1,119 @@
 #!/usr/bin/env python3
+"""Export one complete box-model TF snapshot and its calibration metadata."""
 import os
 from datetime import datetime
+from pathlib import Path
+import tempfile
 
-import rospy
 import rosbag
+import rospkg
+import rospy
 import yaml
-from tf2_msgs.msg import TFMessage
 from std_msgs.msg import String
+from tf2_msgs.msg import TFMessage
+
+DATE_FORMAT = "%Y-%m-%d-%H-%M-%S"
+EXPECTED_FILES = {
+    "alphasense": ["cam1.yaml", "cam2.yaml", "cam3.yaml", "cam4.yaml", "cam5.yaml"],
+    "hdr": ["hdr_front.yaml", "hdr_left.yaml", "hdr_right.yaml"],
+    "zed2i": ["zed_left.yaml", "zed_right.yaml"],
+}
+
+
+def parse_date(value):
+    if not isinstance(value, str):
+        raise ValueError(f"Expected a date in {DATE_FORMAT} format, got {value!r}")
+    date = datetime.strptime(value, DATE_FORMAT)
+    if date.strftime(DATE_FORMAT) != value:
+        raise ValueError(f"Expected a date in {DATE_FORMAT} format, got {value!r}")
+    return date
+
+
+def load_calibration_records(calibration_path, validity_start="", validity_end=""):
+    """Validate every input before opening an output bag."""
+    calibration_path = Path(calibration_path)
+    with (calibration_path / "tf/calibration_latest.yaml").open() as stream:
+        metadata = yaml.safe_load(stream)["calibration_metadata"]
+    if not isinstance(metadata, dict) or not metadata:
+        raise ValueError("Calibration metadata must be a nonempty mapping")
+    summary = dict(metadata)
+    dates = [parse_date(value) for key, value in metadata.items()
+             if key not in ("validity_start", "validity_end") and str(value).lower() != "cad"]
+    if validity_start:
+        start = parse_date(validity_start)
+    elif dates:
+        start = min(dates)
+    else:
+        raise ValueError("An explicit validity_start is required for an all-CAD calibration")
+    end = parse_date(validity_end) if validity_end else datetime.now().replace(microsecond=0)
+    if start > end:
+        raise ValueError("validity_start must not be after validity_end")
+    summary.update(validity_start=start.strftime(DATE_FORMAT), validity_end=end.strftime(DATE_FORMAT))
+    records = [("/calibration_metadata", yaml.safe_dump(summary))]
+    topics = set()
+    for folder, names in EXPECTED_FILES.items():
+        for name in names:
+            path = calibration_path / folder / name
+            content = path.read_text()
+            data = yaml.safe_load(content)
+            topic = data.get("rostopic") if isinstance(data, dict) else None
+            if not isinstance(topic, str) or not topic.startswith("/") or topic in topics:
+                raise ValueError(f"Missing, relative or duplicate camera rostopic in {path}")
+            topics.add(topic)
+            records.append((topic.rstrip("/") + "/calibration_data", content))
+    return summary, records
+
+
+def write_calibration_bags(bag_file, tf_message, calibration_path, validity_start="", validity_end=""):
+    if not tf_message.transforms:
+        raise ValueError("Cannot export an empty /tf_static snapshot")
+    summary, records = load_calibration_records(calibration_path, validity_start, validity_end)
+    output = Path(bag_file).absolute()
+    dated = output.with_name(f"tf_static_metadata_{summary['validity_start']}__{summary['validity_end']}.bag")
+    if dated.exists() and dated != output:
+        raise FileExistsError(f"Dated calibration already exists: {dated}")
+    fd, temporary = tempfile.mkstemp(prefix=f".{output.name}.", suffix=".bag", dir=output.parent)
+    os.close(fd)
+    dated_created = False
+    try:
+        with rosbag.Bag(temporary, "w") as bag:
+            stamp = rospy.Time.from_sec(datetime.now().timestamp())
+            bag.write("/tf_static", tf_message, stamp)
+            for topic, content in records:
+                bag.write(topic, String(data=content), stamp)
+        # A closed rosbag is already indexed. Publish only complete bags, and
+        # refuse to replace a dated calibration that another run created.
+        if dated != output:
+            os.link(temporary, dated)
+            dated_created = True
+        os.replace(temporary, output)
+    except Exception:
+        if dated_created:
+            dated.unlink()
+        raise
+    finally:
+        if os.path.exists(temporary):
+            os.unlink(temporary)
+    return output, dated
 
 
 def main():
-    rospy.init_node('store_tf_static')
+    rospy.init_node("store_tf_static")
+    calibration_path = Path(rospkg.RosPack().get_path("box_calibration")) / "calibration"
+    start = rospy.get_param("~validity_start", "")
+    end = rospy.get_param("~validity_end", "")
+    load_calibration_records(calibration_path, start, end)
+    # The shipped launch has one robot_state_publisher containing the box model.
+    # Wait synchronously so shutdown cannot race an in-progress bag callback.
+    snapshot = rospy.wait_for_message("/tf_static", TFMessage, timeout=rospy.get_param("~timeout", 30.0))
+    outputs = write_calibration_bags(rospy.get_param("~bag_file", "output.bag"), snapshot,
+                                    calibration_path, start, end)
+    rospy.loginfo("Calibration bags written: %s", ", ".join(map(str, outputs)))
 
-    # Get the output bag file name from a parameter
-    bag_file = rospy.get_param('~bag_file', 'output.bag')
-    rospy.loginfo(f"Storing /tf_static to bag file: {bag_file}")
 
-    # Open the bag file for writing
-    with rosbag.Bag(bag_file, 'w') as bag:
-        callback_called = [False]  # Use a mutable type to modify it inside the callback
-
-        def callback(msg):
-            if callback_called[0]:
-                return
-
-            # Write the /tf_static messages to the bag
-            bag.write('/tf_static', msg)
-            callback_called[0] = True
-
-            # Define the fixed structure of expected files
-            expected_files = {
-                "alphasense": ["cam1.yaml", "cam2.yaml", "cam3.yaml", "cam4.yaml", "cam5.yaml"],
-                "hdr": ["hdr_front.yaml", "hdr_left.yaml", "hdr_right.yaml"],
-                "zed2i": ["zed_left.yaml", "zed_right.yaml"],
-            }
-            package_name = "box_calibration"
-
-            try:
-                # Resolve the package path
-                import rospkg
-                rospack = rospkg.RosPack()
-                package_path = rospack.get_path(package_name)
-                package_path = os.path.join(package_path, "calibration")
-            except rospkg.ResourceNotFound as e:
-                print(f"Package '{package_name}' not found.")
-                rospy.signal_shutdown(f"Package '{package_name}' not found.")
-                return
-
-            metadata_path = os.path.join(package_path, "tf", "calibration_latest.yaml")
-            with open(metadata_path, "r") as f:
-                extrinsic_calibration_data = yaml.safe_load(f)
-                calibration_metadata = extrinsic_calibration_data["calibration_metadata"]
-                valid_dates = [
-                    datetime.strptime(value, "%Y-%m-%d-%H-%M-%S")
-                    for value in calibration_metadata.values()
-                    if value.lower() != "cad"
-                ]
-                earliest_date = min(valid_dates).strftime("%Y-%m-%d-%H-%M-%S")
-                calibration_summary = {
-                    "validity_start" : earliest_date,
-                    "validity_end" : datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
-                }
-                calibration_summary.update(calibration_metadata)
-                msg = String()
-                msg.data = yaml.dump(calibration_summary)
-                bag.write("calibration_metadata", msg)
-
-            for folder, files in expected_files.items():
-                folder_path = os.path.join(package_path, folder)
-                for file_name in files:
-                    file_path = os.path.join(folder_path, file_name)
-                    if not os.path.exists(file_path):
-                        print(f"File not found: {file_path}. Skipping.")
-                        continue
-
-                    try:
-                        # Load YAML content
-                        with open(file_path, 'r') as yaml_file:
-                            yaml_data = yaml.safe_load(yaml_file)
-
-                        # Ensure 'rostopic' field exists
-                        if 'rostopic' in yaml_data:
-                            topic = yaml_data['rostopic'] + "/calibration_data"
-                        else:
-                            print(f"Skipping {file_path}: Missing 'rostopic' field.")
-                            continue
-
-                        # Read the raw YAML content to preserve formatting
-                        with open(file_path, 'r') as yaml_file:
-                            yaml_content = yaml_file.read()
-
-                        # Write to ROS bag as std_msgs/String
-                        msg = String()
-                        msg.data = yaml_content
-                        bag.write(topic, msg)
-                        print(f"Written: {file_path} to topic: {topic}")
-                    except Exception as e:
-                        print(f"Failed to process {file_path}: {e}")
-
-            rospy.signal_shutdown("Callback executed successfully.")
-
-        rospy.Subscriber('/tf_static', TFMessage, callback)
-        rospy.spin()
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     try:
         main()
-    except rospy.ROSInterruptException:
-        pass
+    except Exception as error:
+        rospy.logerr("Calibration export failed: %s", error)
+        raise SystemExit(1) from error

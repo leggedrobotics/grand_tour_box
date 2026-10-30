@@ -5,9 +5,15 @@
     <!-- Output bag file -->
     <arg name="bag_file" default="$(find box_calibration)/calibration/tf_static_with_metadata.bag" />
 
+    <!-- Empty dates preserve automatic start / current end. Format: YYYY-MM-DD-HH-MM-SS. -->
+    <arg name="validity_start" default="" />
+    <arg name="validity_end" default="" />
+
     <!-- Run the Python script -->
     <node name="store_tf_static" pkg="box_calibration" type="store_tf_static.py" output="screen">
         <param name="bag_file" value="$(arg bag_file)" />
+        <param name="validity_start" value="$(arg validity_start)" type="str" />
+        <param name="validity_end" value="$(arg validity_end)" type="str" />
     </node>
     
 </launch>

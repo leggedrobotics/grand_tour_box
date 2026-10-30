@@ -59,7 +59,7 @@ preserved; this solver is invoked explicitly through the command above.
 
 ## Visualization
 
-For the camera-to-camera and camera–IMU executables, add `--visualize` to open the Rerun viewer, or
+For the camera-to-camera, camera–IMU and camera–prism executables, add `--visualize` to open the Rerun viewer, or
 `--rerun_recording results/calibration.rrd` to save visualization without a GUI.
 When both are supplied, saving takes precedence. `--blueprint_path` selects an
 optional layout; absent layouts use Rerun's default. Opening a GUI requires a
@@ -96,3 +96,33 @@ Synthetic tests and ordinary dataset smoke tests do not establish physical
 calibration accuracy or adequate motion excitation for the new camera–IMU
 solver. Validate its results against an independently trusted calibration before
 using them as deployed sensor parameters.
+
+## Camera–prism calibration
+
+`camera_prism_offline_calibration` accepts `ap20_driver_ros/PositionDebug`
+(using its outer header timestamp, as before) and `geometry_msgs/PointStamped`.
+Positions must be in one fixed frame. Camera detection timestamps must overlap
+prism measurements with interpolation gaps no larger than 0.1 seconds.
+
+Prism residuals use a 0.003 m standard deviation and the existing Huber loss.
+After the first solve, observations above three times the median residual norm
+are removed and the problem is rebuilt for a second solve. A 1 nm threshold
+floor retains numerical roundoff for an exact fit. Both solves and the final
+covariance calculation must succeed before publishing output. Adequate motion
+is necessary to make the lever arm, board pose and optional time offset observable.
+
+Use `--solve_time_offset` for camera-to-prism timing estimation. The estimate is
+included in the output YAML comment. Rerun shows observed and predicted prism
+trajectories, camera poses, residuals in millimetres, and parameter uncertainties.
+`save_camera_prism_blueprint.py --output camera_prism.rbl` generates its layout
+in the Python/Rerun environment described above.
+
+The executable regression covers both message types, a negative time offset,
+Rerun output and rejected input/output cases:
+
+```sh
+python3 tests/test_camera_prism_cli.py --executable /path/to/camera_prism_offline_calibration
+```
+
+Synthetic recovery checks verify implementation behavior, not physical accuracy
+on an Aprilgrid/prism reference recording.

@@ -20,20 +20,13 @@ Eigen::Matrix<T, 3, 1> lerp(const Eigen::Vector3d &v1, const Eigen::Vector3d &v2
 
 template<typename Key, typename V>
 std::optional<std::pair<Key, Key>> findLeftRightTimeBounds(const std::map<Key, V> &detections, Key key) {
-    // Finding the first element strictly smaller than the key
-    auto it_upper = detections.upper_bound(key);  // First element > key
-    auto it_lower = detections.lower_bound(key);  // First element >= key
+    if (detections.size() < 2 || key < detections.begin()->first || key > detections.rbegin()->first)
+        return {};
+    auto upper = detections.upper_bound(key);
+    if (upper == detections.end()) upper = std::prev(detections.end());
+    const auto lower = std::prev(upper);
+    return std::make_pair(lower->first, upper->first);
 
-    // Move it_lower back to find the element strictly smaller
-    if (it_lower != detections.begin()) {
-        --it_lower;
-    }
-
-    if (it_lower!= detections.begin() and it_upper != detections.end()) {
-        return {std::make_pair(it_lower->first, it_upper->first)};
-    }
-
-    return {};
 }
 
 #endif //GRAND_TOUR_CERES_APPS_INTERPOLATION3D_H

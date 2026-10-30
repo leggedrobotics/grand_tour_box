@@ -18,6 +18,7 @@ import start_recording_pb2_grpc
 import stop_recording_pb2
 import stop_recording_pb2_grpc
 from box_recording_helper.store_debug_logs_to_folder import store_debug_logs_to_folder
+from box_recording_helper.recording_directory import prepare_recording_directory
 
 
 class StartRecordingServicer(start_recording_pb2_grpc.StartRecordingServicer):
@@ -74,7 +75,6 @@ class StopRecordingServicer(stop_recording_pb2_grpc.StopRecordingServicer):
         if self.recorder_node.store_debug_logs:
             store_debug_logs_to_folder(
                 self.recorder_node.start_recording_time,
-                directory="/home/rsl/.ros",
                 copy_to=os.path.join(self.recorder_node.bag_base_path, "ros_logs_" + self.recorder_node.node),
             )
 
@@ -114,16 +114,7 @@ class RosbagRecordNodeGrpc(object):
 
         self.info_string = ""
 
-        if not os.path.exists(self.data_path):
-            self.data_path = default_path
-            rospy.logwarn(
-                "[RosbagRecordNode("
-                + self.node
-                + ")] Data path "
-                + self.data_path
-                + " does not exist. Will write to "
-                + default_path
-            )
+        self.data_path = prepare_recording_directory(self.data_path)
 
         rp = rospkg.RosPack()
         self.rosbag_recorder_bash_script = os.path.join(rp.get_path("box_recording"), "bin/record_bag.sh")

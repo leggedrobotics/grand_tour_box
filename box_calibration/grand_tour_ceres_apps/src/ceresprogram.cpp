@@ -14,6 +14,8 @@
 CameraCamera2D3DTargetDetectionData
 FixCameraDetectionTimes(const CameraCamera2D3DTargetDetectionData &input_camera_detections,
                         const PrismPositionDetectionData &prism_detections) {
+    if (prism_detections.empty() || input_camera_detections.observations.empty())
+        throw std::invalid_argument("Empty camera or prism data");
     const auto first_prism_stamp = prism_detections.begin()->first;
     const auto first_camera_stamp = input_camera_detections.observations.begin()->first;
     std::cout << "First prism: " << first_prism_stamp << std::endl;
@@ -255,26 +257,32 @@ CameraPrismProgram::CameraPrismProgram(CameraPrismCalibrationAppParser argparser
     prism_detections = LoadPrismPositions(argparser.prism_positions_path);
     camera_detections = FixCameraDetectionTimes(camera_detections, prism_detections);
     std::cout << "Using prism detections from " << prism_detections.size() << " unique stamps" << std::endl;
+    if (T_bundle_cam.empty()) throw std::invalid_argument("No camera extrinsics");
     cam0_name = T_bundle_cam.begin()->first;
     SE3Transform se3Transform;
     se3Transform.assignToData(Eigen::Affine3d::Identity(),
                               prism_board_in_total_station_params.T_totalstation_board);
-    this->PopulateProblem();
+    if (!this->PopulateProblem()) throw std::invalid_argument("Insufficient overlapping prism observations");
 }
 
 bool CameraPrismProgram::PopulateProblem() {
+    problem_ = std::make_unique<CeresProblem>();
+    residual_block_map.clear();
+    calibration_covariance.resize(0, 0);
     SE3Transform se3Transform;
     unsigned int n_camera_samples_used = 0;
     for (const auto &[camera_stamp, detections_at_stamp]: camera_detections.observations) {
+        if (!prismTimeBounds(prism_detections, camera_stamp, prism_board_in_total_station_params.t_offset[0])) continue;
         calibration_time_nsec = camera_stamp;
         for (const auto &[camera_name, detection]: detections_at_stamp) {
+            if (!detection.T_sensor_model.matrix().allFinite()) return false;
             n_camera_samples_used++;
             Eigen::Affine3d T_board_camera = detection.T_sensor_model.inverse();
             Eigen::Affine3d T_cam_cam0 = T_bundle_cam.at(camera_name).inverse() * T_bundle_cam.at(cam0_name);
             residual_block_map[camera_name][camera_stamp] = problem_->getProblem().AddResidualBlock(
                     PrismInCam0InBoardInTotalStationConsistencyError::Create(
                             T_cam_cam0, T_board_camera,
-                            camera_stamp, prism_detections),
+                            camera_stamp, prism_detections, prism_sigma),
                     new ceres::HuberLoss(1.0),
                     prism_board_in_total_station_params.T_totalstation_board,
                     prism_board_in_total_station_params.t_cam0_prism,
@@ -285,6 +293,7 @@ bool CameraPrismProgram::PopulateProblem() {
         }
     }
     std::cout << "Added " << n_camera_samples_used << " camera samples" << std::endl;
+    if (n_camera_samples_used < 4) return false;
     problem_->solver_options_.minimizer_progress_to_stdout = true;
     problem_->solver_options_.max_num_iterations = 200;
     if (!solve_time_offset) {
@@ -293,39 +302,53 @@ bool CameraPrismProgram::PopulateProblem() {
     return true;
 }
 
-void CameraPrismProgram::WriteOutputParameters() {
+bool CameraPrismProgram::FilterOutliers() {
+    std::vector<double> norms;
+    std::map<unsigned long long, std::map<std::string, double>> residual_norms;
+    for (const auto& [camera, blocks] : residual_block_map) {
+        for (const auto& [stamp, block] : blocks) {
+            Eigen::Vector3d residual;
+            if (!prismTimeBounds(prism_detections, stamp, prism_board_in_total_station_params.t_offset[0]) ||
+                !problem_->getProblem().EvaluateResidualBlock(block, false, nullptr, residual.data(), nullptr) ||
+                !residual.allFinite()) return false;
+            const double norm = residual.norm() * prism_sigma;
+            norms.push_back(norm);  // Include perfect fits and errors with a zero X component.
+            residual_norms[stamp][camera] = norm;
+        }
+    }
+    if (norms.empty()) return false;
+    // A nanometre floor retains numerical roundoff in an otherwise exact fit.
+    const double threshold = std::max(3. * prismResidualMedian(norms), 1e-9);
+    CameraCamera2D3DTargetDetectionData filtered;
+    for (const auto& [stamp, cameras] : residual_norms)
+        for (const auto& [camera, norm] : cameras)
+            if (norm <= threshold) {
+                filtered.observations[stamp][camera] = camera_detections.observations.at(stamp).at(camera);
+                filtered.unique_timestamps.insert(stamp);
+            }
+    std::cout << "Prism outlier threshold: " << threshold << " m\n";
+    camera_detections = std::move(filtered);
+    return !camera_detections.observations.empty();
+}
+
+bool CameraPrismProgram::Solve() {
+    if (problem_->getProblem().NumResidualBlocks() < 4 || !CeresProgram::Solve() || !FilterOutliers()) return false;
+    // Rebuild instead of appending: rejected residuals must leave the second solve.
+    if (!PopulateProblem() || !CeresProgram::Solve()) return false;
+    std::vector<const double*> blocks = {prism_board_in_total_station_params.T_totalstation_board,
+                                         prism_board_in_total_station_params.t_cam0_prism};
+    if (solve_time_offset) blocks.push_back(prism_board_in_total_station_params.t_offset);
+    if (!problem_->ComputeAndFetchCovariance(blocks, calibration_covariance) ||
+        !calibration_covariance.allFinite() || (calibration_covariance.diagonal().array() < 0).any()) {
+        std::cerr << "Prism calibration covariance unavailable; check motion and geometry.\n";
+        return false;
+    }
+    return true;
+}
+
+bool CameraPrismProgram::WriteOutputParameters() {
+    if (calibration_covariance.rows() == 0) return false;
     Eigen::Map<Eigen::Vector3d> t_cam0_prism(prism_board_in_total_station_params.t_cam0_prism);
-    std::cout << "t_cam0_prism: " << t_cam0_prism.transpose() << std::endl;
-    std::cout << "time offset: " << prism_board_in_total_station_params.t_offset[0] << std::endl;
-    Eigen::Affine3d T_totalstation_board = SE3Transform::toEigenAffine(
-            prism_board_in_total_station_params.T_totalstation_board);
-    std::cout << "T_totalstation_board:\n" << T_totalstation_board.matrix() << std::endl;
-    {
-        std::vector<const double *> covariance_block = {prism_board_in_total_station_params.t_cam0_prism};
-        Eigen::MatrixXd prism_position_covariance;
-        problem_->ComputeAndFetchCovariance(
-                covariance_block, prism_position_covariance);
-        std::cout << "Prism position sigma:" << "\n" << prism_position_covariance.diagonal().array().sqrt().transpose()
-                  << std::endl;
-    }
-
-    {
-        std::vector<const double *> covariance_block = {prism_board_in_total_station_params.T_totalstation_board};
-        Eigen::MatrixXd board_pose_covariance;
-        problem_->ComputeAndFetchCovariance(
-                covariance_block, board_pose_covariance);
-        std::cout << "Board pose sigma:" << "\n" << board_pose_covariance.diagonal().array().sqrt().transpose()
-                  << std::endl;
-    }
-
-    {
-        std::vector<const double *> covariance_block = {prism_board_in_total_station_params.t_offset};
-        Eigen::MatrixXd t_offset_covariance;
-        problem_->ComputeAndFetchCovariance(
-                covariance_block, t_offset_covariance);
-        std::cout << "T-offset sigma:" << "\n" << t_offset_covariance.array().sqrt() << std::endl;
-    }
-
     YAML::Node output_calibration = YAML::LoadFile(cameras_calibration_path);
     for (YAML::const_iterator it = output_calibration.begin(); it != output_calibration.end(); ++it) {
         std::string key = it->first.as<std::string>();
@@ -339,14 +362,13 @@ void CameraPrismProgram::WriteOutputParameters() {
     }
 
 
-    std::ofstream fout(output_yaml_path);
-    fout << "#Prism Calibration Data Time: " << GetHumanReadableTime(calibration_time_nsec) << std::endl;
-    fout << output_calibration;
-    fout.close();
-    std::cout << "Prism calibration written to: " << output_yaml_path << std::endl;
-
-
+    std::ostringstream output;
+    output << "#Prism Calibration Data Time: " << GetHumanReadableTime(calibration_time_nsec) << '\n';
+    output << "#Camera-to-prism time offset (s): " << prism_board_in_total_station_params.t_offset[0] << '\n';
+    output << output_calibration;
+    return WriteTextAtomically(output_yaml_path, output.str());
 }
+
 
 CeresProgram::CeresProgram() {
     problem_ = std::make_unique<CeresProblem>();

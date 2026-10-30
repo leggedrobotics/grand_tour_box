@@ -3,17 +3,21 @@
 //
 
 #include <gtboxcalibration/prismpositionresiduals.h>
+#include <algorithm>
+#include <stdexcept>
 
 PrismInCam0InBoardInTotalStationConsistencyError::PrismInCam0InBoardInTotalStationConsistencyError(
         const Eigen::Affine3d &tCamselfCam0, const Eigen::Affine3d &tBoardCamself,
         unsigned long long camera_detection_time,
-        const PrismPositionDetectionData &prism_detections) : T_camself_cam0_(tCamselfCam0),
+        const PrismPositionDetectionData &prism_detections, double prism_sigma) : T_camself_cam0_(tCamselfCam0),
                                                               T_board_camself_(tBoardCamself),
                                                               camera_detection_time_(
                                                                       camera_detection_time),
                                                               total_station_prism_measurement_data_(
                                                                       prism_detections) {
-
+    if (!std::isfinite(prism_sigma) || prism_sigma <= 0)
+        throw std::invalid_argument("Prism sigma must be finite and positive");
+    prism_sigma_ = prism_sigma;
 }
 
 std::pair<Eigen::VectorXd, double>
@@ -48,4 +52,14 @@ GetResidualsAndLossAtResidualBlockID(const ceres::Problem &problem, ceres::Resid
 
     Eigen::Map<Eigen::Vector3d> residuals(block_residuals.data());
     return std::make_pair(residuals, rho[0]);
+}
+
+// Keep fractional values for even sample counts (prism errors are in metres).
+double prismResidualMedian(std::vector<double> values) {
+    if (values.empty()) throw std::invalid_argument("No prism residuals");
+    for (double value : values)
+        if (!std::isfinite(value) || value < 0) throw std::invalid_argument("Invalid prism residual");
+    const auto middle = values.begin() + values.size() / 2;
+    std::nth_element(values.begin(), middle, values.end());
+    return values.size() % 2 ? *middle : (*middle + *std::max_element(values.begin(), middle)) / 2.;
 }

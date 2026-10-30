@@ -128,6 +128,18 @@ def main():
             )
         else:
             raise AssertionError("Synthetic calibration did not converge")
+        from box_calibration.camera_imu_batch import run_camera_imu_batch
+        import rospkg
+        allan = Path(rospkg.RosPack().get_path("box_calibration")) / "calibration/allan_variances"
+        def batch_runner(command):
+            subprocess.run([str(executable), *command[3:]], env=env, check=True,
+                           capture_output=True, text=True, timeout=240)
+        run_camera_imu_batch(work, work / "cameras.yaml", work / "batch.yaml", allan,
+                             {"stim320": "/imu"}, runner=batch_runner)
+        aggregate = yaml.safe_load((work / "batch.yaml").read_text())
+        np.testing.assert_allclose(aggregate["stim320_imu"]["T_camerabundle_imu"], expected, atol=1e-4)
+        assert not list(work.glob(".camera-imu-*"))
+        results["imu_batch_solver"] = {"passed": True, "temporary_bags_removed": True}
         assert run("imu_unsupported_time_offset", args + ["--solve_time_offset"]) != 0
         assert results["imu_synthetic_solver"]["rotation_error_radians"] < 1e-4
         assert results["imu_synthetic_solver"]["translation_error_meters"] < 1e-4

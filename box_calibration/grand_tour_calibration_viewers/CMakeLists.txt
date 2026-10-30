@@ -206,3 +206,7 @@ catkin_install_python(PROGRAMS
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
+
+# Blueprint generation uses a Python 3.10+ environment with rerun-sdk 0.30.0.
+install(PROGRAMS scripts/save_camera_prism_blueprint.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})

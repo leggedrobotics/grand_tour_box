@@ -7,12 +7,12 @@
 
 
 int main(int argc, char **argv) {
-    CameraPrismCalibrationAppParser cameraPrismCalibrationAppParser(argc, argv);
-    CameraPrismProgram program(cameraPrismCalibrationAppParser);
-
-    program.Solve();
-    program.ResetAndRepopulateProblem();
-    program.Solve();
-    program.WriteOutputParameters();
-    return 0;
+    try {
+        CameraPrismCalibrationAppParser parser(argc, argv);
+        CameraPrismProgram program(parser);
+        return program.Solve() && program.WriteOutputParameters() ? 0 : 1;
+    } catch (const std::exception& error) {
+        std::cerr << "Prism calibration failed: " << error.what() << '\n';
+        return 1;
+    }
 }

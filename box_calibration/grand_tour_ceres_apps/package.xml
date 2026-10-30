@@ -24,6 +24,7 @@
     <depend>roslib</depend>
     <depend>rosbag</depend>
     <depend>sensor_msgs</depend>
+    <depend>geometry_msgs</depend>
     <depend>cv_bridge</depend>
     <depend>ap20_driver_ros</depend>
     <depend>grand_tour_camera_detectors</depend>

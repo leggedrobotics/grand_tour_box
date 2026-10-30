@@ -74,7 +74,11 @@ struct CameraPrismProgram : CeresProgram {
 
     bool PopulateProblem() override;
 
-    void WriteOutputParameters();
+    bool Solve() override;
+    bool FilterOutliers();
+    bool WriteOutputParameters();
+    Eigen::MatrixXd calibration_covariance;
+    static constexpr double prism_sigma = 0.003;
 
     CameraCamera2D3DTargetDetectionData camera_detections;
     std::map<std::string, Eigen::Affine3d> T_bundle_cam;

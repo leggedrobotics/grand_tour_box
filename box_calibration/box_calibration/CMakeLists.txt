@@ -16,6 +16,8 @@ install(PROGRAMS
         scripts/convert_ceres_camera_output_to_kalibr_style.py
         scripts/import_calibration.py
         scripts/populate_camera_calibrations.py
+        scripts/process_camera_imu_calibrations.py
+        scripts/store_tf_static.py
         scripts/process_all_calibrations.py
         DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )

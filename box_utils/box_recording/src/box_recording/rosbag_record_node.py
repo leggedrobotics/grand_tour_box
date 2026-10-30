@@ -18,6 +18,7 @@ from box_recording.srv import StopRecordingInternalResponse, StopRecordingIntern
 from zed2i_recording_driver_msgs.srv import StartRecordingSVO, StartRecordingSVORequest
 from box_recording_helper.cpt7_helper import cpt7_start_recording, cpt7_stop_recording
 from box_recording_helper.store_debug_logs_to_folder import store_debug_logs_to_folder
+from box_recording_helper.recording_directory import prepare_recording_directory
 import time
 
 
@@ -64,16 +65,7 @@ class RosbagRecordNode(object):
 
         self.pub_disk_space_free_in_gb = rospy.Publisher("~disk_space_free_in_gb", Float32, queue_size=3)
 
-        if not os.path.exists(self.data_path):
-            self.data_path = default_path
-            rospy.logwarn(
-                "[RosbagRecordNode("
-                + self.node
-                + ")] Data path "
-                + self.data_path
-                + " does not exist. Will write to "
-                + default_path
-            )
+        self.data_path = prepare_recording_directory(self.data_path)
 
         rp = rospkg.RosPack()
         self.rosbag_recorder_bash_script = os.path.join(rp.get_path("box_recording"), "bin/record_bag.sh")
@@ -280,7 +272,6 @@ class RosbagRecordNode(object):
         if self.store_debug_logs:
             store_debug_logs_to_folder(
                 self.start_recording_time,
-                directory="/home/rsl/.ros",
                 copy_to=os.path.join(self.bag_base_path, "ros_logs_" + self.node),
             )
 

@@ -1,5 +1,7 @@
 #include "ros_camera_prism_parser.h"
 #include <gtboxcalibration/argparsers.h>
+#include <filesystem>
+#include <ros/package.h>
 
 ROSCameraPrismParser::ROSCameraPrismParser(std::string program_name, int argc, char **argv) {
     argparse::ArgumentParser program(program_name);
@@ -24,6 +26,9 @@ ROSCameraPrismParser::ROSCameraPrismParser(std::string program_name, int argc, c
             .default_value(false)
             .implicit_value(true)
             .help("Boolean flag to solve the timeoffset.");
+    program.add_argument("--visualize").default_value(false).implicit_value(true);
+    program.add_argument("--rerun_recording").default_value(std::string{});
+    program.add_argument("--blueprint_path").default_value(ros::package::getPath("grand_tour_ceres_apps") + "/config/camera_prism.rbl");
     try {
         program.parse_args(argc, argv);
     }
@@ -40,5 +45,12 @@ ROSCameraPrismParser::ROSCameraPrismParser(std::string program_name, int argc, c
     output_path = program.get<std::string>("--output_path");
     prism_topic = program.get<std::string>("--prism_topic");
     solve_time_offset = program.get<bool>("--solve_time_offset");
-    is_valid = true;
+    visualize = program.get<bool>("--visualize");
+    rerun_recording = program.get<std::string>("--rerun_recording");
+    rerun_blue_print_path = program.get<std::string>("--blueprint_path");
+    if (camera_bag_paths.empty() || !std::filesystem::is_regular_file(cameras_calibration_path) ||
+        !std::filesystem::is_regular_file(prism_bag_path)) return;
+    for (const auto& path : camera_bag_paths)
+        if (!std::filesystem::is_regular_file(path)) return;
+    is_valid = !output_path.empty() && !prism_topic.empty();
 }

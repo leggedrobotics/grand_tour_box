@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
         roslib
         rosbag
         sensor_msgs
+        geometry_msgs
         cv_bridge
         ap20_driver_ros
         grand_tour_camera_detectors
@@ -94,11 +95,12 @@ target_include_directories(camera_camera_offline_calibration PRIVATE ${catkin_IN
 add_executable(camera_prism_offline_calibration ros_camera_prism_offline_calibration.cpp
         ros_camera_prism_program.cpp
         ros_camera_prism_parser.cpp
+        rerun_camera_prism_viz.cpp
         ros_utils.cpp)
 target_link_libraries(camera_prism_offline_calibration PRIVATE
         gtboxcalibration
         Ceres::ceres Eigen3::Eigen
-        ${catkin_LIBRARIES})
+        ${catkin_LIBRARIES} rerun_sdk)
 target_include_directories(camera_prism_offline_calibration PRIVATE ${catkin_INCLUDE_DIRS})
 
 add_executable(camera_imu_offline_calibration
@@ -136,6 +138,8 @@ target_link_libraries(camera_imu_detection_benchmark PRIVATE
 )
 
 if (CATKIN_ENABLE_TESTING)
+    catkin_add_gtest(test_prism_correctness tests/test_prism_correctness.cpp)
+    target_link_libraries(test_prism_correctness gtboxcalibration)
     catkin_add_gtest(test_utils tests/test_utils.cpp)
     target_link_libraries(test_utils gtboxcalibration yaml-cpp)
 

@@ -180,36 +180,20 @@ SIGNAL_TO_RECORD = [
     # "LOG FILE RAWIMUSX",
     # "LOG FILE RXSTATUS",
 ]
-# import time
-# import os
-# #import rospy
-#
-# #from novatel_oem7_msgs.srv import Oem7AbasciiCmd, Oem7AbasciiCmdRequest
-#
-# def cpt7_start_recording():
-#     # rospy.wait_for_service('/gt_box/cpt7/receivers/main/Oem7Cmd')
-#     # oem = rospy.ServiceProxy('/gt_box/cpt7/receivers/main/Oem7Cmd', Oem7AbasciiCmd)
-#     # oem()
-#     # stop_recording_srv = rospy.ServiceProxy(service_name, StopRecordingInternal)
-#     # req = Oem7AbasciiCmdRequest()
-#     # req.cmd = START_RECORDING[0]
-#     # response = stop_recording_srv(req)
-#
-#
-#     os.system(f"""rosservice call /gt_box/cpt7/receivers/main/Oem7Cmd \"cmd: '{START_RECORDING[0]}'\" """)
-#     for command in SIGNAL_TO_RECORD:
-#         os.system(f"""rosservice call /gt_box/cpt7/receivers/main/Oem7Cmd \"cmd: '{command}'\" """)
-#
-#
-# def cpt7_stop_recording():
-#     for command in STOP_RECORDING:
-#         os.system(f"""rosservice call /gt_box/cpt7/receivers/main/Oem7Cmd \"cmd: '{command}'\" """)
-#
-# if __name__ == "__main__":
-#     cpt7_stop_recording()
-
-# import socket
-# import os
+# Additional diagnostics are receiver/firmware dependent. Their failure must not
+# suppress the existing Inertial Explorer logs or report a successful required log.
+DIAGNOSTIC_SIGNALS = [
+    "LOG FILE ALIGNBSLNENUB",
+    "LOG FILE ALIGNBSLNXYZB",
+    "LOG FILE ALIGNDOPB",
+    "LOG FILE DUALANTENNAHEADINGB ONNEW",
+    "LOG FILE TERRASTARINFOB ONNEW",
+    "LOG FILE TERRASTARSTATUSB ONNEW",
+    "LOG FILE TRACKSTATB ONNEW",
+    "LOG FILE PPPPOS ONNEW",
+    "LOG FILE PPPSATS ONNEW",
+    "LOG FILE PSRPOS ONNEW",
+]
 
 
 def call_service(cmd, max_attempts=10):
@@ -236,18 +220,22 @@ def call_service(cmd, max_attempts=10):
 
 
 def cpt7_start_recording():
-    # First, stop any ongoing recording
+    # CLOSE is best effort (there may be no open file); OPEN must succeed.
     cpt7_stop_recording()
+    if not call_service(START_RECORDING[0]):
+        return False
 
-    suc = True
-    # Start recording
-    suc = suc and call_service(START_RECORDING[0])
-
-    # Send signal to record commands
+    success = True
     for command in SIGNAL_TO_RECORD:
-        suc = suc and call_service(command)
+        # Evaluate every request even if an earlier required log failed.
+        accepted = call_service(command)
+        success = accepted and success
 
-    return suc
+    if rospy.get_param("~cpt7_record_diagnostics", True):
+        for command in DIAGNOSTIC_SIGNALS:
+            if not call_service(command, max_attempts=1):
+                rospy.logwarn(f"CPT7 optional diagnostic unavailable: {command}")
+    return success
 
 
 def cpt7_stop_recording():
