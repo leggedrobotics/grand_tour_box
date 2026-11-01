@@ -49,7 +49,7 @@ catkin_package(
 # Package installation
 #==
 
-install(DIRECTORY bin src
+install(DIRECTORY bin src cfg launch
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 # EOF

@@ -1,0 +1,7 @@
+<launch>
+  <!-- The radar driver is external to this repository. Require its actual launch
+       path instead of adding an unresolved package to every NUC startup. Its
+       configuration owns the serial device, timestamps and calibrated radar TF. -->
+  <arg name="driver_launch" doc="Absolute path to the installed radar driver's configured launch file"/>
+  <include file="$(arg driver_launch)"/>
+</launch>

@@ -6,20 +6,22 @@ import rospy
 import subprocess
 import socket
 import rospkg
-import psutil
 import signal
 import os
 import rosparam
 import shutil
 from pathlib import Path
 from std_msgs.msg import Float32, String, Bool
+from std_srvs.srv import Trigger
 from box_recording.srv import StartRecordingInternalResponse, StartRecordingInternal
 from box_recording.srv import StopRecordingInternalResponse, StopRecordingInternal, StopRecordingInternalRequest
 from zed2i_recording_driver_msgs.srv import StartRecordingSVO, StartRecordingSVORequest
 from box_recording_helper.cpt7_helper import cpt7_start_recording, cpt7_stop_recording
 from box_recording_helper.store_debug_logs_to_folder import store_debug_logs_to_folder
 from box_recording_helper.recording_directory import prepare_recording_directory
+from box_recording_helper.recording_names import recording_node_name
 import time
+import threading
 
 
 RUN_RECORDING = "/data/workspaces/ros2_ws/src/isaac_ros_common/scripts/run_recording.sh"
@@ -40,7 +42,7 @@ class RosbagRecordNode(object):
         self.node = socket.gethostname()
         self.node = self.node.replace("anymal-d039-", "")
         self.node.replace("anymal-d039-", "")
-        rospy.init_node(f"rosbag_record_node_{self.node}")
+        rospy.init_node(recording_node_name(self.node))
 
         # Set up services
         servers = {}
@@ -48,11 +50,11 @@ class RosbagRecordNode(object):
         self.bag_base_path = None
         self.namespace = rospy.get_namespace()
         self.store_debug_logs = rospy.get_param("~store_debug_logs", False)
-        servers["start"] = rospy.Service("~start_recording", StartRecordingInternal, self.start_recording)
-        servers["stop"] = rospy.Service("~stop_recording", StopRecordingInternal, self.stop_recording)
+        self._recording_lock = threading.RLock()
 
         self.bag_running = False
         self.recording_zed = False
+        self.zed_recording_error = ""
         self.recording_cpt7 = False
         self.recording_hdr = False
         default_path = "/data"
@@ -70,6 +72,8 @@ class RosbagRecordNode(object):
         rp = rospkg.RosPack()
         self.rosbag_recorder_bash_script = os.path.join(rp.get_path("box_recording"), "bin/record_bag.sh")
         rospy.loginfo("[RosbagRecordNode(" + self.node + ")] Set up to record to " + self.data_path)
+        servers["start"] = rospy.Service("~start_recording", StartRecordingInternal, self.start_recording)
+        servers["stop"] = rospy.Service("~stop_recording", StopRecordingInternal, self.stop_recording)
 
         rate = rospy.Rate(1)
         free_disk_space_in_gb = 0
@@ -79,6 +83,10 @@ class RosbagRecordNode(object):
             start_hdr()
 
         while rospy.is_shutdown() is False:
+            if self.recording_zed:
+                with self._recording_lock:
+                    if self.recording_zed:
+                        self.check_zed_recording()
 
             if self.bag_running:
                 p = self.bag_base_path
@@ -96,7 +104,8 @@ class RosbagRecordNode(object):
                 request = StopRecordingInternalRequest()
                 self.stop_recording(request)
                 time.sleep(30)
-                exit - 1
+                rospy.signal_shutdown("Recording stopped: low disk space")
+                break
             else:
                 rospy.loginfo(
                     f"[RosbagRecordNode({self.node})] Free disk space: "
@@ -107,18 +116,20 @@ class RosbagRecordNode(object):
                 )
 
             self.pub_disk_space_free_in_gb.publish(free_disk_space_in_gb)
-            self.pub_recording_status.publish(self.bag_running)
+            # A running rosbag process does not mean the accompanying SVO is healthy.
+            self.pub_recording_status.publish(self.bag_running and not self.zed_recording_error)
 
             msg.data = self.info_string
+            if self.zed_recording_error:
+                msg.data += " ZED FAILED: " + self.zed_recording_error
             self.pub_recording_info.publish(msg)
 
             rate.sleep()
 
-    def terminate_process_and_children(self, p):
-        process = psutil.Process(p.pid)
-        for sub_process in process.children(recursive=True):
-            sub_process.send_signal(signal.SIGINT)
-        p.wait()
+    def stop_bag_process(self, process):
+        # record_bag.sh execs the writer; wait for its index flush before ACK.
+        process.send_signal(signal.SIGINT)
+        return process.wait()
 
     def terminate_process_inside_docker(self, process_name="ros2 bag"):
         docker_container_name = "isaac_ros_dev-aarch64-container-recording"
@@ -156,6 +167,7 @@ class RosbagRecordNode(object):
         except rospy.ROSException as e:
             response.message += f"zed2i FAILED Service not found: {e}"
             response.suc = False
+            self.zed_recording_error = str(e)
             return response
 
         try:
@@ -164,26 +176,64 @@ class RosbagRecordNode(object):
             req.start_recording = start
             req.video_filename = self.bag_base_path + f"/{timestamp}_{self.node}_zed2i.svo2"
 
-            start_recording_svo_srv(req)
+            result = start_recording_svo_srv(req)
+            if not result.success:
+                response.suc = False
+                self.zed_recording_error = "Driver reported failure during " + ("start" if start else "recording/stop")
+                if not start:
+                    # The file may already be closed after a write error. Query
+                    # actual state so a failed recording does not block a new one.
+                    self.check_zed_recording()
+                response.message += "zed2i FAILED " + self.zed_recording_error + " "
+                return response
             response.message += "zed2i OK "
             self.recording_zed = start
+            if start:
+                self.zed_recording_error = ""
             rospy.loginfo(
                 f"[RosbagRecordNode({self.node} zed2i)] {'Started' if start else 'Stopped'} svo recording process on zed2i"
             )
         except rospy.ServiceException as e:
             response.suc = False
+            self.zed_recording_error = str(e)
             response.message += f"zed2i FAILED Exception: {e} "
             rospy.logerr(f"Failed to {'start' if start else 'stop'} rosbag recording process on zed2i: {e}")
         return response
 
+    def check_zed_recording(self):
+        """Propagate failures after start while preserving the other sensor recordings."""
+        service_name = self.namespace + "/zed2i_recording_driver/get_recording_status"
+        try:
+            rospy.wait_for_service(service_name, timeout=0.2)
+            status = rospy.ServiceProxy(service_name, Trigger)()
+            if not status.success:
+                self.zed_recording_error = status.message or "SVO recording stopped unexpectedly"
+                self.recording_zed = False
+            elif not self.zed_recording_error:
+                return
+        except (rospy.ROSException, rospy.ServiceException) as error:
+            self.zed_recording_error = "Cannot verify SVO recording: " + str(error)
+        # Latch the error until a new recording. A temporary recovery must not hide
+        # an unverified interval in the captured data.
+        rospy.logerr_throttle(5.0, self.zed_recording_error)
+
     def start_recording(self, request):
+        with self._recording_lock:
+            return self._start_recording(request)
+
+    def _start_recording(self, request):
         rospy.loginfo("[RosbagRecordNode(" + self.node + ")] Trying to start rosbag recording process.")
         response = StartRecordingInternalResponse()
+        if self.bag_running:
+            response.suc = False
+            response.message = "Recording already running; stop it before starting another session"
+            return response
+        self.zed_recording_error = ""
         self.start_recording_time = rospy.Time.now()
         timestamp = request.timestamp
         self.bag_base_path = os.path.join(self.data_path, timestamp)
 
-        free_disk_space_in_gb = shutil.disk_usage(self.p)[2] / 1000000000
+        free_disk_space_in_gb = shutil.disk_usage(self.data_path)[2] / 1000000000
         if free_disk_space_in_gb < 1:
             response.suc = False
             response.message = f"No disk space available. Do not start recording on {self.node}"
@@ -228,10 +278,9 @@ class RosbagRecordNode(object):
             if bag_name == "zed2i" and "svo" in topics:
                 # If we are recording svo files instead of rosbags for the zed, we need to call the svo recording service.
                 response = self.toggle_zed_recording(True, timestamp, response)
-                bag_path = bag_path = os.path.join(
-                    self.bag_base_path, timestamp + "_" + self.node + "_" + bag_name + ".svo2"
-                )
-                self.info_string += f"record_{self.node}_{bag_name}----{bag_path},"
+                if self.recording_zed:
+                    bag_path = os.path.join(self.bag_base_path, timestamp + "_" + self.node + "_" + bag_name + ".svo2")
+                    self.info_string += f"record_{self.node}_{bag_name}----{bag_path},"
                 continue
 
             # TODO: Replace with proper system after testing
@@ -251,10 +300,17 @@ class RosbagRecordNode(object):
                 continue
 
             bag_path = os.path.join(self.bag_base_path, timestamp + "_" + self.node + "_" + bag_name)
-            bash_command = f"/home/rsl/git/grand_tour_box/box_utils/box_recording/bin/record_bag.sh {bag_path} {topics} __name:=record_{self.node}_{bag_name}"
+            # Use the resolved package script and argument boundaries on every host.
+            bash_command = [
+                "bash",
+                self.rosbag_recorder_bash_script,
+                bag_path,
+                *topics.split(),
+                "__name:=" + recording_node_name(self.node, bag_name),
+            ]
             self.info_string += f"record_{self.node}_{bag_name}----{bag_path},"
 
-            self.processes.append(subprocess.Popen(bash_command, shell=True, stderr=subprocess.PIPE))
+            self.processes.append(subprocess.Popen(bash_command))
 
             response.message += f"{bag_name} [SUC], "
             rospy.loginfo(f"[RosbagRecordNode({self.node} {bag_name})] {bash_command}.")
@@ -264,12 +320,16 @@ class RosbagRecordNode(object):
         return response
 
     def stop_recording(self, request):
+        with self._recording_lock:
+            return self._stop_recording(request)
+
+    def _stop_recording(self, request):
         rospy.loginfo("[RosbagRecordNode(" + self.node + ")] Trying to send SIGINT to recording process.")
         self.info_string = ""
         response = StopRecordingInternalResponse()
         response.result = ""
 
-        if self.store_debug_logs:
+        if self.store_debug_logs and self.bag_base_path:
             store_debug_logs_to_folder(
                 self.start_recording_time,
                 copy_to=os.path.join(self.bag_base_path, "ros_logs_" + self.node),
@@ -285,7 +345,9 @@ class RosbagRecordNode(object):
             rospy.logwarn("[RosbagRecordNode(" + self.node + ")] No recording process running yet.")
 
         for p in self.processes:
-            self.terminate_process_and_children(p)
+            if self.stop_bag_process(p) != 0:
+                response.suc = False
+                response.message += " rosbag writer exited with an error; inspect its log."
         self.processes = []
 
         if self.recording_zed:
@@ -324,6 +386,7 @@ class RosbagRecordNode(object):
             suc = cpt7_stop_recording()
             if suc:
                 response.message += "  CPT7 OK"
+                self.recording_cpt7 = False
             else:
                 response.message += "  CPT7 Failed"
 
@@ -333,12 +396,14 @@ class RosbagRecordNode(object):
             # output = subprocess.check_output([f"rosbag info --freq {self.bag_path}*.bag"], shell=True)
             response.result += "Verbose not working"  # str(output)[2:-1]
 
+        if self.zed_recording_error:
+            response.suc = False
+            response.message += " ZED recording was incomplete: " + self.zed_recording_error
         if response.suc:
             response.message = "[SUC] " + response.message
         else:
             response.message = "[FAILED] " + response.message
-
-        self.bag_running = False
+        self.bag_running = self.recording_zed or self.recording_cpt7
         return response
 
 

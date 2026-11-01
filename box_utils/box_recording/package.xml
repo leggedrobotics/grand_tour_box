@@ -17,8 +17,11 @@
   <build_depend>protobuf</build_depend>
   <build_depend>python3</build_depend>
   <exec_depend>zed2i_recording_driver_msgs</exec_depend>
+  <exec_depend>rosbag</exec_depend>
+  <exec_depend>rosbash</exec_depend>
   <depend>message_generation</depend>
   <depend>message_runtime</depend>
   <depend>std_msgs</depend>
+  <depend>std_srvs</depend>
   
 </package>

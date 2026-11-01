@@ -20,6 +20,7 @@ from box_recording.srv import StopRecording, StopRecordingResponse, StopRecordin
 from pathlib import Path
 import shutil
 import time
+from box_recording_helper.recording_names import recording_node_name
 
 
 def load_yaml(path: str) -> dict:
@@ -117,7 +118,7 @@ class RosbagRecordCoordinator(object):
                 time.sleep(2.0)
                 rospy.loginfo("[RosbagRecordCoordinator] Trying to stop /ap20/streaming.")
                 service_name = "/ap20/enable_streaming"
-                for i in range(2):
+                for _ in range(2):
                     rospy.wait_for_service(service_name, timeout=7.0)
                     try:
                         change_mode = rospy.ServiceProxy(service_name, SetBool)
@@ -153,7 +154,7 @@ class RosbagRecordCoordinator(object):
         import start_recording_pb2_grpc
 
         try:
-            with grpc.insecure_channel(f'{grpc_cfg["address"]}:{grpc_cfg["port"]}') as channel:
+            with grpc.insecure_channel(f"{grpc_cfg['address']}:{grpc_cfg['port']}") as channel:
                 stub = start_recording_pb2_grpc.StartRecordingStub(channel)
                 req = start_recording_pb2.StartRecordingRequest(topics=topic_cfgs, timestamp=timestamp)
                 grpc_response = stub.SendMessage(req)
@@ -166,7 +167,7 @@ class RosbagRecordCoordinator(object):
             rospy.logerr("Failed to start rosbag recording process on " + node)
 
     def send_request_ros(self, node, topic_cfgs, timestamp, response):
-        service_name = self.namespace + "rosbag_record_node_" + node + "/start_recording"
+        service_name = self.namespace.rstrip("/") + "/" + recording_node_name(node) + "/start_recording"
         rospy.loginfo("[RosbagRecordCoordinator] Trying to start rosbag recording process on " + node)
         try:
             # Evaluate if service is offered
@@ -175,11 +176,13 @@ class RosbagRecordCoordinator(object):
             int_request = StartRecordingInternalRequest()
             int_request.topics = topic_cfgs
             int_request.timestamp = timestamp
-            start_recording_srv(int_request)
-            rospy.loginfo("[RosbagRecordCoordinator] Starting rosbag recording process on " + node)
-            response.message += f"{node}-[SUC], "
+            result = start_recording_srv(int_request)
+            # Transport success only means the service replied. Preserve recorder
+            # failures (including an SDK refusal) all the way back to the user.
+            response.suc = response.suc and result.suc
+            response.message += f"{node}-[{'SUC' if result.suc else 'FAILED'}] {result.message}, "
 
-        except rospy.ROSException as exception:
+        except (rospy.ROSException, rospy.ServiceException) as exception:
             response.suc = False
             response.message += f"{node} [FAILED] Exception: " + str(exception) + ", "
             print("Service did not process request: " + str(exception))
@@ -201,7 +204,7 @@ class RosbagRecordCoordinator(object):
 
                 try:
                     grpc_cfg = node_cfg["grpc_cfg"]
-                    with grpc.insecure_channel(f'{grpc_cfg["address"]}:{grpc_cfg["port"]}') as channel:
+                    with grpc.insecure_channel(f"{grpc_cfg['address']}:{grpc_cfg['port']}") as channel:
                         stub = stop_recording_pb2_grpc.StopRecordingStub(channel)
                         req = stop_recording_pb2.StopRecordingRequest(debug_info="")
                         grpc_response = stub.SendMessage(req)
@@ -214,13 +217,14 @@ class RosbagRecordCoordinator(object):
                     rospy.logerr("Failed to start rosbag recording process on " + node)
                 continue
             else:
-                service_name = self.namespace + "/rosbag_record_node_" + node + "/stop_recording"
+                service_name = self.namespace.rstrip("/") + "/" + recording_node_name(node) + "/stop_recording"
                 try:
                     rospy.wait_for_service(service_name, 2.0)
                     stop_recording_srv = rospy.ServiceProxy(service_name, StopRecordingInternal)
                     int_req = StopRecordingInternalRequest()
                     int_req.verbose = request.verbose
                     int_res = stop_recording_srv(int_req)
+                    response.suc = response.suc and int_res.suc
 
                     response.result = response.result + node + ": " + int_res.message + ", "
 

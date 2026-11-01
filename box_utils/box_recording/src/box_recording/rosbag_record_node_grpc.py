@@ -6,8 +6,8 @@ import rospy
 import subprocess
 import socket
 import rospkg
-import psutil
 import signal
+import threading
 import os
 import rosparam
 from pathlib import Path
@@ -19,6 +19,7 @@ import stop_recording_pb2
 import stop_recording_pb2_grpc
 from box_recording_helper.store_debug_logs_to_folder import store_debug_logs_to_folder
 from box_recording_helper.recording_directory import prepare_recording_directory
+from box_recording_helper.recording_names import recording_node_name
 
 
 class StartRecordingServicer(start_recording_pb2_grpc.StartRecordingServicer):
@@ -26,9 +27,15 @@ class StartRecordingServicer(start_recording_pb2_grpc.StartRecordingServicer):
         self.recorder_node = recorder_node
 
     def SendMessage(self, request, context):
-        self.recorder_node.start_recording_time = rospy.Time.now()
+        with self.recorder_node.recording_lock:
+            return self._send_message(request, context)
+
+    def _send_message(self, request, context):
         if self.recorder_node.bag_running:
-            return start_recording_pb2.StartRecordingResponse(response="Failed recorded was already running.")
+            # Existing clients already handle RPC errors. A success transport with
+            # a "Failed" string was otherwise reported as a successful recording.
+            context.abort(grpc.StatusCode.FAILED_PRECONDITION, "Recording already running")
+        self.recorder_node.start_recording_time = rospy.Time.now()
         message = ""
 
         timestamp = request.timestamp
@@ -57,9 +64,16 @@ class StartRecordingServicer(start_recording_pb2_grpc.StartRecordingServicer):
             bag_path = os.path.join(
                 self.recorder_node.bag_base_path, timestamp + "_" + self.recorder_node.node + "_" + bag_name
             )
-            bash_command = f"rosrun box_recording record_bag.sh {bag_path} {topics} __name:=record_{self.recorder_node.node}_{bag_name}"
-            self.recorder_node.processes.append(subprocess.Popen(bash_command, shell=True, stderr=subprocess.PIPE))
-        self.recorder_node.bag_running = True
+            bash_command = [
+                "bash",
+                self.recorder_node.rosbag_recorder_bash_script,
+                bag_path,
+                *topics.split(),
+                "__name:=" + recording_node_name(self.recorder_node.node, bag_name),
+            ]
+            self.recorder_node.processes.append(subprocess.Popen(bash_command))
+            # Retain stop capability if launching a later bag raises an exception.
+            self.recorder_node.bag_running = True
 
         rospy.loginfo("[RosbagRecordNodeGRPC(" + self.recorder_node.node + ")] Started recording all.")
 
@@ -71,23 +85,25 @@ class StopRecordingServicer(stop_recording_pb2_grpc.StopRecordingServicer):
         self.recorder_node = recorder_node
 
     def SendMessage(self, request, context):
+        with self.recorder_node.recording_lock:
+            return self._send_message(request, context)
 
-        if self.recorder_node.store_debug_logs:
+    def _send_message(self, request, context):
+        if self.recorder_node.store_debug_logs and self.recorder_node.bag_base_path:
             store_debug_logs_to_folder(
                 self.recorder_node.start_recording_time,
                 copy_to=os.path.join(self.recorder_node.bag_base_path, "ros_logs_" + self.recorder_node.node),
             )
 
-        def terminate_process_and_children(p):
-            process = psutil.Process(p.pid)
-            for sub_process in process.children(recursive=True):
-                sub_process.send_signal(signal.SIGINT)
-            p.wait()
-
+        failed = False
         for p in self.recorder_node.processes:
-            terminate_process_and_children(p)
+            # The script execs the writer, so completion includes bag finalization.
+            p.send_signal(signal.SIGINT)
+            failed = (p.wait() != 0) or failed
         self.recorder_node.processes = []
         self.recorder_node.bag_running = False
+        if failed:
+            context.abort(grpc.StatusCode.INTERNAL, "A rosbag writer exited with an error; inspect its log")
         rospy.loginfo("[RosbagRecordNodeGRPC(" + self.recorder_node.node + ")] Stopped recording all.")
 
         return stop_recording_pb2.StopRecordingResponse(response="Message received")
@@ -99,11 +115,13 @@ class RosbagRecordNodeGrpc(object):
         self.node = socket.gethostname()
         self.node = self.node.replace("anymal-d039-", "")
         self.node.replace("anymal-d039-", "")
-        rospy.init_node(f"rosbag_record_node_{self.node}")
+        rospy.init_node(recording_node_name(self.node))
         self.store_debug_logs = rospy.get_param("~store_debug_logs", False)
 
         # Set up services
         self.processes = []
+        # gRPC has multiple worker threads; start/stop must own the same session.
+        self.recording_lock = threading.RLock()
         self.bag_base_path = None
         self.namespace = rospy.get_namespace()
 

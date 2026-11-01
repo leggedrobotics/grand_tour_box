@@ -1,0 +1,5 @@
+<launch>
+  <!-- Visualization only: supports live planner topics and bag replay. -->
+  <node name="rviz_visual_planner" pkg="rviz" type="rviz"
+        args="-d $(find box_rviz)/cfg/visual_planner.rviz"/>
+</launch>

@@ -2,5 +2,7 @@ nuc:
   bags:
     hesai:
       - /gt_box/hesai/points
+      # Raw packets allow re-decoding with the calibration and driver pinned on main.
+      - /gt_box/hesai/packets
     livox:
       - /gt_box/livox/lidar

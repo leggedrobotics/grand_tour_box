@@ -12,5 +12,7 @@
   <depend>box_throttling</depend>
   <depend>box_relaying</depend>
   <depend>anymal_d_simple_description</depend>
+  <exec_depend>rviz_plugin_tutorials</exec_depend>
+  <exec_depend>jsk_rviz_plugins</exec_depend>
 
 </package>

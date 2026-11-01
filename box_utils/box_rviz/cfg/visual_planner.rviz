@@ -1,0 +1,29 @@
+Panels:
+- Class: rviz/Displays
+  Name: Displays
+Visualization Manager:
+  Class: ''
+  Global Options:
+    Fixed Frame: odom
+    Frame Rate: 30
+  Displays:
+  - Class: rviz/Grid
+    Name: Grid
+    Enabled: true
+    Value: true
+  - Class: rviz/Path
+    Name: Planner path
+    Enabled: true
+    Value: true
+    Topic: /planner/path
+    Queue Size: 10
+  - Class: rviz/Pose
+    Name: Planner goal
+    Enabled: true
+    Value: true
+    Topic: /planner/goal
+    Shape: Arrow
+    Queue Size: 10
+  Tools:
+  - Class: rviz/Interact
+  - Class: rviz/MoveCamera

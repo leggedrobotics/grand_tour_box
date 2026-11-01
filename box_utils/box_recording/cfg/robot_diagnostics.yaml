@@ -1,0 +1,186 @@
+# Optional extended robot capture. Existing robot topics, including twist_throttle, are retained.
+# Check publisher availability and disk/network throughput on the deployed robot.
+jetson:
+  bags:
+    ap20_aux:
+    - /ap20/tps
+    - /ap20/imu
+    - /gt_box/ap20/imu_debug
+    - /gt_box/ap20/position_debug
+    - /gt_box/ap20/timestamp_debug
+    zed2i:
+    - svo
+    zed_sensors:
+    - /gt_box/zed2i_recording_driver/imu
+    - /gt_box/zed2i_recording_driver/mag
+    - /gt_box/zed2i_recording_driver/baro
+    hdr:
+    - /gt_box/hdr_front/image_raw/compressed
+    - /gt_box/hdr_front/camera_info
+    - /gt_box/hdr_front/kernel_timestamp
+    - /gt_box/hdr_front/v4l2_timestamp
+    - /gt_box/hdr_left/image_raw/compressed
+    - /gt_box/hdr_left/camera_info
+    - /gt_box/hdr_left/kernel_timestamp
+    - /gt_box/hdr_left/v4l2_timestamp
+    - /gt_box/hdr_right/image_raw/compressed
+    - /gt_box/hdr_right/camera_info
+    - /gt_box/hdr_right/kernel_timestamp
+    - /gt_box/hdr_right/v4l2_timestamp
+    utils:
+    - /gt_box/health_status/jetson/status
+    adis:
+    - /gt_box/adis16475_node/imu
+    stim:
+    - /gt_box/stim320/acceletometer_temperature
+    - /gt_box/stim320/gyroscope_temperature
+    - /gt_box/stim320/imu
+    - /gt_box/stim320/internal_counter
+    - /gt_box/stim320/kernel_time
+    - /gt_box/stim320/ros_time
+    - /gt_box/stim320/continuous_counter
+nuc:
+  bags:
+    utils:
+    - /gt_box/health_status/nuc/status
+    hesai:
+    - /gt_box/hesai/packets
+    - /gt_box/hesai/lidar_ptp
+    - /gt_box/hesai/lidar_packets_loss
+    livox:
+    - /gt_box/livox/lidar
+    - /gt_box/livox/imu
+    - /gt_box/livox/imu_si_compliant
+    alphasense:
+    - /gt_box/alphasense_driver_node/cam1/color/image/compressed
+    - /gt_box/alphasense_driver_node/cam1/color/camera_info
+    - /gt_box/alphasense_driver_node/cam2/color/image/compressed
+    - /gt_box/alphasense_driver_node/cam2/color/camera_info
+    - /gt_box/alphasense_driver_node/cam3/color/image/compressed
+    - /gt_box/alphasense_driver_node/cam3/color/camera_info
+    - /gt_box/alphasense_driver_node/cam4/color/image/compressed
+    - /gt_box/alphasense_driver_node/cam4/color/camera_info
+    - /gt_box/alphasense_driver_node/cam5/color/image/compressed
+    - /gt_box/alphasense_driver_node/cam5/color/camera_info
+    - /gt_box/alphasense_driver_node/debug_info
+    - /gt_box/alphasense_driver_node/imu
+    - /gt_box/alphasense_driver_node/ncamera_is_standby
+    - /gt_box/alphasense_driver_node/serial_number
+    cpt7:
+    - /gt_box/cpt7/bestgnsspos
+    - /gt_box/cpt7/bestpos
+    - /gt_box/cpt7/bestutm
+    - /gt_box/cpt7/bestvel
+    - /gt_box/cpt7/corrimu
+    - /gt_box/cpt7/gps/fix
+    - /gt_box/cpt7/gps/gps
+    - /gt_box/cpt7/gps/imu
+    - /gt_box/cpt7/heading2
+    - /gt_box/cpt7/imu/data_raw
+    - /gt_box/cpt7/insconfig
+    - /gt_box/cpt7/inspva
+    - /gt_box/cpt7/inspvax
+    - /gt_box/cpt7/insstdev
+    - /gt_box/cpt7/odom
+    - /gt_box/cpt7/oem7raw
+    - /gt_box/cpt7/ppppos
+    - /gt_box/cpt7/rxstatus
+    - /gt_box/cpt7/terrastarinfo
+    - /gt_box/cpt7/terrastarstatus
+    - /gt_box/cpt7/time
+    tf:
+    - /tf
+    - /tf_static
+    cpt7_local:
+    - cpt7_local
+lpc:
+  grpc_cfg:
+    address: 192.168.0.141
+    port: 50051
+  bags:
+    locomotion:
+    - /debug_info
+    general:
+    - /anymal_low_level_controller/actuator_readings
+    - /anymal_low_level_controller/actuator_readings_extended_throttled
+    - /foot_scan
+    - /joy_manager/twist
+    - /pdb/battery_state
+    - /pdb/intrinsic_state
+    - /pdb/power_state
+    - /twist_mux/selected_input
+    - /twist_mux/twist
+    - /anyjoy/rcu
+    - /chrony_monitor_lpc/status
+    - /anymal_low_level_controller/actuator_voltage
+    - /anymal_low_level_controller/LF_HAA/command
+    - /anymal_low_level_controller/LF_HFE/command
+    - /anymal_low_level_controller/LF_KFE/command
+    - /anymal_low_level_controller/LH_HAA/command
+    - /anymal_low_level_controller/LH_HFE/command
+    - /anymal_low_level_controller/LH_KFE/command
+    - /anymal_low_level_controller/RF_HAA/command
+    - /anymal_low_level_controller/RF_HFE/command
+    - /anymal_low_level_controller/RF_KFE/command
+    - /anymal_low_level_controller/RH_HAA/command
+    - /anymal_low_level_controller/RH_HFE/command
+    - /anymal_low_level_controller/RH_KFE/command
+    anymal_imu:
+    - /sensors/imu
+    state_estimator:
+    - /state_estimator/anymal_state
+    - /state_estimator/odometry
+    - /state_estimator/pose_in_odom
+    - /state_estimator/twist_throttle
+    - /state_estimator/zero_velocity_update_notification
+    - /state_estimator/twist
+    - /state_estimator/imu_angular_velocity_bias
+    - /state_estimator/imu_linear_acceleration_bias
+    - /state_estimator/contact_force_lf_foot
+    - /state_estimator/contact_force_lh_foot
+    - /state_estimator/contact_force_rf_foot
+    - /state_estimator/contact_force_rh_foot
+    - /state_estimator/joint_states
+    depth_cameras:
+    - /depth_camera_front_upper/depth/camera_info
+    - /depth_camera_front_upper/depth/image_rect_raw
+    - /depth_camera_front_upper/camera_timestamping_info
+    - /depth_camera_rear_upper/depth/camera_info
+    - /depth_camera_rear_upper/depth/image_rect_raw
+    - /depth_camera_rear_upper/camera_timestamping_info
+    - /depth_camera_front_lower/depth/camera_info
+    - /depth_camera_front_lower/depth/image_rect_raw
+    - /depth_camera_front_lower/camera_timestamping_info
+    - /depth_camera_rear_lower/depth/camera_info
+    - /depth_camera_rear_lower/depth/image_rect_raw
+    - /depth_camera_rear_lower/camera_timestamping_info
+    tf:
+    - /tf
+    - /tf_static
+npc:
+  grpc_cfg:
+    address: 192.168.0.142
+    port: 50052
+  bags:
+    depth_cameras:
+    - /depth_camera_left/depth/camera_info
+    - /depth_camera_left/depth/image_rect_raw
+    - /depth_camera_left/depth/camera_timestamping_info
+    - /depth_camera_right/depth/camera_info
+    - /depth_camera_right/depth/image_rect_raw
+    - /depth_camera_right/depth/camera_timestamping_info
+    velodyne:
+    - /lidar/packets
+    - /lidar/time_sync_status
+    elevation_mapping:
+    - /elevation_mapping/elevation_map_raw
+    - /near_field_mapping/elevation_map
+    general:
+    - /chrony_monitor_npc/status
+    - /point_cloud_odometry/pose
+    - /point_cloud_odometry/map_pose
+    wide_angle_cameras:
+    - /wide_angle_camera_front/image_color/compressed
+    - /wide_angle_camera_front/camera_info
+    - /wide_angle_camera_rear/image_color/compressed
+    - /wide_angle_camera_rear/camera_info

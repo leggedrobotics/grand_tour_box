@@ -9,6 +9,11 @@ jetson:
       - /gt_box/ap20/timestamp_debug
     zed2i:
       - svo # SVO recording, not rosbag. Mutually exclusive: won't record zed ros topics if svo is set here.
+    # Independent SDK sensor samples, also captured while SVO recording is active.
+    zed_sensors:
+      - /gt_box/zed2i_recording_driver/imu
+      - /gt_box/zed2i_recording_driver/mag
+      - /gt_box/zed2i_recording_driver/baro
     hdr:
       - /gt_box/hdr_front/image_raw/compressed
       - /gt_box/hdr_front/camera_info

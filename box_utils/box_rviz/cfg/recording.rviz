@@ -579,7 +579,17 @@ Visualization Manager:
           History Length: 1
           Name: Stim320 IMU
           Queue Size: 10
-          Topic: /gt_box/stim320
+          Topic: /gt_box/stim320/imu
+          Unreliable: false
+          Value: false
+        - Alpha: 1
+          Class: rviz_plugin_tutorials/Imu
+          Color: 204; 51; 204
+          Enabled: false
+          History Length: 1
+          Name: CPT7 IMU
+          Queue Size: 10
+          Topic: /gt_box/cpt7/imu/data_raw
           Unreliable: false
           Value: false
       Enabled: false

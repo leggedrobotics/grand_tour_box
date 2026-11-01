@@ -35,8 +35,12 @@ catkin_install_python(
 
 
 install(
-  DIRECTORY src
+  DIRECTORY src cfg launch
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
+
+install(PROGRAMS scripts/rebuild_rviz_plugin.sh
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
 # EOF

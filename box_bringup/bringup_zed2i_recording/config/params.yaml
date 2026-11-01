@@ -1,3 +1,11 @@
 # zed2i_config.yaml. See https://www.stereolabs.com/docs/video/camera-controls for valid camera settings.
 camera_resolution: "HD1080"  # HD2K, HD1080, HD720, VGA
 camera_fps: 15               # Frames per second (valid options depend on camera_resolution)
+camera_id: 0
+compression: H264            # Preserve main's recording format; H265 is an explicit opt-in.
+min_free_space_mb: 1024      # Checked before start and during recording.
+imu_frame_id: zed2i_imu_link  # Existing calibrated box-model frame, with ROS body axes.
+mag_frame_id: zed2i_mag_link  # SDK factory magnetometer -> IMU TF is published by the recorder.
+baro_frame_id: zed2i_camera_center # Scalar pressure; no fabricated barometer extrinsic.
+publish_magnetometer: true
+publish_barometer: true
