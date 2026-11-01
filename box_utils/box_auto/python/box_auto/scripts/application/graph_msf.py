@@ -5,20 +5,22 @@ import os
 from time import sleep
 import copy
 import rosbag
-from tf.msg import tfMessage
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 from geometry_msgs.msg import PoseWithCovarianceStamped, PoseStamped, TransformStamped
 from nav_msgs.msg import Odometry
 from tf_bag import BagTfTransformer
 from rosbag import Bag
+import matplotlib
+
+matplotlib.use("Agg")
+
 import matplotlib.pyplot as plt
 from tf2_msgs.msg import TFMessage
 from tf.transformations import euler_from_quaternion
 from pathlib import Path
 
 from box_auto.utils import (
-    get_bag,
     upload_bag,
     MISSION_DATA,
     kill_roscore,
@@ -32,11 +34,24 @@ from box_auto.utils import (
 BOX_AUTO_SCRIPTS_DIR = str(Path(__file__).parent.parent)
 ARTIFACT_FOLDER = os.environ.get("ARTIFACT_FOLDER", MISSION_DATA)
 
+# Explicit layout selection keeps topic and filename conventions together.
+DATASET_LAYOUT = os.environ.get("BOXI_DATASET_LAYOUT", "internal")
+if DATASET_LAYOUT not in ("internal", "public"):
+    raise ValueError("BOXI_DATASET_LAYOUT must be internal or public")
+PUBLIC_VERSION = DATASET_LAYOUT == "public"
+TF_MODEL_PATTERN = "*_tf_model.bag"
 
-PATTERNS = ["*_ap20_prism_position.bag", "*_cpt7_imu.bag", "*_cpt7_ie_tc.bag", "*_tf_minimal.bag"]
-CPT7_IMU_TOPIC = "/boxi/cpt7/imu"
-CPT7_IE_TC_TOPIC = "/boxi/inertial_explorer/tc/odometry"
-AP20_PRISM_POSITION_TOPIC = "/boxi/ap20/prism_position"
+if PUBLIC_VERSION:
+    PATTERNS = ["*_ap20_prism_position.bag", "*_cpt7_imu.bag", "*_cpt7_ie_tc.bag", TF_MODEL_PATTERN]
+    CPT7_IMU_TOPIC = "/boxi/cpt7/imu"
+    CPT7_IE_TC_TOPIC = "/boxi/inertial_explorer/tc/odometry"
+    AP20_PRISM_POSITION_TOPIC = "/boxi/ap20/prism_position"
+else:
+    PATTERNS = ["*_ap20_robot.bag", "*_cpt7_raw_imu.bag", "*_cpt7_ie_tc.bag", TF_MODEL_PATTERN]
+    CPT7_IMU_TOPIC = "/gt_box/cpt7/offline_from_novatel_logs/imu"
+    CPT7_IE_TC_TOPIC = "/gt_box/inertial_explorer/tc/odometry"
+    AP20_PRISM_POSITION_TOPIC = "/gt_box/ap20/prism_position"
+
 
 """
 Exit Codes:
@@ -124,23 +139,168 @@ def plot_ground_truth_data(pose_gt_path, output_folder):
     axs[3].legend()
 
     plt.tight_layout()
-    plt.savefig(os.path.join(output_folder, "ground_truth_analysis.png"))
+    plt.savefig(os.path.join(output_folder, "ground_truth_analysis.png"), dpi=800)
     plt.close()
     print(f"Saved ground truth analysis plot to {os.path.join(output_folder, 'ground_truth_analysis.png')}")
 
 
+def plot_imu_bias_data(imu_bias_csv_path, output_folder):
+    """Plot IMU biases (accel and gyro) from CSV in body frame."""
+    try:
+        with open(imu_bias_csv_path, "r") as f:
+            first = f.readline().strip()
+            second = f.readline().strip()
+
+            if not first:
+                print(f"IMU bias CSV is empty: {imu_bias_csv_path}")
+                return
+
+            first_parts = [p.strip() for p in first.split(",")]
+            second_parts = [p.strip() for p in second.split(",")] if second else []
+
+            # Handle possible two-line header (e.g., 'Standard,Standard,...' then 'time,accel_x,...')
+            is_two_line_header = False
+            if first_parts and all((p.lower() == "standard" or p == "") for p in first_parts) and second_parts:
+                if any("time" in p.lower() for p in second_parts):
+                    is_two_line_header = True
+
+            if is_two_line_header:
+                header = second_parts
+                data_lines = f.readlines()
+            else:
+                header = first_parts
+                data_lines = [second] + f.readlines() if second else f.readlines()
+
+        header_l = [h.lower().strip() for h in header]
+
+        def find_col(substr):
+            for i, h in enumerate(header_l):
+                if substr in h:
+                    return i
+            return None
+
+        idx_time = find_col("time")
+        idx_accel_x = find_col("accel_x")
+        idx_accel_y = find_col("accel_y")
+        idx_accel_z = find_col("accel_z")
+        idx_gyro_x = find_col("gyro_x")
+        idx_gyro_y = find_col("gyro_y")
+        idx_gyro_z = find_col("gyro_z")
+
+        required = {
+            "time": idx_time,
+            "accel_x": idx_accel_x,
+            "accel_y": idx_accel_y,
+            "accel_z": idx_accel_z,
+            "gyro_x": idx_gyro_x,
+            "gyro_y": idx_gyro_y,
+            "gyro_z": idx_gyro_z,
+        }
+        if any(v is None for v in required.values()):
+            print(f"IMU bias CSV missing required columns: {required} in {imu_bias_csv_path}")
+            return
+
+        times = []
+        accel = {"x": [], "y": [], "z": []}
+        gyro = {"x": [], "y": [], "z": []}
+
+        for line in data_lines:
+            line = line.strip()
+            if not line:
+                continue
+            parts = [p.strip() for p in line.split(",")]
+            if len(parts) <= max(required.values()):
+                continue
+
+            try:
+                times.append(float(parts[idx_time]))
+                accel["x"].append(float(parts[idx_accel_x]))
+                accel["y"].append(float(parts[idx_accel_y]))
+                accel["z"].append(float(parts[idx_accel_z]))
+                gyro["x"].append(float(parts[idx_gyro_x]))
+                gyro["y"].append(float(parts[idx_gyro_y]))
+                gyro["z"].append(float(parts[idx_gyro_z]))
+            except Exception:
+                continue
+
+        if len(times) == 0:
+            print(f"No IMU bias samples parsed from: {imu_bias_csv_path}")
+            return
+
+        times = np.array(times)
+        accel = {k: np.array(v) for k, v in accel.items()}
+        gyro = {k: np.array(v) for k, v in gyro.items()}
+        print(f"Extracted {len(times)} IMU bias samples for analysis")
+
+        fig, axs = plt.subplots(2, 1, figsize=(10, 8))
+
+        for key, color in zip(["x", "y", "z"], ["r", "g", "b"]):
+            axs[0].plot(times, accel[key], label=f"accel_{key}", color=color)
+        axs[0].set_title("Accelerometer Bias (Body Frame)")
+        axs[0].set_xlabel("Time (s)")
+        axs[0].set_ylabel("Bias")
+        axs[0].legend()
+
+        for key, color in zip(["x", "y", "z"], ["r", "g", "b"]):
+            axs[1].plot(times, gyro[key], label=f"gyro_{key}", color=color)
+        axs[1].set_title("Gyroscope Bias (Body Frame)")
+        axs[1].set_xlabel("Time (s)")
+        axs[1].set_ylabel("Bias")
+        axs[1].legend()
+
+        plt.tight_layout()
+        plt.savefig(os.path.join(output_folder, "imu_bias_analysis.png"), dpi=800)
+        plt.close()
+        print(f"Saved IMU bias analysis plot to {os.path.join(output_folder, 'imu_bias_analysis.png')}")
+
+    except Exception as e:
+        print(f"Error plotting IMU bias data from {imu_bias_csv_path}: {e}")
+
+
 def is_gnss_in_bag(bag_file_path):
+    def stamp_to_sec(stamp):
+        try:
+            return float(stamp.secs) + 1e-9 * float(stamp.nsecs)
+        except Exception:
+            try:
+                return stamp.to_sec()
+            except Exception:
+                return float(stamp)
+
+    def earliest_header_stamp_sec(msg):
+        headers = [getattr(msg, "header", None)]
+        headers.extend(getattr(transform, "header", None) for transform in getattr(msg, "transforms", []))
+        times = [stamp_to_sec(header.stamp) for header in headers if header is not None]
+        valid = [value for value in times if np.isfinite(value) and value > 0.0]
+        return min(valid) if valid else None
+
     def get_bag_start_time(bag_file_path):
         try:
             with rosbag.Bag(bag_file_path, "r") as bag:
                 min_time = None
-                for _, _, t in bag.read_messages():
-                    t_sec = t.to_sec() if hasattr(t, "to_sec") else float(t)
-                    if min_time is None or t_sec < min_time:
-                        min_time = t_sec
+                min_topic = None
+
+                topic_info = bag.get_type_and_topic_info()
+                try:
+                    topics = topic_info.topics.keys()
+                except Exception:
+                    topics = topic_info[1].keys()
+
+                for topic in topics:
+                    if topic in ("/tf", "/tf_static"):
+                        continue
+                    count = 0
+                    for _, msg, _ in bag.read_messages(topics=[topic]):
+                        t_sec = earliest_header_stamp_sec(msg)
+                        if t_sec is not None and (min_time is None or t_sec < min_time):
+                            min_time = t_sec
+                            min_topic = topic
+
+                        count += 1
 
                 if min_time is not None:
                     print(f"The start time of the bag is: {min_time} seconds (Unix epoch time).")
+                    print(f"Earliest header timestamp observed in topic: {min_topic}")
                     return min_time
                 else:
                     print("The bag contains no messages.")
@@ -155,52 +315,60 @@ def is_gnss_in_bag(bag_file_path):
 
     def check_topic_in_rosbag(bag_file_path, topic_name):
         try:
-            # Open the bag file
             with rosbag.Bag(bag_file_path, "r") as bag:
-                # Check if the topic is present
-                topic_first_appearance = None
-                for topic, msg, t in bag.read_messages():
-                    if topic == topic_name:
-                        topic_first_appearance = t.to_sec()
-                        print(f"Found message for topic '{topic_name}' at {topic_first_appearance} seconds.")
-                        print(f"Message type: {type(msg).__name__}")
-                        # Process the actual message content
-                        try:
-                            print(f"Message content (sample): {str(msg)[:150]}...")
-                        except:
-                            print("Unable to display message content.")
-                        break
+                for _, msg, t in bag.read_messages(topics=[topic_name]):
+                    header_t = earliest_header_stamp_sec(msg)
+                    bag_t = t.to_sec()
 
-                if topic_first_appearance is not None:
-                    print(f"The topic '{topic_name}' first appears at {topic_first_appearance} seconds in the bag.")
-                    return topic_first_appearance
+                    if header_t is not None:
+                        topic_first_appearance = header_t
+                        print(
+                            f"Found message for topic '{topic_name}' at header time {topic_first_appearance} seconds."
+                        )
+                        print(f"(Bag record time for same message: {bag_t} seconds.)")
+                    else:
+                        raise ValueError(f"GNSS message has no valid acquisition timestamp on {topic_name}")
+
+                    print(f"Message type: {type(msg).__name__}")
+                    print(f"Message content (sample): {str(msg)[:150]}...")
+                    break
                 else:
                     print(f"The topic '{topic_name}' is not present in the bag.")
                     return None
 
+                print(f"The topic '{topic_name}' first appears at {topic_first_appearance} seconds in the bag.")
+                return topic_first_appearance
+
         except rosbag.bag.ROSBagException as e:
             print(f"Error reading the rosbag file: {e}")
+            return None
         except FileNotFoundError:
             print("The specified rosbag file was not found.")
+            return None
 
-    # Check when the topic first appears in the bag
     topic_first_appearance = check_topic_in_rosbag(bag_file_path, CPT7_IE_TC_TOPIC)
     if topic_first_appearance is None:
         print("The topic is not present in the bag.")
         return False
 
-    # Get the start time of the bag
+    ORANGE = "\033[38;5;208m"
+    RESET = "\033[0m"
+    print(f"{ORANGE}Now we will check bag start time{RESET}")
+
     bag_start_time = get_bag_start_time(bag_file_path)
-    # Check
-    if bag_start_time is None or topic_first_appearance < bag_start_time:
+    if bag_start_time is None:
         print("Error computing relative time.")
         return False
 
-    # Compute relative time of first appearance of the topic
     relative_time = topic_first_appearance - bag_start_time
+    if relative_time < 0:
+        raise RuntimeError(
+            "Computed negative relative time. You are mixing time bases or bag_start_time heuristic is too late. "
+            f"topic_first_appearance={topic_first_appearance}, bag_start_time={bag_start_time}"
+        )
+
     print(f"The topic '{CPT7_IE_TC_TOPIC}' first appears at {relative_time} seconds after the start of the bag.")
 
-    # If it appears within the first 10 seconds, return exit code 0
     if relative_time < 10:
         print("The topic appears within the first 10 seconds, hence the test is successful.")
         return True
@@ -340,7 +508,7 @@ def write_tf_static_bag(output_bag_path: str, transforms: list):
             for tf_msg in transforms:
                 if tf_msg is not None:
                     # inv_tf = invert_transform(tf_msg)
-                    tfm = tfMessage([tf_msg])
+                    tfm = TFMessage(transforms=[tf_msg])
                     bag.write("/tf_static", tfm, tf_msg.header.stamp)
                     tf_msg.header.stamp.secs += 1
 
@@ -370,7 +538,6 @@ def convert_csv_to_bag(
     with open(input_file_cov_path, "r") as cov_file, open(input_file_pose_path, "r") as pose_file, rosbag.Bag(
         tf_gt_path, "w"
     ) as tf_gt_bag, rosbag.Bag(pose_gt_path, "w", compression="lz4") as pose_gt_bag:
-
         # Use zip to process both files simultaneously
         for cov_line, pose_line in zip(cov_file, pose_file):
             # Skip headers
@@ -473,48 +640,85 @@ def convert_csv_to_bag(
             tf_gt_bag.write("/tf", tf_message, stamp)
 
 
-def launch_nodes():
-    kill_roscore()
-
+def resolve_fusion_inputs():
+    """Require the model bag before starting ROS or producing fusion artifacts."""
     inputs = []
+    model_path = None
 
     # GPS bag is optional
     for pattern in PATTERNS:
         f, suc = get_file(pattern)
         if suc:
-            inputs.append(f)
-            timestamp = str(f).split("/")[-1]
-            timestamp = timestamp.split("_")[0]
+            inputs.append(str(f))
+            if pattern == TF_MODEL_PATTERN:
+                model_path = Path(f)
 
         else:
             if pattern == "*_cpt7_ie_tc.bag":
                 print("The GPS postprocessed Bag is optional!")
                 continue
             else:
-                print("Pattern not found: ", pattern, " in Directory ", MISSION_DATA)
-                exit(1)
+                raise FileNotFoundError(f"Required fusion input {pattern} not found in {MISSION_DATA}")
+
+    if model_path is None:
+        raise FileNotFoundError(f"Fusion requires {TF_MODEL_PATTERN}")
+    with rosbag.Bag(str(model_path)) as bag:
+        if not any(message.transforms for _, message, _ in bag.read_messages(topics=["/tf_static"])):
+            raise ValueError(f"Model bag has no /tf_static transforms: {model_path}")
+    return inputs, model_path
+
+
+def fusion_output_paths(model_path):
+    """Derive distinct result paths from the required model, never the minimal TF bag."""
+    model_path = Path(model_path)
+    suffix = "_tf_model.bag"
+    if not model_path.name.endswith(suffix):
+        raise ValueError(f"Expected a {suffix} input: {model_path}")
+    prefix = model_path.name[: -len(suffix)]
+    return tuple(
+        str(model_path.with_name(prefix + ending)) for ending in ("_tf_static_gt.bag", "_gt_tf.bag", "_gt_pose.bag")
+    )
+
+
+def launch_nodes():
+    inputs, model_path = resolve_fusion_inputs()
+    # Reuse the exact model selected above throughout the run. Resolving a
+    # different TF bag after optimization can fail late or mix mission models.
+    tf_static_gt_path, tf_gt_path, pose_gt_path = fusion_output_paths(model_path)
 
     GRAPH_MSF_ARTIFACT_FOLDER = os.path.join(ARTIFACT_FOLDER, "graph_msf")
     os.makedirs(GRAPH_MSF_ARTIFACT_FOLDER, exist_ok=True)
 
-    inputs = ",".join(inputs)
     merged_rosbag_path = os.path.join(MISSION_DATA, "merged_for_graph_msf.bag")
+    # Share the merger's validation and atomic publication; a failed input must
+    # never leave a truncated bag that the fuser treats as a complete mission.
+    from box_auto.scripts.general.merge_mission import merge_bags_single
 
-    # If the file exists, remove it to ensure a fresh merge
-    if os.path.exists(merged_rosbag_path):
-        print(f"Removing existing merged rosbag at {merged_rosbag_path}")
-        # os.remove(merged_rosbag_path)
-    else:
-        print(f"Creating new merged rosbag at {merged_rosbag_path}")
-        os.system(
-            f"python3 {BOX_AUTO_SCRIPTS_DIR}/general/merge_bags.py --input={inputs} --output={merged_rosbag_path}"
-        )
-
+    merge_bags_single(
+        inputs,
+        merged_rosbag_path,
+        topics=f"{CPT7_IMU_TOPIC} {AP20_PRISM_POSITION_TOPIC} {CPT7_IE_TC_TOPIC} /tf /tf_static",
+    )
+    with rosbag.Bag(merged_rosbag_path) as bag:
+        for topic in (CPT7_IMU_TOPIC, AP20_PRISM_POSITION_TOPIC):
+            if not bag.get_message_count(topic_filters=[topic]):
+                raise ValueError(f"Required fusion input is absent: {topic} ({DATASET_LAYOUT} layout)")
+    initialize_using_gnss = "true" if is_gnss_in_bag(merged_rosbag_path) else "false"
+    kill_roscore()
     start_roscore()
     sleep(1)
 
-    initialize_using_gnss = "true" if is_gnss_in_bag(merged_rosbag_path) else "false"
     print(f"Evaluate if initialize_using_gnss returns: {initialize_using_gnss}")
+
+    run_ros_command(
+        "roslaunch anymal_d_simple_description load_anymal_model.launch ",
+        background=True,
+    )
+
+    run_ros_command(
+        "roslaunch box_model load_boxi.launch ",
+        background=True,
+    )
 
     run_ros_command(
         f"roslaunch atn_position3_fuser position3_fuser_replay_offline_grandtour.launch "
@@ -531,7 +735,7 @@ def launch_nodes():
     sleep(3)
     run_ros_command(f"rosbag play -r 1 --clock {merged_rosbag_path}")
 
-    print("Waiting 3s for all messages to be consumed by graph_msf before starting optimization!")  #
+    print("Waiting 3s for all messages to be consumed by graph_msf before starting optimization!")
     sleep(3)
     run_ros_command(
         'rosservice call /graph_msf/trigger_offline_optimization "max_optimization_iterations: 2000\nsave_covariance: true"'
@@ -541,8 +745,6 @@ def launch_nodes():
     print("GMSF processing finished. Converting the data.")
 
     # Convert tf_statics to debug bag
-    tf_static_path = get_bag("*_tf_minimal.bag")
-    tf_static_gt_path = tf_static_path.replace("_tf_minimal.bag", "_tf_static_gt.bag")
     tf_statics = []
 
     GRAPH_MSF_ARTIFACT_FOLDER_SUBFOLDER = max(
@@ -555,7 +757,7 @@ def launch_nodes():
     )
 
     print(f"Found MSF artifact folder: {GRAPH_MSF_ARTIFACT_FOLDER_SUBFOLDER}")
-    csv_R_6D_transform_world_graph_msf_to_leica_total_station, suc1 = get_file(
+    csv_R_6D_transform_world_to_leica_total_station, suc1 = get_file(
         "R_6D_transform_world_graph_msf_to_leica_total_station.csv", GRAPH_MSF_ARTIFACT_FOLDER_SUBFOLDER
     )
     csv_6D_transform_leica_total_station_to_prism, suc2 = get_file(
@@ -568,7 +770,7 @@ def launch_nodes():
     print(f"CSV files retrieved. GPS available: {gps_is_available}")
 
     R_world_to_helper = csv_to_TransformStamped(
-        csv_R_6D_transform_world_graph_msf_to_leica_total_station, "world_graph_msf", "leica_total_station_helper"
+        csv_R_6D_transform_world_to_leica_total_station, "world_graph_msf", "leica_total_station_helper"
     )
 
     R_helper_to_prism = csv_to_TransformStamped(
@@ -600,8 +802,6 @@ def launch_nodes():
     print(f"Wrote {len(tf_statics)} transforms to tf_static_gt bag at {tf_static_gt_path}")
 
     # Convert world to box_base to rosbag
-    tf_gt_path = tf_static_path.replace("_tf_minimal", "_gt_tf.bag")
-    pose_gt_path = tf_static_path.replace("_tf_minimal.bag", "_gt_pose.bag")
     csv_cov_file, _ = get_file("X_state_6D_pose_covariance.csv", GRAPH_MSF_ARTIFACT_FOLDER_SUBFOLDER)
     csv_pose_file, _ = get_file("X_state_6D_pose.csv", GRAPH_MSF_ARTIFACT_FOLDER_SUBFOLDER)
     convert_csv_to_bag(csv_cov_file, csv_pose_file, tf_gt_path, pose_gt_path, "world_graph_msf", "box_base")
@@ -617,15 +817,17 @@ def launch_nodes():
 
     tf_transformer = BagTfTransformer(tf_static_gt_path)
     t_prism_world, q_prism_world = tf_transformer.lookupTransform("prism", "world_graph_msf", 0, latest=True)
-    print(f"Looked up transform prism -> world: translation={t_prism_world}, rotation={q_prism_world}")
+    print(f"Looked up transform prism -> world_graph_msf: translation={t_prism_world}, rotation={q_prism_world}")
 
     if gps_is_available:
-        t_enu_origin_world, q_enu_origin_world = tf_transformer.lookupTransform("enu_origin", "world_graph_msf", 0, latest=True)
+        t_enu_origin_world, q_enu_origin_world = tf_transformer.lookupTransform(
+            "enu_origin", "world_graph_msf", 0, latest=True
+        )
         # Transform the paths to the correct frames
         T_enu_origin_world = np.eye(4)
         T_enu_origin_world[:3, :3] = R.from_quat(q_enu_origin_world).as_matrix()
         T_enu_origin_world[:3, 3] = np.array(t_enu_origin_world)
-        print("Created ENU origin -> world transform matrix")
+        print("Created ENU origin -> world_graph_msf transform matrix")
 
         # Read in the full paths
         gps_ie = np.array(
@@ -797,12 +999,21 @@ def launch_nodes():
 
     # Adjust layout
     plt.tight_layout()
-    plt.savefig(os.path.join(GRAPH_MSF_ARTIFACT_FOLDER_SUBFOLDER, "graph_msf_result.png"))
+    plt.savefig(
+        os.path.join(GRAPH_MSF_ARTIFACT_FOLDER_SUBFOLDER, "graph_msf_result.png"),
+        dpi=800,
+    )
     print(
         f"Saved trajectory comparison plot to {os.path.join(GRAPH_MSF_ARTIFACT_FOLDER_SUBFOLDER, 'graph_msf_result.png')}"
     )
 
     plot_ground_truth_data(pose_gt_path, GRAPH_MSF_ARTIFACT_FOLDER_SUBFOLDER)
+
+    csv_imu_bias_file, suc_bias = get_file("B_imu_bias.csv", GRAPH_MSF_ARTIFACT_FOLDER_SUBFOLDER)
+    if suc_bias:
+        plot_imu_bias_data(csv_imu_bias_file, GRAPH_MSF_ARTIFACT_FOLDER_SUBFOLDER)
+    else:
+        print("B_imu_bias.csv not found, skipping IMU bias plot.")
 
     # Upload results
     upload_bag([tf_gt_path, pose_gt_path, tf_static_gt_path])

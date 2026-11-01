@@ -1,0 +1,96 @@
+# SPX-3 point-relation evaluation against AP20 Prism positions.
+gt_source: TPS
+gt_pattern: "*_ap20_prism_position.bag"
+disable_viz: false
+target_frame: prism
+
+filter_by_covariance: false
+covariance_percentile_threshold: 95
+
+# Keep the full motion interval; do not discard the first 10 m.
+remove_until_motion: false
+distance_threshold: 10
+
+ap20_velocity_rejection: true
+ap20_velocity_rejection_threshold: 3.0
+
+# Remove samples adjacent to AP20 measurement outages.
+ap20_peak_rejection: true
+ap20_peak_rejection_threshold: 0.1
+ap20_peak_rejection_trailing_window: 5
+
+project_to_plane: "xyz"
+
+bag_topic_pairs:
+  - bag: _ap20_prism_position.bag
+    test_name: ap20_robot
+    topic: /boxi/ap20/prism_position
+    frame: prism
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: false
+        delta: 1
+        unit: m
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: ""
+
+  - bag: _cpt7_ie_tc.bag
+    test_name: ie_tc
+    topic: /boxi/inertial_explorer/tc/odometry
+    frame: cpt7_imu
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: false
+        delta: 1
+        unit: m
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: ap20_robot
+
+  - bag: _dlio.bag
+    test_name: dlio
+    topic: /boxi/dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.05
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: false
+        delta: 1
+        unit: m
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: ap20_robot
+
+  - bag: _anymal_state.bag
+    test_name: state_estimator
+    topic: /anymal/state_estimator/odometry
+    frame: base
+    evaluations:
+      parameters:
+        t_max_diff: 0.025
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: false
+        delta: 1
+        unit: m
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: ap20_robot
+
+  - bag: _tf_model.bag
+    test_name: ""
+    topic: ""
+    frame: ""

@@ -5,14 +5,11 @@ Fixtures are synthetic and self-cleaning; no cloud or real mission writes occur.
 
 import importlib.util
 import logging
-from pathlib import Path
 import struct
-import types
 import unittest
 
 import cv2
 import numpy as np
-import pandas as pd
 import rosbag
 import rospy
 from geometry_msgs.msg import TransformStamped
@@ -203,7 +200,7 @@ class ConversionCorrectnessTests(TemporaryCase):
         source.write_text("%RAWIMUSXA,0,0,68,2300,10.01,1,2,3,4,5,6\n%RAWIMUSXA,0,0,68,2300,10.02,1,2,3,4,5,6\n")
         times = []
         for offset in (-18.0, 19.0):
-            parser = rawimu.RAWIMUDataParser(logging.getLogger("test"), "imu", offset)
+            parser = rawimu.RAWIMUDataParser("imu", offset, logger=logging.getLogger("test"))
             frame = parser.fetch_dataframe_from_csv(str(source))
             self.assertEqual(len(frame), 2)
             self.assertTrue(parser.load_imu_times(frame))
@@ -215,22 +212,30 @@ class ConversionCorrectnessTests(TemporaryCase):
 class FrameCovarianceTests(unittest.TestCase):
     def test_ie_covariance_matches_attitude_perturbations(self):
         path = SCRIPTS / "cpt7/export_gps_gt_trajectory_bag.py"
-        covariance_fn = extracted_function(path, "orientation_covariance_enu", dict(np=np, Rotation=Rotation))
-        ned_to_enu = np.array([[0., 1., 0.], [1., 0., 0.], [0., 0., -1.]])
-        for angles in (np.array([0., 0., 0.]), np.array([34., 17., -9.]), np.array([-80., 30., 15.])):
-            def rotation_fn(values):
-                return Rotation.from_matrix(ned_to_enu @ Rotation.from_euler("ZXY", values, degrees=True).as_matrix())
-            std = np.array([2., 3., 5.])
-            base = rotation_fn(angles)
-            jacobian = []
-            step = 1e-5
-            for i in range(3):
-                perturbed = angles.copy()
-                perturbed[i] += step
-                jacobian.append((rotation_fn(perturbed) * base.inv()).as_rotvec() / np.deg2rad(step))
-            j = np.array(jacobian).T
-            expected = j @ np.diag(np.deg2rad(std) ** 2) @ j.T
-            np.testing.assert_allclose(covariance_fn(*angles, std), expected, atol=1e-9, rtol=1e-6)
+        for ned in (False, True):
+            for flip in (False, True):
+                namespace = dict(
+                    np=np,
+                    Rotation=Rotation,
+                    IE_HEADING_OFFSET_DEG=13.0,
+                    IE_HEADING_IS_NEG_YAW=True,
+                    IE_ATTITUDE_IN_NED=ned,
+                    CONVERT_BODY_FRD_TO_FLU=flip,
+                )
+                rotation_fn = extracted_function(path, "build_rot_wb_from_ie_hrp", namespace)
+                covariance_fn = extracted_function(path, "orientation_covariance_enu", namespace)
+                angles = np.array([34.0, 17.0, -9.0])
+                std = np.array([2.0, 3.0, 5.0])
+                base = rotation_fn(*angles)
+                jacobian = []
+                step = 1e-5
+                for i in range(3):
+                    perturbed = angles.copy()
+                    perturbed[i] += step
+                    jacobian.append((rotation_fn(*perturbed) * base.inv()).as_rotvec() / np.deg2rad(step))
+                j = np.array(jacobian).T
+                expected = j @ np.diag(np.deg2rad(std) ** 2) @ j.T
+                np.testing.assert_allclose(covariance_fn(*angles, std), expected, atol=1e-9, rtol=1e-6)
 
     def test_ie_rejects_invalid_covariance(self):
         fn = extracted_function(SCRIPTS / "cpt7/export_gps_gt_trajectory_bag.py", "compact_cov_to_full", dict(np=np))

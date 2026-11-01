@@ -44,7 +44,6 @@ def compute_gravity(lat_deg, altitude_m):
 def launch_nodes(
     patterns, output_bag_name, lidar_topic, imu_topic, tag, post_fix, rotational_offset, translation_offset
 ):
-
     os.environ["ROS_MASTER_URI"] = "http://localhost:11311"
     inputs = []
     for pattern in patterns:
@@ -84,19 +83,19 @@ def launch_nodes(
                     alt = msg.altitude
                     # Just need the first message to get origin
                     break
-        print(f"GPS Origin - Latitude: {lat}, Longitude: {lon}, Altitude: {alt}")
+        print(f"\033[92mGPS Origin - Latitude: {lat}, Longitude: {lon}, Altitude: {alt}\033[0m")
     except Exception as e:
         print(f"Error reading GPS data: {e}")
         print("No GPS data will be used for gravity calculation.")
 
     if lat is not None:
         gravity = compute_gravity(lat, alt)
-        print(f"Local gravity at GPS origin: {gravity} m/s²")
+        print(f"\033[92mLocal gravity at GPS origin: {gravity} m/s²\033[0m")
     else:
-        print("No GPS data found in the bag.")
+        print("\033[91mNo GPS data found in the bag.\033[0m")
         gravity = 9.80665  # Use standard gravity as fallback
-        print("Using standard gravity value: 9.80665 m/s²")
-        print("WARNING: Without accurate GPS data, gravity calculations may be less precise.")
+        print("\033[91mUsing standard gravity value: 9.80665 m/s²\033[0m")
+        print("\033[91mWARNING: Without accurate GPS data, gravity calculations may be less precise.\033[0m")
         # Alternatively, uncomment the line below to stop execution if GPS data is required
         # raise ValueError("No GPS data found. Cannot proceed without GPS origin information.")
 

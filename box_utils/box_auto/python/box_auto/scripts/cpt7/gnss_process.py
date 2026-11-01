@@ -7,12 +7,25 @@ import shlex
 import logging
 import shutil
 import getpass
+import sys
+import argparse
+import math
 
 # Set up logging to a file (or configure as needed)
 logging.basicConfig(filename="process_output.log", level=logging.INFO)
 
 
-def main():
+def main(argv=None):
+    parser = argparse.ArgumentParser(description="Process IE GNSS logs.")
+    parser.add_argument(
+        "--processing-interval",
+        type=float,
+        default=0.05,
+        help="Processing interval in seconds, including retries (default: 0.05 / 20 Hz)",
+    )
+    args = parser.parse_args(argv)
+    if not math.isfinite(args.processing_interval) or args.processing_interval <= 0:
+        parser.error("--processing-interval must be positive")
     print("CLI REFERENCE: https://docs.novatel.com/Waypoint/Content/Appendix/WPGCMD.htm")
 
     execution_results = []
@@ -51,7 +64,7 @@ def main():
                 raise ValueError("Failed to retrieve LOG file from /ie/ directory.")
 
             max_retries = 8 if PROCMODE == "tc" else 1
-            procInterval = 0.05
+            procInterval = args.processing_interval
             attempt = 0
             success = False
 
@@ -72,11 +85,13 @@ def main():
                 cmd += '-procprofile "SPAN Pedestrian (CPT7-HG4930)" '
                 cmd += "-downloadbase 1 50 "
                 cmd += "-snserver ch-xpos.nrtk.eu "
+                # cmd += "-snserver uk-xpos.nrtk.eu " # For UK server
                 cmd += "-procdatum WGS84 "
                 cmd += f"-procint {procInterval} "
                 cmd += "-procdata L1L2 "
                 cmd += "-snusername RSL_02 "
-                cmd += f"-snpassword {IE_API_KEY} "
+                # cmd += "-snusername RSL_03 " # For UK server
+                cmd += f"-snpassword {shlex.quote(IE_API_KEY)} "
                 cmd += f"-expprofile1 {EXP_PROFILE} "
                 cmd += "-expsrc1 epochs "
                 cmd += "-expkml on "
@@ -97,7 +112,7 @@ def main():
                 else:
                     os.chdir(f"/home/{username}/ie_turcan/waypoint_ie_10_00_1206/bin")
 
-                print(cmd)
+                print(cmd.replace(shlex.quote(IE_API_KEY), "<redacted>"))
                 results = subprocess.run(
                     shlex.split(cmd),
                     input="y\n",
@@ -123,7 +138,7 @@ def main():
                     "mode": PROCMODE,
                     "profile": EXP_PROFILE,
                     "returncode": results.returncode,
-                    "message": "Success",
+                    "message": "\033[32mSuccess\033[0m",
                     "attempt": attempt,
                     "procint": procInterval,
                 }
@@ -140,20 +155,22 @@ def main():
                     else:
                         status["message"] = "Failed: Unknown error"
 
-                    if PROCMODE == "tc":
-                        procInterval *= 2
+                    # Retrying must preserve the requested sampling rate. A
+                    # transient failure is not permission to downsample data.
 
                     if attempt == max_retries:
                         execution_results.append(status)
 
     # Final Report
-    print("\n=== PROCESSING REPORT ===")
+    print("\n=== PROCESSING REPORT ===", flush=True)
     for result in execution_results:
         print(
             f"[{result['mode']} | {result['profile']}] → {result['message']} "
-            f"(code: {result['returncode']}, procint: {result.get('procint')}, attempt: {result['attempt']})"
+            f"(code: {result['returncode']}, procint: {result.get('procint')}, attempt: {result['attempt']})",
+            flush=True,
         )
+    return 0 if execution_results and all(result["returncode"] == 0 for result in execution_results) else 1
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

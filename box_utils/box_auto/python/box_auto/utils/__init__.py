@@ -1,52 +1,48 @@
-from .utils import (
-    WS,
-    PRE,
-    MISSION_DATA,
-    BOX_AUTO_DIR,
-    BOX_AUTO_SCRIPTS_DIR,
-    ARTIFACT_FOLDER,
-    get_uuid_mapping,
-    run_ros_command,
-    start_roscore,
-    kill_roscore,
-    get_bag,
-    get_file,
-    upload_bag,
-    check_duplicate_timestamps,
-    find_and_extract_non_matching,
-    create_github_issue,
-    RosbagMessageGenerator,
-)
-from .gps_utils import GPS_utils
-from .okviz_trajectory_to_bag import okviz_trajectory_to_bag
-from .run_local import execute_command_per_mission, deployments
-from .google_sheet import read_sheet_data
-from .kleinkram_helper import upload_simple
-from .youtube import upload_video
+"""Public utility API, loaded on demand.
 
-__all__ = [
-    "WS",
-    "PRE",
-    "MISSION_DATA",
-    "BOX_AUTO_DIR",
-    "BOX_AUTO_SCRIPTS_DIR",
-    "ARTIFACT_FOLDER",
-    "get_uuid_mapping",
-    "run_ros_command",
-    "check_duplicate_timestamps",
-    "find_and_extract_non_matching",
-    "start_roscore",
-    "kill_roscore",
-    "get_bag",
-    "get_file",
-    "upload_bag",
-    "GPS_utils",
-    "create_github_issue",
-    "RosbagMessageGenerator",
-    "okviz_trajectory_to_bag",
-    "execute_command_per_mission",
-    "deployments",
-    "read_sheet_data",
-    "upload_simple",
-    "upload_video",
-]
+Local file/geometry tools must not need ROS, cloud credentials or video SDKs
+merely to import the atomic-output helper. Existing public imports retain their
+names; each implementation is loaded when that attribute is requested.
+"""
+
+from importlib import import_module
+
+_EXPORTS = {
+    "WS": "utils",
+    "PRE": "utils",
+    "MISSION_DATA": "utils",
+    "BOX_AUTO_DIR": "utils",
+    "BOX_AUTO_SCRIPTS_DIR": "utils",
+    "ARTIFACT_FOLDER": "utils",
+    "get_uuid_mapping": "utils",
+    "run_ros_command": "utils",
+    "check_duplicate_timestamps": "utils",
+    "find_and_extract_non_matching": "utils",
+    "start_roscore": "utils",
+    "kill_roscore": "utils",
+    "get_bag": "utils",
+    "get_file": "utils",
+    "upload_bag": "utils",
+    "GPS_utils": "gps_utils",
+    "create_github_issue": "utils",
+    "RosbagMessageGenerator": "utils",
+    "okviz_trajectory_to_bag": "okviz_trajectory_to_bag",
+    "execute_command_per_mission": "run_local",
+    "deployments": "run_local",
+    "read_sheet_data": "google_sheet",
+    "upload_simple": "kleinkram_helper",
+    "upload_video": "youtube",
+}
+__all__ = list(_EXPORTS)
+
+
+def __getattr__(name):
+    if name not in _EXPORTS:
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+    value = getattr(import_module("." + _EXPORTS[name], __name__), name)
+    globals()[name] = value
+    return value
+
+
+def __dir__():
+    return sorted(set(globals()) | set(__all__))

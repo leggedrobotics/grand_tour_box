@@ -6,6 +6,7 @@
   <arg name="urdf_file"                default="$(arg files_dir)/box.urdf"/>
   <arg name="xacro_file"               default="$(arg files_dir)/box.urdf.xacro"/>
   <arg name="load_from_urdf"           default="false"/>
+  <arg name="enable_visualizable_model" default="false" doc="If true, disables redundant frames in the URDF model"/>
   <arg name="calibration_file"         default="$(find box_calibration)/calibration/tf/calibration_latest.yaml" />
 
   <!-- Load robot description -->
@@ -14,6 +15,7 @@
     <arg name="boxi_urdf"              value="$(arg urdf_file)"/>
     <arg name="boxi_xacro"             value="$(arg xacro_file)"/>
     <arg name="load_from_urdf"         value="$(arg load_from_urdf)"/>
+    <arg name="enable_visualizable_model" value="$(arg enable_visualizable_model)"/>
   </include>
 
   <!-- Boxi state publisher -->
@@ -22,6 +24,15 @@
     <param name="use_tf_static"        value="true"/>
     <remap from="robot_description" to="$(arg description_name)"/>
   </node>
+
+  <!-- This mission-specific extrinsic is not part of the generic Boxi model.
+       Enable it only for the corresponding calibrated radar installation. -->
+  <arg name="publish_radar_tf" default="false"/>
+  <arg name="radar_xyz_ypr" default="0.373713134454 -0.036149203012 -0.138218559314 0.0 -0.3490658503988659 0.0"/>
+  <!-- Static TF: cpt7_imu -> radar; angles are yaw, pitch, roll in radians. -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="cpt7_imu_to_radar_tf" if="$(arg publish_radar_tf)"
+        args="$(arg radar_xyz_ypr) cpt7_imu radar" />
+
 
   <!-- Publish Calibration info -->
   <node name="calibration_metadata_publisher" pkg="box_model" type="publish_calibration_info.py">
@@ -40,5 +51,8 @@
 
   <!-- Dump the description to yaml file. -->
   <node pkg="box_model" type="dump_params.sh" name="dump_params" output="screen" />
+
+
+
 
 </launch>

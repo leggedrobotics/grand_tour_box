@@ -1,0 +1,15 @@
+# Optional geometry tools, validated with Python 3.11 and an NVIDIA RTX 3090.
+# Keep this environment separate from ROS Noetic's Python 3.8 environment.
+# python3.11 -m venv /tmp/box-geometry
+# /tmp/box-geometry/bin/pip install -r requirements-geometry.txt
+# PYTHONPATH=python /tmp/box-geometry/bin/python -m unittest discover -s tests/geometry -v
+# Open3D viewers: --mesh PATH; --check-only validates without a window.
+# SciroVideo_improved.py / video_for_pointcloud.py: --mode headless --out NEW_DIR
+# GPU normals: input.ply output.ply --camera X Y Z; color smoothing is opt-in.
+# Mesh orientation: --method component requires a closed surface; open meshes
+# require --method camera --camera X Y Z. This selects winding, not physical truth.
+open3d==0.19.0
+cupoch==0.2.11.0
+numpy==2.4.6
+scipy
+matplotlib

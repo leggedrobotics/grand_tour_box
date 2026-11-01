@@ -1,0 +1,77 @@
+# SNOW_1 evaluation: all trajectories expressed at cpt7_imu and compared
+# against the CPT7 Inertial Explorer tightly-coupled trajectory.
+gt_source: IE
+disable_viz: false
+target_frame: cpt7_imu
+
+filter_by_covariance: false
+covariance_percentile_threshold: 95
+
+remove_until_motion: false
+distance_threshold: 10
+
+ap20_velocity_rejection: true
+ap20_velocity_rejection_threshold: 3.0
+
+ap20_peak_rejection: true
+ap20_peak_rejection_threshold: 0.1
+ap20_peak_rejection_trailing_window: 5
+
+project_to_plane: "xyz"
+
+bag_topic_pairs:
+  - bag: _cpt7_ie_tc.bag
+    test_name: cpt7_ie_tc
+    topic: /boxi/inertial_explorer/tc/odometry
+    frame: cpt7_imu
+    evaluations:
+      parameters:
+        t_max_diff: 0.025
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: false
+        delta: 1
+        unit: m
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: cpt7_ie_tc
+
+  - bag: snow1_fast_livo.bag
+    test_name: fast_livo
+    topic: /aft_mapped_to_init
+    frame: cpt7_imu
+    evaluations:
+      parameters:
+        t_max_diff: 0.025
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: false
+        delta: 1
+        unit: m
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: cpt7_ie_tc
+
+  - bag: _anymal_state.bag
+    test_name: state_estimator
+    topic: /anymal/state_estimator/odometry
+    frame: base
+    evaluations:
+      parameters:
+        t_max_diff: 0.025
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: false
+        delta: 1
+        unit: m
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: cpt7_ie_tc
+
+  - bag: _tf_model.bag
+    test_name: ""
+    topic: ""
+    frame: ""

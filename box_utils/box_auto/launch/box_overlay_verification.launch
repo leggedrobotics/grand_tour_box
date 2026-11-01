@@ -1,128 +1,75 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" ?>
 <launch>
-
-      <!-- Provide a default empty list for bag paths -->
-      <arg name="data_containing_rosbag_paths" default=""/>
-
-      <param name="/use_sim_time" value="true"/>
-      <arg name="enable_viz" default="true" />
-      <arg name="enable_urdf" default="true" />
-
-      <node name="zed_left_rgb" 
-            pkg="image_transport" 
-            type="republish" 
-            args="compressed in:=/boxi/zed2i/left/image_raw raw out:=/boxi/zed2i/left/image_raw"
-            required="true" />
-
-      <node name="zed_right_rgb" 
-            pkg="image_transport" 
-            type="republish" 
-            args="compressed in:=/boxi/zed2i/right/image_raw raw out:=/boxi/zed2i/right/image_raw"
-            required="true" />
-
-      <node name="zed_depth" 
-            pkg="image_transport" 
-            type="republish" 
-            args="compressedDepth in:=/boxi/zed2i/depth/image_raw raw out:=/boxi/zed2i/depth/image_raw"
-            required="true" />
-      
-      <node pkg="rviz" 
-            name="rviz" 
-            type="rviz" 
-            args="-d '$(find box_auto)/rviz/rviz_overlay.rviz'" 
-            required="true" />
-    
-      <!-- If URDF should be loaded -->
-      <group if="$(arg enable_urdf)">
-            <include file="$(find anymal_d_simple_description)/launch/load.launch" />
-            <include file="$(find box_model)/launch/load_boxi.launch" />
-      </group>
-    
-      <group if="$(arg enable_viz)">
-
-      <!-- RQT IM, left RGB view -->
-      <node name="image_view_left" 
-            pkg="image_view" 
-            type="image_view" 
-            respawn="false" 
-            required="true"
-            output="screen">
-            <param name="image_transport" value="compressed" />
-            <remap from="image" to="/boxi/zed2i/left/image_raw" />           
-      </node> 
-
-      <!-- RQT IM, right RGB view -->
-      <node name="image_view_right"
-            pkg="image_view" 
-            type="image_view" 
-            respawn="false" 
-            required="true"
-            output="screen">
-            <param name="image_transport" value="compressed" />
-            <remap from="image" to="/boxi/zed2i/right/image_raw" />           
-      </node> 
-
-      <!-- Depth RVL view -->
-      <node name="depth_rvl_view" 
-            pkg="image_view" 
-            type="image_view" 
-            respawn="false" 
-            required="true"
-            output="screen">
-            <param name="image_transport" value="raw" />
-            <remap from="image" to="/boxi/zed2i/depth/image_raw" />
-            <param name="colormap" value="2" />
-            <param name="min_image_value" value="0.5" />
-            <param name="max_image_value" value="15.0" />
-            <param name="dynamic_range" value="false" />
-            <param name="autosize" value="true" />
-      </node> 
-
-      <!-- Uncompress the compressed topic -->
-      <node name="hdr_front_republish"
-            pkg="image_transport"
-            type="republish"
-            args="compressed in:=/gt_box/hdr_front/image_raw/compressed raw out:=/gt_box/hdr_front/image_raw"
-            required="true" />
-
-      <!-- View rectified/compressed image from new bag -->
-      <node name="hdr_front_image_rect_view"
-            pkg="image_view"
-            type="image_view"
-            respawn="false"
-            required="true"
-            output="screen">
-      <remap from="image" to="/gt_box/hdr_front/image_rect"/>
-      <param name="image_transport" value="compressed" />
-      </node>
-
-      <!-- Uncompress the compressed topic -->
-      <node name="alph_front_republish"
-            pkg="image_transport"
-            type="republish"
-            args="compressed in:=/boxi/alphasense/front_center/image_raw/compressed raw out:=/boxi/alphasense/front_center/image_raw"
-            required="true" />
-
-      <!-- View rectified/compressed image from new bag -->
-      <node name="alpha_front_image_rect_view"
-            pkg="image_view"
-            type="image_view"
-            respawn="false"
-            required="true"
-            output="screen">
-      <remap from="image" to="/boxi/alphasense/front_center/image_rect"/>
-      <param name="image_transport" value="compressed" />
-      </node>
-
-      </group>
-
-      <!-- Rosbag player -->
-      <node pkg="rosbag" 
-            type="play" 
-            name="player" 
-            output="screen"
-            required="true"
-            launch-prefix="xterm -bg lightblue -fg darkslategrey -bd plum -bw 10 -geometry 80x40-50+250 -e" 
-            args="--clock -s 0 -r 1 $(arg data_containing_rosbag_paths)" />
-
+  <arg name="rviz_config" default="$(find box_auto)/rviz/rviz_overlay.rviz"/>
+  <arg name="playback_rate" default="1"/>
+  <arg name="enable_alphasense" default="true"/>
+  <arg name="enable_hdr" default="true"/>
+  <arg name="enable_zed" default="true"/>
+  <arg name="data_containing_rosbag_paths" default=""/>
+  <param name="/use_sim_time" value="true"/>
+  <param name="use_sim_time" value="true"/>
+  <arg name="enable_viz" default="true"/>
+  <arg name="enable_urdf" default="false"/>
+  <node name="zed_left_rgb" pkg="image_transport" type="republish" args="compressed in:=/boxi/zed2i/left/image_raw raw out:=/boxi/zed2i/left/image_raw" required="true" if="$(arg enable_zed)"/>
+  <node name="zed_right_rgb" pkg="image_transport" type="republish" args="compressed in:=/boxi/zed2i/right/image_raw raw out:=/boxi/zed2i/right/image_raw" required="true" if="$(arg enable_zed)"/>
+  <node name="zed_depth" pkg="image_transport" type="republish" args="compressedDepth in:=/boxi/zed2i/depth/image_raw raw out:=/boxi/zed2i/depth/image_raw" required="true" if="$(arg enable_zed)"/>
+  <node pkg="rviz" name="rviz" type="rviz" args="-d '$(arg rviz_config)'" required="true" if="$(arg enable_viz)"/>
+  <arg name="enable_pointcloud" default="true"/>
+  <group if="$(arg enable_pointcloud)">
+    <node pkg="nodelet" type="nodelet" name="depth_proc_manager" args="manager" output="screen"/>
+    <node pkg="nodelet" type="nodelet" name="pc_front_lower" args="load depth_image_proc/point_cloud_xyz depth_proc_manager" output="screen">
+      <remap from="image_rect" to="/anymal/depth_camera/front_lower/depth/image_rect_raw"/>
+      <remap from="camera_info" to="/anymal/depth_camera/front_lower/depth/camera_info"/>
+      <remap from="points" to="/anymal/depth_camera/front_lower/depth/points"/>
+    </node>
+    <node pkg="nodelet" type="nodelet" name="pc_front_upper" args="load depth_image_proc/point_cloud_xyz depth_proc_manager" output="screen">
+      <remap from="image_rect" to="/anymal/depth_camera/front_upper/depth/image_rect_raw"/>
+      <remap from="camera_info" to="/anymal/depth_camera/front_upper/depth/camera_info"/>
+      <remap from="points" to="/anymal/depth_camera/front_upper/depth/points"/>
+    </node>
+    <node pkg="nodelet" type="nodelet" name="pc_left" args="load depth_image_proc/point_cloud_xyz depth_proc_manager" output="screen">
+      <remap from="image_rect" to="/anymal/depth_camera/left/depth/image_rect_raw"/>
+      <remap from="camera_info" to="/anymal/depth_camera/left/depth/camera_info"/>
+      <remap from="points" to="/anymal/depth_camera/left/depth/points"/>
+    </node>
+    <node pkg="nodelet" type="nodelet" name="pc_right" args="load depth_image_proc/point_cloud_xyz depth_proc_manager" output="screen">
+      <remap from="image_rect" to="/anymal/depth_camera/right/depth/image_rect_raw"/>
+      <remap from="camera_info" to="/anymal/depth_camera/right/depth/camera_info"/>
+      <remap from="points" to="/anymal/depth_camera/right/depth/points"/>
+    </node>
+    <node pkg="nodelet" type="nodelet" name="pc_rear_lower" args="load depth_image_proc/point_cloud_xyz depth_proc_manager" output="screen">
+      <remap from="image_rect" to="/anymal/depth_camera/rear_lower/depth/image_rect_raw"/>
+      <remap from="camera_info" to="/anymal/depth_camera/rear_lower/depth/camera_info"/>
+      <remap from="points" to="/anymal/depth_camera/rear_lower/depth/points"/>
+    </node>
+    <node pkg="nodelet" type="nodelet" name="pc_rear_upper" args="load depth_image_proc/point_cloud_xyz depth_proc_manager" output="screen">
+      <remap from="image_rect" to="/anymal/depth_camera/rear_upper/depth/image_rect_raw"/>
+      <remap from="camera_info" to="/anymal/depth_camera/rear_upper/depth/camera_info"/>
+      <remap from="points" to="/anymal/depth_camera/rear_upper/depth/points"/>
+    </node>
+  </group>
+  <group if="$(arg enable_urdf)">
+    <include file="$(find anymal_d_simple_description)/launch/load.launch"/>
+    <include file="$(find box_model)/launch/load_boxi.launch"/>
+  </group>
+  <group if="$(arg enable_viz)">
+    <node name="depth_rvl_view" pkg="image_view" type="image_view" respawn="false" required="true" output="screen" if="$(arg enable_zed)">
+      <param name="image_transport" value="raw"/>
+      <remap from="image" to="/boxi/zed2i/depth/image_raw"/>
+      <param name="colormap" value="2"/>
+      <param name="min_image_value" value="0.5"/>
+      <param name="max_image_value" value="15.0"/>
+      <param name="dynamic_range" value="false"/>
+      <param name="autosize" value="true"/>
+    </node>
+  </group>
+  <node pkg="rosbag" type="play" name="player" output="screen" required="true" args="--clock --delay=1 -s 0 -r $(arg playback_rate) $(arg data_containing_rosbag_paths)"/>
+  <node name="hdr_front_republish" pkg="image_transport" type="republish" args="compressed in:=/boxi/hdr/front/image_raw raw out:=/boxi/hdr/front/image_raw" required="true" if="$(arg enable_hdr)"/>
+  <node name="hdr_left_republish" pkg="image_transport" type="republish" args="compressed in:=/boxi/hdr/left/image_raw raw out:=/boxi/hdr/left/image_raw" required="true" if="$(arg enable_hdr)"/>
+  <node name="hdr_right_republish" pkg="image_transport" type="republish" args="compressed in:=/boxi/hdr/right/image_raw raw out:=/boxi/hdr/right/image_raw" required="true" if="$(arg enable_hdr)"/>
+  <node name="alph_front_republish" pkg="image_transport" type="republish" args="compressed in:=/boxi/alphasense/front_center/image_raw raw out:=/boxi/alphasense/front_center/image_raw" required="true" if="$(arg enable_alphasense)"/>
+  <node name="alph_left_republish" pkg="image_transport" type="republish" args="compressed in:=/boxi/alphasense/left/image_raw raw out:=/boxi/alphasense/left/image_raw" required="true" if="$(arg enable_alphasense)"/>
+  <node name="alph_right_republish" pkg="image_transport" type="republish" args="compressed in:=/boxi/alphasense/right/image_raw raw out:=/boxi/alphasense/right/image_raw" required="true" if="$(arg enable_alphasense)"/>
+  <node name="alph_front_left_republish" pkg="image_transport" type="republish" args="compressed in:=/boxi/alphasense/front_left/image_raw raw out:=/boxi/alphasense/front_left/image_raw" required="true" if="$(arg enable_alphasense)"/>
+  <node name="alph_front_right_republish" pkg="image_transport" type="republish" args="compressed in:=/boxi/alphasense/front_right/image_raw raw out:=/boxi/alphasense/front_right/image_raw" required="true" if="$(arg enable_alphasense)"/>
 </launch>

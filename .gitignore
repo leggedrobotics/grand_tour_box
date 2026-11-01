@@ -37,3 +37,4 @@ box_utils/box_converter/image-anonymization-pipeline/cluster/.export/*
 box_utils/box_converter/image-anonymization-pipeline/cluster/.submit/*
 box_utils/box_converter/image-anonymization-pipeline/cluster/.out/*
 box_utils/box_converter/nerfstudio/.submit/*
+/.codex

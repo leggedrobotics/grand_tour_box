@@ -65,6 +65,20 @@ include_directories(
 # Targets
 # NOTE: Do NOT build a library from files that contain `main()`.
 # ------------------------------------------------------------------------------
+add_executable(merge
+  src/merge.cpp
+)
+add_dependencies(merge ${catkin_EXPORTED_TARGETS})
+target_link_libraries(merge
+  ${catkin_LIBRARIES}
+  yaml-cpp
+)
+
+if(CATKIN_ENABLE_TESTING)
+  add_test(NAME box_export_merge_contracts
+    COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/test_merge.py $<TARGET_FILE:merge>)
+endif()
+
 add_executable(zed2i_decompression_and_saving
   src/zed2i_decompress_and_format_data.cpp
 )
@@ -80,6 +94,7 @@ target_link_libraries(zed2i_decompression_and_saving
 # Install
 # ------------------------------------------------------------------------------
 install(TARGETS
+  merge
   zed2i_decompression_and_saving
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )

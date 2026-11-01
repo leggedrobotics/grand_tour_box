@@ -3,43 +3,43 @@
 import base64
 import io
 import json
-import webbrowser
+import os
 from pathlib import Path
 from datetime import datetime
 from typing import List, Tuple
 
-import folium
-import gpxpy
+import matplotlib
+
+matplotlib.use("Agg")  # non-interactive backend for speed / headless use
 import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
 import matplotlib.ticker as mticker
 import numpy as np
 import rosbag
+import gpxpy
+import folium
 import gspread
 from folium.plugins import (
     MiniMap,
     MeasureControl,
     HeatMap,
     Fullscreen,
-    # TimestampedGeoJson,  # kept for feature parity (not used by default)
-    # MarkerCluster,  # kept for feature parity (not used by default)
-    # Search,  # kept for feature parity (not used by default)
-    # LocateControl,  # kept for feature parity (not used by default)
-    # FloatImage,  # kept for feature parity (not used by default)
-    # DualMap,  # kept for feature parity (not used by default)
 )
 from geopy.geocoders import Nominatim
 from geopy.extra.rate_limiter import RateLimiter
 
+from box_auto.utils.gpx_data import acquisition_time, validate_coordinates, decimate_coordinates
+
 from box_auto.utils import (
-    get_bag,
     MISSION_DATA,
     BOX_AUTO_DIR,
     WS,
-    find_and_extract_non_matching,
 )
 
 # ─── CONSTANTS ──────────────────────────────────────────────────────────────
+
+FAKE_SHEET = os.environ.get("BOXI_FAKE_SHEET", "false").lower() in {"1", "true", "yes"}
+
 MODE = "tc"
 VALID_TOPIC = f"/gt_box/inertial_explorer/{MODE}/navsatfix"
 GPS_PATTERN = f"*_cpt7_ie_{MODE}.bag"
@@ -61,7 +61,7 @@ STD_MAP = {
     "5.00 m + over": "5_plus",
 }
 
-# Shared geopy objects (rate‑limited)
+# Shared geopy objects (rate-limited)
 _GEOL = Nominatim(user_agent="gpx_viewer")
 _REVERSE = RateLimiter(_GEOL.reverse, min_delay_seconds=1)
 
@@ -69,19 +69,19 @@ _REVERSE = RateLimiter(_GEOL.reverse, min_delay_seconds=1)
 
 
 def pick_color(idx: int, total: int) -> str:
-    """Color helper mimicking the original traffic‑light logic."""
+    """Color helper mimicking the original traffic-light logic."""
     if idx < 2:
         return "darkgreen"
     if idx == 2:
-        return "#DAA520"  # golden‑rod for the middle bucket
+        return "#DAA520"  # golden-rod for the middle bucket
     if idx >= total - 2:
         return "red"
     return "inherit"
 
 
 def ecef_to_lla(x: float, y: float, z: float) -> Tuple[float, float, float]:
-    """Convert ECEF coordinates → lat/long/alt (WGS‑84)."""
-    a = 6378137.0  # semi‑major axis
+    """Convert ECEF coordinates → lat/long/alt (WGS-84)."""
+    a = 6378137.0  # semi-major axis
     f = 1 / 298.257223563
     e2 = 6.69437999014e-3  # first eccentricity squared
 
@@ -107,7 +107,7 @@ def basemap_layers() -> Tuple[str, str, str, str, str, str, str, str, str, str]:
     """Return tile URLs + attributions for all basemap layers."""
     # URLs
     esri = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-    carto = "http://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"
+    carto = "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"
     osm = "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
     g_hyb = "https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}"
     g_rd = "https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
@@ -142,11 +142,14 @@ def read_gspread_row(date_str: str):
     data = ws.get_all_values("A1:C75")
     try:
         row_idx = next(i for i, r in enumerate(data) if r[0] == date_str) + 1
-    except StopIteration:
-        raise ValueError(f"No row found with mission_id '{date_str}'")
+    except StopIteration as cause:
+        raise ValueError(f"No row found with mission_id '{date_str}'") from cause
 
     headers = data[0]
-    col = lambda name: headers.index(name)
+
+    def col(name: str) -> int:
+        return headers.index(name)
+
     row = data[row_idx - 1]
 
     good_mission = row[col("good_mission")].strip().upper() == "TRUE"
@@ -156,7 +159,14 @@ def read_gspread_row(date_str: str):
 
 
 def write_stats_to_sheet(gs: dict, stats: dict) -> None:
-    """Write *stats* dict to the Google Sheet row described by *gs*."""
+    """Write *stats* dict to the Google Sheet row described by *gs*.
+
+    Skips remote update when the stats file is missing to avoid unnecessary I/O.
+    """
+    if stats.get("FILE_NOT_FOUND") == "true":
+        print("[INFO] Stats file missing; skipping Google Sheet update.")
+        return
+
     ws = gs["worksheet"]
     row_idx = gs["row_index"]
     headers = ws.row_values(1)
@@ -164,8 +174,8 @@ def write_stats_to_sheet(gs: dict, stats: dict) -> None:
     def col(name: str) -> int:
         return headers.index(name) + 1
 
-    cells = [gspread.Cell(row_idx, col(lbl.replace(" ", "")), stats[lbl]) for lbl in Q_LABELS] + [
-        gspread.Cell(row_idx, col(STD_MAP[lbl]), stats[lbl]) for lbl in STD_LABELS
+    cells = [gspread.Cell(row_idx, col(lbl.replace(" ", "")), stats.get(lbl, "N/A")) for lbl in Q_LABELS] + [
+        gspread.Cell(row_idx, col(STD_MAP[lbl]), stats.get(lbl, "N/A")) for lbl in STD_LABELS
     ]
 
     ws.update_cells(cells)
@@ -200,17 +210,20 @@ def generate_gpx(bag_path: str) -> Tuple[gpxpy.gpx.GPX, List[Tuple]]:
     gpx.tracks.append(track)
     track.segments.append(seg)
 
-    points = []
+    points: List[Tuple[float, float, float, datetime]] = []
     with rosbag.Bag(bag_path, "r") as bag:
         for _, msg, ts in bag.read_messages(topics=[VALID_TOPIC]):
             if msg._type == "sensor_msgs/NavSatFix":
                 lat, lon, alt = msg.latitude, msg.longitude, msg.altitude
             else:
+                # fallback for custom messages carrying ECEF XYZ
                 lat, lon, alt = ecef_to_lla(msg.x, msg.y, msg.z)
 
-            timestamp = datetime.fromtimestamp(ts.secs + ts.nsecs * 1e-9)
+            validate_coordinates(lat, lon, alt)
+            timestamp = acquisition_time(msg, ts)
             seg.points.append(gpxpy.gpx.GPXTrackPoint(lat, lon, alt, timestamp))
             points.append((lat, lon, alt, timestamp))
+
     return gpx, points
 
 
@@ -219,17 +232,13 @@ def build_stats_html(stats: dict) -> str:
 
     def make_rows(labels):
         return "\n".join(
-            f"<tr><td style='padding:2px;color:{pick_color(i,len(labels))}'>{lbl}</td>"
-            f"<td style='padding:2px'>{stats[lbl]}</td></tr>"
+            f"<tr><td style='padding:2px;color:{pick_color(i, len(labels))}'>{lbl}</td>"
+            f"<td style='padding:2px'>{stats.get(lbl, 'N/A')}</td></tr>"
             for i, lbl in enumerate(labels)
         )
 
     return (
-        # "<hr style='margin:6px 0;'/>"
-        # "<strong style='font-size:13px;display:block;'>Quality Number %</strong>"
-        # "<table style='font-size:12px;width:100%;border-collapse:collapse;'>"
-        # f"{make_rows(Q_LABELS)}</table>"
-        "<strong style='font-size:13px;display:block;margin-top:4px;'>Std‑Dev Range %</strong>"
+        "<strong style='font-size:13px;display:block;margin-top:4px;'>Std-Dev Range %</strong>"
         "<table style='font-size:12px;width:100%;border-collapse:collapse;'>"
         f"{make_rows(STD_LABELS)}</table>"
     )
@@ -240,6 +249,9 @@ def build_stats_html(stats: dict) -> str:
 
 def create_elevation_plot(times: List[datetime], elevs: List[float]) -> str:
     """Return base-64 PNG of the elevation graph, styled per Datawrapper guidelines."""
+    if not times or not elevs:
+        return ""
+
     # compute relative seconds
     rel = [(t - times[0]).total_seconds() for t in times]
 
@@ -288,13 +300,6 @@ def create_elevation_plot(times: List[datetime], elevs: List[float]) -> str:
         fontweight="bold",
         pad=6,
     )
-    # ax.set_xlabel(
-    #     "Time (s)",
-    #     fontproperties=roboto,
-    #     fontsize=12,
-    #     fontweight="bold",
-    #     labelpad=4,
-    # )
 
     ax.xaxis.set_major_formatter(mticker.FuncFormatter(lambda x, pos: f"{int(x)} s"))
     ax.set_ylabel(
@@ -331,13 +336,17 @@ def create_elevation_plot(times: List[datetime], elevs: List[float]) -> str:
 
 
 def get_city_name(lat: float, lon: float) -> str:
-    """Reverse geocode → city / town."""
+    """Reverse geocode → city / town."""
     try:
         loc = _REVERSE((lat, lon), exactly_one=True)
         addr = loc.raw.get("address", {}) if loc else {}
         return addr.get("city") or addr.get("town") or addr.get("village") or "Unknown"
     except Exception as exc:
         return f"Error: {exc}"
+
+
+def _decimate_coords(points, max_points=5000):
+    return decimate_coordinates(points, max_points)
 
 
 def build_folium_map(
@@ -380,16 +389,16 @@ def build_folium_map(
     ) = basemap_layers()
 
     folium.TileLayer(esri, attr=esri_attr, name="ESRI World Imagery", max_zoom=24).add_to(m)
-    # folium.TileLayer(carto, attr=carto_attr, name="CartoDB Dark", max_zoom=24).add_to(m)
-    # folium.TileLayer(osm, attr=osm_attr, name="OpenStreetMap", max_zoom=24).add_to(m)
-    # folium.TileLayer(g_rd, attr=g_attr, name="Google Road", max_zoom=24).add_to(m)
     folium.TileLayer(g_sat, attr=g_attr, name="Google Satellite", max_zoom=24).add_to(m)
     folium.TileLayer(g_hyb, attr=g_attr, name="Google Hybrid", max_zoom=24, show=True).add_to(m)
 
-    # Track & heatmap
-    coords = [(lat, lon) for lat, lon, *_ in points]
+    # Track & heatmap (decimated for speed)
+    coords = _decimate_coords(points, max_points=5000)
     folium.PolyLine(coords, color="blue", weight=3).add_to(m)
-    HeatMap(coords).add_to(folium.FeatureGroup(name="Heat Map", show=True).add_to(m))
+
+    heat_group = folium.FeatureGroup(name="Heat Map", show=True)
+    HeatMap(coords).add_to(heat_group)
+    heat_group.add_to(m)
 
     # Popup at first point (start of mission)
     elev0 = f"{points[0][2]:.2f} m" if points[0][2] is not None else "N/A"
@@ -410,12 +419,17 @@ def build_folium_map(
         icon=folium.Icon(color="green"),
     ).add_to(m)
 
-    # End marker
+    # End marker with robust reverse geocoding
     end_lat, end_lon = points[-1][:2]
-    end_loc = _REVERSE((end_lat, end_lon))
+    try:
+        end_loc = _REVERSE((end_lat, end_lon), exactly_one=True)
+        end_text = end_loc.address if end_loc else "Unknown"
+    except Exception as exc:
+        end_text = f"Unknown (reverse geocoding failed: {exc})"
+
     folium.Marker(
         location=(end_lat, end_lon),
-        popup=f"End: {end_loc.address}",
+        popup=f"End: {end_text}",
         tooltip="Mission end",
         icon=folium.Icon(color="red"),
     ).add_to(m)
@@ -424,7 +438,7 @@ def build_folium_map(
     MiniMap(toggle_display=True, position="bottomleft").add_to(m)
     MeasureControl(position="topleft", primary_length_unit="meters").add_to(m)
     Fullscreen(position="topleft").add_to(m)
-    folium.LayerControl(position="topright", collapsed=False, overlay=True, draggable=True).add_to(m)
+    folium.LayerControl(position="topright", collapsed=False).add_to(m)
 
     # Dynamic JS variable name for the map
     map_name = m.get_name()
@@ -501,31 +515,22 @@ def build_folium_map(
         )
     )
 
-    # # Simple CSS tweak
-    # m.get_root().html.add_child(
-    #     folium.Element("<style>.leaflet-control-layers{font-family:'Roboto';font-size:20px;}</style>")
-    # )
-
     # Logos
-    # icon_path = Path(WS) / "src/grand_tour_box/box_documentation/images/icon.png"
     rsl_logo_path = Path(WS) / "src/grand_tour_box/box_documentation/images/rsl_logo.webp"
-    # icon_b64 = base64.b64encode(icon_path.read_bytes()).decode("utf-8")
-    rsl_b64 = base64.b64encode(rsl_logo_path.read_bytes()).decode("utf-8")
-
-    # logo_html = (
-    #     "<div style='position:fixed;bottom:200px;left:10px;z-index:9999;"
-    #     "background:rgba(255,255,255,0.8);padding:5px;border:1px solid grey;'>"
-    #     f"<img src='data:image/png;base64,{icon_b64}' style='width:100px;height:auto;'>"
-    #     "</div>"
-    # )
-    # m.get_root().html.add_child(folium.Element(logo_html))
+    if rsl_logo_path.is_file():
+        rsl_b64 = base64.b64encode(rsl_logo_path.read_bytes()).decode("utf-8")
+        logo_img_html = (
+            f'<img src="data:image/webp;base64,{rsl_b64}" '
+            'style="width:50px; height:auto; vertical-align:middle; margin-right:8px;" />'
+        )
+    else:
+        logo_img_html = ""
 
     # Title banner with logo and text
     logo_and_text = (
         f'<a href="{INFO_LINK}" target="_blank" '
         'style="text-decoration:none; color:inherit;">'
-        f'<img src="data:image/webp;base64,{rsl_b64}" '
-        'style="width:50px; height:auto; vertical-align:middle; margin-right:8px;" />'
+        f"{logo_img_html}"
         '<span style="vertical-align:middle; font-weight:bold;">[The GrandTour Dataset]</span>'
         "</a>"
     )
@@ -555,107 +560,108 @@ def build_folium_map(
     """
     m.get_root().html.add_child(folium.Element(title_html))
 
-    plot_html = (
-        "<div id='elevation-overlay' "
-        "style='display:none; position:fixed; bottom:10px; right:10px; z-index:9999;"
-        " background:rgba(255,255,255,0.9); padding:5px; border:3px solid black;"
-        " transition:width 0.2s ease;'>"
-        f"<img src='data:image/png;base64,{encoded_plot}' style='width:100%; height:auto;'/>"
-        "</div>"
-        "<script>"
-        "  const overlay = document.getElementById('elevation-overlay');"
-        "  function updateOverlayWidth() {"
-        "    if (overlay) overlay.style.width = `${window.innerWidth * 0.8}px`;"  # Set width to 80% of innerWidth
-        "  }"
-        "  window.addEventListener('resize', updateOverlayWidth);"
-        "  updateOverlayWidth();"  # Initial call to set width
-        "</script>"
-    )
+    # Elevation overlay (can be empty if no encoded_plot)
+    if encoded_plot:
+        plot_html = (
+            "<div id='elevation-overlay' "
+            "style='display:none; position:fixed; bottom:10px; right:10px; z-index:9999;"
+            " background:rgba(255,255,255,0.9); padding:5px; border:3px solid black;"
+            " transition:width 0.2s ease;'>"
+            f"<img src='data:image/png;base64,{encoded_plot}' style='width:100%; height:auto;'/>"
+            "</div>"
+            "<script>"
+            "  const overlay = document.getElementById('elevation-overlay');"
+            "  function updateOverlayWidth() {"
+            "    if (overlay) overlay.style.width = `${window.innerWidth * 0.8}px`;"
+            "  }"
+            "  window.addEventListener('resize', updateOverlayWidth);"
+            "  updateOverlayWidth();"
+            "</script>"
+        )
 
-    m.get_root().html.add_child(folium.Element(plot_html))
+        m.get_root().html.add_child(folium.Element(plot_html))
 
-    toggle_button = """
-    <div style="position:fixed;top:10px;right:10px;z-index:9999;">
-    <button id="toggleElevBtn" onclick="toggleElev()"
-            style="
-                background-color:#ccc;
-                color:#333;
-                font-weight:bold;
-                font-size:18px;
-                padding:8px 12px;
-                border:none;
-                border-radius:4px;
-                box-shadow:0 2px 6px rgba(0,0,0,0.2);
-                font-family:roboto;
-                cursor:pointer;
-            ">
-        Toggle Elevation
-    </button>
-    </div>
-    """
-    m.get_root().html.add_child(folium.Element(toggle_button))
+        toggle_button = """
+        <div style="position:fixed;top:10px;right:10px;z-index:9999;">
+        <button id="toggleElevBtn" onclick="toggleElev()"
+                style="
+                    background-color:#ccc;
+                    color:#333;
+                    font-weight:bold;
+                    font-size:18px;
+                    padding:8px 12px;
+                    border:none;
+                    border-radius:4px;
+                    box-shadow:0 2px 6px rgba(0,0,0,0.2);
+                    font-family:roboto;
+                    cursor:pointer;
+                ">
+            Toggle Elevation
+        </button>
+        </div>
+        """
+        m.get_root().html.add_child(folium.Element(toggle_button))
 
-    resize_slider = """
-    <div id="sliderContainer" style="
-        display:none;
-        position:fixed;
-        top:60px;
-        right:10px;
-        z-index:9999;
-        background:#f8f9fa;
-        padding:8px 12px;
-        border-radius:6px;
-        box-shadow:0 2px 6px rgba(0,0,0,0.1);
-        font-family:roboto;
-        font-size:18px;
-        color:#333;
-    ">
-    <label for="elevSize" style="display:block; margin-bottom:4px; font-weight:bold;">
-        Width:
-    </label>
-    <input type="range" id="elevSize" min="400" max="2500" value="2200"
-            style="
-            width: 100%;
-            -webkit-appearance: none;
-            height: 6px;
-            border-radius: 3px;
-            background: #ddd;
-            outline: none;
-            "
-            oninput="
-            document
-                .getElementById('elevation-overlay')
-                .style.width=this.value + 'px';
-            "/>
-    </div>
-    """
-    m.get_root().html.add_child(folium.Element(resize_slider))
+        resize_slider = """
+        <div id="sliderContainer" style="
+            display:none;
+            position:fixed;
+            top:60px;
+            right:10px;
+            z-index:9999;
+            background:#f8f9fa;
+            padding:8px 12px;
+            border-radius:6px;
+            box-shadow:0 2px 6px rgba(0,0,0,0.1);
+            font-family:roboto;
+            font-size:18px;
+            color:#333;
+        ">
+        <label for="elevSize" style="display:block; margin-bottom:4px; font-weight:bold;">
+            Width:
+        </label>
+        <input type="range" id="elevSize" min="400" max="2500" value="2200"
+                style="
+                width: 100%;
+                -webkit-appearance: none;
+                height: 6px;
+                border-radius: 3px;
+                background: #ddd;
+                outline: none;
+                "
+                oninput="
+                document
+                    .getElementById('elevation-overlay')
+                    .style.width=this.value + 'px';
+                "/>
+        </div>
+        """
+        m.get_root().html.add_child(folium.Element(resize_slider))
 
-    toggle_js = """
-    <script>
-    function toggleElev() {
-    var overlay = document.getElementById('elevation-overlay');
-    var slider = document.getElementById('sliderContainer');
-    var button = document.getElementById('toggleElevBtn');
+        toggle_js = """
+        <script>
+        function toggleElev() {
+        var overlay = document.getElementById('elevation-overlay');
+        var slider = document.getElementById('sliderContainer');
+        var button = document.getElementById('toggleElevBtn');
 
-    if (!overlay) return;
+        if (!overlay) return;
 
-    var visible = overlay.style.display !== 'none';
-    overlay.style.display = visible ? 'none' : 'block';
-    slider.style.display = visible ? 'none' : 'block';
+        var visible = overlay.style.display !== 'none';
+        overlay.style.display = visible ? 'none' : 'block';
+        slider.style.display = visible ? 'none' : 'block';
 
-    // Change button color based on state
-    if (visible) {
-        button.style.backgroundColor = '#ccc'; // OFF: gray
-        button.style.color = '#333';
-    } else {
-        button.style.backgroundColor = '#1E90FF'; // ON: blue
-        button.style.color = '#fff';
-    }
-    }
-    </script>
-    """
-    m.get_root().html.add_child(folium.Element(toggle_js))
+        if (visible) {
+            button.style.backgroundColor = '#ccc';
+            button.style.color = '#333';
+        } else {
+            button.style.backgroundColor = '#1E90FF';
+            button.style.color = '#fff';
+        }
+        }
+        </script>
+        """
+        m.get_root().html.add_child(folium.Element(toggle_js))
 
     return m
 
@@ -663,46 +669,14 @@ def build_folium_map(
 # ─── MAIN PIPELINE ──────────────────────────────────────────────────────────
 
 
-def main() -> None:
-    bag_path = get_bag(GPS_PATTERN)
-    mission_id = find_and_extract_non_matching(MISSION_DATA, GPS_PATTERN)
+def main(argv=None):
+    # Share the explicit local/batch/output CLI and opt-in network behavior while
+    # retaining this entry point's public dataset topic layout.
+    from box_auto.scripts.cpt7 import gpx_converter_automated as runner
 
-    good, codename, row_idx, ws = read_gspread_row(mission_id)
-    gs_info = {
-        "good_mission": good,
-        "codename": codename,
-        "row_index": row_idx,
-        "worksheet": ws,
-    }
-
-    if not good:
-        print(f"Mission {mission_id} is not marked as good; skipping.")
-        return
-
-    stats = load_stats(mission_id)
-    write_stats_to_sheet(gs_info, stats)
-
-    gpx, points = generate_gpx(bag_path)
-
-    # Save GPX next to bag
-    gpx_path = Path(bag_path).with_suffix(".gpx")
-    gpx_path.write_text(gpx.to_xml())
-
-    city = get_city_name(*points[0][:2])
-    stats_html = build_stats_html(stats)
-
-    # Sparse subset for plot to avoid excessive markers
-    step = max(1, len(points) // 200)
-    times = [p[3] for p in points[::step]]
-    elevs = [p[2] for p in points[::step]]
-    encoded_plot = create_elevation_plot(times, elevs)
-
-    fmap = build_folium_map(points, mission_id, city, stats_html, encoded_plot, codename)
-
-    html_file = Path(MISSION_DATA) / f"{mission_id}_gps_map_{MODE}.html"
-    fmap.save(str(html_file))
-    webbrowser.open(f"file://{html_file.resolve()}")
+    runner.VALID_TOPIC = VALID_TOPIC
+    return runner.main(argv)
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

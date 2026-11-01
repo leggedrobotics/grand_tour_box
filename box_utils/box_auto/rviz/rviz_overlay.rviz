@@ -4,12 +4,16 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
+        - /Cameras1
+        - /LiDARs1
+        - /LiDARs1/velodyne1
+        - /LiDARs1/livox1
         - /LiDARs1/HesaiXT321
         - /LiDARs1/HesaiXT321/hesai1
         - /Frames1/TF1
         - /Frames1/GMSF_world1
       Splitter Ratio: 0.31219029426574707
-    Tree Height: 420
+    Tree Height: 140
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -29,6 +33,25 @@ Panels:
     Name: Time
     SyncMode: 0
     SyncSource: hesai
+  - Class: rviz/Displays
+    Help Height: 70
+    Name: Displays
+    Property Tree Widget:
+      Expanded:
+        - /Global Options1
+        - /LiDARs1
+        - /LiDARs1/velodyne1
+        - /LiDARs1/livox1
+        - /LiDARs1/HesaiXT321
+        - /LiDARs1/HesaiXT321/hesai1
+        - /PointCloud21
+        - /PointCloud22
+        - /PointCloud23
+        - /PointCloud24
+        - /PointCloud25
+        - /PointCloud26
+      Splitter Ratio: 0.4560260474681854
+    Tree Height: 740
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -523,6 +546,11 @@ Visualization Manager:
               Show Axes: false
               Show Trail: false
               Value: true
+            spider:
+              Alpha: 1
+              Show Axes: false
+              Show Trail: false
+              Value: true
             stim320_imu:
               Alpha: 1
               Show Axes: false
@@ -542,7 +570,94 @@ Visualization Manager:
             - Class: rviz/Camera
               Enabled: false
               Image Rendering: background and overlay
-              Image Topic: /gt_box/hdr_left/image_raw
+              Image Topic: /boxi/hdr/front/image_raw
+              Name: hdr_front
+              Overlay Alpha: 0.5
+              Queue Size: 2
+              Transport Hint: compressed
+              Unreliable: false
+              Value: false
+              Visibility:
+                Cameras:
+                  HDR:
+                    Value: true
+                    hdr_left: true
+                    hdr_right: true
+                  Value: true
+                  ZED2i:
+                    Value: true
+                    left_zed: true
+                    right_zed: true
+                Frames:
+                  DLIO_MAP: true
+                  GMSF_world: true
+                  IE_ENU_Origin: true
+                  TF: true
+                  Value: true
+                LiDARs:
+                  HesaiXT32:
+                    Value: true
+                    hesai: true
+                    intensity_image: true
+                    range image: true
+                  Value: true
+                  livox: true
+                  velodyne: true
+                Models:
+                  Value: true
+                  anymal_model: true
+                  boxi_model: true
+                PointCloud2: true
+                Value: true
+                alphasense_front_center: true
+                alphasense_front_left: true
+                alphasense_front_right: true
+              Zoom Factor: 1
+            - Class: rviz/Camera
+              Enabled: false
+              Image Rendering: background and overlay
+              Image Topic: /boxi/hdr/right/image_raw
+              Name: hdr_right
+              Overlay Alpha: 0.5
+              Queue Size: 2
+              Transport Hint: compressed
+              Unreliable: false
+              Value: false
+              Visibility:
+                "": true
+                Cameras:
+                  HDR:
+                    Value: true
+                    hdr_front: true
+                    hdr_left: true
+                  Value: true
+                  ZED2i:
+                    Value: true
+                    left_zed: true
+                    right_zed: true
+                Frames:
+                  DLIO_MAP: true
+                  GMSF_world: true
+                  IE_ENU_Origin: true
+                  TF: true
+                  Value: true
+                LiDARs:
+                  "":
+                    "": true
+                    Value: true
+                  Value: true
+                Models:
+                  "": true
+                  Value: true
+                Value: true
+                alphasense_front_center: true
+                alphasense_front_left: true
+                alphasense_front_right: true
+              Zoom Factor: 1
+            - Class: rviz/Camera
+              Enabled: false
+              Image Rendering: background and overlay
+              Image Topic: /boxi/hdr/left/image_raw
               Name: hdr_left
               Overlay Alpha: 0.5
               Queue Size: 2
@@ -557,80 +672,6 @@ Visualization Manager:
                     hdr_right: true
                   Value: true
                   ZED2i:
-                    "": true
-                    Value: true
-                Frames:
-                  DLIO_MAP: true
-                  GMSF_world: true
-                  IE_ENU_Origin: true
-                  TF: true
-                  Value: true
-                LiDARs:
-                  "":
-                    "": true
-                    Value: true
-                  Value: true
-                Models:
-                  Value: true
-                  anymal_model: true
-                  boxi_model: true
-                Value: true
-              Zoom Factor: 1
-            - Class: rviz/Camera
-              Enabled: false
-              Image Rendering: background and overlay
-              Image Topic: /gt_box/hdr_right/image_raw
-              Name: hdr_right
-              Overlay Alpha: 0.5
-              Queue Size: 2
-              Transport Hint: compressed
-              Unreliable: false
-              Value: false
-              Visibility:
-                Cameras:
-                  HDR:
-                    Value: true
-                    hdr_front: true
-                    hdr_left: true
-                  Value: true
-                  ZED2i:
-                    "": true
-                    Value: true
-                Frames:
-                  DLIO_MAP: true
-                  GMSF_world: true
-                  IE_ENU_Origin: true
-                  TF: true
-                  Value: true
-                LiDARs:
-                  "":
-                    "": true
-                    Value: true
-                  Value: true
-                Models:
-                  Value: true
-                  anymal_model: true
-                  boxi_model: true
-                Value: true
-              Zoom Factor: 1
-            - Class: rviz/Camera
-              Enabled: true
-              Image Rendering: background and overlay
-              Image Topic: /gt_box/hdr_front/image_raw
-              Name: hdr_front
-              Overlay Alpha: 0.5
-              Queue Size: 2
-              Transport Hint: compressed
-              Unreliable: false
-              Value: true
-              Visibility:
-                Cameras:
-                  HDR:
-                    Value: true
-                    hdr_left: true
-                    hdr_right: true
-                  Value: true
-                  ZED2i:
                     Value: true
                     left_zed: true
                     right_zed: true
@@ -653,14 +694,18 @@ Visualization Manager:
                   Value: true
                   anymal_model: true
                   boxi_model: true
+                PointCloud2: true
                 Value: true
+                alphasense_front_center: true
+                alphasense_front_left: true
+                alphasense_front_right: true
               Zoom Factor: 1
           Enabled: true
           Name: HDR
         - Class: rviz/Group
           Displays:
             - Class: rviz/Camera
-              Enabled: false
+              Enabled: true
               Image Rendering: background and overlay
               Image Topic: /boxi/zed2i/right/image_raw
               Name: right_zed
@@ -668,14 +713,13 @@ Visualization Manager:
               Queue Size: 2
               Transport Hint: raw
               Unreliable: false
-              Value: false
+              Value: true
               Visibility:
+                "": true
                 Cameras:
                   HDR:
+                    "": true
                     Value: true
-                    hdr_front: true
-                    hdr_left: true
-                    hdr_right: true
                   Value: true
                   ZED2i:
                     Value: true
@@ -692,10 +736,12 @@ Visualization Manager:
                     Value: true
                   Value: true
                 Models:
+                  "": true
                   Value: true
-                  anymal_model: true
-                  boxi_model: true
                 Value: true
+                alphasense_front_center: true
+                alphasense_front_left: true
+                alphasense_front_right: true
               Zoom Factor: 1
             - Class: rviz/Camera
               Enabled: true
@@ -708,12 +754,11 @@ Visualization Manager:
               Unreliable: false
               Value: true
               Visibility:
+                "": true
                 Cameras:
                   HDR:
+                    "": true
                     Value: true
-                    hdr_front: true
-                    hdr_left: true
-                    hdr_right: true
                   Value: true
                   ZED2i:
                     Value: true
@@ -725,21 +770,19 @@ Visualization Manager:
                   TF: true
                   Value: true
                 LiDARs:
-                  HesaiXT32:
+                  "":
+                    "": true
                     Value: true
-                    hesai: true
-                    intensity_image: true
-                    range image: true
                   Value: true
-                  livox: true
-                  velodyne: true
                 Models:
+                  "": true
                   Value: true
-                  anymal_model: true
-                  boxi_model: true
                 Value: true
+                alphasense_front_center: true
+                alphasense_front_left: true
+                alphasense_front_right: true
               Zoom Factor: 1
-          Enabled: true
+          Enabled: false
           Name: ZED2i
       Enabled: true
       Name: Cameras
@@ -754,10 +797,10 @@ Visualization Manager:
           Axis: Z
           Channel Name: intensity
           Class: rviz/PointCloud2
-          Color: 255; 255; 255
-          Color Transformer: Intensity
+          Color: 25; 25; 255
+          Color Transformer: FlatColor
           Decay Time: 0
-          Enabled: false
+          Enabled: true
           Invert Rainbow: false
           Max Color: 255; 255; 255
           Min Color: 0; 0; 0
@@ -765,14 +808,14 @@ Visualization Manager:
           Position Transformer: XYZ
           Queue Size: 10
           Selectable: true
-          Size (Pixels): 3
+          Size (Pixels): 5
           Size (m): 0.009999999776482582
-          Style: Flat Squares
+          Style: Points
           Topic: /anymal/velodyne/points_undistorted
           Unreliable: false
           Use Fixed Frame: true
           Use rainbow: true
-          Value: false
+          Value: true
         - Alpha: 1
           Autocompute Intensity Bounds: true
           Autocompute Value Bounds:
@@ -782,7 +825,7 @@ Visualization Manager:
           Axis: Z
           Channel Name: intensity
           Class: rviz/PointCloud2
-          Color: 255; 255; 255
+          Color: 191; 64; 170
           Color Transformer: FlatColor
           Decay Time: 0
           Enabled: true
@@ -793,10 +836,10 @@ Visualization Manager:
           Position Transformer: XYZ
           Queue Size: 10
           Selectable: true
-          Size (Pixels): 1
+          Size (Pixels): 5
           Size (m): 0.009999999776482582
           Style: Points
-          Topic: /gt_box/livox/lidar
+          Topic: /boxi/livox/points_undistorted
           Unreliable: false
           Use Fixed Frame: true
           Use rainbow: true
@@ -812,7 +855,7 @@ Visualization Manager:
               Axis: Z
               Channel Name: intensity
               Class: rviz/PointCloud2
-              Color: 239; 41; 41
+              Color: 138; 226; 52
               Color Transformer: FlatColor
               Decay Time: 0
               Enabled: true
@@ -823,17 +866,17 @@ Visualization Manager:
               Position Transformer: XYZ
               Queue Size: 10
               Selectable: true
-              Size (Pixels): 1
+              Size (Pixels): 5
               Size (m): 0.019999999552965164
               Style: Points
-              Topic: /gt_box/hesai/points
+              Topic: /boxi/hesai/points_undistorted
               Unreliable: false
               Use Fixed Frame: true
               Use rainbow: true
               Value: true
             - Class: rviz/Image
-              Enabled: true
-              Image Topic: /gt_box/hesai/range_image
+              Enabled: false
+              Image Topic: /boxi/hesai/range_image
               Max Value: 1
               Median window: 5
               Min Value: 0
@@ -842,10 +885,10 @@ Visualization Manager:
               Queue Size: 2
               Transport Hint: raw
               Unreliable: false
-              Value: true
+              Value: false
             - Class: rviz/Image
               Enabled: false
-              Image Topic: /gt_box/hesai/intensity_image
+              Image Topic: /boxi/hesai/intensity_image
               Max Value: 1
               Median window: 5
               Min Value: 0
@@ -866,260 +909,6 @@ Visualization Manager:
           Frame Timeout: 15
           Frames:
             All Enabled: false
-            LF_FOOT:
-              Value: true
-            LF_HAA_drive:
-              Value: true
-            LF_HFE_drive:
-              Value: true
-            LF_HFE_output:
-              Value: true
-            LF_HIP:
-              Value: true
-            LF_KFE_drive:
-              Value: true
-            LF_SHANK:
-              Value: true
-            LF_THIGH:
-              Value: true
-            LF_hip_fixed:
-              Value: true
-            LF_shank_fixed:
-              Value: true
-            LF_thigh_fixed:
-              Value: true
-            LH_FOOT:
-              Value: true
-            LH_HAA_drive:
-              Value: true
-            LH_HFE_drive:
-              Value: true
-            LH_HFE_output:
-              Value: true
-            LH_HIP:
-              Value: true
-            LH_KFE_drive:
-              Value: true
-            LH_SHANK:
-              Value: true
-            LH_THIGH:
-              Value: true
-            LH_hip_fixed:
-              Value: true
-            LH_shank_fixed:
-              Value: true
-            LH_thigh_fixed:
-              Value: true
-            RF_FOOT:
-              Value: true
-            RF_HAA_drive:
-              Value: true
-            RF_HFE_drive:
-              Value: true
-            RF_HFE_output:
-              Value: true
-            RF_HIP:
-              Value: true
-            RF_KFE_drive:
-              Value: true
-            RF_SHANK:
-              Value: true
-            RF_THIGH:
-              Value: true
-            RF_hip_fixed:
-              Value: true
-            RF_shank_fixed:
-              Value: true
-            RF_thigh_fixed:
-              Value: true
-            RH_FOOT:
-              Value: true
-            RH_HAA_drive:
-              Value: true
-            RH_HFE_drive:
-              Value: true
-            RH_HFE_output:
-              Value: true
-            RH_HIP:
-              Value: true
-            RH_KFE_drive:
-              Value: true
-            RH_SHANK:
-              Value: true
-            RH_THIGH:
-              Value: true
-            RH_hip_fixed:
-              Value: true
-            RH_shank_fixed:
-              Value: true
-            RH_thigh_fixed:
-              Value: true
-            adis16475_imu:
-              Value: true
-            alphasense_base:
-              Value: true
-            alphasense_front_center:
-              Value: true
-            alphasense_front_left:
-              Value: true
-            alphasense_front_right:
-              Value: true
-            alphasense_imu:
-              Value: true
-            alphasense_left:
-              Value: true
-            alphasense_right:
-              Value: true
-            anymal_imu:
-              Value: true
-            ap20_imu:
-              Value: true
-            base:
-              Value: true
-            base_inertia:
-              Value: true
-            battery:
-              Value: true
-            body_top:
-              Value: true
-            bottom_shell:
-              Value: true
-            box_base:
-              Value: true
-            box_base_model:
-              Value: true
-            cpt7_antenna_back_model:
-              Value: true
-            cpt7_imu:
-              Value: true
-            depth_camera_front_lower:
-              Value: true
-            depth_camera_front_lower_camera:
-              Value: true
-            depth_camera_front_lower_camera_parent:
-              Value: true
-            depth_camera_front_lower_depth_frame:
-              Value: true
-            depth_camera_front_lower_depth_optical_frame:
-              Value: true
-            depth_camera_front_upper:
-              Value: true
-            depth_camera_front_upper_camera:
-              Value: true
-            depth_camera_front_upper_camera_parent:
-              Value: true
-            depth_camera_front_upper_depth_frame:
-              Value: true
-            depth_camera_front_upper_depth_optical_frame:
-              Value: true
-            depth_camera_left:
-              Value: true
-            depth_camera_left_camera:
-              Value: true
-            depth_camera_left_camera_parent:
-              Value: true
-            depth_camera_left_depth_frame:
-              Value: true
-            depth_camera_left_depth_optical_frame:
-              Value: true
-            depth_camera_rear_lower:
-              Value: true
-            depth_camera_rear_lower_camera:
-              Value: true
-            depth_camera_rear_lower_camera_parent:
-              Value: true
-            depth_camera_rear_lower_depth_frame:
-              Value: true
-            depth_camera_rear_lower_depth_optical_frame:
-              Value: true
-            depth_camera_rear_upper:
-              Value: true
-            depth_camera_rear_upper_camera:
-              Value: true
-            depth_camera_rear_upper_camera_parent:
-              Value: true
-            depth_camera_rear_upper_depth_frame:
-              Value: true
-            depth_camera_rear_upper_depth_optical_frame:
-              Value: true
-            depth_camera_right:
-              Value: true
-            depth_camera_right_camera:
-              Value: true
-            depth_camera_right_camera_parent:
-              Value: true
-            depth_camera_right_depth_frame:
-              Value: true
-            depth_camera_right_depth_optical_frame:
-              Value: true
-            dlio_map:
-              Value: true
-            dlio_odom:
-              Value: true
-            docking_socket:
-              Value: true
-            enu_origin:
-              Value: true
-            face_front:
-              Value: true
-            face_rear:
-              Value: true
-            face_shell_front:
-              Value: true
-            face_shell_rear:
-              Value: true
-            hatch_shell:
-              Value: true
-            hbc_receiver:
-              Value: true
-            hdr_base:
-              Value: true
-            hdr_front:
-              Value: true
-            hdr_left:
-              Value: true
-            hdr_right:
-              Value: true
-            hesai_lidar:
-              Value: true
-            imu_link:
-              Value: true
-            lidar:
-              Value: true
-            lidar_parent:
-              Value: true
-            livox_imu:
-              Value: true
-            livox_lidar:
-              Value: true
-            odom:
-              Value: true
-            prism:
-              Value: true
-            prism_model:
-              Value: true
-            stim320_imu:
-              Value: true
-            top_shell:
-              Value: true
-            velodyne_lidar:
-              Value: true
-            wide_angle_camera_front_camera:
-              Value: true
-            wide_angle_camera_front_camera_parent:
-              Value: true
-            wide_angle_camera_rear_camera:
-              Value: true
-            wide_angle_camera_rear_camera_parent:
-              Value: true
-            zed2i_base:
-              Value: true
-            zed2i_imu:
-              Value: true
-            zed2i_left:
-              Value: true
-            zed2i_right:
-              Value: true
           Marker Alpha: 1
           Marker Scale: 0.6000000238418579
           Name: TF
@@ -1127,190 +916,7 @@ Visualization Manager:
           Show Axes: true
           Show Names: true
           Tree:
-            base:
-              LF_HAA_drive:
-                LF_HIP:
-                  LF_hip_fixed:
-                    LF_HFE_output:
-                      LF_THIGH:
-                        LF_HFE_drive:
-                          LF_thigh_fixed:
-                            LF_KFE_drive:
-                              LF_SHANK:
-                                LF_shank_fixed:
-                                  LF_FOOT:
-                                    {}
-              LH_HAA_drive:
-                LH_HIP:
-                  LH_hip_fixed:
-                    LH_HFE_output:
-                      LH_THIGH:
-                        LH_HFE_drive:
-                          LH_thigh_fixed:
-                            LH_KFE_drive:
-                              LH_SHANK:
-                                LH_shank_fixed:
-                                  LH_FOOT:
-                                    {}
-              RF_HAA_drive:
-                RF_HIP:
-                  RF_hip_fixed:
-                    RF_HFE_output:
-                      RF_THIGH:
-                        RF_HFE_drive:
-                          RF_thigh_fixed:
-                            RF_KFE_drive:
-                              RF_SHANK:
-                                RF_shank_fixed:
-                                  RF_FOOT:
-                                    {}
-              RH_HAA_drive:
-                RH_HIP:
-                  RH_hip_fixed:
-                    RH_HFE_output:
-                      RH_THIGH:
-                        RH_HFE_drive:
-                          RH_thigh_fixed:
-                            RH_KFE_drive:
-                              RH_SHANK:
-                                RH_shank_fixed:
-                                  RH_FOOT:
-                                    {}
-              anymal_imu:
-                {}
-              base_inertia:
-                {}
-              battery:
-                {}
-              body_top:
-                {}
-              bottom_shell:
-                {}
-              box_base:
-                adis16475_imu:
-                  {}
-                alphasense_base:
-                  alphasense_front_center:
-                    {}
-                  alphasense_front_left:
-                    {}
-                  alphasense_front_right:
-                    {}
-                  alphasense_left:
-                    {}
-                  alphasense_right:
-                    {}
-                alphasense_imu:
-                  {}
-                ap20_imu:
-                  {}
-                box_base_model:
-                  {}
-                cpt7_imu:
-                  enu_origin:
-                    {}
-                hdr_base:
-                  hdr_front:
-                    {}
-                  hdr_left:
-                    {}
-                  hdr_right:
-                    {}
-                hesai_lidar:
-                  dlio_map:
-                    {}
-                  dlio_odom:
-                    {}
-                livox_lidar:
-                  livox_imu:
-                    {}
-                prism:
-                  {}
-                prism_model:
-                  {}
-                stim320_imu:
-                  {}
-                zed2i_base:
-                  zed2i_imu:
-                    {}
-                  zed2i_left:
-                    {}
-                  zed2i_right:
-                    {}
-              cpt7_antenna_back_model:
-                {}
-              depth_camera_left_camera:
-                depth_camera_left_camera_parent:
-                  depth_camera_left_depth_frame:
-                    depth_camera_left:
-                      {}
-                    depth_camera_left_depth_optical_frame:
-                      {}
-              depth_camera_right_camera:
-                depth_camera_right_camera_parent:
-                  depth_camera_right_depth_frame:
-                    depth_camera_right:
-                      {}
-                    depth_camera_right_depth_optical_frame:
-                      {}
-              docking_socket:
-                {}
-              face_front:
-                depth_camera_front_lower_camera:
-                  depth_camera_front_lower_camera_parent:
-                    depth_camera_front_lower_depth_frame:
-                      depth_camera_front_lower:
-                        {}
-                      depth_camera_front_lower_depth_optical_frame:
-                        {}
-                depth_camera_front_upper_camera:
-                  depth_camera_front_upper_camera_parent:
-                    depth_camera_front_upper_depth_frame:
-                      depth_camera_front_upper:
-                        {}
-                      depth_camera_front_upper_depth_optical_frame:
-                        {}
-                face_shell_front:
-                  {}
-                wide_angle_camera_front_camera:
-                  wide_angle_camera_front_camera_parent:
-                    {}
-              face_rear:
-                depth_camera_rear_lower_camera:
-                  depth_camera_rear_lower_camera_parent:
-                    depth_camera_rear_lower_depth_frame:
-                      depth_camera_rear_lower:
-                        {}
-                      depth_camera_rear_lower_depth_optical_frame:
-                        {}
-                depth_camera_rear_upper_camera:
-                  depth_camera_rear_upper_camera_parent:
-                    depth_camera_rear_upper_depth_frame:
-                      depth_camera_rear_upper:
-                        {}
-                      depth_camera_rear_upper_depth_optical_frame:
-                        {}
-                face_shell_rear:
-                  {}
-                wide_angle_camera_rear_camera:
-                  wide_angle_camera_rear_camera_parent:
-                    {}
-              hatch_shell:
-                {}
-              hbc_receiver:
-                {}
-              imu_link:
-                {}
-              lidar:
-                {}
-              lidar_parent:
-                {}
-              odom:
-                {}
-              top_shell:
-                {}
-              velodyne_lidar:
-                {}
+            {}
           Update Interval: 0
           Value: true
         - Alpha: 1
@@ -1337,11 +943,317 @@ Visualization Manager:
           Radius: 0.05000000074505806
           Reference Frame: dlio_map
           Value: true
-      Enabled: true
+      Enabled: false
       Name: Frames
+    - Class: rviz/Camera
+      Enabled: false
+      Image Rendering: background and overlay
+      Image Topic: /boxi/alphasense/front_center/image_raw
+      Name: alphasense_front_center
+      Overlay Alpha: 0.5
+      Queue Size: 2
+      Transport Hint: raw
+      Unreliable: false
+      Value: false
+      Visibility:
+        "": true
+        Cameras:
+          HDR:
+            Value: true
+            hdr_front: true
+            hdr_left: true
+            hdr_right: true
+          Value: true
+          ZED2i:
+            Value: true
+            left_zed: true
+            right_zed: true
+        Frames:
+          DLIO_MAP: true
+          GMSF_world: true
+          IE_ENU_Origin: true
+          TF: true
+          Value: true
+        LiDARs:
+          HesaiXT32:
+            Value: true
+            hesai: true
+            intensity_image: true
+            range image: true
+          Value: true
+          livox: true
+          velodyne: true
+        Models:
+          Value: true
+          anymal_model: true
+          boxi_model: true
+        Value: true
+        alphasense_front_left: true
+        alphasense_front_right: true
+      Zoom Factor: 1
+    - Class: rviz/Camera
+      Enabled: true
+      Image Rendering: background and overlay
+      Image Topic: /boxi/alphasense/front_left/image_raw
+      Name: alphasense_front_left
+      Overlay Alpha: 0.5
+      Queue Size: 2
+      Transport Hint: raw
+      Unreliable: false
+      Value: true
+      Visibility:
+        Cameras:
+          HDR:
+            Value: true
+            hdr_front: true
+            hdr_left: true
+            hdr_right: true
+          Value: true
+          ZED2i:
+            Value: true
+            left_zed: true
+            right_zed: true
+        Frames:
+          DLIO_MAP: true
+          GMSF_world: true
+          IE_ENU_Origin: true
+          TF: true
+          Value: true
+        LiDARs:
+          HesaiXT32:
+            Value: true
+            hesai: true
+            intensity_image: true
+            range image: true
+          Value: true
+          livox: true
+          velodyne: true
+        Models:
+          Value: true
+          anymal_model: true
+          boxi_model: true
+        PointCloud2: true
+        Value: true
+        alphasense_front_center: true
+        alphasense_front_right: true
+      Zoom Factor: 1
+    - Class: rviz/Camera
+      Enabled: false
+      Image Rendering: background and overlay
+      Image Topic: /boxi/alphasense/front_right/image_raw
+      Name: alphasense_front_right
+      Overlay Alpha: 0.5
+      Queue Size: 2
+      Transport Hint: raw
+      Unreliable: false
+      Value: false
+      Visibility:
+        "": true
+        Cameras:
+          HDR:
+            Value: true
+            hdr_front: true
+            hdr_left: true
+            hdr_right: true
+          Value: true
+          ZED2i:
+            Value: true
+            left_zed: true
+            right_zed: true
+        Frames:
+          DLIO_MAP: true
+          GMSF_world: true
+          IE_ENU_Origin: true
+          TF: true
+          Value: true
+        LiDARs:
+          HesaiXT32:
+            Value: true
+            hesai: true
+            intensity_image: true
+            range image: true
+          Value: true
+          livox: true
+          velodyne: true
+        Models:
+          Value: true
+          anymal_model: true
+          boxi_model: true
+        Value: true
+        alphasense_front_center: true
+        alphasense_front_left: true
+      Zoom Factor: 1
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: -0.12893852591514587
+        Min Value: -0.4857431650161743
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 245; 121; 0
+      Color Transformer: FlatColor
+      Decay Time: 0
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Min Color: 0; 0; 0
+      Name: PointCloud2
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.009999999776482582
+      Style: Flat Squares
+      Topic: /anymal/depth_camera/rear_lower/depth/points
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 245; 121; 0
+      Color Transformer: FlatColor
+      Decay Time: 0
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Min Color: 0; 0; 0
+      Name: PointCloud2
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.009999999776482582
+      Style: Flat Squares
+      Topic: /anymal/depth_camera/rear_upper/depth/points
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: -0.025680452585220337
+        Min Value: -0.48367875814437866
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 245; 121; 0
+      Color Transformer: FlatColor
+      Decay Time: 0
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Min Color: 0; 0; 0
+      Name: PointCloud2
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.009999999776482582
+      Style: Flat Squares
+      Topic: /anymal/depth_camera/left/depth/points
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: -0.030630037188529968
+        Min Value: -1.8561244010925293
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 245; 121; 0
+      Color Transformer: FlatColor
+      Decay Time: 0
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Min Color: 0; 0; 0
+      Name: PointCloud2
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.009999999776482582
+      Style: Flat Squares
+      Topic: /anymal/depth_camera/right/depth/points
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: -0.0623074471950531
+        Min Value: -2.046283006668091
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 245; 121; 0
+      Color Transformer: FlatColor
+      Decay Time: 0
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Min Color: 0; 0; 0
+      Name: PointCloud2
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.009999999776482582
+      Style: Flat Squares
+      Topic: /anymal/depth_camera/front_lower/depth/points
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 2.9564578533172607
+        Min Value: -1.5710270404815674
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 245; 121; 0
+      Color Transformer: FlatColor
+      Decay Time: 0
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Min Color: 0; 0; 0
+      Name: PointCloud2
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.009999999776482582
+      Style: Flat Squares
+      Topic: /anymal/depth_camera/front_upper/depth/points
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
   Enabled: true
   Global Options:
-    Background Color: 0; 0; 0
+    Background Color: 255; 255; 255
     Default Light: true
     Fixed Frame: dlio_map
     Frame Rate: 60
@@ -1367,7 +1279,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 3.457383394241333
+      Distance: 15.138280868530273
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -1375,25 +1287,25 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: 0
-        Y: 0
-        Z: 0
+        X: 0.5430998802185059
+        Y: -0.05907609313726425
+        Z: -0.44827955961227417
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.9147968292236328
-      Target Frame: <Fixed Frame>
-      Yaw: 0.005402744747698307
+      Pitch: 1.5697963237762451
+      Target Frame: box_base
+      Yaw: 1.6804190874099731
     Saved: ~
 Window Geometry:
   Displays:
-    collapsed: false
+    collapsed: true
   Height: 1376
-  Hide Left Dock: false
+  Hide Left Dock: true
   Hide Right Dock: true
-  QMainWindow State: 000000ff00000000fd000000040000000000000302000004aefc020000000bfb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c0061007900730100000095000001e1000000c900fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000a0049006d00610067006500000003b0000001930000000000000000fc0000027c00000151000000330100001cfa000000000100000002fb00000010006c006500660074005f007a006500640100000000ffffffff0000006c00fffffffb0000001200720069006700680074005f007a006500640100000000000003f30000007500fffffffc000003d300000170000000330100001cfa000000020100000003fb00000010006800640072005f006c0065006600740100000000ffffffff0000006b00fffffffb00000012006800640072005f007200690067006800740100000000ffffffff0000007400fffffffb00000012006800640072005f00660072006f006e00740100000000000003f30000007600ffffff00000001000001d1000004aefc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a005600690065007700730000000095000004ae000000a400fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b2000000000000000000000002000009b800000079fc0100000002fc00000000000009b8000000a100fffffffa000000000200000002fb0000001600720061006e0067006500200069006d0061006700650100000000ffffffff0000001600fffffffb0000001e0069006e00740065006e0073006900740079005f0069006d00610067006501000000160000005a0000001600fffffffb0000000a00560069006500770073030000004e00000080000002e10000019700000003000009b8000001c1fc0100000005fc000000000000032b0000000000fffffffa000000000200000002fb00000008006c0065006600740000000000ffffffff0000000000000000fb0000000800540069006d0065000000048e0000003e0000003900fffffffb0000000a0049006d006100670065000000022d000003130000000000000000fb000000140063006f006e0066006900640065006e006300650000000000000009b80000000000000000fb0000000a006400650070007400680000000681000003370000000000000000fb0000000800540069006d00650100000000000004500000000000000000000006b0000004ae00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730000000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd0000000400000000000002f800000465fc020000000dfb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c00610079007300000000de000000c9000000c900fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000a0049006d00610067006500000003b0000001930000000000000000fc000001e9000000e50000000000fffffffaffffffff0100000002fb00000010006c006500660074005f007a006500640000000000ffffffff0000006c00fffffffb0000001200720069006700680074005f007a006500640000000000000003f30000007500fffffffb00000010006800640072005f006c00650066007400000000de0000001b0000001600fffffffb00000012006800640072005f00660072006f006e007400000000ff000000d70000001600fffffffb000000100044006900730070006c00610079007300000001dc00000367000000c900ffffff00000001000001d1000003ddfc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a0056006900650077007300000000de000003dd000000a400fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b2000000000000000000000002000009b8000000c2fc0100000004fb0000002a0061006c00700068006100730065006e00730065005f00660072006f006e0074005f006c0065006600740100000000000009b8000000ca00fffffffb0000002e0061006c00700068006100730065006e00730065005f00660072006f006e0074005f00630065006e0074006500720200000c2b0000017000000280000001e0fc000004bc000005440000000000fffffffaffffffff0200000002fb00000012006800640072005f0072006900670068007402000002070000011200000280000001e0fb0000002c0061006c00700068006100730065006e00730065005f00660072006f006e0074005f00720069006700680074020000032f000001a500000280000001e0fb0000000a00560069006500770073030000004e00000080000002e1000001970000000300000a000000009dfc010000000afc0000000000000a000000000000fffffffaffffffff0200000002fb0000001e0069006e00740065006e0073006900740079005f0069006d0061006700650000000000ffffffff0000001600fffffffb0000001600720061006e0067006500200069006d00610067006500000004a60000009d0000001600fffffffb0000000c00430061006d0065007200610100000000000009b80000000000000000fb00000010006800640072005f006c0065006600740100000000000003230000000000000000fb00000012006800640072005f00660072006f006e00740100000329000003e50000000000000000fb00000012006800640072005f007200690067006800740100000714000002a40000000000000000fc000000000000032b0000000000fffffffa000000000200000002fb00000008006c0065006600740000000000ffffffff0000000000000000fb0000000800540069006d0065000000048e0000003e0000003900fffffffb0000000a0049006d006100670065000000022d000003130000000000000000fb000000140063006f006e0066006900640065006e006300650000000000000009b80000000000000000fb0000000a006400650070007400680000000681000003370000000000000000fb0000000800540069006d00650100000000000004500000000000000000000009b80000046500000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730000000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -1405,10 +1317,16 @@ Window Geometry:
   Width: 2488
   X: 72
   Y: 27
+  alphasense_front_center:
+    collapsed: false
+  alphasense_front_left:
+    collapsed: false
+  alphasense_front_right:
+    collapsed: false
   hdr_front:
-    collapsed: false
+    collapsed: true
   hdr_left:
-    collapsed: false
+    collapsed: true
   hdr_right:
     collapsed: false
   intensity_image:

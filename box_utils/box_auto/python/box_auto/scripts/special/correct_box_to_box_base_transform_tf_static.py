@@ -12,6 +12,11 @@ from scipy.spatial.transform import Rotation
 
 from box_auto.utils.atomic_file import atomic_output
 
+# Historical mission-specific correction, distinct from the nominal URDF.
+# Its provenance has not been established for other missions; select it explicitly.
+LEGACY_XYZ_RPY = (0.0764038, -0.0361, 0.2802790, 3.1415126, 0.0, 0.030543)
+
+
 def repair_bag(input_bag, output_bag, xyz_rpy, *, overwrite=False):
     values = np.asarray(xyz_rpy, dtype=float)
     if values.shape != (6,) or not np.isfinite(values).all():
@@ -69,7 +74,11 @@ def main(argv=None):
     destinations = parser.add_mutually_exclusive_group()
     destinations.add_argument("--output", type=Path)
     destinations.add_argument("--in-place", action="store_true")
-    parser.add_argument("--xyz-rpy", required=True, nargs=6, type=float, metavar=("X", "Y", "Z", "ROLL", "PITCH", "YAW"))
+    calibration = parser.add_mutually_exclusive_group(required=True)
+    calibration.add_argument("--xyz-rpy", nargs=6, type=float, metavar=("X", "Y", "Z", "ROLL", "PITCH", "YAW"))
+    calibration.add_argument(
+        "--legacy-calibration", action="store_true", help="Use the historical mission-specific correction"
+    )
     parser.add_argument("--overwrite", action="store_true")
     args = parser.parse_args(argv)
     output = (
@@ -80,7 +89,7 @@ def main(argv=None):
     count = repair_bag(
         args.input,
         output,
-        args.xyz_rpy,
+        args.xyz_rpy if args.xyz_rpy is not None else LEGACY_XYZ_RPY,
         overwrite=args.in_place or args.overwrite,
     )
     print(f"Replaced {count} calibration snapshots: {output}")

@@ -26,6 +26,8 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl_ros/transforms.h>
 
+#include <cstdlib>
+#include <stdexcept>
 #include <unordered_set>
 
 #include <tf2/transform_datatypes.h>
@@ -35,8 +37,7 @@ namespace colorless_uniform_mapper {
 
 ColorlessMapper::ColorlessMapper(ros::NodeHandle& nodeHandle) : nodeHandle_(nodeHandle), tfListener_(tfBuffer_) {
   if (!readMapperParameters()) {
-    ROS_ERROR("Error reading parameters for colorless mapper class. Program will exit.");
-    return;
+    throw std::runtime_error("Invalid colorless mapper parameters");
   }
 
   // Initialize the colorless mapper.
@@ -50,7 +51,7 @@ ColorlessMapper::ColorlessMapper(ros::NodeHandle& nodeHandle) : nodeHandle_(node
 
   // Prematurely check correctness and existance of save path.
   if (!manageSaveDirectory()) {
-    return;
+    throw std::runtime_error("Cannot prepare map output directory");
   }
 
   ROS_INFO("Initialized node for dense colorless mapping.");
@@ -131,9 +132,9 @@ void ColorlessMapper::filterDynamicPoints(pcl::PointCloud<PointType>::Ptr cloud)
 bool ColorlessMapper::manageSaveDirectory() {
   if (parameters_.mapSavePath_.empty()) {
     // Get username
-    std::string userName{getlogin()};
-    ROS_INFO_STREAM("User name: " << userName);
-    parameters_.mapSavePath_ = "/home/" + userName + "/maps";
+    const char* homeDirectory = std::getenv("HOME");
+    if (!homeDirectory || !*homeDirectory) return false;
+    parameters_.mapSavePath_ = std::string(homeDirectory) + "/colorless_maps";
 
     if (!doesDirectoryExist(parameters_.mapSavePath_)) {
       if (makePath(parameters_.mapSavePath_)) {
@@ -145,6 +146,15 @@ bool ColorlessMapper::manageSaveDirectory() {
     }
 
     ROS_INFO_STREAM("Outputting results (as requested) to: (" << parameters_.mapSavePath_ << ")");
+
+    // Print emphasized (bigger) and in green (ANSI escape codes).
+    std::cout << "\n\033[1;32m"
+              << "==============================\n"
+              << "       DEFAULT MAP SAVING PATH\n"
+              << "  " << parameters_.mapSavePath_ << "\n"
+              << "=============================="
+              << "\033[0m\n"
+              << std::endl;
 
   } else {
     // Check if folder exists
@@ -235,6 +245,19 @@ bool ColorlessMapper::readMapperParameters() {
   ROS_DEBUG_STREAM("Reading the colorless mapper parameters.");
   bool success{true};
 
+  success &= nodeHandle_.param<std::string>("map_saving_path", parameters_.mapSavePath_, "");
+
+  if (!parameters_.mapSavePath_.empty()) {
+    // Print emphasized (bigger) and in green (ANSI escape codes).
+    std::cout << "\n\033[1;32m"
+              << "==============================\n"
+              << "       PARAMATER READER: MAP SAVING PATH\n"
+              << "  " << parameters_.mapSavePath_ << "\n"
+              << "=============================="
+              << "\033[0m\n"
+              << std::endl;
+  }
+
   // Read the parameters
   success &= nodeHandle_.param<std::string>("mapping_frame", parameters_.mappingFrame_, "map");
   success &= nodeHandle_.param<std::string>("local_output_point_cloud_topic_name", parameters_.localOutputPointCloudTopicName_,
@@ -247,7 +270,6 @@ bool ColorlessMapper::readMapperParameters() {
   success &= nodeHandle_.param<double>("voxel_size", parameters_.octreeVoxelSize_, 0.03);
   success &= nodeHandle_.param<double>("map_saving_period", parameters_.mapSavingPeriod_, 120);
   success &= nodeHandle_.param<int>("map_saving_size_difference", parameters_.mapSavingSizeDifference_, 500000);
-  success &= nodeHandle_.param<std::string>("map_saving_path", parameters_.mapSavePath_, "");
   success &= nodeHandle_.param<double>("local_map_publishing_period", parameters_.localMapPublishingPeriod_, 10.0);
   success &= nodeHandle_.param<std::string>("position_based_request_topic", parameters_.positionBasedRequestTopic_, "/clicked_point");
   success &= nodeHandle_.param<std::string>("position_based_alternative_request_topic", parameters_.positionBasedAlternativeRequestTopic_,
@@ -257,6 +279,10 @@ bool ColorlessMapper::readMapperParameters() {
   success &= nodeHandle_.param<float>("noise_filtering_radius", parameters_.noiseFilteringRadius_, 0.1f);
   success &= nodeHandle_.param<int>("ring_buffer_size", parameters_.ringBufferSize_, 5);
 
+  if (parameters_.ringBufferSize_ < 1) {
+    ROS_ERROR("ring_buffer_size must be positive");
+    return false;
+  }
   return success;
 }
 
@@ -420,8 +446,8 @@ bool ColorlessMapper::saveMapToFileCallback(std_srvs::EmptyRequest& request, std
   // Saved per request.
   const std::string mapName = std::to_string(manualSaveCounter_) + "_colorless_map_manual";
   bool success = saveMapToFile(mapName, false);
-  manualSaveCounter_++;
-  return true;
+  if (success) ++manualSaveCounter_;
+  return success;
 }
 
 bool ColorlessMapper::sendLocalCloudCallback(std_srvs::EmptyRequest& request, std_srvs::EmptyResponse& response) {

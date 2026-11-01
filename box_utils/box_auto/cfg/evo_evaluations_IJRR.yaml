@@ -1,0 +1,1165 @@
+gt_source: TPS
+gt_pattern: "*_ap20_prism_position.bag"
+
+# Practical rule (evo timestamp association):
+#   t_max_diff ≈ 0.5 * median(Δt_long) (+ small margin for timestamp jitter)
+#   where Δt_long is the timestep of the longer trajectory (typically the higher-rate one).
+#   With AP20 at 20 Hz (Δt=0.05 s), any estimator ≤20 Hz typically needs t_max_diff ≈ 0.025 s.
+
+# The target sensor frame.
+# AP20 do not have orientation so if we want to compare against that we have to convert to its sensor frame.
+target_frame: prism
+filter_by_covariance: False
+covariance_percentile_threshold: 95 #percentile
+#
+remove_until_motion: False
+distance_threshold: 3 #distance in meters
+
+ap20_velocity_rejection: False
+ap20_velocity_rejection_threshold: 3.0 #m/s
+
+#
+ap20_peak_rejection: True
+ap20_peak_rejection_threshold: 0.1 #second
+ap20_peak_rejection_trailing_window: 5 #trailing indices to remove
+#
+project_to_plane: "xyz" #xy or xyz
+
+# If topic entry is left empty "", the bag only going to be used for /tf & /tf_static reading and not for topic reading
+
+# 10hz -> 0.025s
+bag_topic_pairs:
+  - bag: adaptive_lio_stim320.bag
+    test_name: "adaptive_lio"
+    topic: /odom
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.03
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: lioekf.bag
+    test_name: "LIO-EKF"
+    topic: /lioekf
+    frame: cpt7_imu
+    evaluations:
+      parameters:
+        t_max_diff: 0.03
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: btsa.bag
+    test_name: "BTSA"
+    topic: /Odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.025
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: clic.bag
+    test_name: "CLIC"
+    topic: /clic
+    frame: cpt7_imu
+    evaluations:
+      parameters:
+        t_max_diff: 0.007
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: cocolic.bag
+    test_name: "COCOLIC"
+    topic: /cocolic
+    frame: cpt7_imu
+    evaluations:
+      parameters:
+        t_max_diff: 0.007
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: cte_mlo_all.bag
+    test_name: "CTE_MLO"
+    topic: /Odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.0065
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: cte_mlo_hesai_only.bag
+    test_name: "CTE_MLO (Hesai only)"
+    topic: /cte_mlo_hesai_only
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.0065
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: ctlo.bag
+    test_name: "CTLO"
+    topic: /odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.025
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: dli_init.bag
+    test_name: "DLI-INIT"
+    topic: /lidar_init_aft_mapped_to_init
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.025
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: dlo.bag
+    test_name: "DLO"
+    topic: /robot/dlo/odom_node/odom
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.025
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: DMSA_SLAM.bag
+    test_name: "DMSA-SLAM"
+    topic: /DMSA_SLAM
+    frame: cpt7_imu
+    evaluations:
+      parameters:
+        t_max_diff: 0.025
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: envio.bag
+    test_name: "ENVIO"
+    topic: /envio_nesl/odom
+    frame: cpt7_imu
+    evaluations:
+      parameters:
+        t_max_diff: 0.025
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: faster_lio.bag
+    test_name: "Faster-LIO"
+    topic: /Odometry
+    frame: cpt7_imu
+    evaluations:
+      parameters:
+        t_max_diff: 0.025
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: faster_lio_no_calib.bag
+    test_name: "Faster-LIO (No Calib)"
+    topic: /Odometry
+    frame: cpt7_imu
+    evaluations:
+      parameters:
+        t_max_diff: 0.025
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: fast_lio.bag
+    test_name: "Fast-LIO"
+    topic: /Odometry
+    frame: cpt7_imu
+    evaluations:
+      parameters:
+        t_max_diff: 0.025
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: fast_lio_WITHOUT_CALIB.bag
+    test_name: "Fast-LIO (No Calib)"
+    topic: /Odometry
+    frame: cpt7_imu
+    evaluations:
+      parameters:
+        t_max_diff: 0.025
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+
+  - bag: fast_lio_multi.bag
+    test_name: "Fast-LIO-Multi"
+    topic: /Odometry
+    frame: cpt7_imu
+    evaluations:
+      parameters:
+        t_max_diff: 0.025
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: fast_limo.bag
+    test_name: "Fast-LIMO"
+    topic: /fast_limo/state
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.007
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: fast_limo_no_calib.bag
+    test_name: "Fast-LIMO (No Calib)"
+    topic: /fast_limo/state
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.007
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: fast_livo.bag
+    test_name: "Fast-LIVO"
+    topic: /aft_mapped_to_init
+    frame: cpt7_imu
+    evaluations:
+      parameters:
+        t_max_diff: 0.025
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: glo.bag
+    test_name: "GLO"
+    topic: /glo
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.025
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: genz_icp.bag
+    test_name: "Genz-ICP"
+    topic: /genz/odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.025
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: i2ekf_lo.bag
+    test_name: "I2EKF-LO"
+    topic: /aft_mapped_to_init
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.015
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: iglio.bag
+    test_name: "iG-LIO"
+    topic: /iglio
+    frame: cpt7_imu
+    evaluations:
+      parameters:
+        t_max_diff: 0.025
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: madicp.bag
+    test_name: "Mad-ICP"
+    topic: /mad_icp
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.025
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: ma_lio.bag
+    test_name: "MA-LIO"
+    topic: /Odometry
+    frame: cpt7_imu
+    evaluations:
+      parameters:
+        t_max_diff: 0.03
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: mins.bag
+    test_name: "MINS"
+    topic: /mins/imu/odom
+    frame: cpt7_imu
+    evaluations:
+      parameters:
+        t_max_diff: 0.010
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: nv_liom.bag
+    test_name: "NV-LIOM"
+    topic: /nv_liom/odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.03
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: open_vins.bag
+    test_name: "Open-VINS"
+    topic: /ov_msckf/odomimu
+    frame: cpt7_imu
+    evaluations:
+      parameters:
+        t_max_diff: 0.007
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: section_lio.bag
+    test_name: "Section-LIO"
+    topic: /odometry
+    frame: cpt7_imu
+    evaluations:
+      parameters:
+        t_max_diff: 0.025
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  # - bag: orb_slam3.bag
+  #   test_name: "ORB-SLAM3"
+  #   topic: /odometry
+  #   frame: alphasense_front_left
+  #   evaluations:
+  #     parameters:
+  #       t_max_diff: 0.025
+  #       t_offset: 0.0
+  #       n_to_align: -1
+  #       correct_scale: False
+  #       delta: 0.5
+  #       unit: "m" #m or frame
+  #     ape_rpe:
+  #       reference_file: ""
+  #     point_relation:
+  #       reference_file: "ap20_robot"
+
+  - bag: point_lio.bag
+    test_name: "Point-LIO"
+    topic: /aft_mapped_to_init
+    frame: cpt7_imu
+    evaluations:
+      parameters:
+        t_max_diff: 0.025
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: pv_lio.bag
+    test_name: "PV-LIO"
+    topic: /Odometry
+    frame: cpt7_imu
+    evaluations:
+      parameters:
+        t_max_diff: 0.025
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: sr_lio.bag
+    test_name: "SR-LIO"
+    topic: /Odometry_after_opt
+    frame: cpt7_imu
+    evaluations:
+      parameters:
+        t_max_diff: 0.025
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: traj_lo.bag
+    test_name: "Traj-LO"
+    topic: /traj_lo
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.022
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: slict.bag
+    test_name: "Slict2"
+    topic: /opt_odom
+    frame: cpt7_imu
+    evaluations:
+      parameters:
+        t_max_diff: 0.025
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: voxel_slam.bag
+    test_name: "Voxel-SLAM"
+    topic: /map_odom
+    frame: cpt7_imu
+    evaluations:
+      parameters:
+        t_max_diff: 0.03
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: voxel_svio.bag
+    test_name: "Voxel-SVIO"
+    topic: /vio/odom
+    frame: cpt7_imu
+    evaluations:
+      parameters:
+        t_max_diff: 0.025
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: ag_loam.bag
+    test_name: "AG-LOAM"
+    topic: /odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.025
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: rovio.bag
+    test_name: "ROVIO"
+    topic: /rovio/odometry
+    frame: cpt7_imu
+    evaluations:
+      parameters:
+        t_max_diff: 0.03
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: sqrt_vins.bag
+    test_name: "Sqrt-VINS"
+    topic: /ov_srvins/odomimu
+    frame: cpt7_imu
+    evaluations:
+      parameters:
+        t_max_diff: 0.007
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: schur_vins.bag
+    test_name: "Schur-VINS"
+    topic: /svo/pose_imu
+    frame: cpt7_imu
+    evaluations:
+      parameters:
+        t_max_diff: 0.025
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  # - bag: orb_slam3.bag
+  #   test_name: "ORB-SLAM3"
+  #   topic: /stereo_inertial/odom
+  #   frame: alphasense_front_left
+  #   evaluations:
+  #     parameters:
+  #       t_max_diff: 0.025
+  #       t_offset: 0.0
+  #       n_to_align: -1
+  #       correct_scale: False
+  #       delta: 0.5
+  #       unit: "m" #m or frame
+  #     ape_rpe:
+  #       reference_file: ""
+  #     point_relation:
+  #       reference_file: "ap20_robot"
+
+
+  - bag: kiss_icp_0.bag
+    test_name: "KISS-ICP"
+    topic: /kiss/odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.025
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: rko_lio.bag
+    test_name: "RKO-LIO"
+    topic: /rko_lio
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.025
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+
+  - bag: vins_rgbd.bag
+    test_name: "VINS-RGBD"
+    topic: /vins_estimator/odometry
+    frame: cpt7_imu
+    evaluations:
+      parameters:
+        t_max_diff: 0.025
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: vins_fusion.bag
+    test_name: "VINS-Fusion"
+    topic: /vins_estimator/odometry
+    frame: cpt7_imu
+    evaluations:
+      parameters:
+        t_max_diff: 0.025
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+
+  - bag: rvio2.bag
+    test_name: "R-VIO2"
+    topic: /rvio2
+    frame: cpt7_imu
+    evaluations:
+      parameters:
+        t_max_diff: 0.025
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: superodom_0.bag
+    test_name: "SuperOdometry"
+    topic: /laser_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.025
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: lightweightvio_0.bag
+    test_name: "LightweightVIO"
+    topic: /vio/odometry
+    frame: cpt7_imu
+    evaluations:
+      parameters:
+        t_max_diff: 0.025
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: resple_lo.bag
+    test_name: "RESPLE-LO"
+    topic: /resple_lo
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: resple_mlio.bag
+    test_name: "RESPLE-MLIO"
+    topic: /resple_mlio
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: resple_mlo.bag
+    test_name: "RESPLE-MLO"
+    topic: /resple_mlo
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: resple.bag
+    test_name: "RESPLE-LIO"
+    topic: /resple
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.005
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  # - bag: resple_lo.bag
+  #   test_name: "RESPLE_LO"
+  #   topic: /resple_lo
+  #   frame: cpt7_imu
+  #   evaluations:
+  #     parameters:
+  #       t_max_diff: 0.025
+  #       t_offset: 0.0
+  #       n_to_align: -1
+  #       correct_scale: False
+  #       delta: 0.5
+  #       unit: "m" #m or frame
+  #     ape_rpe:
+  #       reference_file: ""
+  #     point_relation:
+  #       reference_file: "ap20_robot"
+
+
+  # - bag: resple_lio.bag
+  #   test_name: "RESPLE_LIO"
+  #   topic: /resple_lio
+  #   frame: cpt7_imu
+  #   evaluations:
+  #     parameters:
+  #       t_max_diff: 0.025
+  #       t_offset: 0.0
+  #       n_to_align: -1
+  #       correct_scale: False
+  #       delta: 0.5
+  #       unit: "m" #m or frame
+  #     ape_rpe:
+  #       reference_file: ""
+  #     point_relation:
+  #       reference_file: "ap20_robot"
+
+  - bag: glim_odom_lidar.bag
+    test_name: "GLIM"
+    topic: /glim
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.025
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: okvis.bag
+    test_name: "OKVIS2"
+    topic: /okvis
+    frame: cpt7_imu
+    evaluations:
+      parameters:
+        t_max_diff: 0.017
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: pko_lidar_odometry_0.bag
+    test_name: "PKO-LO"
+    topic: /odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.025
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: r2dio.bag
+    test_name: "R2DIO"
+    topic: /odom
+    frame: stim320_imu
+    evaluations:
+      parameters:
+        t_max_diff: 0.025
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: limoncello_ros1.bag
+    test_name: "LIMOncello"
+    topic: /limoncello/state
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.006
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  # - bag: _gt_pose.bag
+  #   test_name: "gmsf_gt"
+  #   topic: /boxi/ground_truth/pose_with_covariance
+  #   frame: box_base
+  #   evaluations:
+  #     parameters:
+  #       t_max_diff: 0.005
+  #       t_offset: 0.0
+  #       n_to_align: -1
+  #       correct_scale: False
+  #       delta: 0.5
+  #       unit: "m" #m or frame
+  #     ape_rpe:
+  #       reference_file: ""
+  #     point_relation:
+  #       reference_file: "ap20_robot"
+
+    #
+  # - bag: _cpt7_ie_tc_with_posecov.bag
+  #   test_name: "offline_ie"
+  #   topic: /boxi/inertial_explorer/tc/posestampedWithCovariance
+  #   frame: cpt7_imu
+  #   evaluations:
+  #     parameters:
+  #       t_max_diff: 0.005
+  #       t_offset: 0.0
+  #       n_to_align: -1
+  #       correct_scale: False
+  #       delta: 0.5
+  #       unit: "m" #m or frame
+  #     ape_rpe:
+  #       reference_file: "gmsf_gt"
+  #     point_relation:
+  #       reference_file: "ap20_robot"
+
+  #   #
+  # - bag: _cpt7_ie_lc.bag
+  #   test_name: "offline_ie_lc"
+  #   topic: /gt_box/inertial_explorer/lc/gt_poses_novatel
+  #   frame: box_base
+  #   evaluations:
+  #     parameters:
+  #       t_max_diff: 0.005
+  #       t_offset: 0.0
+  #       n_to_align: -1
+  #       correct_scale: False
+  #       delta: 0.5
+  #       unit: "m" #m or frame
+  #     ape_rpe:
+  #       reference_file: "gmsf_gt"
+  #     point_relation:
+  #       reference_file: "ap20_robot"
+
+    #
+  - bag: _ap20_prism_position.bag
+    test_name: "ap20_robot"
+    topic: "/boxi/ap20/prism_position"
+    frame: "prism"
+    evaluations:
+      parameters:
+        t_max_diff: 0.025
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: _dlio.bag
+    test_name: "DLIO"
+    topic: /boxi/dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.05
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" #m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: _tf_model.bag
+    test_name: ""
+    topic: ""
+    frame: ""

@@ -1,0 +1,200 @@
+# The target sensor frame.
+# AP20 does not have orientation, so compare all trajectories in the prism frame.
+target_frame: prism
+filter_by_covariance: False
+covariance_percentile_threshold: 95 # percentile
+
+remove_until_motion: False
+distance_threshold: 3 # distance in meters
+
+remove_stationary_tail: True
+stationary_tail_radius: 0.5 # meters from final AP20 prism position
+stationary_tail_min_duration: 20.0 # seconds
+stationary_tail_keep_duration: 0.0 # seconds after detected tail start to keep
+stationary_tail_detection_plane: "xy" # xy or xyz
+
+ap20_velocity_rejection: False
+ap20_velocity_rejection_threshold: 3.0 # m/s
+
+ap20_peak_rejection: True
+ap20_peak_rejection_threshold: 0.1 # second
+ap20_peak_rejection_trailing_window: 5 # trailing indices to remove
+
+project_to_plane: "xyz" # xy or xyz
+
+# If topic entry is left empty "", the bag only gets used for /tf & /tf_static reading.
+bag_topic_pairs:
+  - bag: _jetson_ap20_robot.bag
+    test_name: "ap20_robot"
+    topic: "/boxi/ap20/prism_position"
+    frame: "prism"
+    evaluations:
+      parameters:
+        t_max_diff: 0.025
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" # m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: _dlio.bag
+    test_name: "DLIO"
+    topic: /boxi/dlio/lidar_map_odometry
+    frame: hesai_lidar
+    evaluations:
+      parameters:
+        t_max_diff: 0.05
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" # m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: _anymal_state.bag
+    test_name: "anymal_estimator"
+    topic: /anymal/state_estimator/odometry
+    frame: base
+    evaluations:
+      parameters:
+        t_max_diff: 0.025
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" # m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: _muse.bag
+    test_name: "MUSE"
+    topic: /muse/sensor_fusion
+    frame: base
+    evaluations:
+      parameters:
+        t_max_diff: 0.007
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" # m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: _muse_invariant.bag
+    test_name: "MUSE (Invariant)"
+    topic: /muse_invariant/odometry
+    frame: base
+    evaluations:
+      parameters:
+        t_max_diff: 0.007
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" # m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: _muse_smoother.bag
+    test_name: "MUSE (Smoother)"
+    topic: /muse_smoother/odometry
+    frame: base
+    evaluations:
+      parameters:
+        t_max_diff: 0.007
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" # m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: _drift_1x.bag
+    test_name: "DRIFT (1x)"
+    topic: /drift/anymal_d/odometry
+    frame: base
+    evaluations:
+      parameters:
+        t_max_diff: 0.01
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" # m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: _drift_dce.bag
+    test_name: "DRIFT(DCE)"
+    topic: /drift/anymal_d/odometry
+    frame: base
+    evaluations:
+      parameters:
+        t_max_diff: 0.01
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" # m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: _capo.bag
+    test_name: "CAPO"
+    topic: /capo/odometry
+    frame: base
+    evaluations:
+      parameters:
+        t_max_diff: 0.01
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" # m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: _cerberus2.bag
+    test_name: "CERBERUS 2.0"
+    topic: /mipo/estimate_pose
+    frame: base
+    evaluations:
+      parameters:
+        t_max_diff: 0.01
+        t_offset: 0.0
+        n_to_align: -1
+        correct_scale: False
+        delta: 0.5
+        unit: "m" # m or frame
+      ape_rpe:
+        reference_file: ""
+      point_relation:
+        reference_file: "ap20_robot"
+
+  - bag: _tf_model.bag
+    test_name: ""
+    topic: ""
+    frame: ""

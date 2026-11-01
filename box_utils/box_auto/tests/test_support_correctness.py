@@ -12,7 +12,7 @@ import rospy
 import yaml
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import Image, CompressedImage
-from std_msgs.msg import Header, String
+from std_msgs.msg import Header
 from test_dataset_reliability import TemporaryCase, PACKAGE, load_script, extracted_function
 
 
@@ -28,7 +28,9 @@ utils = PACKAGE / "python/box_auto/utils"
 stats = load_file(utils / "trajectory_statistics.py", "test_trajectory_statistics")
 config = load_file(utils / "evaluation_config.py", "test_evaluation_config")
 codec = load_file(PACKAGE.parent / "box_converter/image-anonymization-pipeline/image_codec.py", "test_image_codec")
+heading = load_file(PACKAGE / "python/box_auto/scripts/verification/alb1_heading_deep_dive.py", "test_heading_analysis")
 posecov = load_script("cpt7/Not_needed_generatePoseStampedWithCov.py")
+table = load_script("verification/generate_ijrr_kio_table.py")
 
 
 class SupportCorrectnessTests(TemporaryCase):
@@ -127,7 +129,7 @@ class SupportCorrectnessTests(TemporaryCase):
             posecov.write_bag_with_posecov(self.output, self.directory / "second.bag", "/odom", "/pose")
 
     def test_all_shipped_evaluation_presets(self):
-        paths = list((PACKAGE / "cfg").glob("evo*.yaml"))
+        paths = list((PACKAGE / "cfg").glob("evo*.yaml")) + [PACKAGE / "cfg/IJRR_revision.yaml"]
         for path in paths:
             with self.subTest(path=path.name):
                 result = config.validate_evaluation_config(yaml.safe_load(path.read_text()))
@@ -137,27 +139,27 @@ class SupportCorrectnessTests(TemporaryCase):
         with self.assertRaises(ValueError):
             config.validate_evaluation_config(bad)
 
+    def test_heading_position_alignment_and_degeneracy(self):
+        from scipy.spatial.transform import Rotation
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        source = np.array([[0.0, 0, 0], [1, 0, 0], [0, 2, 0], [0, 0, 3]])
+        rotation = Rotation.from_euler("xyz", [0.2, -0.4, 0.6]).as_matrix()
+        translation = np.array([4.0, -2.0, 8.0])
+        target = source @ rotation.T + translation
+        actual, offset, scale, _ = heading.umeyama_similarity(source, target, False)
+        np.testing.assert_allclose(actual, rotation, atol=1e-12)
+        np.testing.assert_allclose(offset, translation, atol=1e-12)
+        self.assertEqual(scale, 1)
+        line = np.array([[0.0, 0, 0], [1, 0, 0], [2, 0, 0]])
+        with self.assertRaises(ValueError):
+            heading.umeyama_similarity(line, line, False)
+        np.testing.assert_allclose(heading.wrap_deg(np.array([181.0, -181.0, 360.0])), [-179.0, 179.0, 0.0])
 
     def test_statistics_append_preserves_invalid_existing_output(self):
         # Load the shared writer with the real atomic publisher and no cloud imports.
-        from test_dataset_reliability import merge
         append = extracted_function(utils / "trajectory_statistics.py", "append_summary", {"Path": Path})
         import types
+
         utilities = types.ModuleType("box_auto.utils")
         utilities.__path__ = [str(utils)]
         parent = types.ModuleType("box_auto")
@@ -178,48 +180,53 @@ class SupportCorrectnessTests(TemporaryCase):
         topics = parse_topics([[], ["Bag: 2024-11-11-12-42-47_camera.bag"], ["/image", "Image", "cam", "Yes"]])
         self.assertEqual(topics[0]["bag_name_orig"], "camera.bag")
         self.assertEqual(topics[0]["bag_name_out"], "")
-        self.assertEqual(parse_missions([["id", "name", "value"], [], ["mission", "test"]]), {"mission": {"name": "test", "value": ""}})
+        self.assertEqual(
+            parse_missions([["id", "name", "value"], [], ["mission", "test"]]),
+            {"mission": {"name": "test", "value": ""}},
+        )
         with self.assertRaises(ValueError):
             parse_missions([["id", "name"], ["same", "a"], ["same", "b"]])
         with self.assertRaises(ValueError):
             parse_topics([["/image", "Image", "cam", "Yes"]])
 
     def test_covariance_plot_requires_matching_full_covariance(self):
-        get_std = extracted_function(PACKAGE / "python/box_auto/scripts/verification/plot_with_covariance.py", "get_position_std", {"np": np})
+        get_std = extracted_function(
+            PACKAGE / "python/box_auto/scripts/verification/plot_with_covariance.py", "get_position_std", {"np": np}
+        )
         path = self.directory / "covariance.tum"
-        covariance = np.diag([1., 4., 9., .1, .1, .1])
-        data = np.column_stack(([100., 101.], np.tile(covariance.reshape(-1), (2, 1))))
+        covariance = np.diag([1.0, 4.0, 9.0, 0.1, 0.1, 0.1])
+        data = np.column_stack(([100.0, 101.0], np.tile(covariance.reshape(-1), (2, 1))))
         np.savetxt(path, data, header="timestamp full_covariance")
-        np.testing.assert_allclose(get_std(path, np.array([100., 101.])), [[1, 2, 3], [1, 2, 3]])
+        np.testing.assert_allclose(get_std(path, np.array([100.0, 101.0])), [[1, 2, 3], [1, 2, 3]])
         with self.assertRaises(ValueError):
-            get_std(path, np.array([100., 102.]))
+            get_std(path, np.array([100.0, 102.0]))
         data[0, 1] = -1
         np.savetxt(path, data, header="timestamp full_covariance")
         with self.assertRaises(ValueError):
-            get_std(path, np.array([100., 101.]))
+            get_std(path, np.array([100.0, 101.0]))
 
+    def test_output_protection_and_explicit_replacement(self):
+        missions = self.directory / "missions"
+        workspace = self.directory / "workspace"
+        missions.mkdir()
+        workspace.mkdir()
+        for path in (self.directory, missions, missions / "mission"):
+            with self.assertRaises(ValueError):
+                table.ensure_safe_output_dir(path, missions, workspace)
+        out = self.directory / "results"
+        out.mkdir()
+        (out / "keep").write_text("precious")
+        with self.assertRaises(ValueError):
+            table.prepare_output_dir(out, missions, workspace, True, False)
+        self.assertEqual((out / "keep").read_text(), "precious")
+        fresh = self.directory / "fresh"
+        table.prepare_output_dir(fresh, missions, workspace, False, False)
+        table.prepare_output_dir(fresh, missions, workspace, True, False)
+        self.assertTrue((fresh / ".box_auto_kio_output").exists())
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    def test_missing_methods_have_no_expected_zips(self):
+        self.assertEqual(table.expected_result_paths(self.directory, {"bag_topic_pairs": []}), [])
+        self.assertFalse(table.all_expected_zips_exist(self.directory, {"bag_topic_pairs": []}))
 
 
 if __name__ == "__main__":

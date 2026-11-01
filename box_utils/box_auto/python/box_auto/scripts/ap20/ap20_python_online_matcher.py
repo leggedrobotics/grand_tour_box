@@ -4,7 +4,6 @@ from geometry_msgs.msg import PointStamped, PoseStamped
 from nav_msgs.msg import Odometry
 from collections import deque
 import rospy
-import os
 import argparse
 from pathlib import Path
 from box_auto.utils.atomic_file import atomic_output
@@ -55,6 +54,11 @@ HIGH_LINE_DELAY_WARN_SEC = 0.01
 
 RESUMED_SYNC_TIMESTAMP_TICKS_THRESHOLD = 10
 POSITION_MATCH_RESET_THRESHOLD_SEC = 30
+
+# Preserve FIFO association by default. A wider --window-size is available for
+# recordings whose timestamp association has been independently validated;
+# monotonic output alone does not establish more accurate synchronization.
+TIMESTAMP_MATCH_WINDOW_SIZE = 1
 
 # Fixed pose/twist outputs
 IDENTITY_QUATERNION = (0.0, 0.0, 0.0, 1.0)
@@ -109,7 +113,11 @@ class LastMatch:
         res["N_timestamp_time"] = round((self.timestamp_time.to_sec() - other.timestamp_time.to_sec()) / IMU_TICK_SEC)
         res["HardwareTS_time_accuracy_check"] = (
             abs(
-                (other.timestamp_time.to_sec() + (res["N_timestamp_time"] * IMU_TICK_SEC) - self.timestamp_time.to_sec())
+                (
+                    other.timestamp_time.to_sec()
+                    + (res["N_timestamp_time"] * IMU_TICK_SEC)
+                    - self.timestamp_time.to_sec()
+                )
             )
             < HARDWARE_TS_TIME_ACCURACY_TOL_SEC
         )
@@ -130,7 +138,66 @@ class LastMatch:
         return counter
 
 
-def read_bag_file(bag_path, output_bag_path=None, *, upload=True, start_offset=BAG_START_OFFSET_SEC):
+def pop_deque_index(dq, idx):
+    dq.rotate(-idx)
+    item = dq.popleft()
+    dq.rotate(idx)
+    return item
+
+
+def push_deque_index(dq, item, idx):
+    dq.rotate(-idx)
+    dq.appendleft(item)
+    dq.rotate(idx)
+
+
+def select_timestamp_for_imu(imu_msg, ts_deque, last_match, window_size=TIMESTAMP_MATCH_WINDOW_SIZE):
+    n = min(len(ts_deque), window_size)
+    if n <= 0:
+        return None, None
+
+    best_idx = 0
+    best_score = None
+
+    # Evaluate only the first window_size timestamps (time-local association).
+    for i in range(n):
+        ts_msg = ts_deque[i]
+        candidate = LastMatch(imu_msg, ts_msg)
+
+        if last_match is None:
+            # Prefer a valid arrival delay; otherwise choose the closest-to-zero delay.
+            delay = candidate.get_line_delay()
+            if candidate.line_delay_valid():
+                score = (0, delay)
+            else:
+                score = (1, abs(delay))
+        else:
+            res = candidate.get_stats(last_match)
+
+            # Primary: timestamp tick consistency with imu tick.
+            primary = abs(res["N_timestamp_time"] - res["N_imu_time"])
+
+            # Secondary: minimize line delay (and prefer valid delay).
+            delay = candidate.get_line_delay()
+            penalty = 0 if candidate.line_delay_valid() else 1
+            score = (primary, penalty, abs(delay))
+
+        if best_score is None or score < best_score:
+            best_score = score
+            best_idx = i
+
+    chosen = pop_deque_index(ts_deque, best_idx)
+    return chosen, best_idx
+
+
+def read_bag_file(
+    bag_path,
+    output_bag_path=None,
+    *,
+    upload=True,
+    window_size=TIMESTAMP_MATCH_WINDOW_SIZE,
+    start_offset=BAG_START_OFFSET_SEC,
+):
     last_match = None
     imu_data = deque()
     tps_data = deque()
@@ -155,6 +222,8 @@ def read_bag_file(bag_path, output_bag_path=None, *, upload=True, start_offset=B
         raise ValueError("Startup offset must be finite and nonnegative")
     input_counts = {}
     read_counts = {TOPIC_IMU_DEBUG: 0, TOPIC_POSITION_DEBUG: 0, TOPIC_TIMESTAMP_DEBUG: 0}
+    if window_size < 1:
+        raise ValueError("Timestamp matching window must be positive")
     bag_path = str(bag_path)
     output_bag_path = str(output_bag_path or bag_path.replace(INPUT_BAG_NAME_TOKEN, OUTPUT_BAG_NAME_TOKEN))
     if Path(bag_path).resolve() == Path(output_bag_path).resolve():
@@ -188,7 +257,6 @@ def read_bag_file(bag_path, output_bag_path=None, *, upload=True, start_offset=B
                     t = position.position.header.stamp  # .to_sec()
                     ref = -1
                     for i in range(len(all_matches)):
-
                         if all_matches[i].imu_time > t:
                             ref = i
                             delta = (all_matches[i].imu_time - t).to_sec()
@@ -289,8 +357,9 @@ def read_bag_file(bag_path, output_bag_path=None, *, upload=True, start_offset=B
 
                 if len(imu_debug_data) > 0 and len(timestamp_debug_data) > 0:
                     new_imu_msg = imu_debug_data.popleft()
-                    # Preserve the established FIFO association policy.
-                    new_timestamp_msg = timestamp_debug_data.popleft()
+                    new_timestamp_msg, ts_idx = select_timestamp_for_imu(
+                        new_imu_msg, timestamp_debug_data, last_match, window_size=window_size
+                    )
 
                     # Create inital match based on guessing
                     if last_match is None:
@@ -306,7 +375,7 @@ def read_bag_file(bag_path, output_bag_path=None, *, upload=True, start_offset=B
                         else:
                             if candidate.get_line_delay() < 0.0:
                                 # Lets skip the IMU message
-                                timestamp_debug_data.appendleft(new_timestamp_msg)
+                                push_deque_index(timestamp_debug_data, new_timestamp_msg, ts_idx)
                                 print(
                                     str(new_imu_msg.header.seq)
                                     + " --- "
@@ -422,7 +491,7 @@ def read_bag_file(bag_path, output_bag_path=None, *, upload=True, start_offset=B
                                 res["N_timestamp_time"],
                             )
                             matching_results["skipped_imu"] += 1
-                            timestamp_debug_data.appendleft(new_timestamp_msg)
+                            push_deque_index(timestamp_debug_data, new_timestamp_msg, ts_idx)
 
                         else:
                             # failed
@@ -469,11 +538,17 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description="Synchronize AP20 using hardware timestamp and IMU tick consistency")
     parser.add_argument("--input", type=Path)
     parser.add_argument("--output", type=Path)
+    parser.add_argument("--window-size", type=int, default=TIMESTAMP_MATCH_WINDOW_SIZE)
     parser.add_argument("--start-offset", type=float, default=BAG_START_OFFSET_SEC)
     parser.add_argument("--no-upload", action="store_true")
     args = parser.parse_args(argv)
-    read_bag_file(args.input or get_bag(INPUT_BAG_GLOB), args.output,
-                  upload=not args.no_upload, start_offset=args.start_offset)
+    read_bag_file(
+        args.input or get_bag(INPUT_BAG_GLOB),
+        args.output,
+        upload=not args.no_upload,
+        window_size=args.window_size,
+        start_offset=args.start_offset,
+    )
 
 
 if __name__ == "__main__":

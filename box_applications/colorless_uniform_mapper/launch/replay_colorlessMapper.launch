@@ -1,0 +1,24 @@
+<launch>
+  <!-- Sim time -->
+  <arg name="use_sim_time" default="true"/>
+  <param name="/use_sim_time" value="$(arg use_sim_time)"/>
+
+  <!-- Parameters -->
+  <arg name="param_file" default="$(find colorless_uniform_mapper)/config/parameters.yaml"/>
+
+  <!-- Map saving path. If left empty saves to /home/<username>/colorless_maps -->
+  <arg name="map_saving_path" default=""/>
+
+  <!-- Rviz for viz. -->
+  <arg name="rviz" default="false"/>
+
+  <!-- ColorlessMapper node -->
+  <node pkg="colorless_uniform_mapper" type="colorless_uniform_mapper_node" name="colorless_uniform_mapper" output="screen" required="true">
+    <rosparam command="load" file="$(arg param_file)"/>
+    <param name="map_saving_path" value="$(arg map_saving_path)"/>
+  </node>
+
+  <!-- rviz -->
+  <node pkg="rviz" type="rviz" name="colorless_mapper_rviz" args="-d $(find colorless_uniform_mapper)/rviz/rviz.rviz" if="$(arg rviz)"/>
+
+</launch>

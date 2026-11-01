@@ -2,7 +2,7 @@
 <launch>
   <arg name="urdf_file"                  default="$(find box_model)/urdf/box/box.urdf"/>
   <arg name="xacro_file"                 default="$(find box_model)/urdf/box/box.urdf.xacro"/>
-  <arg name="enable_visualizable_model" default="true" doc="If true, disabled the redundant frames in the URDF model"/>
+  <arg name="enable_visualizable_model" default="false" doc="Enable the simplified visualization model; false retains the full processing frame tree"/>
 
   <!-- Generate URDF from xacro and save to disk -->
   <node name="urdf_generator" pkg="box_model" type="generate_urdf.py" output="screen">
