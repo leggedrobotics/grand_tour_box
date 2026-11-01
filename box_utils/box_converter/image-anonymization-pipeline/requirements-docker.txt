@@ -1,7 +1,7 @@
 numpy
 opencv-python
 tqdm
-cv_bridge
 torch
 torchvision
-kleinkram
+# Last release supporting the Python 3.8 interpreter shipped by ROS Noetic.
+kleinkram==0.57.0

@@ -2,6 +2,9 @@
 set -e
 
 source "/opt/ros/$ROS_DISTRO/setup.bash" --
-echo $KLEINKRAM_CONFIG > ~/.kleinkram.json
+if [[ -n "${KLEINKRAM_CONFIG:-}" ]]; then
+    umask 077
+    printf '%s\n' "$KLEINKRAM_CONFIG" > "$HOME/.kleinkram.json"
+fi
 
 exec "$@"

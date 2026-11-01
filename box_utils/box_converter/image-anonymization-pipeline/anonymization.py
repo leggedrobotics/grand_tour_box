@@ -1,12 +1,14 @@
 from __future__ import annotations
 
-import subprocess
 import warnings
+import time
+import os
+import shutil
+import tempfile
 from argparse import ArgumentParser
 from enum import Enum
 from logging import getLogger
 from pathlib import Path
-from typing import Any
 from typing import Dict
 from typing import List
 from typing import NamedTuple
@@ -18,30 +20,18 @@ from uuid import UUID
 import cv2
 import kleinkram
 import numpy as np
-import rosbag
 import torch
 import torchvision
-import tqdm
-from cv_bridge import CvBridge
 from kleinkram.models import Mission
-from std_msgs.msg import Int32
-import os
+
+from bag_anonymization import process_bag
 
 
 logger = getLogger(__name__)
 warnings.filterwarnings("ignore", category=UserWarning)
 
-MODELS_PATH = Path("/models")
-assert MODELS_PATH.is_dir()
-
+MODELS_PATH = Path("/models") if Path("/models").is_dir() else Path(__file__).parent / "models"
 DATA_PATH = Path("/data")
-DATA_PATH.mkdir(exist_ok=False)
-
-INPUT_PATH = DATA_PATH / "input"
-INPUT_PATH.mkdir(exist_ok=False)
-
-OUTPUT_PATH = DATA_PATH / "output"
-OUTPUT_PATH.mkdir(exist_ok=False)
 
 FACE_MODEL_SCORE_THRESHOLD = 0.4
 LP_MODEL_SCORE_THRESHOLD = 0.85
@@ -75,10 +65,23 @@ def load_detectors(
 ) -> Detectors:
     device = get_device()
 
-    face_detector = load_detector(models_path / "ego_blur_face.jit", device)
-    lp_detector = load_detector(models_path / "ego_blur_lp.jit", device)
+    face_path, lp_path = gen1_model_paths(models_path)
+    face_detector = load_detector(face_path, device)
+    lp_detector = load_detector(lp_path, device)
 
     return Detectors(face_detector, lp_detector)
+
+
+def gen1_model_paths(models_path: Path) -> Tuple[Path, Path]:
+    """Keep the deployed Gen1 model choice; accept its original download names."""
+    paths = []
+    for kind in ("face", "lp"):
+        candidates = [models_path / f"ego_blur_{kind}_gen1.jit", models_path / f"ego_blur_{kind}.jit"]
+        path = next((candidate for candidate in candidates if candidate.is_file()), None)
+        if path is None:
+            raise FileNotFoundError(f"Missing Gen1 {kind} model; expected one of {candidates}")
+        paths.append(path)
+    return tuple(paths)
 
 
 def get_detections(
@@ -90,7 +93,14 @@ def get_detections(
     """\
     takes BRG image and returns a list of detections in the format [x1, y1, x2, y2]
     """
-    image_tensor = torch.tensor(image).permute(2, 0, 1).to(get_device())
+    if image.ndim != 3 or image.shape[2] != 3:
+        raise ValueError(f"Expected image with shape (H, W, 3), got {image.shape}")
+    # Match the standalone scripts: scale only inference input, never output pixels.
+    if image.dtype == np.uint16:
+        image = np.rint(image.astype(np.float64) * (255.0 / 65535.0)).astype(np.uint8)
+    elif image.dtype != np.uint8:
+        raise ValueError("Detector input must be uint8 or uint16")
+    image_tensor = torch.from_numpy(np.ascontiguousarray(image)).permute(2, 0, 1).contiguous().to(get_device())
 
     with torch.no_grad():
         detections = detector(image_tensor)  # type: ignore
@@ -116,9 +126,15 @@ def create_mask_from_detections(image: np.ndarray, detections: List[List[float]]
     takes a list of [x1, y1, x2, y2] detections and returns a 0 1 mask the same size as the image
     """
     mask = np.zeros(image.shape[:2], dtype=np.uint8)
+    height, width = mask.shape
     for bbox in detections:
-        x1, y1, x2, y2 = map(int, bbox)
-        mask[y1:y2, x1:x2] = 1
+        if len(bbox) != 4 or not np.isfinite(bbox).all():
+            raise ValueError(f"Invalid detection box: {bbox}")
+        x1, y1, x2, y2 = bbox
+        x1, y1 = max(0, min(width, int(np.floor(x1)))), max(0, min(height, int(np.floor(y1))))
+        x2, y2 = max(0, min(width, int(np.ceil(x2)))), max(0, min(height, int(np.ceil(y2))))
+        if x2 > x1 and y2 > y1:
+            mask[y1:y2, x1:x2] = 1
     return mask
 
 
@@ -145,8 +161,8 @@ def pixelate_mask(image: np.ndarray, mask: np.ndarray) -> np.ndarray:
     pixelates the image where the mask is 1
     """
     h, w = mask.shape
-    ph = int(h / PIXELATION_CHUNK_SIZE)
-    pw = int(w / PIXELATION_CHUNK_SIZE)
+    ph = max(1, int(h / PIXELATION_CHUNK_SIZE))
+    pw = max(1, int(w / PIXELATION_CHUNK_SIZE))
 
     pixelated_image = cv2.resize(
         cv2.resize(image, (pw, ph), interpolation=cv2.INTER_LINEAR),
@@ -225,6 +241,8 @@ def blur_and_annotated_image_given_detections(
         blurred_image = blur_mask(image, mask)
     elif method == BlurMethod.PIXELATE:
         blurred_image = pixelate_mask(image, mask)
+    else:
+        raise ValueError(f"Unsupported blur method: {method}")
 
     annotated_image = draw_boxes_of_detections(blurred_image, detections)
 
@@ -252,73 +270,8 @@ def blur_and_annotate_image(
 
     if flipped:
         blurred_image = cv2.rotate(blurred_image, cv2.ROTATE_180)
+        annotated_image = cv2.rotate(annotated_image, cv2.ROTATE_180)
     return blurred_image, annotated_image, number_of_detections
-
-
-def load_image_from_ros1_message(
-    msg: Any,
-    cv_bridge: CvBridge,
-) -> Tuple[np.ndarray, bool, bool]:
-    """\
-    load image from message, output is always an BGR image
-    returns the image together with a flag if the image was grayscale and if the image was compressed
-    """
-    # check if the image is compressed
-    compressed = "CompressedImage" in type(msg)._type
-
-    if compressed:
-        img = cv_bridge.compressed_imgmsg_to_cv2(msg, desired_encoding="passthrough")
-    else:
-        img = cv_bridge.imgmsg_to_cv2(msg, desired_encoding="passthrough")
-
-    # check if the image is grayscale
-    grayscale = len(img.shape) == 2
-    if grayscale:
-        img = np.stack([img] * 3, axis=-1)
-
-    return img, grayscale, compressed
-
-
-def save_image_to_ros1_message(
-    raw: np.ndarray,
-    cv_bridge: CvBridge,
-    compressed: bool = True,
-    grayscale: bool = True,
-) -> Any:
-    """\
-    save a BGR image as a message, if grayscale is True the image is converted to grayscale
-    """
-    if grayscale:
-        raw = raw[..., 0]
-    if compressed:
-        return cv_bridge.cv2_to_compressed_imgmsg(raw, dst_format="jpg")
-    else:
-        return cv_bridge.cv2_to_imgmsg(raw, encoding="passthrough")
-
-
-def save_image_to_bag(
-    image: np.ndarray,
-    bag: rosbag.Bag,
-    cv_bridge: CvBridge,
-    bag_time: Any,
-    header: Any,
-    topic: str,
-    compressed: bool,
-    grayscale: bool,
-    detections_count: int,
-) -> None:
-    """\
-    writes images with corresponding metadata to an open bagfile
-    """
-    # write the image
-    msg = save_image_to_ros1_message(image, cv_bridge, compressed=compressed, grayscale=grayscale)
-    msg.header = header
-    bag.write(topic, msg, bag_time)
-
-    # write number of detections
-    n_dets_msg = Int32()
-    n_dets_msg.data = detections_count
-    bag.write(f"{topic}/n_detections", n_dets_msg, bag_time)
 
 
 def anonymize_image_topics_in_bagfile(
@@ -330,41 +283,14 @@ def anonymize_image_topics_in_bagfile(
     flip_images_for_inference: bool = False,
     head: Optional[int] = None,
 ) -> None:
-    cv_bridge = CvBridge()
-    with rosbag.Bag(str(input_path), "r") as in_bag, rosbag.Bag(str(output_path), "w", compression="lz4") as out_bag:
-        for idx, (topic, msg, bag_time) in tqdm.tqdm(
-            enumerate(in_bag.read_messages()),
-            total=in_bag.get_message_count(),
-            desc=f"processing {input_path} - {len(image_topics)} image topics",
-        ):
-            if head is not None and idx >= head:
-                break
-            if topic not in image_topics:
-                out_bag.write(topic, msg, bag_time)
-                continue
-
-            image, grayscale, compressed = load_image_from_ros1_message(msg, cv_bridge)
-
-            # TODO allow storing of annotated images for debugging
-            blurred_image, _, detections_count = blur_and_annotate_image(
-                image,
-                flip_images_for_inference,
-                detectors,
-            )
-            save_image_to_bag(
-                blurred_image,
-                out_bag,
-                cv_bridge,
-                bag_time,
-                msg.header,
-                topic,
-                compressed,
-                grayscale,
-                detections_count,
-            )
-
-    # reindex the bagfile (probably not needed)
-    subprocess.run(["rosbag", "reindex", str(output_path)])
+    process_bag(
+        input_path,
+        output_path,
+        image_topics=image_topics,
+        head=head,
+        transform=lambda image, index: blur_and_annotate_image(image, flip_images_for_inference, detectors),
+        require_all_image_topics=True,
+    )
 
 
 AnonymizerConfig = Dict[str, Tuple[List[str], bool, str]]
@@ -430,125 +356,160 @@ def get_anonymizer_config(prefix: str, camera: str) -> AnonymizerConfig:
 
 def get_mission(mission_id: str) -> Mission:
     missions = kleinkram.list_missions(mission_ids=[mission_id])
-    assert len(missions) == 1
+    if len(missions) != 1:
+        raise ValueError(f"Expected exactly one mission for {mission_id}, got {len(missions)}")
     return missions[0]
 
 
 def download_files(*, config: AnonymizerConfig, mission_id: UUID, input_path: Path) -> None:
-    kleinkram.download(
+    result = kleinkram.download(
         mission_ids=[mission_id],
         file_names=list(config.keys()),
         dest=input_path,
-        verbose=True,
     )
+    if getattr(result, "failed", 0):
+        raise RuntimeError("Mission download failed")
+    missing = [name for name in config if not (input_path / name).is_file()]
+    if missing:
+        raise FileNotFoundError(f"Mission download did not produce expected bags: {missing}")
 
 
-def upload_simple(mission_id, path, delete=True):
-    info = kleinkram.list_missions(mission_ids=[mission_id])[0]
-    project_name = info.project_name
-    mission_name = info.name
+def _verification_status(mission_id, path: Path) -> str:
+    status = kleinkram.verify(mission_id=mission_id, files=[path])[path]
+    # The installed SDK returns a string Enum; older supported versions used strings.
+    return getattr(status, "value", status)
 
-    res = kleinkram.verify(project_name=project_name, mission_name=mission_name, files=[path])
 
-    print(mission_name, res)
-    while res[Path(path)] != "uploaded":
-        try:
-            if res[Path(path)] == "missing":
-                print("uploading")
-            elif res[Path(path)] == "uploaded":
-                print("File already uploaded - suc")
-                return True
-            elif res[Path(path)] == "hash mismatch":
-                print("hash mismatch")
-                fileinfo = [
-                    f
-                    for f in kleinkram.list_files(project_names=[project_name], mission_names=[mission_name])
-                    if Path(path).name in f.name
-                ]
-                kleinkram.delete_file(fileinfo[0].id)
-            else:
-                print("Something is odd after verification")
-                print(res[Path(path)])
-                fileinfo = [
-                    f
-                    for f in kleinkram.list_files(project_names=[project_name], mission_names=[mission_name])
-                    if Path(path).name in f.name
-                ]
+def _wait_for_verification(mission_id, path, *, attempts, poll_interval, after_upload=False):
+    for attempt in range(attempts):
+        status = _verification_status(mission_id, path)
+        pending = status in ("uploading", "computing hash") or (after_upload and status == "missing")
+        if not pending:
+            return status
+        if attempt + 1 < attempts:
+            time.sleep(poll_interval)
+    raise RuntimeError(f"Upload verification timed out for {path.name}: {status}")
 
-                if len(fileinfo) == 1:
-                    if fileinfo[0].state == "ERROR" or fileinfo[0].state == "UPLOADING":
-                        if delete:
-                            print("File already exists - deleting")
-                            kleinkram.delete_file(fileinfo[0].id)
-                        else:
-                            print("File already exists - aboarding - fail")
-                            return False
-                    else:
-                        print("File may have other error - aboarding - fail", fileinfo[0])
-                        return False
 
-                else:
-                    print("Too many files to verify aboarding - fail number files: ", len(fileinfo))
-                    return False
+def upload_simple(mission_id, path, delete=False, *, attempts=60, poll_interval=5):
+    """Succeed only after hash verification in the exact requested mission.
 
-            res = kleinkram.upload(
-                mission_name=mission_name,
-                project_name="GrandTour",
-                files=[path],
-                create=False,
-                verbose=True,
-            )
-            res = kleinkram.verify(project_name=project_name, mission_name=mission_name, files=[path])
+    Replacement is explicit and restricted to one exact filename. An in-progress
+    upload is waited for, never deleted. Transport/API failures propagate to the job.
+    """
+    path = Path(path).resolve(strict=True)
+    if attempts <= 0 or poll_interval < 0:
+        raise ValueError("Verification requires positive attempts and a nonnegative poll interval")
+    status = _wait_for_verification(mission_id, path, attempts=attempts, poll_interval=poll_interval)
+    if status == "uploaded":
+        return True
+    if status != "missing":
+        if not delete or status not in ("hash mismatch", "size mismatch", "unknown"):
+            raise RuntimeError(f"Existing remote file cannot be replaced: {path.name}: {status}")
+        matches = [
+            file
+            for file in kleinkram.list_files(mission_ids=[mission_id], file_names=[path.name])
+            if file.name == path.name
+        ]
+        if len(matches) != 1:
+            raise RuntimeError(f"Expected exactly one remote file named {path.name}, got {len(matches)}")
+        remote_state = getattr(matches[0].state, "value", matches[0].state)
+        if remote_state not in ("OK", "ERROR"):
+            raise RuntimeError(f"Cannot replace {path.name} in remote state {remote_state}")
+        kleinkram.delete_file(matches[0].id)
 
-            break
-        except Exception as e:
-            print("Something went wrong - ", e)
-
+    result = kleinkram.upload(mission_id=mission_id, files=[path], create=False)
+    if getattr(result, "failed", 0):
+        raise RuntimeError(f"Upload failed for {path}")
+    status = _wait_for_verification(
+        mission_id,
+        path,
+        attempts=attempts,
+        poll_interval=poll_interval,
+        after_upload=True,
+    )
+    if status != "uploaded":
+        raise RuntimeError(f"Upload verification failed for {path.name}: {status}")
     return True
 
 
-def upload_files(*, config: AnonymizerConfig, mission_id: UUID, output_path: Path) -> None:
-    file_paths = [output_path / out_name for _, _, out_name in config.values()]
+def archive_output(source: Path, archive_dir: Path) -> None:
+    """Keep the cluster's scratch copy without exposing a partial or overwritten bag."""
+    archive_dir.mkdir(parents=True, exist_ok=True)
+    destination = archive_dir / source.name
+    if source.resolve() == destination.resolve():
+        return
+    if os.path.lexists(destination):
+        raise FileExistsError(f"Archived output already exists: {destination}")
+    with tempfile.TemporaryDirectory(prefix=".anonymization-copy-", dir=archive_dir) as temporary:
+        staged = Path(temporary) / source.name
+        shutil.copyfile(source, staged)
+        os.link(staged, destination)
 
-    for file_path in file_paths:
-        try:
-            os.system(f"cp {file_path} /scratch/")
-        except Exception as e:
-            print("Something went wrong while copying - ", e)
 
-        upload_simple(mission_id, str(file_path), delete=True)
+def upload_files(
+    *, config: AnonymizerConfig, mission_id: UUID, output_path: Path, replace_existing=False, archive_dir=None
+) -> None:
+    for _, _, out_name in config.values():
+        source = output_path / out_name
+        if archive_dir is not None:
+            archive_output(source, archive_dir)
+        upload_simple(mission_id, source, delete=replace_existing)
 
 
-def main() -> int:
-    parser = ArgumentParser()
-    parser.add_argument("--head", type=int, default=None)
-    parser.add_argument("--mission-id", type=str, required=True)
-    parser.add_argument("--cam", type=str, required=True)
-    args = parser.parse_args()
-
-    assert args.cam in FULL_CONFIG, f"camera {args.cam} not in {list(FULL_CONFIG.keys())!r}"
-
+def main(argv=None) -> int:
+    parser = ArgumentParser(description="Anonymize and optionally upload a cloud mission using EgoBlur Gen1")
+    parser.add_argument("--head", type=int, help="Process a sample; sample outputs are never uploaded")
+    parser.add_argument("--mission-id", required=True)
+    parser.add_argument("--cam", choices=sorted(FULL_CONFIG), required=True)
+    parser.add_argument("--models", type=Path, default=MODELS_PATH)
+    parser.add_argument("--data-dir", type=Path, default=DATA_PATH)
+    parser.add_argument(
+        "--archive-dir", type=Path, help="Keep a completed local copy before uploading (cluster scratch)"
+    )
+    parser.add_argument("--no-upload", action="store_true", help="Keep completed outputs locally")
+    parser.add_argument("--replace-existing", action="store_true", help="Allow replacing an exact remote filename")
+    args = parser.parse_args(argv)
+    if args.head is not None and args.head <= 0:
+        parser.error("--head must be positive")
+    gen1_model_paths(args.models)
     mission = get_mission(args.mission_id)
-
-    # get anonymizer config
-    config = get_anonymizer_config(prefix=mission.name.replace("pub_", ""), camera=args.cam)
-
-    # download the files that need to be anonymized
-    download_files(config=config, mission_id=mission.id, input_path=INPUT_PATH)
-
-    detectors = load_detectors(MODELS_PATH)
+    prefix = mission.name[4:] if mission.name.startswith("pub_") else mission.name
+    config = get_anonymizer_config(prefix=prefix, camera=args.cam)
+    if args.head is not None:
+        config = {
+            name: (topics, flip, out_name[:-4] + "_sample.bag") for name, (topics, flip, out_name) in config.items()
+        }
+    input_path, output_path = args.data_dir / "input", args.data_dir / "output"
+    for name, (_, _, out_name) in config.items():
+        if Path(name).name != name or Path(out_name).name != out_name:
+            raise ValueError("Mission-derived filenames must not contain directory components")
+        # Keep previous inputs and outputs intact, including after an interrupted run.
+        for path in (input_path / name, output_path / out_name):
+            if path.exists() or path.is_symlink():
+                raise FileExistsError(f"File already exists; choose a fresh --data-dir: {path}")
+    detectors = load_detectors(args.models)
+    input_path.mkdir(parents=True, exist_ok=True)
+    output_path.mkdir(parents=True, exist_ok=True)
+    download_files(config=config, mission_id=mission.id, input_path=input_path)
     for filename, (topics, flip, out_name) in config.items():
         anonymize_image_topics_in_bagfile(
-            INPUT_PATH / filename,
-            OUTPUT_PATH / out_name,
+            input_path / filename,
+            output_path / out_name,
             image_topics=topics,
             detectors=detectors,
             flip_images_for_inference=flip,
             head=args.head,
         )
-
-    upload_files(config=config, mission_id=mission.id, output_path=OUTPUT_PATH)
-
+    if args.head is None and not args.no_upload:
+        upload_files(
+            config=config,
+            mission_id=mission.id,
+            output_path=output_path,
+            replace_existing=args.replace_existing,
+            archive_dir=args.archive_dir,
+        )
+    print(f"Completed {'sample' if args.head is not None else 'full'} outputs: {output_path}")
     return 0
 
 

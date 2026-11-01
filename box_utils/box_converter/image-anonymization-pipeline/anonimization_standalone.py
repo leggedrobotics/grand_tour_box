@@ -11,13 +11,8 @@ from typing import Any, List, NamedTuple, Optional, Sequence, Tuple
 
 import cv2
 import numpy as np
-import rosbag
 import torch
 import torchvision
-import tqdm
-from sensor_msgs.msg import CompressedImage as RosCompressedImage
-from sensor_msgs.msg import Image as RosImage
-from std_msgs.msg import Int32 as RosInt32
 
 
 logger = getLogger(__name__)
@@ -27,10 +22,7 @@ SCRIPT_DIR = Path(__file__).parent
 MODELS_PATH = SCRIPT_DIR / "models"
 
 # --- Configuration ----------------------------------------------------------------
-INPUT_BAG = Path("/media/tutuna/LaCie/boxi_etna/rtna_outside_cave_1/2025-06-04-14-10-21_nuc_alphasense_color.bag")
 CAM = "alphasense"  # choices: alphasense, hdr_left, hdr_front, hdr_right, zed2i
-OUTPUT_BAG = None  # Set to a Path to override; None defaults to <input_stem>_anon.bag next to input
-HEAD = None  # Set to an int to process only the first N bag messages (for testing)
 
 FACE_MODEL_SCORE_THRESHOLD = 0.4
 LP_MODEL_SCORE_THRESHOLD = 0.85
@@ -409,8 +401,8 @@ def blur_and_annotate_image(
     return blurred_image, annotated_image, number_of_detections
 
 
-# Shared codecs preserve row padding semantics, byte order, bit depth and alpha.
-from image_codec import decode_image_message, _reencode_compressed_image, _encode_raw_image_msg
+# Shared bag writing preserves image encoding and publishes completed outputs atomically.
+from bag_anonymization import process_bag
 
 
 def _to_uint8_for_visualization(img: np.ndarray) -> np.ndarray:
@@ -638,95 +630,30 @@ def anonymize_image_topics_in_bagfile(
     flip_images_for_inference: bool = False,
     head: Optional[int] = None,
 ) -> None:
-    image_topics_set = set(image_topics)
+    def should_visualize(index):
+        return (
+            visualization_state.mode != VisualizationMode.NONE
+            and index % max(1, VISUALIZE_EVERY_NTH_IMAGE) == 0
+        )
 
-    if output_path.exists():
-        raise FileExistsError(f"Output bag already exists: {output_path}")
+    def transform(image, index):
+        return blur_and_annotate_image(
+            image_bgr=image, flipped=flip_images_for_inference, detectors=detectors,
+        )
 
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    with rosbag.Bag(str(input_path), "r") as in_bag:
-        topic_type_map = {topic: info.msg_type for topic, info in in_bag.get_type_and_topic_info().topics.items()}
-        active_image_topics = image_topics_set & set(topic_type_map)
-        if not active_image_topics:
-            raise ValueError(f"None of the selected image topics exist in {input_path}: {sorted(image_topics_set)}")
-        missing_topics = image_topics_set - active_image_topics
-        if missing_topics:
-            raise ValueError(f"Selected image topics are missing: {sorted(missing_topics)}")
-        if head is not None and head <= 0:
-            raise ValueError("head must be positive when provided")
-        total = in_bag.get_message_count()
-        processed_image_count = 0
-        processed_topics = set()
+    def on_frame(before, after, annotated, topic, stamp, count, index):
+        if should_visualize(index) and not visualize_before_after(
+            before_bgr=before, after_bgr=after, annotated_bgr=annotated,
+            topic=topic, timestamp=stamp.to_nsec(), detections_count=count,
+            frame_index=index, state=visualization_state,
+        ):
+            raise KeyboardInterrupt("Visualization interrupted by user.")
 
-        import os
-        import tempfile
-
-        with tempfile.TemporaryDirectory(prefix=".anonymizing-", dir=output_path.parent) as temporary_dir:
-            temporary_output = Path(temporary_dir) / "output.bag"
-            with rosbag.Bag(str(temporary_output), "w", compression="lz4") as out_bag:
-                for idx, (topic, msg, t) in tqdm.tqdm(
-                    enumerate(in_bag.read_messages()),
-                    total=total,
-                    desc=f"processing {input_path.name} - {len(active_image_topics)} image topics",
-                ):
-                    if head is not None and idx >= head:
-                        break
-
-                    if topic not in image_topics_set:
-                        out_bag.write(topic, msg, t)
-                        continue
-
-                    msgtype = topic_type_map[topic]
-                    image, grayscale, is_compressed = decode_image_message(msg, msgtype)
-                    image_before = image.copy()
-
-                    blurred_image, annotated_image, detections_count = blur_and_annotate_image(
-                        image_bgr=image,
-                        flipped=flip_images_for_inference,
-                        detectors=detectors,
-                    )
-
-                    if (
-                        visualization_state.mode != VisualizationMode.NONE
-                        and processed_image_count % max(1, VISUALIZE_EVERY_NTH_IMAGE) == 0
-                    ):
-                        keep_going = visualize_before_after(
-                            before_bgr=image_before,
-                            after_bgr=blurred_image,
-                            annotated_bgr=annotated_image,
-                            topic=topic,
-                            timestamp=t.to_nsec(),
-                            detections_count=detections_count,
-                            frame_index=processed_image_count,
-                            state=visualization_state,
-                        )
-                        if not keep_going:
-                            raise KeyboardInterrupt("Visualization interrupted by user.")
-
-                    if is_compressed:
-                        new_msg = RosCompressedImage()
-                        new_msg.header = msg.header
-                        new_msg.format = msg.format
-                        new_msg.data = _reencode_compressed_image(
-                            blurred_image,
-                            grayscale,
-                            msg.format,
-                            original_msg=msg,
-                            jpeg_quality=JPEG_QUALITY,
-                            png_compression=PNG_COMPRESSION,
-                        )
-                        out_bag.write(topic, new_msg, t)
-                    else:
-                        out_bag.write(topic, _encode_raw_image_msg(blurred_image, msg), t)
-
-                    out_bag.write(f"{topic}/n_detections", RosInt32(data=int(detections_count)), t)
-                    processed_image_count += 1
-                    processed_topics.add(topic)
-            if processed_image_count == 0:
-                raise ValueError("No images were processed; output bag was not published")
-            if processed_topics != active_image_topics:
-                raise ValueError("Not every selected topic had a processed image; output was not published")
-            os.link(temporary_output, output_path)
+    process_bag(
+        input_path, output_path, image_topics=image_topics, head=head,
+        transform=transform, on_frame=on_frame,
+        jpeg_quality=JPEG_QUALITY, png_compression=PNG_COMPRESSION,
+    )
 
 
 CAMERA_TOPICS: dict[str, Tuple[List[str], bool]] = {
@@ -778,6 +705,8 @@ def main(argv=None) -> int:
     args = parser.parse_args(argv)
     if not 0 <= args.face_threshold <= 1 or not 0 <= args.plate_threshold <= 1:
         parser.error("Detector thresholds must lie in [0,1]")
+    if args.head is not None and args.head <= 0:
+        parser.error("--head must be positive")
     MODELS_PATH = args.models.resolve()
     VISUALIZATION_MODE = VisualizationMode.SAVE if args.preview_dir else VisualizationMode.NONE
     if args.preview_dir is not None:
@@ -785,9 +714,6 @@ def main(argv=None) -> int:
     input_path = args.input.resolve()
     if not input_path.is_file():
         raise FileNotFoundError(f"Input bag not found: {input_path}")
-    if CAM not in CAMERA_TOPICS:
-        raise ValueError(f"CAM must be one of {list(CAMERA_TOPICS.keys())}")
-
     output_path = args.output or input_path.with_name(
         input_path.stem + ("_anon_sample.bag" if args.head else "_anon.bag")
     )
@@ -797,9 +723,10 @@ def main(argv=None) -> int:
         image_topics = args.topics
     detectors = load_detectors()
     detectors = detectors._replace(face_threshold=args.face_threshold, lp_threshold=args.plate_threshold)
-    visualization_state = initialize_visualization()
+    visualization_state = None
 
     try:
+        visualization_state = initialize_visualization()
         anonymize_image_topics_in_bagfile(
             input_path=input_path,
             output_path=output_path,
@@ -810,7 +737,8 @@ def main(argv=None) -> int:
             head=args.head,
         )
     finally:
-        finalize_visualization(visualization_state)
+        if visualization_state is not None:
+            finalize_visualization(visualization_state)
         if detectors.scripted_instances_patch is not None:
             detectors.scripted_instances_patch.__exit__(None, None, None)
 

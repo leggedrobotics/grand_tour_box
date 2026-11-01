@@ -1,96 +1,114 @@
-# Image Anonymization
+# Image anonymization
 
-this folder contains the code and dependencies to run the image anonymization pipline.
+The local and deployed entry points share `bag_anonymization.py` and
+`image_codec.py`. Detection thresholds and model generations remain selectable
+as described below; this code does not establish detection recall on a dataset.
 
-## Running The Anonymization Pipeline
+## Local environment
 
-### Running Docker Container
+Use the existing `christian_grandtour` conda environment (Python 3.11, PyTorch,
+Torchvision, Detectron2, OpenCV and ROS 1 Python modules). Run commands from this
+directory. The local tools require CUDA.
 
-- build:
-    make sure to `klein login` before building the docker image
-    (perhaps also delete the old config before you login to make sure the refresh token is as new as possible).
+```bash
+conda run -n christian_grandtour python anonimization_standalone_chat.py \
+  /path/to/input.bag --model gen2 --camera alphasense --output /path/to/output_anon.bag
+```
 
-    ```bash
-    docker build -t grand-tour-dataset .
-    ```
+`anonimization_standalone.py` supports Gen2 only. The `_chat` entry point supports
+`--model gen1` and `--model gen2`. Both accept `--topics` followed by exact topic
+names, `--models`, `--face-threshold`, `--plate-threshold`, and `--head`.
 
-- run:
-    for the `--cam` argument you can provide either `hdr`, `alphasense` or `zed2i`.
+Model files in `models/` use these names:
 
-    ```bash
-    docker run --rm -it --gpus all \
-    --env KLEINKRAM_CONFIG="$(cat ~/.kleinkram.json)" \
-    grand-tour-dataset \
-    python anonymization.py --mission-id 344d631c-387a-4aa4-bb21-92b9659ea21f --cam hdr
-    ```
+- Gen1: `ego_blur_face_gen1.jit`, `ego_blur_lp_gen1.jit`
+- Gen2: `ego_blur_face_gen2.jit`, `ego_blur_lp_gen2.jit`
 
-- singularity to cluster
-    ```bash
-    cd /home/jonfrey/git/grand_tour_box/box_utils/box_converter/image-anonymization-pipeline; docker build -t grand-tour-dataset . ; \
-    cd ~/git/grand_tour_box/box_utils/box_converter/cluster/.export; rm -fr ./grand-tour-dataset.*; \
-    SINGULARITY_NOHTTPS=1 singularity build --sandbox grand-tour-dataset.sif docker-daemon://grand-tour-dataset:latest; \
-    sudo tar -cvf grand-tour-dataset.tar grand-tour-dataset.sif; \
-    scp ./grand-tour-dataset.tar jonfrey@euler.ethz.ch:/cluster/work/rsl/jonfrey/grand_tour/containers/grand-tour-dataset.tar
-    ```
+Download models from the [EgoBlur project](https://www.projectaria.com/tools/egoblur/).
+The standalone face thresholds remain 0.4 (Gen2-only script) and 0.51
+(selectable script); their plate threshold remains 0.85.
 
-- change singularity image on cluster workflow
-    ```
-    mv /cluster/work/rsl/jonfrey/grand_tour/containers/grand-tour-dataset.tar  /cluster/work/rsl/jonfrey/grand_tour/containers/grand-tour-dataset-old.tar;
-    
-    rm -r $TMPDIR$/grand-tour-dataset.sif/data;
-    cd $TMPDIR; tar -cvf /cluster/work/rsl/jonfrey/grand_tour/containers/grand-tour-dataset.tar grand-tour-dataset.sif;
+## Output guarantees and scope
 
-    ```
+- Every selected topic must exist, contain images, and have processed messages.
+  Full runs check processed image counts against the input bag index.
+- All entry points write to a temporary sibling directory and publish the closed
+  bag atomically. Existing files are preserved, including concurrent outputs;
+  exceptions and interruption remove the unfinished bag.
+- Sensor headers, bag timestamps, image dimensions, numeric depth, RGB/BGR
+  encoding, byte order and alpha are retained. Raw rows may be repacked without
+  padding. PNG remains PNG; JPEG is re-encoded at quality 95 and is lossy.
+- `--head N` counts **all bag messages**, including metadata. Every selected
+  camera must appear in the sample. Default sample names end in `_anon_sample.bag`.
+- Local tools process only selected image topics; other streams pass through.
+  The cloud tool requires **all image topics** in each input bag to be selected.
+- Previews are disabled by default. Explicit `--preview-dir /path/to/previews`
+  produces side-by-side panels containing the **original image** as well as the
+  redacted image. Preview files therefore contain unredacted content.
 
-- debug for cluster
-    ```bash
-    srun --account=es_hutter --ntasks=1 --cpus-per-task=4 --gpus=1 --time=4:00:00 --mem-per-cpu=8024 --tmp=20000 --pty bash
+## Docker and cloud processing
 
-    # Copy container
-    tar -xf /cluster/work/rsl/jonfrey/grand_tour/containers/grand-tour-dataset.tar  -C $TMPDIR
+`anonymization.py` retains the deployed **Gen1** model choice and thresholds
+(face 0.4, plate 0.85). It accepts both the Gen1 names above and the original
+`ego_blur_face.jit` / `ego_blur_lp.jit` names. It never substitutes Gen2 weights.
+Docker checks for these files at build time. The Noetic container uses Kleinkram
+0.57.0 for Python 3.8; calls are also compatible with the installed 0.63.3 SDK in
+`christian_grandtour`.
 
-    # Run test script 
-    apptainer exec --nv --writable --bind /cluster/scratch/jonfrey:/scratch --env KLEINKRAM_CONFIG="$(cat ~/.kleinkram.json)" --containall $TMPDIR/grand-tour-dataset.sif /bin/bash -c 'export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH; export HOME=/home; /entrypoint.sh  python /app/anonymization.py --mission-id d7525079-5564-461e-a144-e7479247d268 --cam hdr --head 200'
+```bash
+docker build -t grand-tour-dataset .
+docker run --rm --gpus all \
+  --env KLEINKRAM_CONFIG="$(cat ~/.kleinkram.json)" \
+  --mount type=bind,src=/absolute/path/to/fresh-work-directory,dst=/data \
+  grand-tour-dataset python /app/anonymization.py --mission-id MISSION_UUID --cam hdr
+```
 
-    # WARNING: Cluster requires different endpoint then local pc. Therefore copying over ~/.kleinkram.json wont work.
-    #          Instead run container and login using kleinkram login via CLI and copy manual. It seems the prod_no_proxy works just fine.
+Camera choices are `hdr`, `alphasense`, and `zed2i`. `--models` changes the model
+directory and `--data-dir` changes the input/output root. Use a fresh work
+directory; previous inputs and outputs are preserved. Importing the script or
+asking for `--help` creates no data directories.
 
-    ```
+A full cloud run uploads only after all configured bags finish. Upload and
+verification use the exact mission ID; success requires a matching remote hash.
+Pending upload/hash computation is polled for up to approximately five minutes;
+timeouts and API/transfer failures propagate as failures. Existing remote files
+are preserved unless `--replace-existing` is supplied. Replacement matches the
+exact filename and never deletes an in-progress upload.
 
-- cluster ~/.kleinkram.json
-    ```json
-    {"version": "0.43.6", "endpoints": {"local": {"name": "local", "api": "http://localhost:3000", "s3": "http://localhost:9000"}, "dev": {"name": "dev", "api": "https://api.datasets.dev.leggedrobotics.com", "s3": "https://minio.datasets.dev.leggedrobotics.com"}, "prod": {"name": "prod", "api": "https://api.datasets.leggedrobotics.com", "s3": "https://minio.datasets.leggedrobotics.com"}}, "endpoint_credentials": {"prod": {"auth_token": "something", "refresh_token": "something", "api_key": null}}, "selected_endpoint": "prod"}
-    ```
+`--no-upload` retains full results locally. `--head N` always produces sample
+names and skips uploading, including when `--replace-existing` is supplied.
+Outputs remain under `--data-dir/output` for inspection or a later upload retry.
+`--archive-dir` retains an additional completed copy before uploading. Generated
+cluster jobs use `/scratch` for this copy; archive publication is atomic and
+preserves existing files.
 
-## Profiling
+## Cluster jobs
 
-- [Download](https://www.projectaria.com/tools/egoblur/) the ego blur models `ego_blur_face.jit` and `ego_blur_lp.jit`.
-  Place them here in then `./models` folder.
+```bash
+python cluster/create_submit_files.py --cameras zed2i --limit 1
+```
 
-- Download the data:
+This reads mission metadata and generates jobs locally. Add `--submit` to copy
+and submit those jobs; `--host` and `--submit-dir` select their destinations.
+Generated jobs propagate setup and processing failures to Slurm. Importing the
+generator performs no network or scheduling operations. The cluster paths and
+account in the generator are installation-specific and must match the cluster.
 
-  ```
-  klein download --dest=data/files 80a3bf09-14e0-4424-94a5-4fe1901a8481
-  ```
+`cluster/convert_docker_to_tar.sh` stops on failed build/export/copy steps.
+`GRAND_TOUR_EXPORT_DIR` can select its local export directory.
 
-- Run the profiling setup:
+## Focused verification
 
-  ```bash
-  docker build -t grand-tour-dataset . && docker run -v "$(pwd):/app" --rm -it --gpus all grand-tour-dataset python -m cProfile -o o.pstat anonymization.py --head 200
-  ```
+```bash
+conda run -n christian_grandtour python -m unittest discover -s tests -v
+```
 
-- Render the profiling results:
+These tests use disposable synthetic bags and mocked cloud APIs. They exercise
+encoding and metadata preservation, missing/corrupt streams, interruption,
+concurrent publication, sample upload exclusion, exact mission/file selection,
+verification failures, and generated job exit codes. They perform no inference,
+cloud requests, dataset processing or cluster submission.
 
-  ```bash
-  gprof2dot -f pstats o.pstat | dot -Tsvg -o o.svg
-  ```
-
-### Results:
-
-- see [`rtx_4090.svg`](./profiling/rtx_4090.svg) for the profiling results on a RTX 4090 GPU.
-- see [`rtx_4060.svg`](./profiling/rtx_4060.svg) for the profiling results on a RTX 4060 GPU.
-
-Based on this we can estimate that the compute time on a single `RTX 4090` is approximately
-**30-40s per 1s of mission time** . This already accounts for the different cameras that need to be blurred.
-
-With a total mission duration of approximately 32,000s we get a total compute time of **355** hours.
+A separate one-image inference check can use an ordinary image outside any
+recording. A successful smoke test establishes runtime compatibility, not a
+missed-face/plate rate or sufficient obscuration for dataset release.

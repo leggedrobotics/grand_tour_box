@@ -310,10 +310,13 @@ class AdditionalReliabilityTests(TemporaryCase):
 
     def test_anonymizers_reject_missing_or_unprocessed_images(self):
         root = PACKAGE.parent / "box_converter/image-anonymization-pipeline"
+        with patch.object(sys, "path", [str(root)] + sys.path):
+            from bag_anonymization import process_bag
         for filename in ("anonimization_standalone.py", "anonimization_standalone_chat.py"):
             with self.subTest(filename=filename):
                 function = extracted_function(
-                    root / filename, "anonymize_image_topics_in_bagfile", dict(Path=Path, rosbag=rosbag, tqdm=tqdm)
+                    root / filename, "anonymize_image_topics_in_bagfile",
+                    dict(process_bag=process_bag, JPEG_QUALITY=95, PNG_COMPRESSION=3),
                 )
                 source = self.directory / "source.bag"
                 string_bag(source)
