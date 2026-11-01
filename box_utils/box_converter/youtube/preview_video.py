@@ -1,19 +1,22 @@
 from pathlib import Path
-from box_auto.utils import get_bag, ARTIFACT_FOLDER, RosbagMessageGenerator
-import rosbag
 
-# from cv_bridge import CvBridge
-from sortedcontainers import SortedDict
+from box_auto.utils import ARTIFACT_FOLDER, RosbagMessageGenerator, get_bag, read_sheet_data
 from cv_bridge import CvBridge
-import ros_numpy
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
-from matplotlib.colors import Normalize
-import cv2
-from box_auto.utils import read_sheet_data
-from tf_bag import BagTfTransformer
 from scipy.spatial.transform import Rotation as R
+from sortedcontainers import SortedDict
+from tf_bag import BagTfTransformer
+
+import cv2
+import matplotlib.gridspec as gridspec
+import matplotlib.pyplot as plt
+import numpy as np
+import ros_numpy
+import rosbag
+from matplotlib.colors import Normalize
+
+# --- Toggle: mission time source ---
+READ_MISSION_TIMES_FROM_SPREADSHEET = True
+SPREADSHEET_ID = "1mENfskg_jO_vJGFM5yonqPuf-wYUNmg26IPv3pOu3gg"
 
 # --- Global Matplotlib Settings ---
 plt.rcParams.update(
@@ -52,6 +55,24 @@ ROS_BAG_PATHS = [
 ODOM_BAG_PATH = get_bag("*_lpc_state_estimator.bag")
 
 
+def get_time_bounds_from_bags(bag_paths):
+    """
+    Returns (start_time, stop_time) in seconds, using the minimum start and maximum end time
+    across all provided bag files.
+    """
+    starts = []
+    ends = []
+    for p in bag_paths:
+        if p is None:
+            continue
+        with rosbag.Bag(p) as bag:
+            starts.append(bag.get_start_time())
+            ends.append(bag.get_end_time())
+    if not starts or not ends:
+        raise RuntimeError("No valid bag paths found to compute time bounds.")
+    return float(min(starts)), float(max(ends))
+
+
 tf_listener = BagTfTransformer(get_bag("*_tf_static_start_end.bag"))
 try:
     trans, quat = tf_listener.lookupTransform("livox_lidar", "hesai_lidar", None, latest=True)
@@ -62,8 +83,8 @@ except Exception as e:
 rotation = R.from_quat(quat)  # Create rotation object from quaternion
 
 n = Path(ROS_BAG_PATHS[0]).stem
-
 MISSION_NAME = n[: n.find("_")]
+
 OUTPUT_VIDEO_PATH = Path(ARTIFACT_FOLDER) / "youtube" / f"{MISSION_NAME}.mp4"
 FRAME_SAVE_DIR = Path(ARTIFACT_FOLDER) / "youtube" / "frames"
 FRAME_SAVE_DIR.mkdir(parents=True, exist_ok=True)
@@ -72,13 +93,20 @@ FRAME_SAVE_DIR.mkdir(parents=True, exist_ok=True)
 def find_first_movement_timestamp_and_bounds(rosbag_path, distance_threshold=1.0, video_duration_seconds=np.inf):
     started_moving_ts = -1
     min_x, max_x, min_y, max_y = float("inf"), -float("inf"), float("inf"), -float("inf")
+    first_z = None
+
     with rosbag.Bag(rosbag_path) as bag:
         # Get the first pose to use as reference
+        initial_x = initial_y = initial_z = None
         for _topic, msg, t in bag.read_messages(topics=["/state_estimator/pose_in_odom"]):
             initial_x = msg.pose.pose.position.x
             initial_y = msg.pose.pose.position.y
             initial_z = msg.pose.pose.position.z
+            first_z = initial_z  # sensible default if no movement is detected
             break
+
+        if initial_x is None:
+            return -1, max_x, min_x, max_y, min_y, first_z
 
         # Analyze all poses to find when robot moves beyond threshold
         for _topic, msg, t in bag.read_messages(topics=["/state_estimator/pose_in_odom"]):
@@ -112,6 +140,7 @@ def find_first_movement_timestamp_and_bounds(rosbag_path, distance_threshold=1.0
 
 class VideoGenerator:
     def __init__(self, bag_paths):
+        self.bag_paths = bag_paths
         self.generator = RosbagMessageGenerator(bag_paths)
         # Create sorted message queues for each topic type
         self.hdr_front_queue = SortedDict()
@@ -151,10 +180,10 @@ class VideoGenerator:
                     del queue[time]
 
             if convert:
-                res = self.convert(queue.pop(closest_time))  # returns x,y,z tuple
-                point = np.array(res)  # Convert to numpy array
-                transformed_point = (rotation.apply(point.T) + trans).T  # Apply rotation and translation
-                return transformed_point  # Convert back to list
+                res = self.convert(queue.pop(closest_time))  # returns x,y,z tuple OR (3,N) pointcloud
+                point = np.array(res)
+                transformed_point = (rotation.apply(point.T) + trans).T
+                return transformed_point
 
             return self.convert(queue.pop(closest_time))
         return None
@@ -182,7 +211,6 @@ class VideoGenerator:
             z = msg.point.z
             return x, y, z
         else:
-            # raise ValueError("Conversion not implemented for msg type: ", str(type(msg)))
             return topic, msg, t
 
     def process(self):
@@ -192,42 +220,48 @@ class VideoGenerator:
         FPS = 10
         H, W = 1080, 1920
 
-        # Define the spreadsheet ID and sheet name
-        SPREADSHEET_ID = "1mENfskg_jO_vJGFM5yonqPuf-wYUNmg26IPv3pOu3gg"
-        # Read the data and print the list
-        topic_data, MISSION_DATA = read_sheet_data(SPREADSHEET_ID)
+        # --- Determine mission start/stop time ---
+        if READ_MISSION_TIMES_FROM_SPREADSHEET:
+            _, MISSION_DATA = read_sheet_data(SPREADSHEET_ID)
+            start_time = float(MISSION_DATA[MISSION_NAME]["mission_start_time"])
+            stop_time = float(MISSION_DATA[MISSION_NAME]["mission_stop_time"])
+        else:
+            start_time, stop_time = get_time_bounds_from_bags(self.bag_paths)
 
-        start_time = float(MISSION_DATA[MISSION_NAME]["mission_start_time"])
-        stop_time = float(MISSION_DATA[MISSION_NAME]["mission_stop_time"])
         print(f"Start time: {start_time}, Stop time: {stop_time}")
-        MAX_FRAMES = (stop_time - start_time) / secs_between_frames
+
+        MAX_FRAMES = int(np.ceil((stop_time - start_time) / secs_between_frames))
 
         robot_start_moving_time_in_s, max_x, min_x, max_y, min_y, first_z = find_first_movement_timestamp_and_bounds(
             ODOM_BAG_PATH, distance_threshold=1.0, video_duration_seconds=MAX_FRAMES * secs_between_frames
         )
 
         robot_start_moving_time_in_s = start_time  # Add some buffer time
+
         x_spread = max_x - min_x
         y_spread = max_y - min_y
         adjusted_min_x = np.floor(0 - 0.1 * x_spread)
         adjusted_max_x = np.ceil(x_spread * 1.1)
         adjusted_min_y = np.floor(0 - 0.1 * y_spread)
         adjusted_max_y = np.ceil(y_spread * 1.1)
-        tick_spread_x = np.ceil(x_spread / 10)
-        tick_spread_y = np.ceil(y_spread / 10)
+        tick_spread_x = np.ceil(x_spread / 10) if np.isfinite(x_spread) else 1.0
+        tick_spread_y = np.ceil(y_spread / 10) if np.isfinite(y_spread) else 1.0
 
         fourcc = cv2.VideoWriter_fourcc(*"mp4v")
         video_writer = cv2.VideoWriter(str(OUTPUT_VIDEO_PATH), fourcc, FPS, (W, H))
         cumulative_poses = []
+
         try:
             for topic, message, timestamp in self.generator:
                 if timestamp.to_sec() < start_time:
                     print(timestamp.to_sec(), start_time)
                     continue
+                if timestamp.to_sec() > stop_time:
+                    break
 
                 self._add_to_queue(topic, message, timestamp)
                 if topic == "/gt_box/hdr_front/image_raw/compressed" and len(self.hdr_front_queue) > 1:
-                    k, v = self.hdr_front_queue.popitem(0)
+                    _k, v = self.hdr_front_queue.popitem(0)
                     target_time_in_s = v[2].to_sec()
 
                     if target_time_in_s - last_hdr_timestamp > secs_between_frames:
@@ -237,7 +271,7 @@ class VideoGenerator:
                         continue
 
                     i += 1
-                    if i == MAX_FRAMES:
+                    if i >= MAX_FRAMES:
                         print("Exit max frames", flush=True)
                         break
                     print(f"{i}/{MAX_FRAMES}")
@@ -249,7 +283,7 @@ class VideoGenerator:
                     hesai = self._find_closest_message_and_convert(target_time_in_s, self.hesai_queue)
                     pose = self._find_closest_message_and_convert(target_time_in_s, self.pose_queue)
 
-                    if pose is not None:
+                    if pose is not None and first_z is not None and np.isfinite(min_x) and np.isfinite(min_y):
                         x = pose[0] - min_x
                         y = pose[1] - min_y
                         z = pose[2] - first_z
@@ -296,7 +330,6 @@ class VideoGenerator:
                     )
 
                     # Bottom Left: Trajectory / Other Information
-                    # ax_traj = fig.add_subplot(gs[1, 0])
                     ax_traj.set_xlim(adjusted_min_x, adjusted_max_x)
                     ax_traj.set_ylim(adjusted_min_y, adjusted_max_y)
                     ax_traj.set_xticks(np.arange(adjusted_min_x, adjusted_max_x, tick_spread_x))
@@ -309,12 +342,10 @@ class VideoGenerator:
                     for spine in ax_traj.spines.values():
                         spine.set_visible(False)
                     if cumulative_poses:
-                        # Plot the cumulative x,y coordinates with z a color for height
                         x, y, z = zip(*cumulative_poses)
                         ax_traj.scatter(x, y, c=z, cmap="plasma", s=20.0, vmin=-5, vmax=5, zorder=3)
 
                     # Bottom Middle: Livox Pointcloud
-                    # ax_livox = fig.add_subplot(gs[1, 1])
                     if livox is not None:
                         x, y, z = livox
                         _ = ax_livox.scatter(x, y, c=z, cmap="plasma", s=0.3, vmin=-5, vmax=5, zorder=3)
@@ -333,7 +364,6 @@ class VideoGenerator:
                         spine.set_visible(False)
 
                     # Bottom Right: Hesai Pointcloud
-                    # ax_hesai = fig.add_subplot(gs[1, 2])
                     if hesai is not None:
                         x, y, z = hesai
                         _ = ax_hesai.scatter(x, y, c=z, cmap="plasma", s=0.3, vmin=-5, vmax=5)
@@ -352,14 +382,10 @@ class VideoGenerator:
                         spine.set_visible(False)
 
                     # --- Create a common horizontal colorbar ---
-                    # Use a dummy ScalarMappable with the same colormap and norm:
                     norm = Normalize(vmin=-5, vmax=5)
                     sm = plt.cm.ScalarMappable(cmap="plasma", norm=norm)
-                    sm.set_array([])  # Dummy array for the colorbar
+                    sm.set_array([])
 
-                    # Manually add an axes for the colorbar:
-                    # [left, bottom, width, height] are in figure-relative coordinates.
-                    # Adjust these values to control the horizontal width.
                     cax = fig.add_axes([0.2, 0.06, 0.6, 0.006])
                     cbar = fig.colorbar(sm, cax=cax, orientation="horizontal")
                     cbar.outline.set_visible(False)
@@ -372,20 +398,23 @@ class VideoGenerator:
                     fig.text(
                         0.96,
                         0.05,
-                        f"{elapsed_time:.2f} s",  # Display time with two decimals
+                        f"{elapsed_time:.2f} s",
                         ha="right",
                         va="bottom",
                         fontsize=16,
                         color="#4a4a4a",
                         bbox=dict(boxstyle="round,pad=0.6", edgecolor="none", facecolor=light_blue, alpha=0.7, pad=5),
                     )
+
                     # --- Adjust Layout & Save Figure ---
                     plt.tight_layout(pad=3)
                     path = str(FRAME_SAVE_DIR / f"{i:06d}.png")
                     plt.savefig(path)
                     plt.close(fig)
+
                     frame = cv2.imread(path)
                     video_writer.write(frame)
+
         except Exception as e:
             print(e)
         finally:
