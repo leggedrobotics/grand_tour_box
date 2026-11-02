@@ -1,0 +1,21 @@
+<launch>
+    <!-- After-Oxford target preset. Match these dimensions to the physical board:
+         Aprilgrid: 6 x 6 tags, 50 mm tag edges, 15 mm gaps (spacing ratio 0.3).
+         Checkerboard: 7 x 8 internal corners, 50 mm squares.
+         These dimensions determine the published 3D calibration points. -->
+    <arg name="name"/>
+    <arg name="image_topic"/>
+    <arg name="box_namespace" default="gt_box"/>
+    <arg name="use_april_grid" default="true"/>
+    <arg name="recording_bag_name" default=""/>
+
+    <include file="$(find grand_tour_camera_detectors)/launch/generic_detector.launch">
+        <arg name="name" value="$(arg name)"/>
+        <arg name="image_topic" value="$(arg image_topic)"/>
+        <arg name="box_namespace" value="$(arg box_namespace)"/>
+        <arg name="use_april_grid" value="$(arg use_april_grid)"/>
+        <arg name="recording_bag_name" value="$(arg recording_bag_name)"/>
+        <arg name="tag_size" value="0.05"/>
+        <arg name="checkerboard_square_size" value="0.05"/>
+    </include>
+</launch>
