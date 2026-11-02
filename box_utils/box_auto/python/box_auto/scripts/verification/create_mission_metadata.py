@@ -1,5 +1,7 @@
 from box_auto.utils import get_bag, BOX_AUTO_DIR, deployments, get_file
 from box_auto.scripts.ap20 import process_prism_position_bag
+from box_auto.utils.atomic_file import atomic_output
+from pathlib import Path
 import rosbag
 import rospy
 import os
@@ -12,12 +14,19 @@ def create_metadata():
     for deployment in deployments:
         for j, mission_name in enumerate(deployment["mission_names"]):
             p = os.path.join(deployment["data_folder"], mission_name)
+            # A workstation may mount only part of the deployment collection.
+            # Skip absent directories before get_bag can try a cloud download.
+            if not os.path.isdir(p):
+                print(f"Skipping unavailable mission directory: {p}")
+                continue
             print(p)
             bag_path = get_bag("*_lpc_state_estimator.bag", directory=str(p))
 
             # Iterate over rosbag and find the first time when the robot moved in x,y L2 norm more than 0.5m from the start
             start_time = None
             stop_time = None
+            mission_start_time = None
+            mission_stop_time = None
             distance_walked = 0.0
             previous_position = None
             print(mission_name, bag_path)
@@ -64,6 +73,11 @@ def create_metadata():
                             mission_stop_time = t
                             break
 
+            # Never reuse another mission's times when this mission has no
+            # usable movement interval; leave existing metadata intact on error.
+            if mission_start_time is None or mission_stop_time is None or mission_stop_time <= mission_start_time:
+                raise ValueError(f"No valid movement interval in {bag_path}")
+
             try:
                 input_bag_path = get_bag("*_jetson_ap20_synced.bag", p)
                 output_bag_path = input_bag_path.replace("_synced.bag", "_robot.bag")
@@ -102,7 +116,8 @@ def create_metadata():
             }
 
     for mission_name in ["2024-10-29-09-08-34", "2024-11-04-14-55-02", "2024-11-18-16-45-27"]:
-        metadata[mission_name]["ap20_bag_available"] = False
+        if mission_name in metadata:
+            metadata[mission_name]["ap20_bag_available"] = False
         # Schanzengraben
         # Grindelwald Glacier Canyon - Walk out
         # 2024-11-18-16-45-27 -> Totalstation clearly moved [2.06177235e-02 2.38358483e-01 2.13384628e-05]
@@ -119,7 +134,8 @@ def create_metadata():
         "2024-10-29-09-53-44",
         "2024-10-29-09-08-34",
     ]:
-        metadata[mission_name]["prism"] = "Not at start and end"
+        if mission_name in metadata:
+            metadata[mission_name]["prism"] = "Not at start and end"
 
     for mission_name in [
         "2024-11-03-07-52-45",
@@ -127,13 +143,28 @@ def create_metadata():
         "2024-11-11-12-42-47",
         "2024-11-11-13-06-23",
     ]:
-        metadata[mission_name]["prism"] = "Not at end"
+        if mission_name in metadata:
+            metadata[mission_name]["prism"] = "Not at end"
 
-    print(metadata[mission_name])
-    # Sort the keys and dump to YAML file
-    yaml_path = os.path.join(BOX_AUTO_DIR, "cfg/mission_metadata.yaml")
-    with open(yaml_path, "w") as yaml_file:
-        yaml.dump(metadata, yaml_file, default_flow_style=False)
+    if not metadata:
+        print("No available missions; existing metadata preserved.")
+        return metadata
+
+    # A partial local collection must not erase metadata for unmounted missions.
+    # Publish only after every selected mission succeeds and serialization closes.
+    yaml_path = Path(BOX_AUTO_DIR) / "cfg/mission_metadata.yaml"
+    previous = {}
+    if yaml_path.exists():
+        with yaml_path.open() as yaml_file:
+            loaded = yaml.safe_load(yaml_file)
+            previous = {} if loaded is None else loaded
+        if not isinstance(previous, dict):
+            raise ValueError(f"Expected a mission mapping in {yaml_path}")
+    previous.update(metadata)
+    with atomic_output(yaml_path) as temporary:
+        with temporary.open("w") as yaml_file:
+            yaml.safe_dump(previous, yaml_file, default_flow_style=False, sort_keys=True)
+    return metadata
 
 
 if __name__ == "__main__":

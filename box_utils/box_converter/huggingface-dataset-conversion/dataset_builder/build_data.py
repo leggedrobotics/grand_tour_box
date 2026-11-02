@@ -42,18 +42,28 @@ ImageExtractorCallback = Callable[[Union[CompressedImage, Image], int, ImageTopi
 
 
 def _decode_depth_message(msg):
-    payload = np.frombuffer(msg.data, dtype=np.uint8).copy()
-    if payload.size < 20:
-        raise ValueError("Message too small (need 20+ bytes)")
-
-    # header = payload[12:20]
-    # cols, rows = np.frombuffer(header, dtype=np.uint32)
-
-    if not depth.flags["C_CONTIGUOUS"]:
-        depth = np.ascontiguousarray(depth)
-    if not depth.flags["ALIGNED"]:
-        depth = np.copy(depth)
-    return depth
+    """Decode the ZED driver's uint16 PNG without changing depth/confidence units."""
+    payload = bytes(msg.data)
+    png_signature = b"\x89PNG\r\n\x1a\n"
+    if "32FC1" in msg.format:
+        # compressedDepth 32FC1 stores inverse-depth codes, not millimetres.
+        # Treating those uint16 codes as ordinary depth silently corrupts data.
+        raise ValueError("32FC1 inverse-depth transport is unsupported by this ZED uint16 exporter")
+    if payload.startswith(png_signature):
+        # Main's pinned ZED wrapper writes a complete PNG directly and labels it
+        # 16UC1_compressed_png. Removing 12 bytes destroys its PNG header.
+        png = payload
+    elif "16UC1" in msg.format and "compressedDepth" in msg.format and payload[12:].startswith(png_signature):
+        # Older ROS compressedDepth PNG messages prepend a 12-byte config header.
+        # Detect that layout explicitly; never strip bytes based on topic names.
+        png = payload[12:]
+    else:
+        raise ValueError(f"Unsupported or corrupt ZED PNG payload ({msg.format!r})")
+    image = cv2.imdecode(np.frombuffer(png, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
+    if image is None or image.ndim != 2 or image.dtype != np.uint16:
+        raise ValueError("ZED depth/confidence must decode to a single-channel uint16 PNG")
+    # Depth remains millimetres; confidence remains the driver's integer score.
+    return image
 
 
 def _extract_and_save_image_from_message(
@@ -69,15 +79,10 @@ def _extract_and_save_image_from_message(
         image = cv_bridge.compressed_imgmsg_to_cv2(msg)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-    elif topic_desc.parsing == "depth_zed2i":
-        arr = np.frombuffer(msg.data, dtype=np.uint8)
-        png_bytes = arr[12:]  # skip 12-byte header
-        image = cv2.imdecode(png_bytes, cv2.IMREAD_UNCHANGED)
-
-    elif topic_desc.parsing == "zed2i_confidence":
-        arr = np.frombuffer(msg.data, dtype=np.uint8)
-        png_bytes = arr[12:]  # skip 12-byte header
-        image = cv2.imdecode(png_bytes, cv2.IMREAD_UNCHANGED)
+    elif topic_desc.parsing in ("depth_zed2i", "zed2i_confidence"):
+        if topic_desc.format.lower() != "png":
+            raise ValueError("ZED depth/confidence output must be lossless uint16 PNG")
+        image = _decode_depth_message(msg)
 
     elif topic_desc.parsing == "depth_realsense":
         image = cv_bridge.imgmsg_to_cv2(msg)
