@@ -52,6 +52,9 @@ FRAME_ID_BODY = "cpt7_imu"
 #    - IE_ATTITUDE_IN_NED=True applies a NED->ENU conversion so the published
 #      quaternion maps BODY vectors into WORLD(ENU) vectors.
 #    - IE_HEADING_IS_NEG_YAW can be used if the heading sign convention is opposite.
+#    - The angles compose as heading, then pitch, then roll (intrinsic Z-Y-X about
+#      the NED/FRD axes): heading and pitch are the azimuth and elevation of the
+#      BODY +X axis, and roll is the rotation about it.
 #
 # 3) "Robot heading" exported by this script is the yaw of the BODY +X axis projected
 #    into WORLD(ENU):
@@ -305,7 +308,7 @@ def build_rot_wb_from_ie_hrp(heading_deg, roll_deg, pitch_deg):
     Interpretation details:
       - heading_deg is IE "Heading" (yaw-like angle).
       - roll_deg and pitch_deg are IE roll/pitch.
-      - Euler sequence is "ZXY" with angles [yaw, roll, pitch] in degrees.
+      - Euler sequence is "ZYX" with angles [yaw, pitch, roll] in degrees (heading, then pitch, then roll).
       - If IE attitude is in NED (common), we convert to ENU so WORLD is ENU.
 
     Configuration toggles:
@@ -316,7 +319,7 @@ def build_rot_wb_from_ie_hrp(heading_deg, roll_deg, pitch_deg):
     """
     corrected_heading_deg = heading_deg + IE_HEADING_OFFSET_DEG
     yaw_deg = -corrected_heading_deg if IE_HEADING_IS_NEG_YAW else corrected_heading_deg
-    rot_body_in_nav = Rotation.from_euler("ZXY", [yaw_deg, roll_deg, pitch_deg], degrees=True)
+    rot_body_in_nav = Rotation.from_euler("ZYX", [yaw_deg, pitch_deg, roll_deg], degrees=True)
 
     if IE_ATTITUDE_IN_NED:
         # ENU->NED vector map: [E,N,U] -> [N,E,D]
@@ -335,11 +338,11 @@ def build_rot_wb_from_ie_hrp(heading_deg, roll_deg, pitch_deg):
 
 
 def orientation_covariance_enu(heading_deg, roll_deg, pitch_deg, std_hrp_deg):
-    """Map independent IE ZXY angle errors to fixed ENU small-angle errors.
+    """Map independent IE ZYX angle errors to fixed ENU small-angle errors.
 
     ROS pose covariance describes rotations about fixed world axes. Merely
     reordering heading/roll/pitch variances is only valid at special attitudes.
-    The Jacobian is for the same intrinsic ZXY composition used for the pose.
+    The Jacobian is for the same intrinsic ZYX composition used for the pose.
     A constant right-side body-axis conversion leaves this world Jacobian unchanged.
     """
     values = np.asarray([heading_deg, roll_deg, pitch_deg], dtype=float)
@@ -349,8 +352,8 @@ def orientation_covariance_enu(heading_deg, roll_deg, pitch_deg, std_hrp_deg):
     sign = -1.0 if IE_HEADING_IS_NEG_YAW else 1.0
     yaw = sign * (heading_deg + IE_HEADING_OFFSET_DEG)
     rz = Rotation.from_euler("z", yaw, degrees=True).as_matrix()
-    rx = Rotation.from_euler("x", roll_deg, degrees=True).as_matrix()
-    jacobian = np.column_stack((sign * np.array([0.0, 0.0, 1.0]), rz[:, 0], (rz @ rx)[:, 1]))
+    ry = Rotation.from_euler("y", pitch_deg, degrees=True).as_matrix()
+    jacobian = np.column_stack((sign * np.array([0.0, 0.0, 1.0]), (rz @ ry)[:, 0], rz[:, 1]))
     if IE_ATTITUDE_IN_NED:
         jacobian = np.array([[0.0, 1.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, -1.0]]) @ jacobian
     return (jacobian * np.square(np.deg2rad(std))) @ jacobian.T

@@ -237,6 +237,27 @@ class FrameCovarianceTests(unittest.TestCase):
                 expected = j @ np.diag(np.deg2rad(std) ** 2) @ j.T
                 np.testing.assert_allclose(covariance_fn(*angles, std), expected, atol=1e-9, rtol=1e-6)
 
+    def test_ie_attitude_is_heading_pitch_roll(self):
+        namespace = dict(
+            np=np,
+            Rotation=Rotation,
+            IE_HEADING_OFFSET_DEG=0.0,
+            IE_HEADING_IS_NEG_YAW=False,
+            IE_ATTITUDE_IN_NED=True,
+            CONVERT_BODY_FRD_TO_FLU=False,
+        )
+        rotation_fn = extracted_function(
+            SCRIPTS / "cpt7/export_gps_gt_trajectory_bag.py", "build_rot_wb_from_ie_hrp", namespace
+        )
+        for heading, roll, pitch in ((34.0, 17.0, -9.0), (200.0, -25.0, 20.0), (300.0, 40.0, 30.0)):
+            rot_wb = rotation_fn(heading, roll, pitch)
+            # Heading and pitch are the azimuth and elevation of BODY +X (forward), roll is about it.
+            forward = rot_wb.apply([1.0, 0.0, 0.0])
+            right = rot_wb.apply([0.0, 1.0, 0.0])
+            self.assertAlmostEqual(np.degrees(np.arctan2(forward[0], forward[1])) % 360.0, heading)
+            self.assertAlmostEqual(np.degrees(np.arcsin(forward[2])), pitch)
+            self.assertAlmostEqual(np.degrees(np.arcsin(-right[2] / np.cos(np.radians(pitch)))), roll)
+
     def test_ie_rejects_invalid_covariance(self):
         fn = extracted_function(SCRIPTS / "cpt7/export_gps_gt_trajectory_bag.py", "compact_cov_to_full", dict(np=np))
         np.testing.assert_array_equal(fn([1, 0, 2, 0, 0, 3]), np.diag([1, 2, 3]))
