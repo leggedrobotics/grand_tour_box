@@ -161,12 +161,12 @@ class MergeTests(TemporaryCase):
 
 
 class Ap20Tests(TemporaryCase):
-    def run_fixture(self, xs, dt=0.05, remove_start=False):
+    def run_fixture(self, xs, dt=0.05, remove_start=False, stamps=None):
         source = self.directory / "prism.bag"
         with rosbag.Bag(str(source), "w") as bag:
             for i, x in enumerate(xs):
                 msg = PointStamped()
-                msg.header.stamp = rospy.Time.from_sec(1700000000 + dt * i)
+                msg.header.stamp = rospy.Time.from_sec(1700000000 + (dt * i if stamps is None else stamps[i]))
                 msg.point.x = x
                 bag.write(ap20.TOPIC_PRISM_POSITION, msg, msg.header.stamp)
         with patch.object(ap20.plt, "savefig"), patch.object(ap20, "ENABLE_POSTWRITE_DELTA_PLOT", False), patch.object(
@@ -189,6 +189,53 @@ class Ap20Tests(TemporaryCase):
         self.assertEqual(self.run_fixture([0.0] * 30 + [4.0] * 60 + [0.0] * 30), 0)
         with rosbag.Bag(str(self.output)) as bag:
             self.assertEqual(bag.get_message_count(), 60)
+
+    def test_mid_mission_outlier_is_removed_without_trimming_to_it(self):
+        # Out and back, so that the prism is at the same place at start and end
+        xs = [0.01 * min(i, 119 - i) for i in range(120)]
+        xs[60] = 20.0
+        self.assertEqual(self.run_fixture(xs), 0)
+        with rosbag.Bag(str(self.output)) as bag:
+            kept = [msg.point.x for _, msg, _ in bag.read_messages()]
+        self.assertEqual(len(kept), 119)
+        self.assertNotIn(20.0, kept)
+
+    def test_samples_adjacent_to_gaps_are_removed(self):
+        stamps = [0.05 * i for i in range(60)] + [0.05 * 59 + 0.15 + 0.05 * i for i in range(60)]
+        self.assertEqual(self.run_fixture([0.0] * 120, stamps=stamps), 0)
+        with rosbag.Bag(str(self.output)) as bag:
+            kept = [msg.header.stamp.to_sec() - 1700000000 for _, msg, _ in bag.read_messages()]
+        self.assertEqual(len(kept), 118)
+        self.assertFalse(any(abs(t - stamps[59]) < 1e-6 or abs(t - stamps[60]) < 1e-6 for t in kept))
+
+    def test_movement_across_gaps_is_not_trimmed(self):
+        # Out and back at 1 m/s, with two 4 s gaps (e.g. a blocked line of sight) over which the prism moves 4 m
+        stamps = [0.05 * i for i in range(40)]
+        for _ in range(2):
+            stamps += [stamps[-1] + 4.0 + 0.05 * i for i in range(40)]
+        xs = [min(t, stamps[-1] - t) for t in stamps]
+        self.assertEqual(self.run_fixture(xs, stamps=stamps), 0)
+        with rosbag.Bag(str(self.output)) as bag:
+            self.assertEqual(bag.get_message_count(), 116)
+
+    def test_excursion_mask(self):
+        def excursions(xs, stamps=None):
+            times = np.array([0.05 * i for i in range(len(xs))] if stamps is None else stamps)
+            positions = np.c_[xs, np.zeros(len(xs)), np.zeros(len(xs))]
+            return np.flatnonzero(ap20.excursion_mask(times, positions)).tolist()
+
+        track = [0.01 * i for i in range(120)]
+        # A spike and a burst off the track are excursions
+        self.assertEqual(excursions(track[:50] + [20.0] + track[51:]), [50])
+        self.assertEqual(excursions(track[:50] + [20.0, 20.5, 19.8] + track[53:]), [50, 51, 52])
+        # Also when the track only resumes after a gap (lost lock), within reach of the sample before the jump
+        stamps = [0.05 * i for i in range(60)] + [0.05 * 59 + 13.0 + 0.05 * i for i in range(60)]
+        self.assertEqual(excursions(track[:59] + [3.0] + [x + 0.5 for x in track[60:]], stamps), [59])
+        # Not the track between start and end segments elsewhere (e.g. a reference prism), nor either side of a
+        # single jump, nor movement within the speed limit
+        self.assertEqual(excursions([0.0] * 30 + [4.0] * 60 + [0.0] * 30), [])
+        self.assertEqual(excursions([0.0] * 30 + [4.0] * 90), [])
+        self.assertEqual(excursions([0.2 * i for i in range(120)]), [])
 
     def test_empty_filters_preserve_previous_output(self):
         self.output.write_bytes(b"previous result")

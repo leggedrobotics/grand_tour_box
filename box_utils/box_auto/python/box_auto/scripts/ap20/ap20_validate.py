@@ -54,7 +54,20 @@ OUTPUT_BAG_COMPRESSION = "lz4"
 ANSI_GREEN = "\033[92m"
 ANSI_RESET = "\033[0m"
 
-# Peak trimming (pre-processing before writing)
+# Excursion removal (pre-processing before writing): runs of samples off the prism's track, such as the single samples
+# metres off, in a wrong direction from the station, released just before a lost lock. A run is an excursion if it is
+# entered by a jump (a step longer than EXCURSION_JUMP_DISTANCE_M and faster than EXCURSION_JUMP_SPEED_MPS), left by a
+# jump or a time gap, the samples before and after it are consistent with each other, and it is at most
+# EXCURSION_MAX_DURATION_SEC long and shorter than the track on either side. Applied before the peak trim, so that the
+# two jumps around a mid-mission excursion cannot make the peak trim keep only the excursion.
+ENABLE_EXCURSION_EXCLUDE_FOR_WRITING = True
+EXCURSION_JUMP_DISTANCE_M = 1.0
+EXCURSION_JUMP_SPEED_MPS = 5.0
+EXCURSION_MAX_DURATION_SEC = 10.0
+
+# Peak trimming (pre-processing before writing), on the samples remaining after excursion removal. A peak is a jump:
+# a step longer than PEAK_DELTA_THRESHOLD_M and faster than EXCURSION_JUMP_SPEED_MPS, not the prism moving across a
+# gap in the stream (e.g. while the line of sight is blocked).
 ENABLE_PEAK_TRIM_FOR_WRITING = True
 PEAK_DELTA_THRESHOLD_M = 3.0  # "peak" if consecutive delta norm exceeds this (first/last peak trim)
 
@@ -63,10 +76,14 @@ ENABLE_PEAK_EXCLUDE_FOR_WRITING = False
 PEAK_EXCLUDE_THRESHOLD_M = 1.0  # exclude around any delta peak above this
 PEAK_EXCLUDE_RADIUS_IDX = 5  # exclude idx +- this radius around the peak (message index space)
 
-# Time-gap cleaning (additional pre-processing before writing)
+# Time-gap cleaning (additional pre-processing before writing). The sample before and the sample after a gap are often
+# wrong: in the released GrandTour data, 5.5% of them are more than 5 cm off Inertial Explorer's track (relative to the
+# local offset between the two), against 0.1% of the other samples. Most are stamped up to 0.43 s too early by the AP20
+# itself and arrive late, and a few are far off the track before a lost lock. So only these two samples are excluded,
+# around gaps of more than about two sample intervals (~43 ms).
 ENABLE_TIME_GAP_EXCLUDE_FOR_WRITING = True
-TIME_GAP_THRESHOLD_SEC = 0.2  # gap if consecutive header stamps differ by more than this
-TIME_GAP_EXCLUDE_RADIUS_IDX = 5  # exclude idx +- this radius around the gap (message index space)
+TIME_GAP_THRESHOLD_SEC = 0.1  # gap if consecutive header stamps differ by more than this
+TIME_GAP_EXCLUDE_RADIUS_IDX = 0  # exclude idx +- this radius around the gap (message index space)
 
 # Post-write verification plots
 ENABLE_POSTWRITE_DELTA_PLOT = True
@@ -192,6 +209,49 @@ def mask_count(mask):
     return int(np.size(mask) - np.count_nonzero(mask))
 
 
+def excursion_mask(
+    times,
+    positions,
+    jump_distance=EXCURSION_JUMP_DISTANCE_M,
+    jump_speed=EXCURSION_JUMP_SPEED_MPS,
+    max_interval=TIME_GAP_THRESHOLD_SEC,
+    max_duration=EXCURSION_MAX_DURATION_SEC,
+):
+    """Mask of the samples in excursions off the prism's track (see EXCURSION_* above).
+
+    times: (N,) header stamps [s], increasing; positions: (N, 3) [m]. Returns a boolean (N,) mask, True if excluded.
+    """
+    n = len(times)
+    excluded = np.zeros(n, dtype=bool)
+    if n < 3:
+        return excluded
+
+    def consistent(a, b):
+        distance = np.linalg.norm(positions[b] - positions[a])
+        return distance <= jump_distance or distance <= jump_speed * (times[b] - times[a])
+
+    jump = np.array([not consistent(i, i + 1) for i in range(n - 1)])
+    # Runs of samples between jumps: [run_starts[r], run_starts[r + 1])
+    run_starts = np.r_[0, np.flatnonzero(jump) + 1, n]
+    a = 1
+    while a < n - 1:
+        if not jump[a - 1]:
+            a += 1
+            continue
+        for b in range(a, n - 1):
+            if times[b] - times[a] > max_duration:
+                break
+            if (jump[b] or times[b + 1] - times[b] > max_interval) and consistent(a - 1, b + 1):
+                before = a - run_starts[np.searchsorted(run_starts, a - 1, side="right") - 1]
+                after = run_starts[np.searchsorted(run_starts, b + 1, side="right")] - (b + 1)
+                if b + 1 - a < min(before, after):
+                    excluded[a : b + 1] = True
+                    a = b
+                break
+        a += 1
+    return excluded
+
+
 def process_prism_position_bag(input_bag_path, output_bag_path, skip_check, remove_start, return_check_only):
     if Path(input_bag_path).resolve() == Path(output_bag_path).resolve():
         raise ValueError("AP20 output must differ from the input bag")
@@ -219,23 +279,36 @@ def process_prism_position_bag(input_bag_path, output_bag_path, skip_check, remo
         n_msgs = len(prism_positions)
 
         keep_mask = np.ones(n_msgs, dtype=bool)
+        removed_by_excursion = np.zeros(n_msgs, dtype=bool)
         removed_by_trim = np.zeros(n_msgs, dtype=bool)
         removed_by_peak_exclude = np.zeros(n_msgs, dtype=bool)
         removed_by_time_gap = np.zeros(n_msgs, dtype=bool)
 
-        if ENABLE_PEAK_TRIM_FOR_WRITING and delta_norm.size > 0:
-            peak_indices_3m = np.where(delta_norm > PEAK_DELTA_THRESHOLD_M)[0]
+        hdr_ts_all = np.array([msg.header.stamp.to_sec() for msg, _ in prism_positions], dtype=np.float64)
+        points_all = np.array([[msg.point.x, msg.point.y, msg.point.z] for msg, _ in prism_positions], dtype=np.float64)
+
+        if ENABLE_EXCURSION_EXCLUDE_FOR_WRITING:
+            removed_by_excursion = excursion_mask(hdr_ts_all, points_all)
+            keep_mask &= ~removed_by_excursion
+
+        # Peaks between consecutive remaining samples (index of the sample before the peak)
+        kept_indices = np.flatnonzero(keep_mask)
+        kept_delta_norm = np.linalg.norm(np.diff(points_all[kept_indices], axis=0), axis=1)
+        kept_delta_t = np.diff(hdr_ts_all[kept_indices])
+        is_peak = (kept_delta_norm > PEAK_DELTA_THRESHOLD_M) & (
+            kept_delta_norm > EXCURSION_JUMP_SPEED_MPS * kept_delta_t
+        )
+        peak_indices_3m = kept_indices[np.where(is_peak)[0]]
+
+        if ENABLE_PEAK_TRIM_FOR_WRITING and kept_delta_norm.size > 0:
             # Trimming between peaks requires two boundaries. A single jump
             # cannot identify which side is valid; retain it for diagnostics.
             if peak_indices_3m.size >= 2:
-                first_peak_idx = int(peak_indices_3m[0])
-                last_peak_idx = int(peak_indices_3m[-1])
+                first_peak_idx = int(np.searchsorted(kept_indices, peak_indices_3m[0]))
+                last_peak_idx = int(np.searchsorted(kept_indices, peak_indices_3m[-1]))
 
-                start_write_idx = first_peak_idx + 1
-                end_write_idx = last_peak_idx
-
-                start_write_idx = max(0, min(start_write_idx, n_msgs))
-                end_write_idx = max(-1, min(end_write_idx, n_msgs - 1))
+                start_write_idx = int(kept_indices[first_peak_idx + 1])
+                end_write_idx = int(kept_indices[last_peak_idx])
 
                 if start_write_idx <= end_write_idx:
                     trim_mask = np.ones(n_msgs, dtype=bool)
@@ -264,7 +337,6 @@ def process_prism_position_bag(input_bag_path, output_bag_path, skip_check, remo
                     keep_mask &= exc_mask
 
         if ENABLE_TIME_GAP_EXCLUDE_FOR_WRITING and n_msgs >= 2:
-            hdr_ts_all = np.array([msg.header.stamp.to_sec() for msg, _ in prism_positions], dtype=np.float64)
             dt_hdr = np.diff(hdr_ts_all)
             gap_indices = np.where(dt_hdr > TIME_GAP_THRESHOLD_SEC)[0]
             if gap_indices.size > 0:
@@ -286,8 +358,17 @@ def process_prism_position_bag(input_bag_path, output_bag_path, skip_check, remo
             kept = int(np.count_nonzero(keep_mask))
             print(f"[CLEAN] total msgs in: {n_msgs}, kept: {kept}, removed: {total_removed}")
 
+            if ENABLE_EXCURSION_EXCLUDE_FOR_WRITING:
+                print(
+                    f"[CLEAN] EXCURSION_EXCLUDE (jump > {EXCURSION_JUMP_DISTANCE_M} m and "
+                    f"> {EXCURSION_JUMP_SPEED_MPS} m/s, <= {EXCURSION_MAX_DURATION_SEC} s): "
+                    f"removed={int(np.count_nonzero(removed_by_excursion))}"
+                )
+            else:
+                print("[CLEAN] EXCURSION_EXCLUDE: disabled")
+
             if ENABLE_PEAK_TRIM_FOR_WRITING:
-                peak3_cnt = int(np.count_nonzero(delta_norm > PEAK_DELTA_THRESHOLD_M)) if delta_norm.size > 0 else 0
+                peak3_cnt = int(peak_indices_3m.size)
                 print(
                     f"[CLEAN] PEAK_TRIM (> {PEAK_DELTA_THRESHOLD_M} m): peaks={peak3_cnt}, removed={int(np.count_nonzero(removed_by_trim))}"
                 )
@@ -303,7 +384,6 @@ def process_prism_position_bag(input_bag_path, output_bag_path, skip_check, remo
                 print("[CLEAN] PEAK_EXCLUDE: disabled")
 
             if ENABLE_TIME_GAP_EXCLUDE_FOR_WRITING and n_msgs >= 2:
-                hdr_ts_all = np.array([msg.header.stamp.to_sec() for msg, _ in prism_positions], dtype=np.float64)
                 dt_hdr = np.diff(hdr_ts_all)
                 gap_cnt = int(np.count_nonzero(dt_hdr > TIME_GAP_THRESHOLD_SEC))
                 print(
