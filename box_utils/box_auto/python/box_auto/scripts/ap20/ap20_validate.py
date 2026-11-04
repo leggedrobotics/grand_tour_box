@@ -77,9 +77,10 @@ PEAK_EXCLUDE_THRESHOLD_M = 1.0  # exclude around any delta peak above this
 PEAK_EXCLUDE_RADIUS_IDX = 5  # exclude idx +- this radius around the peak (message index space)
 
 # Time-gap cleaning (additional pre-processing before writing). The sample before and the sample after a gap are often
-# wrong: in the released GrandTour data, about 10% of them are more than 5 cm off (mostly stamped 0.06-0.43 s early, or
-# far off the track before a lost lock), against about 3% two or more samples away, which is the reference's noise.
-# So only these two samples are excluded, around gaps of more than about two sample intervals (~43 ms).
+# wrong: in the released GrandTour data, 5.5% of them are more than 5 cm off Inertial Explorer's track (relative to the
+# local offset between the two), against 0.1% of the other samples. Most are stamped up to 0.43 s too early by the AP20
+# itself and arrive late, and a few are far off the track before a lost lock. So only these two samples are excluded,
+# around gaps of more than about two sample intervals (~43 ms).
 ENABLE_TIME_GAP_EXCLUDE_FOR_WRITING = True
 TIME_GAP_THRESHOLD_SEC = 0.1  # gap if consecutive header stamps differ by more than this
 TIME_GAP_EXCLUDE_RADIUS_IDX = 0  # exclude idx +- this radius around the gap (message index space)
