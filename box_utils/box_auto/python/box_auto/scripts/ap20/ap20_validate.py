@@ -54,12 +54,12 @@ OUTPUT_BAG_COMPRESSION = "lz4"
 ANSI_GREEN = "\033[92m"
 ANSI_RESET = "\033[0m"
 
-# Excursion removal (pre-processing before writing): runs of samples off the prism's track, e.g. on another target
-# when the total station loses the prism. A run is an excursion if it is entered by a jump (a step longer than
-# EXCURSION_JUMP_DISTANCE_M and faster than EXCURSION_JUMP_SPEED_MPS), left by a jump or a time gap, the samples
-# before and after it are consistent with each other, and it is at most EXCURSION_MAX_DURATION_SEC long and shorter
-# than the track on either side. Applied before the peak trim, so that the two jumps around a mid-mission excursion
-# cannot make the peak trim keep only the excursion.
+# Excursion removal (pre-processing before writing): runs of samples off the prism's track, such as the single samples
+# metres off, in a wrong direction from the station, released just before a lost lock. A run is an excursion if it is
+# entered by a jump (a step longer than EXCURSION_JUMP_DISTANCE_M and faster than EXCURSION_JUMP_SPEED_MPS), left by a
+# jump or a time gap, the samples before and after it are consistent with each other, and it is at most
+# EXCURSION_MAX_DURATION_SEC long and shorter than the track on either side. Applied before the peak trim, so that the
+# two jumps around a mid-mission excursion cannot make the peak trim keep only the excursion.
 ENABLE_EXCURSION_EXCLUDE_FOR_WRITING = True
 EXCURSION_JUMP_DISTANCE_M = 1.0
 EXCURSION_JUMP_SPEED_MPS = 5.0
@@ -78,7 +78,7 @@ PEAK_EXCLUDE_RADIUS_IDX = 5  # exclude idx +- this radius around the peak (messa
 
 # Time-gap cleaning (additional pre-processing before writing). The sample before and the sample after a gap are often
 # wrong: in the released GrandTour data, about 10% of them are more than 5 cm off (mostly stamped 0.06-0.43 s early, or
-# on another target before a lost lock), against about 3% two or more samples away, which is the reference's noise.
+# far off the track before a lost lock), against about 3% two or more samples away, which is the reference's noise.
 # So only these two samples are excluded, around gaps of more than about two sample intervals (~43 ms).
 ENABLE_TIME_GAP_EXCLUDE_FOR_WRITING = True
 TIME_GAP_THRESHOLD_SEC = 0.1  # gap if consecutive header stamps differ by more than this

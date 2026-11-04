@@ -225,7 +225,7 @@ class Ap20Tests(TemporaryCase):
             return np.flatnonzero(ap20.excursion_mask(times, positions)).tolist()
 
         track = [0.01 * i for i in range(120)]
-        # A spike and a burst on another target are excursions
+        # A spike and a burst off the track are excursions
         self.assertEqual(excursions(track[:50] + [20.0] + track[51:]), [50])
         self.assertEqual(excursions(track[:50] + [20.0, 20.5, 19.8] + track[53:]), [50, 51, 52])
         # Also when the track only resumes after a gap (lost lock), within reach of the sample before the jump
